@@ -31,8 +31,12 @@ pub const BACKGROUND: [f32; 3] = [100.0 / 255.0, 149.0 / 255.0, 237.0 / 255.0];
 /// `Settings.WallFadeStart` / `WallFadeEnd`.
 const WALL_FADE_START: f32 = 0.5;
 const WALL_FADE_END: f32 = 0.95;
-/// `DepthConst.FloorMaxDepthScale`.
-const FLOOR_DEPTH_SCALE: f32 = 1.0;
+/// How far below the walls' base the background lies (below the deepest tiles).
+const BACKGROUND_DEPTH: f32 = 17.0;
+/// How far tiles sink, per C# depth unit (`DepthConst.FloorMaxDepthScale`).
+/// The C# formula gives 1.8–5 units, but its screenshots show the floor
+/// nearly level with the walls' base, so it is scaled down to match them.
+const FLOOR_DEPTH_SCALE: f32 = 0.25;
 /// Outline width in world units.
 const OUTLINE: f32 = 0.06;
 
@@ -104,6 +108,17 @@ pub fn build_map_meshes(map: &LoadedMap) -> (Mesh, Mesh) {
 
 fn build_floor(grid: &MapGrid, light: &LightMap, cell: f32, rng: &mut SmallRng) -> Mesh {
     let mut mb = MeshBuilder::default();
+    // The background between the tiles: under the light layer too, so it
+    // is dark where the map is dark. It reaches past the map's edge.
+    let border = 4;
+    for y in -border..grid.height as i32 + border {
+        for x in -border..grid.width as i32 + border {
+            let p = [(x, y), (x, y + 1), (x + 1, y + 1), (x + 1, y)];
+            let corners = p.map(|(px, py)| Vec3::new(px as f32 * cell, -(py as f32) * cell, -BACKGROUND_DEPTH));
+            let colors = p.map(|(px, py)| mul(BACKGROUND, light.sample(px as f32, py as f32)));
+            mb.quad(corners, colors);
+        }
+    }
     let mut done = vec![false; (grid.width + 1) * (grid.height + 1)];
     let idx = |x: usize, y: usize| y * (grid.width + 1) + x;
     for y in 0..grid.height {
@@ -114,8 +129,10 @@ fn build_floor(grid: &MapGrid, light: &LightMap, cell: f32, rng: &mut SmallRng) 
             }
             done[idx(x, y)] = true;
             let d = grid.distance_to_wall(xi, yi);
-            // amount = clamp(distance / (512·cell/96)), in cells: distance · 96/512.
-            let amount = (d * 96.0 / 512.0).clamp(0.2, 1.0);
+            // amount = clamp(distance / (512·cell/96)). Compared with the C#
+            // screenshots the distance field there counts cells, so most
+            // tiles stay at the 0.2 floor: nearly full size, shallow.
+            let amount = (d / (512.0 * cell / 96.0)).clamp(0.2, 1.0);
             let mut center = Vec2::new(x as f32 + 0.5, y as f32 + 0.5);
             let mut size = 1.0;
             let big = grid.is_floor(xi + 1, yi + 1)
@@ -231,6 +248,49 @@ fn build_walls(grid: &MapGrid, light: &LightMap, cell: f32) -> Mesh {
                     [black; 4],
                 );
             }
+        }
+    }
+    // Corner wedges: a triangle of wall in the floor cell, its diagonal
+    // face towards the open corner.
+    for y in 0..grid.height as i32 {
+        for x in 0..grid.width as i32 {
+            let Some(edge) = grid.edge(x, y) else {
+                continue;
+            };
+            let h = edge.height;
+            let [r, g, b, _] = edge.color.to_f32();
+            let corners = [
+                Vec2::new(x as f32, y as f32),
+                Vec2::new(x as f32 + 1.0, y as f32),
+                Vec2::new(x as f32 + 1.0, y as f32 + 1.0),
+                Vec2::new(x as f32, y as f32 + 1.0),
+            ];
+            let lit: [[f32; 3]; 4] = corners.map(|p| wall_light([r, g, b], light.sample(p.x, p.y)));
+            let to3 = |p: Vec2, z: f32| Vec3::new(p.x * cell, -p.y * cell, z);
+            // The three filled corners, going round the cell (clockwise in the map).
+            let a = (edge.open + 1) % 4;
+            let bb = (edge.open + 2) % 4;
+            let c = (edge.open + 3) % 4;
+            // Top: clockwise in the map is counter-clockwise in the world.
+            let tri = [to3(corners[a], h), to3(corners[c], h), to3(corners[bb], h), to3(corners[bb], h)];
+            mb.quad(tri, [lit[a], lit[c], lit[bb], lit[bb]]);
+            // The diagonal face from c to a, facing the open corner.
+            let fade_top = (WALL_FADE_START + (WALL_FADE_END - WALL_FADE_START) * h / 8.0).min(1.0);
+            mb.quad(
+                [to3(corners[a], 0.0), to3(corners[c], 0.0), to3(corners[c], h), to3(corners[a], h)],
+                [
+                    lerp3(black, lit[a], WALL_FADE_START),
+                    lerp3(black, lit[c], WALL_FADE_START),
+                    lerp3(black, lit[c], fade_top),
+                    lerp3(black, lit[a], fade_top),
+                ],
+            );
+            let inward = (corners[bb] - corners[edge.open]).normalize() * (OUTLINE / cell);
+            let z = h + 0.01;
+            mb.quad(
+                [to3(corners[a], z), to3(corners[a] + inward, z), to3(corners[c] + inward, z), to3(corners[c], z)],
+                [black; 4],
+            );
         }
     }
     mb.build()

@@ -244,7 +244,7 @@ fn update_shadows(
             let forward = Vec2::from_angle(dir);
             t.translation = (forward * shape.length * 0.25).extend(Z_SHADOW);
             t.rotation = Quat::from_rotation_z(dir);
-            t.scale = Vec3::new(shape.length, shape.width * 2.0, 1.0);
+            t.scale = Vec3::new(shape.length, shape.width, 1.0);
         }
     }
 }

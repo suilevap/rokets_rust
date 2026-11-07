@@ -17,8 +17,8 @@ pub struct RenderPlugin;
 
 impl Plugin for RenderPlugin {
     fn build(&self, app: &mut App) {
-        let [r, g, b] = map_mesh::BACKGROUND;
-        app.insert_resource(ClearColor(Color::srgb(r, g, b)))
+        // Beyond the lit background plane the world is dark.
+        app.insert_resource(ClearColor(Color::BLACK))
             .add_plugins((camera::CameraPlugin, sprite::SpritePlugin))
             .add_systems(OnEnter(GameState::Playing), spawn_map_meshes);
     }

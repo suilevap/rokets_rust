@@ -9,9 +9,9 @@ use bevy::prelude::*;
 
 use crate::game::{GameState, LoadedMap};
 
-/// Height above the ground in world units: shows about 55×33 units, like
-/// the C# camera at its default zoom.
-pub const CAMERA_HEIGHT: f32 = 40.0;
+/// Height above the ground in world units: about 25×15 units in view, as
+/// the C# camera shows at its usual zoom (`MinHeight` 16 / `Scale` ≈ 0.9).
+pub const CAMERA_HEIGHT: f32 = 18.0;
 /// `Camera2D.MoveSpeed`.
 const FOLLOW_RATE: f32 = 4.0;
 
