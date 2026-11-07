@@ -22,6 +22,7 @@ cargo run --release -- -m LetItSnowDay
 |---|---|
 | `-m MAP` | Map name from `assets/Maps/Singleplayer` (default `EditorTest`) |
 | `--screenshot PATH` | Save a PNG after `--frames N` frames of play (default 90), then exit |
+| `--drive SCRIPT` | Drive by script, `x,y:seconds;...` (stick in world directions, y up), logging the car's path every 0.1 s |
 
 Keys: arrows / WASD drive (point where you want to go), `R` restarts,
 `N` skips to the next map. A gamepad's left stick or d-pad and touch (a
@@ -35,6 +36,23 @@ libasound2-dev libx11-dev`.
 `EditorTest`, `CharMapTest` (walls drawn as text), `LightTest`,
 `LetItSnowDay` (gears and a finish), `Middleware` (the first campaign map;
 its enemies and boxes do not appear yet).
+
+## Compared with the C# game
+
+`docs/comparison/` holds side-by-side screenshots: the C# game on the left
+(taken through its debug command server, `GET /screenshot`), this port on
+the right. Not yet in the port: the glow and dirty-lens effects, accelerator
+arrows and the other entities.
+
+Headless screenshots on Linux without a GPU:
+
+```bash
+BEVY_ASSET_ROOT=$PWD VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json \
+  xvfb-run -a -s "-screen 0 800x480x24" \
+  cargo run -- -m Middleware --screenshot shot.png --frames 40
+```
+
+(needs `mesa-vulkan-drivers`, `xvfb` and `libxkbcommon-x11-0`).
 
 ## Content
 

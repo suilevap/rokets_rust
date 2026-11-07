@@ -23,7 +23,7 @@ main
 | `content/` | Parses the C# content: map XML (`MapData`), `Cars.xml` (base cars resolved), `MapList.xml`, action references (`NextMap()`, `CloseDoor(1001)`). Unknown elements are ignored; nothing here knows Bevy | `GameLibrary/` |
 | `units` | World units = the C# "sim units" (32 px), so forces and speeds keep their values. Map y points down, world y up: convert only here | `ConvertUnits` |
 | `assets` | Resolves C# content names case-insensitively through `assets/manifest.txt`; loads XML as text assets (works on the web) | content pipeline |
-| `map/grid` | The map as cells from the image (alpha: floor below `ImageWallTreshold`, wall above, height in 32 px steps) and `CharMap`; distance to walls; walls merged into rectangles | `MapManager`, `TilesMap.GetH`, `MapInfo.BuildTextureFromCharMap` |
+| `map/grid` | The map as cells from the image (alpha: floor below `ImageWallTreshold`, wall above, height in 32 px steps) and `CharMap`; `IsFloor`; distance to walls; corner wedges; walls merged into rectangles | `MapManager`, `TilesMap.GetH`, `MapInfo.BuildTextureFromCharMap`, `MapManager.GetEdgeIndex` |
 | `map/colliders` | Static wall colliders | `PhysicsManager.CreateWalls` |
 | `light/bake` | Static light map baked on the CPU: lamps with the `flash2` falloff, wall shadows, two-copy penumbra, ambient, saturation, blur. Kept on the CPU for gameplay and shadows | `LightManager` |
 | `game` | States `Loading → Playing` (`Failed`), `LoadedMap`, `MapEntity` (despawned on leaving a map), `ChangeMap` (restart / next) | `MapManager.SetMap` |
@@ -37,6 +37,7 @@ main
 | `pickups` | Decor tiles and gears | `Coin`, `Tile` entities |
 | `triggers` | Trigger areas; only level-end actions run so far | `TriggerManager`, `ActionTemplates` |
 | `hud` | Debug text, `R` / `N` keys | — |
+| `script` | `--drive`: scripted stick input and a logged path, for comparing driving | — |
 
 ## Conventions
 
@@ -56,5 +57,5 @@ Everything outside MVP 0.1: menus and HUD, sound, localisation, saves;
 weapons and gadgets; other cars and AI; boxes, doors, accelerators, bombs,
 teleports, platforms, fake walls; the other ~74 action types; particles;
 slow motion; the agent/command server; editor hot reload. Rendering gaps:
-diagonal wall edges (`MapManager.Edges`), the outland around the map, the
-cabin's springy wobble, tyre marks, dynamic lights, HDR glow.
+the outland around the map, the cabin's springy wobble, tyre marks,
+dynamic lights, HDR glow and the dirty-lens effect, per-map camera zoom.
