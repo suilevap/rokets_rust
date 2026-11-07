@@ -1,0 +1,127 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>Part_Door</Name>
+    <GameMode>SinglePlayer</GameMode>
+    <Image>Maps\Parts\Part_Door</Image>
+    <Scale>48</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>false</HaveOutlandVizualization>
+    <OutlandColorLT>FF000000</OutlandColorLT>
+    <OutlandColorRT>FF00BFFF</OutlandColorRT>
+    <OutlandColorRB>FFFFA500</OutlandColorRB>
+    <OutlandColorLB>FFFFFF00</OutlandColorLB>
+    <TargetTimeSec>0</TargetTimeSec>
+    <Friction>1</Friction>
+    <AmbientLight>0C0C0C0C</AmbientLight>
+    <Splash>MapDefault</Splash>
+    <LevelEffect>None</LevelEffect>
+    <CameraReadAccelerometer>true</CameraReadAccelerometer>
+    <Width>16</Width>
+    <Height>16</Height>
+    <Lights>
+      <Item>
+        <Position>12 5</Position>
+        <Color>FFFFFFFF</Color>
+        <R>12</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>4 8</Position>
+        <Color>FFFFFF00</Color>
+        <R>10</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>9 11.5</Position>
+        <Color>FF9ACD32</Color>
+        <R>10</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+      </Item>
+    </Lights>
+    <Players />
+    <Entities>
+      <Item>
+        <Id>1001</Id>
+        <Position>9 5</Position>
+        <Sprite>Entities\DoorBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>270</DirectionDeg>
+        <Type>HeavyBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>0.8</Probability>
+      </Item>
+      <Item>
+        <Id>1002</Id>
+        <Position>9 8.5</Position>
+        <Sprite>Entities\HeavyBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>HeavyBox</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>0.3</Probability>
+      </Item>
+      <Item>
+        <Id>1003</Id>
+        <Position>9 10</Position>
+        <Sprite>Entities\HeavyBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>HeavyBox</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>0.1</Probability>
+      </Item>
+    </Entities>
+    <Actions>
+      <Item Type="GameLibrary.MapPartPortal">
+        <Name>Portal</Name>
+        <Groups>
+          <Item>Merge</Item>
+        </Groups>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>0 3 1 6</Area>
+        <AllowIn>true</AllowIn>
+        <AllowOut>true</AllowOut>
+      </Item>
+      <Item Type="GameLibrary.MapPartPortal">
+        <Name>Portal</Name>
+        <Groups>
+          <Item>Merge</Item>
+        </Groups>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>15 3 1 6</Area>
+        <AllowIn>false</AllowIn>
+        <AllowOut>true</AllowOut>
+      </Item>
+      <Item Type="GameLibrary.WallWithProbability">
+        <Name>WallWithProbability</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>3 4 2 2</Area>
+        <Color>91872D2F</Color>
+        <Probability>0.5</Probability>
+        <WallGroup Null="true" />
+      </Item>
+      <Item Type="GameLibrary.MapPartSettings">
+        <Name>MapPartSettings</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <PartType>Corridor</PartType>
+        <EstimatedGameplayLength>0</EstimatedGameplayLength>
+        <ProbabilityRank>0.2</ProbabilityRank>
+        <DifficultyLevel>0</DifficultyLevel>
+        <FreePoint>0 0</FreePoint>
+      </Item>
+    </Actions>
+  </Asset>
+</XnaContent>

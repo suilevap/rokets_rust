@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>Battle Field</Name>
+    <GameMode>SinglePlayer</GameMode>
+    <Image>Maps\Singleplayer\BattleField</Image>
+    <Scale>48</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>true</HaveOutlandVizualization>
+    <OutlandColorLT>FF000000</OutlandColorLT>
+    <OutlandColorRT>FF00BFFF</OutlandColorRT>
+    <OutlandColorRB>FFFFA500</OutlandColorRB>
+    <OutlandColorLB>FFFFFF00</OutlandColorLB>
+    <AmbientLight>FF1E2A18</AmbientLight>
+    <Lights>
+      <Item>
+        <Position>9.5 6.5</Position>
+        <Color>FFFFD700</Color>
+        <R>16</R>
+      </Item>
+      <Item>
+        <Position>0.5 35.5</Position>
+        <Color>FFFFFF00</Color>
+        <R>16</R>
+      </Item>
+      <Item>
+        <Position>43.5 37.5</Position>
+        <Color>FFFFFF00</Color>
+        <R>16</R>
+      </Item>
+      <Item>
+        <Position>25.5 21.5</Position>
+        <Color>FFFFFFFF</Color>
+        <R>20</R>
+      </Item>
+    </Lights>
+    <Players>
+      <Item>
+        <Id>4000</Id>
+        <Name>Player</Name>
+        <Position>7.5 40.5</Position>
+        <Control>Local</Control>
+        <CarName>SandBuggyMinigun</CarName>
+      </Item>
+    </Players>
+    <SimpleCars>
+      <Item>
+        <Id>3000</Id>
+        <Position>38.5 3.5</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>Ai</Control>
+        <CarName>SimpleBuggy</CarName>
+      </Item>
+      <Item>
+        <Id>3001</Id>
+        <Position>44.5 8.5</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>Ai</Control>
+        <CarName>SimpleBuggy</CarName>
+      </Item>
+      <Item>
+        <Id>3002</Id>
+        <Position>41.5 10.5</Position>
+        <DirectionDeg>20</DirectionDeg>
+        <Control>Ai</Control>
+        <CarName>SimpleBuggyHammer</CarName>
+      </Item>
+      <Item>
+        <Id>3003</Id>
+        <Position>7.5 33.5</Position>
+        <DirectionDeg>45</DirectionDeg>
+        <Control>AiSimpleTurretFriend</Control>
+        <CarName>TurretMinigun</CarName>
+      </Item>
+      <Item>
+        <Id>3004</Id>
+        <Position>22.5 20.5</Position>
+        <DirectionDeg>-90</DirectionDeg>
+        <Control>AiSimpleTurret</Control>
+        <CarName>TurretStat</CarName>
+      </Item>
+      <Item>
+        <Id>3005</Id>
+        <Position>15.5 41.5</Position>
+        <DirectionDeg>30</DirectionDeg>
+        <Control>AiSimpleTurretFriend</Control>
+        <CarName>TurretMinigun</CarName>
+      </Item>
+      <Item>
+        <Id>3006</Id>
+        <Position>37.5 7.5</Position>
+        <DirectionDeg>20</DirectionDeg>
+        <Control>AiSimpleTurret</Control>
+        <CarName>SimpleBuggyHammer</CarName>
+      </Item>
+    </SimpleCars>
+  </Asset>
+</XnaContent>

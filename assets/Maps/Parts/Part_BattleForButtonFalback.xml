@@ -1,0 +1,253 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>Part_BattleForButtonFalback</Name>
+    <GameMode>SinglePlayer</GameMode>
+    <Image>Maps\Parts\Part_BattleForButtonFalback</Image>
+    <Scale>48</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>false</HaveOutlandVizualization>
+    <OutlandColorLT>FF000000</OutlandColorLT>
+    <OutlandColorRT>FF00BFFF</OutlandColorRT>
+    <OutlandColorRB>FFFFA500</OutlandColorRB>
+    <OutlandColorLB>FFFFFF00</OutlandColorLB>
+    <TargetTimeSec>0</TargetTimeSec>
+    <Friction>1</Friction>
+    <AmbientLight>87008000</AmbientLight>
+    <Splash>MapDefault</Splash>
+    <LevelEffect>None</LevelEffect>
+    <CameraReadAccelerometer>true</CameraReadAccelerometer>
+    <Width>48</Width>
+    <Height>48</Height>
+    <Lights>
+      <Item>
+        <Position>31.5 23.5</Position>
+        <Color>FFFFFFFF</Color>
+        <R>15</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>41 20.5</Position>
+        <Color>FFBDB76B</Color>
+        <R>15</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>40 35.5</Position>
+        <Color>FFFFFF00</Color>
+        <R>15</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>21.5 13</Position>
+        <Color>FFFFFF00</Color>
+        <R>18</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>21.5 33.5</Position>
+        <Color>FFBDB76B</Color>
+        <R>16</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>25 5</Position>
+        <Color>FFFFFFFF</Color>
+        <R>16</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>7.5 37</Position>
+        <Color>FFFFFFFF</Color>
+        <R>16</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>40.5 42.5</Position>
+        <Color>FFFFFFFF</Color>
+        <R>15</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>40.5 10.5</Position>
+        <Color>FFFFFFFF</Color>
+        <R>15</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>7 15.5</Position>
+        <Color>FFFFFFFF</Color>
+        <R>16</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>32 36</Position>
+        <Color>FFAFEEEE</Color>
+        <R>15</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>32 5.5</Position>
+        <Color>FFFFFF00</Color>
+        <R>15</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>11.5 25</Position>
+        <Color>F4FF0041</Color>
+        <R>16</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+      </Item>
+    </Lights>
+    <Players />
+    <SimpleCars />
+    <Entities />
+    <Triggers />
+    <Actions>
+      <Item Type="GameLibrary.MapPartPortal">
+        <Name>Portal</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>29 47 4 1</Area>
+        <AllowIn>true</AllowIn>
+        <AllowOut>false</AllowOut>
+      </Item>
+      <Item Type="GameLibrary.MapPartPortal">
+        <Name>PortalOut</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>30 0 4 1</Area>
+        <AllowIn>false</AllowIn>
+        <AllowOut>true</AllowOut>
+      </Item>
+      <Item Type="GameLibrary.EnemySpawnArea">
+        <Name>EnemySpawnArea1</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>5 19 9 7</Area>
+      </Item>
+      <Item Type="GameLibrary.TriggerWithPeriodicCheck">
+        <Name>TriggerWithPeriodicCheck</Name>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Actions>
+          <Item>EnemySpawnArea1</Item>
+          <Item>EnemySpawnArea2</Item>
+          <Item>EnemySpawnArea3</Item>
+          <Item>EnemySpawnArea4</Item>
+        </Actions>
+        <Area>0 20 46 32</Area>
+      </Item>
+      <Item Type="GameLibrary.MapPartSettings">
+        <Name>MapPartSettings</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <PartType>Battle</PartType>
+        <EstimatedGameplayLength>0</EstimatedGameplayLength>
+        <ProbabilityRank>0</ProbabilityRank>
+        <DifficultyLevel>0</DifficultyLevel>
+        <FreePoint>0 0</FreePoint>
+        <FallbackpartNameForCompleted>Part_BattleForButtonFalback</FallbackpartNameForCompleted>
+      </Item>
+      <Item Type="GameLibrary.WallWithProbability">
+        <Name>WallWithProbability</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>21 15 4 19</Area>
+        <Color>53FFFFFF</Color>
+        <Probability>0.5</Probability>
+        <WallGroup Null="true" />
+      </Item>
+      <Item Type="GameLibrary.WallWithProbability">
+        <Name>WallWithProbability</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>16 26 12 2</Area>
+        <Color>53FFFFFF</Color>
+        <Probability>0.5</Probability>
+        <WallGroup Null="true" />
+      </Item>
+      <Item Type="GameLibrary.WallWithProbability">
+        <Name>WallWithProbability</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>25 15 4 9</Area>
+        <Color>53FFFFFF</Color>
+        <Probability>0.5</Probability>
+        <WallGroup Null="true" />
+      </Item>
+      <Item Type="GameLibrary.WallWithProbability">
+        <Name>WallWithProbability</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>7 24 2 15</Area>
+        <Color>53FFFFFF</Color>
+        <Probability>0.5</Probability>
+        <WallGroup Null="true" />
+      </Item>
+      <Item Type="GameLibrary.WallWithProbability">
+        <Name>WallWithProbability</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>7 33 6 3</Area>
+        <Color>53FFFFFF</Color>
+        <Probability>0.5</Probability>
+        <WallGroup Null="true" />
+      </Item>
+      <Item Type="GameLibrary.WallWithProbability">
+        <Name>WallWithProbability</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>4 28 5 4</Area>
+        <Color>53FFFFFF</Color>
+        <Probability>0.5</Probability>
+        <WallGroup Null="true" />
+      </Item>
+      <Item Type="GameLibrary.WallWithProbability">
+        <Name>WallWithProbability</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>9 9 3 6</Area>
+        <Color>53FFFFFF</Color>
+        <Probability>0.5</Probability>
+        <WallGroup Null="true" />
+      </Item>
+      <Item Type="GameLibrary.WallWithProbability">
+        <Name>WallWithProbability</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>4 29 9 4</Area>
+        <Color>53FFFFFF</Color>
+        <Probability>0.5</Probability>
+        <WallGroup Null="true" />
+      </Item>
+      <Item Type="GameLibrary.WallWithProbability">
+        <Name>WallWithProbability</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>17 14 7 12</Area>
+        <Color>53FFFFFF</Color>
+        <Probability>0.5</Probability>
+        <WallGroup Null="true" />
+      </Item>
+      <Item Type="GameLibrary.WallWithProbability">
+        <Name>WallWithProbability</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>19 28 9 3</Area>
+        <Color>53FFFFFF</Color>
+        <Probability>0.5</Probability>
+        <WallGroup Null="true" />
+      </Item>
+      <Item Type="GameLibrary.WallWithProbability">
+        <Name>WallWithProbability</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>34 5 3 3</Area>
+        <Color>53FFFFFF</Color>
+        <Probability>0.5</Probability>
+        <WallGroup Null="true" />
+      </Item>
+      <Item Type="GameLibrary.WallWithProbability">
+        <Name>WallWithProbability</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>40 38 3 3</Area>
+        <Color>8AFFFFFF</Color>
+        <Probability>0.5</Probability>
+        <WallGroup Null="true" />
+      </Item>
+      <Item Type="GameLibrary.WallWithProbability">
+        <Name>WallWithProbability</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>22 20 9 8</Area>
+        <Color>53FFFFFF</Color>
+        <Probability>0.5</Probability>
+        <WallGroup Null="true" />
+      </Item>
+    </Actions>
+  </Asset>
+</XnaContent>

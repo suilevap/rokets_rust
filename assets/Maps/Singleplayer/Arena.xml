@@ -1,0 +1,275 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>Arena</Name>
+    <GameMode>SinglePlayerRespawnAll</GameMode>
+    <Image>Maps\Singleplayer\Arena</Image>
+    <Scale>64</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>false</HaveOutlandVizualization>
+    <OutlandColorLT>FF000000</OutlandColorLT>
+    <OutlandColorRT>FF00BFFF</OutlandColorRT>
+    <OutlandColorRB>FFFFA500</OutlandColorRB>
+    <OutlandColorLB>FFFFFF00</OutlandColorLB>
+    <TargetTimeSec>0</TargetTimeSec>
+    <Friction>1</Friction>
+    <AmbientLight>E30C0C0C</AmbientLight>
+    <Splash>MapDefault</Splash>
+    <LevelEffect>None</LevelEffect>
+    <CameraReadAccelerometer>true</CameraReadAccelerometer>
+    <Width>48</Width>
+    <Height>48</Height>
+    <Lights>
+      <Item>
+        <Position>27.5 22</Position>
+        <Color>FFFFFFFF</Color>
+        <R>16</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>19.5 33.5</Position>
+        <Color>FFFFFFFF</Color>
+        <R>16</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>32.5 8</Position>
+        <Color>FF87CEFA</Color>
+        <R>24</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>38 37</Position>
+        <Color>FFFFFFFF</Color>
+        <R>16</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>14.5 20.5</Position>
+        <Color>FFFFFFFF</Color>
+        <R>16</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>21 7.5</Position>
+        <Color>FFFF7F50</Color>
+        <R>12</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+    </Lights>
+    <Players>
+      <Item>
+        <Id>4001</Id>
+        <Name>Player</Name>
+        <Position>32.5 4</Position>
+        <DirectionDeg>-90</DirectionDeg>
+        <Control>Local</Control>
+        <CarName>SandBuggyMagnetMinigun</CarName>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>4002</Id>
+        <Name>Enemy</Name>
+        <Position>20.549366 28.3125</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>AttackAiVer2</Control>
+        <CarName>SandBuggyMagnetMinigun</CarName>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>4003</Id>
+        <Name>Player1</Name>
+        <Position>28.5 12</Position>
+        <DirectionDeg>90</DirectionDeg>
+        <Control>NoneEnemy</Control>
+        <CarName>SandBuggyMagnetRailgun</CarName>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>4004</Id>
+        <Name>Player1</Name>
+        <Position>24.5 12</Position>
+        <DirectionDeg>90</DirectionDeg>
+        <Control>NoneEnemy</Control>
+        <CarName>HoverScout</CarName>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>4005</Id>
+        <Name>Player1</Name>
+        <Position>20.515625 11.75</Position>
+        <DirectionDeg>90</DirectionDeg>
+        <Control>NoneEnemy</Control>
+        <CarName>Truck</CarName>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>4006</Id>
+        <Name>Player1</Name>
+        <Position>36.5 12</Position>
+        <DirectionDeg>90</DirectionDeg>
+        <Control>NoneEnemy</Control>
+        <CarName>Buggy</CarName>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>4007</Id>
+        <Name>Player1</Name>
+        <Position>36.5 4</Position>
+        <DirectionDeg>270</DirectionDeg>
+        <Control>NoneEnemy</Control>
+        <CarName>ScoutHammer</CarName>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>4008</Id>
+        <Name>Enemy</Name>
+        <Position>32.5 36</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>AttackAiVer2</Control>
+        <CarName>SandBuggyMagnetMinigun</CarName>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+    </Players>
+    <SimpleCars>
+      <Item>
+        <Id>3001</Id>
+        <Position>16.5 18</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>AttackAiVer2</Control>
+        <CarName>SimpleBuggy</CarName>
+        <Weapon>MinigunSlowInacurate</Weapon>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>3002</Id>
+        <Position>33.5 22.5</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>AttackAiVer2</Control>
+        <CarName>SimpleBuggy</CarName>
+        <Weapon>MinigunSlowInacurate</Weapon>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+    </SimpleCars>
+    <Triggers>
+      <Item>
+        <Id>1</Id>
+        <Area>27 10 3 1</Area>
+        <Amount>999</Amount>
+        <Active>false</Active>
+        <Actions>
+          <Item>SetControl(0,NoneEnemy)</Item>
+          <Item>SetControl(4003,Local)</Item>
+          <Item>FocusOnEntity(4003)</Item>
+          <Item>ResetPos(0)</Item>
+          <Item>DeactivateTrigger(1)</Item>
+        </Actions>
+        <Subscribers>4001 4003 4004 4005 4006 4007</Subscribers>
+      </Item>
+      <Item>
+        <Id>2</Id>
+        <Area>30 6 3 4</Area>
+        <Amount>999</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>ActivateTrigger(1)</Item>
+          <Item>ActivateTrigger(3)</Item>
+          <Item>ActivateTrigger(4)</Item>
+          <Item>ActivateTrigger(5)</Item>
+          <Item>ActivateTrigger(6)</Item>
+          <Item>ActivateTrigger(7)</Item>
+        </Actions>
+        <LeaveActions>
+          <Item>SetWepon</Item>
+        </LeaveActions>
+        <Subscribers>4001 4003 4004 4005 4006 4007</Subscribers>
+      </Item>
+      <Item>
+        <Id>3</Id>
+        <Area>23 10 3 1</Area>
+        <Amount>999</Amount>
+        <Active>false</Active>
+        <Actions>
+          <Item>SetControl(0,NoneEnemy)</Item>
+          <Item>SetControl(4004,Local)</Item>
+          <Item>FocusOnEntity(4004)</Item>
+          <Item>ResetPos(0)</Item>
+          <Item>DeactivateTrigger(3)</Item>
+        </Actions>
+        <Subscribers>4001 4003 4004 4005 4006 4007</Subscribers>
+      </Item>
+      <Item>
+        <Id>4</Id>
+        <Area>19 10 3 1</Area>
+        <Amount>999</Amount>
+        <Active>false</Active>
+        <Actions>
+          <Item>SetControl(0,NoneEnemy)</Item>
+          <Item>SetControl(4005,Local)</Item>
+          <Item>FocusOnEntity(4005)</Item>
+          <Item>ResetPos(0)</Item>
+          <Item>DeactivateTrigger(4)</Item>
+        </Actions>
+        <Subscribers>4001 4003 4004 4005 4006 4007</Subscribers>
+      </Item>
+      <Item>
+        <Id>5</Id>
+        <Area>35 10 3 1</Area>
+        <Amount>999</Amount>
+        <Active>false</Active>
+        <Actions>
+          <Item>SetControl(0,NoneEnemy)</Item>
+          <Item>SetControl(4006,Local)</Item>
+          <Item>FocusOnEntity(4006)</Item>
+          <Item>ResetPos(0)</Item>
+          <Item>DeactivateTrigger(5)</Item>
+        </Actions>
+        <Subscribers>4001 4003 4004 4005 4006 4007</Subscribers>
+      </Item>
+      <Item>
+        <Id>6</Id>
+        <Area>35 5 3 1</Area>
+        <Amount>999</Amount>
+        <Active>false</Active>
+        <Actions>
+          <Item>SetControl(0,NoneEnemy)</Item>
+          <Item>SetControl(4007,Local)</Item>
+          <Item>FocusOnEntity(4007)</Item>
+          <Item>ResetPos(0)</Item>
+          <Item>DeactivateTrigger(6)</Item>
+        </Actions>
+        <Subscribers>4001 4003 4004 4005 4006 4007</Subscribers>
+      </Item>
+      <Item>
+        <Id>7</Id>
+        <Area>31 5 3 1</Area>
+        <Amount>999</Amount>
+        <Active>false</Active>
+        <Actions>
+          <Item>SetControl(0,NoneEnemy)</Item>
+          <Item>SetControl(4001,Local)</Item>
+          <Item>FocusOnEntity(4001)</Item>
+          <Item>ResetPos(0)</Item>
+          <Item>DeactivateTrigger(7)</Item>
+        </Actions>
+        <Subscribers>4001 4003 4004 4005 4006 4007</Subscribers>
+      </Item>
+    </Triggers>
+    <Actions>
+      <Item Type="GameLibrary.SetWeapon">
+        <Name>SetWepon</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <ItemId>4002</ItemId>
+        <NewWeapon>PlasmaGunSlow</NewWeapon>
+        <NewGadget>Default</NewGadget>
+      </Item>
+    </Actions>
+    <CameraAttachToEnemyEnable>true</CameraAttachToEnemyEnable>
+  </Asset>
+</XnaContent>

@@ -1,0 +1,763 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<XnaContent>
+  <Asset Type="GameLibrary.CarsData">
+    <Cars>
+      <Item>
+        <Name>Buggy</Name>
+        <SpritesPath>Cars\Buggy</SpritesPath>
+        <Speed>1.0</Speed>
+        <!--Max 2.0...-->
+        <Acceleration>1</Acceleration>
+        <Mass>1.55</Mass>
+        <!--Rotation Acceleration-->
+        <Controllability>1</Controllability>
+        <MaxHealth>10</MaxHealth>
+        <Weapon>Minigun</Weapon>
+        <WeaponPositon>5 12</WeaponPositon>
+        <LeftWheelPosition>15 -16</LeftWheelPosition>
+        <Gadget>Link</Gadget>
+        <GadgetPosition>-15 0</GadgetPosition>
+      </Item>
+      <Item>
+        <Name>SandBuggyMagnet</Name>
+        <BaseCar>SandBuggyNoGadget</BaseCar>
+        <WeaponPositon>15 -13</WeaponPositon>
+        <Gadget>Link</Gadget>
+        <GadgetPosition>-15 0</GadgetPosition>
+      </Item>
+      <Item>
+        <Name>SandBuggyEditorPointer</Name>
+        <BaseCar>SandBuggyNoGadget</BaseCar>
+        <WeaponPositon>15 -13</WeaponPositon>
+        <Gadget>EditorPointer</Gadget>
+        <GadgetPosition>-15 0</GadgetPosition>
+      </Item>
+
+      <Item>
+        <Name>SandBuggyMagnetMinigun</Name>
+        <BaseCar>SandBuggyNoGadget</BaseCar>
+        <Weapon>Minigun360</Weapon>
+        <WeaponPositon>15 -13</WeaponPositon>
+        <Gadget>Link</Gadget>
+        <GadgetPosition>-15 0</GadgetPosition>
+      </Item>
+      <Item>
+        <Name>SandBuggyMagnetMinigun180</Name>
+        <BaseCar>SandBuggyNoGadget</BaseCar>
+        <Weapon>Minigun180</Weapon>
+        <WeaponPositon>15 -13</WeaponPositon>
+        <Gadget>Link</Gadget>
+        <GadgetPosition>-15 0</GadgetPosition>
+      </Item>
+      <Item>
+        <Name>SandBuggyMagnetRailgun</Name>
+        <BaseCar>SandBuggyNoGadget</BaseCar>
+        <Weapon>Railgun</Weapon>
+        <WeaponPositon>15 -13</WeaponPositon>
+        <Gadget>Link</Gadget>
+        <GadgetPosition>-15 0</GadgetPosition>
+      </Item>
+      <Item>
+        <Name>SandBuggyWithProgress</Name>
+        <BaseCar>SandBuggyNoGadget</BaseCar>
+        <!--<Weapon>Railgun</Weapon>-->
+        <WeaponPositon>15 -13</WeaponPositon>
+        <Gadget>Link</Gadget>
+        <GadgetPosition>-15 0</GadgetPosition>
+      </Item>
+      <Item>
+        <Name>SandBuggyMagnetMinigun</Name>
+        <BaseCar>SandBuggyNoGadget</BaseCar>
+        <Weapon>Railgun</Weapon>
+        <WeaponPositon>15 -13</WeaponPositon>
+        <Gadget>Link</Gadget>
+        <GadgetPosition>-15 0</GadgetPosition>
+      </Item>
+      <Item>
+        <Name>SandBuggyHammer</Name>
+        <BaseCar>SandBuggyNoGadget</BaseCar>
+        <Weapon>Hammer</Weapon>
+        <WeaponPositon>15 -13</WeaponPositon>
+      </Item>
+      <Item>
+        <Name>SandBuggyMinigun</Name>
+        <BaseCar>SandBuggyNoGadget</BaseCar>
+        <Weapon>Minigun360</Weapon>
+        <WeaponPositon>15 -13</WeaponPositon>
+      </Item>
+      <Item>
+        <Name>SandBuggyNoGadget</Name>
+        <SpritesPath>Cars\SandBuggy</SpritesPath>
+        <Speed>0.6</Speed>
+        <Acceleration>1</Acceleration>
+        <Mass>2.97</Mass>
+        <!--Rotation Acceleration-->
+        <Controllability>1</Controllability>
+        <MaxHealth>12</MaxHealth>
+        <WeaponPositon>15 -13</WeaponPositon>
+        <Scale>0.65</Scale>
+        <Shield>4</Shield>
+        <EasyModeShieldDelta>4</EasyModeShieldDelta>
+        <EasyModeMaxHealthDelta>4</EasyModeMaxHealthDelta>
+        <LeftWheelPosition>35 -30</LeftWheelPosition>
+        <BodyElastic>1.25</BodyElastic>
+      </Item>
+      <Item>
+        <Name>SandBuggyDestroyedNoGadget</Name>
+        <SpritesPath>Cars\SandBuggy</SpritesPath>
+        <BaseSpritePath>Cars\SandBuggy\Destroyed2</BaseSpritePath>
+        <Speed>0.6</Speed>
+        <Mass>2.97</Mass>
+        <MaxHealth>20</MaxHealth>
+        <WeaponPositon>15 14</WeaponPositon>
+        <Scale>0.65</Scale>
+        <CanMove>false</CanMove>
+        <CanLink>true</CanLink>
+        <LoadWheelBodyColorViews>false</LoadWheelBodyColorViews>
+      </Item>
+      <Item>
+        <Name>SandBuggyDestroyedNoGadgetCanMove</Name>
+        <SpritesPath>Cars\SandBuggy</SpritesPath>
+        <BaseSpritePath>Cars\SandBuggy\Destroyed2</BaseSpritePath>
+        <Speed>0.6</Speed>
+        <Mass>2.97</Mass>
+        <MaxHealth>20</MaxHealth>
+        <WeaponPositon>15 14</WeaponPositon>
+        <Scale>0.65</Scale>
+        <CanMove>true</CanMove>
+        <CanLink>true</CanLink>
+        <LoadWheelBodyColorViews>false</LoadWheelBodyColorViews>
+      </Item>
+      <Item>
+        <Name>SandBuggyDestroyedMagnet</Name>
+        <BaseCar>SandBuggyDestroyedNoGadget</BaseCar>
+        <WeaponPositon>15 14</WeaponPositon>
+        <Gadget>Link</Gadget>
+        <GadgetPosition>-15 0</GadgetPosition>
+      </Item>
+      <Item>
+        <Name>SandBuggyNoGadgetWinter</Name>
+        <SpritesPath>Cars\SandBuggy</SpritesPath>
+        <Speed>0.6</Speed>
+        <Acceleration>0.7</Acceleration>
+        <Mass>3.5</Mass>
+        <!--Rotation Acceleration-->
+        <Controllability>1</Controllability>
+        <MaxHealth>12</MaxHealth>
+        <WeaponPositon>15 -13</WeaponPositon>
+        <Scale>0.65</Scale>
+        <Shield>4</Shield>
+        <LeftWheelPosition>35 -30</LeftWheelPosition>
+        <BodyElastic>1.25</BodyElastic>
+      </Item>
+      <Item>
+        <Name>HoverScoutNoGadget</Name>
+        <SpritesPath>Cars\HoverScout</SpritesPath>
+        <Speed>0.9</Speed>
+        <Acceleration>0.9</Acceleration>
+        <Mass>2.66</Mass>
+        <!--Rotation Acceleration-->
+        <Controllability>0.8</Controllability>
+        <MaxHealth>18</MaxHealth>
+        <WeaponPositon>11 10</WeaponPositon>
+        <Scale>0.8</Scale>
+        <Flying>true</Flying>
+        <Shield>4</Shield>
+        <LeftWheelPosition>-26 -14</LeftWheelPosition>
+        <BodyElastic>0.25</BodyElastic>
+        <EngineSound>EngineHover</EngineSound>
+      </Item>
+      <Item>
+        <Name>HoverScoutNoGadgetSlow</Name>
+        <SpritesPath>Cars\HoverScout</SpritesPath>
+        <Speed>0.6</Speed>
+        <Acceleration>0.9</Acceleration>
+        <Mass>2.66</Mass>
+        <!--Rotation Acceleration-->
+        <Controllability>0.8</Controllability>
+        <MaxHealth>18</MaxHealth>
+        <WeaponPositon>11 10</WeaponPositon>
+        <Scale>0.8</Scale>
+        <Flying>true</Flying>
+        <Shield>4</Shield>
+        <LeftWheelPosition>-26 -14</LeftWheelPosition>
+        <BodyElastic>0.25</BodyElastic>
+        <EngineSound>EngineHover</EngineSound>
+      </Item>
+      <Item>
+        <Name>HoverScoutNoGadgetMidSpeed</Name>
+        <SpritesPath>Cars\HoverScout</SpritesPath>
+        <Speed>0.75</Speed>
+        <Acceleration>0.9</Acceleration>
+        <Mass>2.66</Mass>
+        <!--Rotation Acceleration-->
+        <Controllability>0.8</Controllability>
+        <MaxHealth>18</MaxHealth>
+        <WeaponPositon>11 10</WeaponPositon>
+        <Scale>0.8</Scale>
+        <Flying>true</Flying>
+        <Shield>4</Shield>
+        <LeftWheelPosition>-26 -14</LeftWheelPosition>
+        <BodyElastic>0.25</BodyElastic>
+        <EngineSound>EngineHover</EngineSound>
+      </Item>
+      <Item>
+        <Name>HoverScout</Name>
+        <BaseCar>HoverScoutNoGadget</BaseCar>
+        <Weapon>Railgun</Weapon>
+        <WeaponPositon>11 10</WeaponPositon>
+        <Gadget>Bomb</Gadget>
+        <GadgetPosition>-15 0</GadgetPosition>
+      </Item>
+      <Item>
+        <Name>HoverScoutHammer</Name>
+        <BaseCar>HoverScoutNoGadget</BaseCar>
+        <Weapon>Hammer</Weapon>
+        <WeaponPositon>11 10</WeaponPositon>
+      </Item>
+      <Item>
+        <Name>Truck</Name>
+        <SpritesPath>Cars\Truck</SpritesPath>
+        <Speed>0.7</Speed>
+        <Acceleration>1.65</Acceleration>
+        <Mass>6.2</Mass>
+        <!--Rotation Acceleration-->
+        <Controllability>0.25</Controllability>
+        <MaxHealth>36</MaxHealth>
+        <Weapon>RocketlauncherDirect</Weapon>
+        <WeaponPositon>-4 10</WeaponPositon>
+        <Scale>1</Scale>
+        <Shield>4</Shield>
+        <LeftWheelPosition>50 -19</LeftWheelPosition>
+        <BodyElastic>2</BodyElastic>
+        <EngineSound>EngineTruck</EngineSound>
+        <WheelsSoundPitch>-0.3</WheelsSoundPitch>
+      </Item>
+      <Item>
+        <Name>TruckNoGadget</Name>
+        <SpritesPath>Cars\Truck</SpritesPath>
+        <Speed>0.7</Speed>
+        <Acceleration>1.65</Acceleration>
+        <Mass>6.2</Mass>
+        <!--Rotation Acceleration-->
+        <Controllability>0.25</Controllability>
+        <MaxHealth>36</MaxHealth>
+        <WeaponPositon>-4 10</WeaponPositon>
+        <Scale>1</Scale>
+        <Shield>4</Shield>
+        <LeftWheelPosition>50 -19</LeftWheelPosition>
+        <BodyElastic>2</BodyElastic>
+        <EngineSound>EngineTruck</EngineSound>
+        <WheelsSoundPitch>-0.3</WheelsSoundPitch>
+      </Item>
+      <Item>
+        <Name>TruckHammer</Name>
+        <BaseCar>TruckNoGadget</BaseCar>
+        <Weapon>Hammer</Weapon>
+        <WeaponPositon>-4 10</WeaponPositon>
+        <Gadget>Link</Gadget>
+        <GadgetPosition>-25 0</GadgetPosition>
+      </Item>
+      <Item>
+        <Name>TruckMagnet</Name>
+        <BaseCar>TruckNoGadget</BaseCar>
+        <Gadget>Link</Gadget>
+        <GadgetPosition>-25 0</GadgetPosition>
+      </Item>
+      <Item>
+        <Name>TruckSlow</Name>
+        <SpritesPath>Cars\Truck</SpritesPath>
+        <Speed>0.18</Speed>
+        <!--Max checked-->
+        <Acceleration>0.4</Acceleration>
+        <Mass>6.2</Mass>
+        <!--Rotation Acceleration-->
+        <Controllability>0.1</Controllability>
+        <MaxHealth>40</MaxHealth>
+        <WeaponPositon>-4 10</WeaponPositon>
+        <Scale>1</Scale>
+        <Shield>4</Shield>
+        <LeftWheelPosition>50 -19</LeftWheelPosition>
+        <BodyElastic>2</BodyElastic>
+        <EngineSound>EngineTruck</EngineSound>
+        <WheelsSoundPitch>-0.3</WheelsSoundPitch>
+        <Gadget>Link</Gadget>
+        <GadgetPosition>-25 0</GadgetPosition>
+      </Item>
+      <Item>
+        <Name>TruckSlowTank</Name>
+        <SpritesPath>Cars\Truck</SpritesPath>
+        <Speed>0.08</Speed>
+        <!--Max checked-->
+        <Acceleration>0.4</Acceleration>
+        <Mass>6.2</Mass>
+        <!--Rotation Acceleration-->
+        <Controllability>0.1</Controllability>
+        <MaxHealth>40</MaxHealth>
+        <Weapon>Tesla</Weapon>
+        <WeaponPositon>-4 10</WeaponPositon>
+        <Scale>1</Scale>
+        <LeftWheelPosition>50 -19</LeftWheelPosition>
+        <BodyElastic>2</BodyElastic>
+        <EngineSound>EngineTruck</EngineSound>
+        <WheelsSoundPitch>-0.3</WheelsSoundPitch>
+        <GadgetPosition>-25 0</GadgetPosition>
+      </Item>
+      <Item>
+        <Name>Scout</Name>
+        <SpritesPath>Cars\Scout</SpritesPath>
+        <Speed>0.86</Speed>
+        <!--max checked-->
+        <Acceleration>1</Acceleration>
+        <Mass>3.28</Mass>
+        <!--Rotation Acceleration-->
+        <Controllability>1</Controllability>
+        <MaxHealth>16</MaxHealth>
+        <WeaponPositon>-31 0</WeaponPositon>
+        <Scale>1</Scale>
+        <LeftWheelPosition>23 -16</LeftWheelPosition>
+      </Item>
+      <Item>
+        <Name>ScoutMinigun</Name>
+        <BaseCar>Scout</BaseCar>
+        <Weapon>Minigun</Weapon>
+        <WeaponPositon>-31 0</WeaponPositon>
+        <Gadget>Link</Gadget>
+        <GadgetPosition>-25 0</GadgetPosition>
+      </Item>
+      <Item>
+        <Name>ScoutHammer</Name>
+        <BaseCar>Scout</BaseCar>
+        <Weapon>Hammer</Weapon>
+        <WeaponPositon>-31 0</WeaponPositon>
+      </Item>
+      <Item>
+        <Name>ScoutAccelerator</Name>
+        <BaseCar>Scout</BaseCar>
+        <Gadget>Accelerator</Gadget>
+      </Item>
+      <Item>
+        <Name>TurretLoaderStat</Name>
+        <SpritesPath>Cars\TurretStat</SpritesPath>
+        <Speed>1</Speed>
+        <!--Max 2.0...-->
+        <Acceleration>1</Acceleration>
+        <Mass>3</Mass>
+        <!--Rotation Acceleration-->
+        <Controllability>1</Controllability>
+        <MaxHealth>6</MaxHealth>
+        <CanMove>false</CanMove>
+        <CanLink>false</CanLink>
+        <Shield>4</Shield>
+        <Gadget>Link</Gadget>
+        <GadgetPosition>6 6</GadgetPosition>
+        <LoadWheelBodyColorViews>false</LoadWheelBodyColorViews>
+      </Item>
+      <Item>
+        <Name>TurretLoader</Name>
+        <SpritesPath>Cars\Turret</SpritesPath>
+        <!--Max checked -->
+        <Speed>0.37</Speed>
+        <Acceleration>1</Acceleration>
+        <Mass>3.875</Mass>
+        <Controllability>0.5</Controllability>
+        <MaxHealth>6</MaxHealth>
+        <Scale>1</Scale>
+        <CanMove>true</CanMove>
+        <CanLink>true</CanLink>
+        <Shield>4</Shield>
+        <EngineSound></EngineSound>
+        <WheelsSoundPitch>-1</WheelsSoundPitch>
+        <Gadget>Link</Gadget>
+        <GadgetPosition>6 6</GadgetPosition>
+        <LoadWheelBodyColorViews>false</LoadWheelBodyColorViews>
+      </Item>
+    </Cars>
+    <SimpleCars>
+      <Item>
+        <Name>SimpleBuggy</Name>
+        <SpritesPath>Cars\SimpleBuggy</SpritesPath>
+        <Speed>0.92</Speed>
+        <!--Max checked -->
+        <Acceleration>1.0</Acceleration>
+        <Mass>1.55</Mass>
+        <Controllability>0</Controllability>
+        <MaxHealth>10</MaxHealth>
+        <Scale>1</Scale>
+      </Item>
+      <Item>
+        <Name>SimpleBuggyMiddle</Name>
+        <SpritesPath>Cars\SimpleBuggy</SpritesPath>
+        <Speed>0.7</Speed>
+        <Acceleration>0.9</Acceleration>
+        <Mass>2</Mass>
+        <Controllability>0</Controllability>
+        <MaxHealth>10</MaxHealth>
+        <Scale>1</Scale>
+      </Item>
+      <Item>
+        <Name>SimpleBuggySlow</Name>
+        <SpritesPath>Cars\SimpleBuggy</SpritesPath>
+        <Speed>0.1</Speed>
+        <!--Max checked -->
+        <Acceleration>0.2</Acceleration>
+        <Mass>1.55</Mass>
+        <Controllability>0</Controllability>
+        <MaxHealth>4</MaxHealth>
+        <WeaponPositon>5 12</WeaponPositon>
+        <Scale>1</Scale>
+      </Item>
+      <Item>
+        <Name>SimpleBuggyHammer</Name>
+        <BaseCar>SimpleBuggy</BaseCar>
+        <Weapon>Hammer</Weapon>
+        <WeaponPositon>5 12</WeaponPositon>
+      </Item>
+      <Item>
+        <Name>SimpleBuggySlowHammer</Name>
+        <BaseCar>SimpleBuggySlow</BaseCar>
+        <Weapon>Hammer</Weapon>
+        <WeaponPositon>5 12</WeaponPositon>
+      </Item>
+      <Item>
+        <Name>SimpleBuggySlowMinigun</Name>
+        <BaseCar>SimpleBuggySlow</BaseCar>
+        <Weapon>Minigun</Weapon>
+        <WeaponPositon>5 12</WeaponPositon>
+      </Item>
+      <Item>
+        <Name>SimpleBuggyMinigun</Name>
+        <BaseCar>SimpleBuggy</BaseCar>
+        <Weapon>Minigun</Weapon>
+        <WeaponPositon>5 12</WeaponPositon>
+      </Item>
+      <Item>
+        <Name>SimpleBuggyMiddleMinigun360</Name>
+        <BaseCar>SimpleBuggyMiddle</BaseCar>
+        <Weapon>Minigun360</Weapon>
+        <WeaponPositon>5 12</WeaponPositon>
+      </Item>
+      <Item>
+        <Name>Turret</Name>
+        <SpritesPath>Cars\Turret</SpritesPath>
+        <Speed>1</Speed>
+        <Acceleration>1</Acceleration>
+        <Mass>3.875</Mass>
+        <Controllability>1</Controllability>
+        <MaxHealth>14</MaxHealth>
+        <Weapon>Minigun</Weapon>
+        <WeaponPositon>0 0</WeaponPositon>
+        <Scale>1</Scale>
+        <CanMove>false</CanMove>
+        <CanLink>true</CanLink>
+        <Shield>4</Shield>
+      </Item>
+      <Item>
+        <Name>TurretMinigun</Name>
+        <BaseCar>Turret</BaseCar>
+        <Weapon>Minigun</Weapon>
+        <WeaponPositon>0 0</WeaponPositon>
+      </Item>
+      <Item>
+        <Name>TurretRocketLauncherChasing</Name>
+        <BaseCar>Turret</BaseCar>
+        <Weapon>RocketlauncherChasing</Weapon>
+        <WeaponPositon>0 0</WeaponPositon>
+      </Item>
+      <Item>
+        <Name>TurretRailgun</Name>
+        <BaseCar>Turret</BaseCar>
+        <Weapon>Railgun</Weapon>
+        <WeaponPositon>0 0</WeaponPositon>
+      </Item>
+      <Item>
+        <Name>TurretRailgunAngle5</Name>
+        <BaseCar>Turret</BaseCar>
+        <Weapon>RailgunAngle5</Weapon>
+        <WeaponPositon>0 0</WeaponPositon>
+      </Item>
+      <Item>
+        <Name>TurretTesla</Name>
+        <BaseCar>Turret</BaseCar>
+        <Weapon>Tesla</Weapon>
+        <WeaponPositon>0 0</WeaponPositon>
+      </Item>
+      <Item>
+        <Name>TurretStat</Name>
+        <SpritesPath>Cars\TurretStat</SpritesPath>
+        <Speed>1</Speed>
+        <Acceleration>1</Acceleration>
+        <Mass>3.875</Mass>
+        <Controllability>1</Controllability>
+        <MaxHealth>14</MaxHealth>
+        <Weapon>Minigun</Weapon>
+        <WeaponPositon>4 0</WeaponPositon>
+        <Scale>1</Scale>
+        <CanMove>false</CanMove>
+        <CanLink>false</CanLink>
+        <Shield>4</Shield>
+      </Item>
+      <Item>
+        <Name>TurretStatHammer</Name>
+        <BaseCar>TurretStat</BaseCar>
+        <Weapon>Hammer</Weapon>
+        <WeaponPositon>4 0</WeaponPositon>
+      </Item>
+
+      <Item>
+        <Name>TurretStatMinigun</Name>
+        <BaseCar>TurretStat</BaseCar>
+        <Weapon>Minigun</Weapon>
+        <WeaponPositon>4 0</WeaponPositon>
+      </Item>
+      <Item>
+        <Name>TurretStatMinigun360</Name>
+        <BaseCar>TurretStat</BaseCar>
+        <Weapon>Minigun360</Weapon>
+        <WeaponPositon>4 0</WeaponPositon>
+      </Item>
+      <Item>
+        <Name>TurretStatRocketLauncherChasing</Name>
+        <BaseCar>TurretStat</BaseCar>
+        <Weapon>RocketlauncherChasing</Weapon>
+        <WeaponPositon>4 0</WeaponPositon>
+      </Item>
+      <Item>
+        <Name>TurretStatRailgun</Name>
+        <BaseCar>TurretStat</BaseCar>
+        <Weapon>Railgun</Weapon>
+        <WeaponPositon>4 0</WeaponPositon>
+      </Item>
+      <Item>
+        <Name>TurretStatRailgunAngle5</Name>
+        <BaseCar>TurretStat</BaseCar>
+        <Weapon>RailgunAngle5</Weapon>
+        <WeaponPositon>4 0</WeaponPositon>
+      </Item>
+      <Item>
+        <Name>SimpleTarget</Name>
+        <SpritesPath>Cars\SimpleTarget</SpritesPath>
+        <Speed>1</Speed>
+        <Acceleration>1</Acceleration>
+        <Mass>-1</Mass>
+        <Controllability>1</Controllability>
+        <MaxHealth>2</MaxHealth>
+        <WeaponPositon>0 0</WeaponPositon>
+        <Scale>1</Scale>
+      </Item>
+      <Item>
+        <Name>SimpleTarget10HP</Name>
+        <SpritesPath>Cars\SimpleTarget</SpritesPath>
+        <Speed>1</Speed>
+        <Acceleration>1</Acceleration>
+        <Mass>-1</Mass>
+        <Controllability>1</Controllability>
+        <MaxHealth>4</MaxHealth>
+        <WeaponPositon>0 0</WeaponPositon>
+        <Scale>1</Scale>
+      </Item>
+      <Item>
+        <Name>SimpleTarget8HP</Name>
+        <SpritesPath>Cars\SimpleTarget</SpritesPath>
+        <Speed>1</Speed>
+        <Acceleration>1</Acceleration>
+        <Mass>-1</Mass>
+        <Controllability>1</Controllability>
+        <MaxHealth>8</MaxHealth>
+        <WeaponPositon>0 0</WeaponPositon>
+        <Scale>1</Scale>
+      </Item>
+      <Item>
+        <Name>SimpleTarget50HP</Name>
+        <SpritesPath>Cars\SimpleTarget</SpritesPath>
+        <Speed>1</Speed>
+        <Acceleration>1</Acceleration>
+        <Mass>-1</Mass>
+        <Controllability>1</Controllability>
+        <MaxHealth>16</MaxHealth>
+        <WeaponPositon>0 0</WeaponPositon>
+        <Scale>1</Scale>
+      </Item>
+      <Item>
+        <Name>SimpleTargetSmall</Name>
+        <SpritesPath>Cars\SimpleTarget</SpritesPath>
+        <Speed>1</Speed>
+        <Acceleration>0.5</Acceleration>
+        <Mass>-1</Mass>
+        <Controllability>1</Controllability>
+        <MaxHealth>2</MaxHealth>
+        <Scale>0.5</Scale>
+      </Item>
+      <Item>
+        <Name>SimpleTargetStat</Name>
+        <SpritesPath>Cars\SimpleTarget</SpritesPath>
+        <Speed>1</Speed>
+        <Acceleration>1</Acceleration>
+        <Mass>-1</Mass>
+        <Controllability>1</Controllability>
+        <MaxHealth>2</MaxHealth>
+        <WeaponPositon>0 0</WeaponPositon>
+        <Scale>1</Scale>
+        <CanMove>false</CanMove>
+      </Item>
+      <Item>
+        <Name>SimpleTargetStatHealthy</Name>
+        <SpritesPath>Cars\SimpleTarget</SpritesPath>
+        <Speed>1</Speed>
+        <Acceleration>1</Acceleration>
+        <Mass>-1</Mass>
+        <Controllability>1</Controllability>
+        <MaxHealth>16</MaxHealth>
+        <WeaponPositon>0 0</WeaponPositon>
+        <Scale>1</Scale>
+        <CanMove>false</CanMove>
+      </Item>
+      <Item>
+        <Name>SimpleTargetStat6HP</Name>
+        <SpritesPath>Cars\SimpleTarget</SpritesPath>
+        <Speed>1</Speed>
+        <Acceleration>1</Acceleration>
+        <Mass>-1</Mass>
+        <Controllability>1</Controllability>
+        <MaxHealth>2</MaxHealth>
+        <WeaponPositon>0 0</WeaponPositon>
+        <Scale>1</Scale>
+        <CanMove>false</CanMove>
+      </Item>
+      <Item>
+        <Name>SimpleTargetDoorsDream</Name>
+        <SpritesPath>Cars\SimpleTarget</SpritesPath>
+        <Speed>1</Speed>
+        <Acceleration>1</Acceleration>
+        <Mass>0.1</Mass>
+        <Controllability>1</Controllability>
+        <MaxHealth>2</MaxHealth>
+        <WeaponPositon>0 0</WeaponPositon>
+        <Scale>1</Scale>
+      </Item>
+      <Item>
+        <Name>SimpleBoid</Name>
+        <SpritesPath>Cars\SimpleBuggy</SpritesPath>
+        <Speed>1.5</Speed>
+        <Acceleration>0.1</Acceleration>
+        <Mass>0.1</Mass>
+        <Controllability>0</Controllability>
+        <MaxHealth>2</MaxHealth>
+        <Weapon>Hammer</Weapon>
+        <Scale>0.25</Scale>
+      </Item>
+
+      <Item>
+        <Name>Zombie</Name>
+        <SpritesPath>Cars\Zombie</SpritesPath>
+        <Speed>0.62</Speed>
+        <!-- max checked-->
+        <Acceleration>1.0</Acceleration>
+        <Mass>2.3</Mass>
+        <Controllability>0</Controllability>
+        <MaxHealth>8</MaxHealth>
+        <Weapon>ZombieWeapon</Weapon>
+        <Scale>0.65</Scale>
+        <Shield>8</Shield>
+      </Item>
+      <Item>
+        <Name>ZombieFast</Name>
+        <SpritesPath>Cars\Zombie</SpritesPath>
+        <Speed>2.0</Speed>
+        <!-- max checked-->
+        <Acceleration>2.0</Acceleration>
+        <Mass>2.1</Mass>
+        <Controllability>0</Controllability>
+        <MaxHealth>8</MaxHealth>
+        <Weapon>ZombieWeapon</Weapon>
+        <Scale>0.65</Scale>
+        <Shield>8</Shield>
+      </Item>
+      <Item>
+        <Name>Guard</Name>
+        <SpritesPath>Cars\Zombie</SpritesPath>
+        <Speed>0.8</Speed>
+        <Acceleration>0.5</Acceleration>
+        <Mass>0.5</Mass>
+        <Controllability>1.0</Controllability>
+        <MaxHealth>20</MaxHealth>
+        <Weapon>Tesla</Weapon>
+        <Scale>0.5</Scale>
+      </Item>
+
+      <Item>
+        <Name>TurretPlayer</Name>
+        <SpritesPath>Cars\Turret</SpritesPath>
+        <!--Max checked -->
+        <Speed>0.37</Speed>
+        <Acceleration>1</Acceleration>
+        <Mass>3.875</Mass>
+        <Controllability>0.5</Controllability>
+        <MaxHealth>40</MaxHealth>
+        <Weapon>Minigun360</Weapon>
+        <WeaponPositon>0 0</WeaponPositon>
+        <Scale>1</Scale>
+        <CanMove>true</CanMove>
+        <CanLink>true</CanLink>
+        <Shield>8</Shield>
+      </Item>
+      <Item>
+        <Name>TurretPlayer20HP</Name>
+        <SpritesPath>Cars\Turret</SpritesPath>
+        <!--Max checked -->
+        <Speed>0.37</Speed>
+        <Acceleration>1</Acceleration>
+        <Mass>3.875</Mass>
+        <Controllability>0.5</Controllability>
+        <MaxHealth>20</MaxHealth>
+        <Weapon>Minigun360</Weapon>
+        <WeaponPositon>0 0</WeaponPositon>
+        <Scale>1</Scale>
+        <CanMove>true</CanMove>
+        <CanLink>true</CanLink>
+      </Item>
+      <Item>
+        <Name>DoorPlayer</Name>
+        <SpritesPath>Cars\Turret</SpritesPath>
+        <BaseSpritePath>Entities/DoorBoxNoArrow</BaseSpritePath>
+        <!--Max checked -->
+        <Speed>0.6</Speed>
+        <Acceleration>10</Acceleration>
+        <Mass>13</Mass>
+        <Controllability>0.5</Controllability>
+        <MaxHealth>20</MaxHealth>
+        <WeaponPositon>0 0</WeaponPositon>
+        <Scale>1</Scale>
+        <CanMove>true</CanMove>
+        <CanLink>true</CanLink>
+      </Item>
+      <Item>
+        <Name>EnemyGenerator</Name>
+        <SpritesPath>Cars\EnemyGenerator</SpritesPath>
+        <!--Max checked -->
+        <Speed>0.0</Speed>
+        <Acceleration>10</Acceleration>
+        <Mass>13</Mass>
+        <Controllability>0.5</Controllability>
+        <MaxHealth>150</MaxHealth>
+        <WeaponPositon>0 0</WeaponPositon>
+        <Scale>1</Scale>
+        <CanMove>false</CanMove>
+        <CanLink>true</CanLink>
+        <GeometryScale>0.2</GeometryScale>
+        <UseCircleForGeometry>true</UseCircleForGeometry>
+      </Item>
+      <Item>
+        <Name>Kamikaze</Name>
+        <SpritesPath>Cars\Kamikaze</SpritesPath>
+        <Speed>0.7</Speed>
+        <!--Max checked -->
+        <Acceleration>0.5</Acceleration>
+        <Mass>2.55</Mass>
+        <Controllability>0</Controllability>
+        <MaxHealth>12</MaxHealth>
+        <Scale>1</Scale>
+      </Item>
+    </SimpleCars>
+  </Asset>
+</XnaContent>
