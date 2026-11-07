@@ -39,9 +39,13 @@ rand = { version = "0.9", default-features = false, features = ["small_rng"] }
 
 [profile.dev]
 opt-level = 1
+# Full debug info for Bevy and its dependencies takes ~18 GB; line tables
+# are enough for backtraces.
+debug = "line-tables-only"
 
 [profile.dev.package."*"]
 opt-level = 3
+debug = false
 
 # `cargo build --profile web --target wasm32-unknown-unknown`: small download.
 [profile.web]
