@@ -152,7 +152,7 @@ fn spawn_car_sprites(
     }
 }
 
-fn drive_cars(mut cars: Query<(Forces, &mut Car, &PlayerIntent)>) {
+pub fn drive_cars(mut cars: Query<(Forces, &mut Car, &PlayerIntent)>) {
     for (mut forces, mut car, intent) in &mut cars {
         let angle = forces.rotation().as_radians();
         let body = Body {
