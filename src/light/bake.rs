@@ -177,8 +177,8 @@ fn add_lamp(texels: &mut [[f32; 3]], width: usize, height: usize, grid: &MapGrid
                 continue;
             }
             let texel = &mut texels[ty * width + tx];
-            for i in 0..3 {
-                texel[i] += lamp.color[i] * k * seen;
+            for (t, c) in texel.iter_mut().zip(lamp.color) {
+                *t += c * k * seen;
             }
         }
     }

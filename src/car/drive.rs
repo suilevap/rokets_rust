@@ -142,7 +142,7 @@ pub fn drive_step(p: &DriveParams, state: &mut DriveState, body: Body, move_dir:
         let diff = direction_diff(control_angle, body.angle);
         state.wheel_angle = diff;
         let diff_abs = diff.abs();
-        if diff_abs < 0.25 * PI || diff_abs > 0.75 * PI {
+        if !(0.25 * PI..=0.75 * PI).contains(&diff_abs) {
             if !max_speed_reached {
                 let force = move_dir * p.acceleration_force * 0.5;
                 out.forces.push(LocalForce {
