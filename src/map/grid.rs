@@ -32,6 +32,20 @@ pub struct MapGrid {
     cells: Vec<Cell>,
     /// Distance from each cell's centre to the nearest wall cell, in cells.
     distance: Vec<f32>,
+    /// Corner wedges (`MapManager.Edges`): per cell, the corner left open.
+    edges: Vec<Option<Edge>>,
+}
+
+/// A triangular wall wedge in a floor cell between two walls that meet
+/// at a right angle, which rounds the inside corner off with a diagonal
+/// (`MapManager.GetEdgeIndex`). `open` is the corner of the cell that stays
+/// floor: 0 top-left, 1 top-right, 2 bottom-right, 3 bottom-left (map
+/// coordinates, y down); the wedge fills the other three corners.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Edge {
+    pub open: usize,
+    pub height: f32,
+    pub color: XColor,
 }
 
 impl MapGrid {
@@ -89,8 +103,13 @@ impl MapGrid {
             height,
             cells,
             distance: Vec::new(),
+            edges: Vec::new(),
         };
         grid.distance = grid.distance_field();
+        grid.edges = (0..grid.height as i32)
+            .flat_map(|y| (0..grid.width as i32).map(move |x| (x, y)))
+            .map(|(x, y)| grid.find_edge(x, y, threshold))
+            .collect();
         grid
     }
 
@@ -132,6 +151,40 @@ impl MapGrid {
             return 0.0;
         }
         self.distance[y as usize * self.width + x as usize]
+    }
+
+    /// The corner wedge in a cell, if any.
+    pub fn edge(&self, x: i32, y: i32) -> Option<Edge> {
+        if x < 0 || y < 0 || x as usize >= self.width || y as usize >= self.height {
+            return None;
+        }
+        self.edges[y as usize * self.width + x as usize]
+    }
+
+    fn find_edge(&self, x: i32, y: i32, threshold: u8) -> Option<Edge> {
+        let c = self.cell(x, y)?;
+        if c.is_wall() || c.color.a == 0 {
+            return None;
+        }
+        // Walls inside the map only: the map's border does not count here.
+        let wall = |x: i32, y: i32| self.cell(x, y).is_some_and(Cell::is_wall);
+        let (up, right, down, left) = (wall(x, y - 1), wall(x + 1, y), wall(x, y + 1), wall(x - 1, y));
+        // (open corner, the wall cell whose colour it takes, the other wall)
+        let (open, a, b) = match (up, right, down, left) {
+            (false, true, true, false) => (0, (x + 1, y), (x, y + 1)),
+            (false, false, true, true) => (1, (x, y + 1), (x - 1, y)),
+            (true, false, false, true) => (2, (x - 1, y), (x, y - 1)),
+            (true, true, false, false) => (3, (x, y - 1), (x + 1, y)),
+            _ => return None,
+        };
+        // `GetEdgeColor`: the lower of the two walls.
+        let (ca, cb) = (self.cell(a.0, a.1)?.color, self.cell(b.0, b.1)?.color);
+        let color = if cb.a < ca.a { cb } else { ca };
+        Some(Edge {
+            open,
+            height: wall_height(color.a, threshold),
+            color,
+        })
     }
 
     /// Wall cells merged into rectangles (x, y, w, h in cells), for colliders.
@@ -315,6 +368,21 @@ mod tests {
         assert!(!grid.is_floor(0, 0));
         let covered: usize = grid.wall_rects().iter().map(|r| r.2 * r.3).sum();
         assert_eq!(covered, 10);
+        // Between three walls there is no corner to round off.
+        assert_eq!(grid.edge(1, 1), None);
+    }
+
+    #[test]
+    fn inside_corners_get_wedges() {
+        let map = char_map("*:#FFFF0000;.:#100000A0", "\n*****\n*...*\n*...*\n*...*\n*****\n");
+        let grid = MapGrid::build(&map, None);
+        // Walls up and left: the bottom-right corner stays open.
+        assert_eq!(grid.edge(1, 1).map(|e| e.open), Some(2));
+        assert_eq!(grid.edge(3, 1).map(|e| e.open), Some(3));
+        assert_eq!(grid.edge(3, 3).map(|e| e.open), Some(0));
+        assert_eq!(grid.edge(1, 3).map(|e| e.open), Some(1));
+        assert_eq!(grid.edge(2, 2), None);
+        assert!(grid.edge(1, 1).unwrap().height > 0.0);
     }
 
     #[test]

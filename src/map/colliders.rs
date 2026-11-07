@@ -29,6 +29,19 @@ fn spawn_wall_colliders(mut commands: Commands, map: Res<LoadedMap>) {
             )
         })
         .collect();
+    // Corner wedges are triangles.
+    let mut wedges = Vec::new();
+    for y in 0..map.grid.height as i32 {
+        for x in 0..map.grid.width as i32 {
+            let Some(edge) = map.grid.edge(x, y) else {
+                continue;
+            };
+            let corners = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
+                .map(|(dx, dy)| map.world(x as f32 + dx, y as f32 + dy));
+            let pts: Vec<Vec2> = (1..4).map(|i| corners[(edge.open + i) % 4]).collect();
+            wedges.push((Vec2::ZERO, Rotation::IDENTITY, Collider::triangle(pts[0], pts[1], pts[2])));
+        }
+    }
     // The map's edge is solid too: a frame one cell thick around it.
     let (w, h) = (map.grid.width as f32 * cell, map.grid.height as f32 * cell);
     let frame = [
@@ -38,6 +51,7 @@ fn spawn_wall_colliders(mut commands: Commands, map: Res<LoadedMap>) {
         (Vec2::new(w + cell / 2.0, -h / 2.0), Vec2::new(cell, h)),
     ];
     let mut shapes = shapes;
+    shapes.extend(wedges);
     shapes.extend(
         frame
             .into_iter()
