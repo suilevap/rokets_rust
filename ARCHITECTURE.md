@@ -11,7 +11,7 @@ map::grid  light::bake  car::drive      (pure algorithms, unit-tested)
    ↑          ↑            ↑
 game (loading, LoadedMap, MapEntity, ChangeMap)
    ↑
-map::colliders  render  controls  car  shadow  pickups  triggers  hud
+map::colliders  render  controls  car  pickups  triggers  hud
    ↑
 main
 ```
@@ -27,13 +27,12 @@ main
 | `map/colliders` | Static wall colliders | `PhysicsManager.CreateWalls` |
 | `light/bake` | Static light map baked on the CPU: lamps with the `flash2` falloff, wall shadows, two-copy penumbra, ambient, saturation, blur. Kept on the CPU for gameplay and shadows | `LightManager` |
 | `game` | States `Loading → Playing` (`Failed`), `LoadedMap`, `MapEntity` (despawned on leaving a map), `ChangeMap` (restart / next) | `MapManager.SetMap` |
-| `render/map_mesh` | Floor of loose, tilted tiles; walls as blocks with outlines and fading faces; light baked into vertex colours | `TilesMap.AddTiles2`, `Primitive3d`, `RenderSettings` "Mul_Add05" |
+| `render/map_mesh` | Floor of loose, tilted tiles, always below the ground plane; walls as blocks with fading faces; light baked into vertex colours | `TilesMap.AddTiles2`, `Primitive3d`, `RenderSettings` "Mul_Add05" |
 | `render/sprite` | Sprites as unlit quads tinted by the light map | `SpriteView` + light layer |
 | `render/camera` | Perspective camera from above, trailing its target | `Camera2D` |
 | `controls` | `PlayerIntent` (where to go, aim, fire) written by keyboard, gamepad and touch schemes; the last one used is active | `IControl`, `CompositePlayerControl` |
 | `car/drive` | The driving model as a pure function, run at 60 Hz | `Car.MovementControl`, `Brake`, `AdditionalFriction` |
 | `car` | Spawns the player's car on Avian; sprites; front wheels | `Car`, `ControlableEntity` |
-| `shadow` | Car shadows as sprites from the nearest lamp: split penumbra, lamp hand-over, ambient blob | `DynamicShadow` |
 | `pickups` | Decor tiles and gears | `Coin`, `Tile` entities |
 | `triggers` | Trigger areas; only level-end actions run so far | `TriggerManager`, `ActionTemplates` |
 | `hud` | Debug text, `R` / `N` keys | — |
@@ -57,5 +56,6 @@ Everything outside MVP 0.1: menus and HUD, sound, localisation, saves;
 weapons and gadgets; other cars and AI; boxes, doors, accelerators, bombs,
 teleports, platforms, fake walls; the other ~74 action types; particles;
 slow motion; the agent/command server; editor hot reload. Rendering gaps:
-the outland around the map, the cabin's springy wobble, tyre marks,
+car shadows (`DynamicShadow`: sprite streaks from the nearest lamp) and
+the black outline along wall tops, both deferred to their own PR; the outland around the map, the cabin's springy wobble, tyre marks,
 dynamic lights, HDR glow and the dirty-lens effect, per-map camera zoom.

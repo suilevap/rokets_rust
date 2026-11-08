@@ -8,7 +8,7 @@ The port follows the plan in the C# repository,
 `docs/plans/RUST_BEVY_MIGRATION.md`: it reproduces **what the game meant
 to achieve**, using the C# game as the reference to compare against, not
 its implementation. This is **MVP 0.1** (section 9 of the plan): load a
-map, drive the player's car, see the walls, light and shadows, pick up
+map, drive the player's car, see the walls and the baked light, pick up
 gears, reach the finish.
 
 ## Run
@@ -44,8 +44,8 @@ its enemies and boxes do not appear yet).
 `docs/media/` holds recorded clips (driving through Middleware, picking up
 a gear, crossing the finish to the next map). `docs/comparison/` holds side-by-side screenshots: the C# game on the left
 (taken through its debug command server, `GET /screenshot`), this port on
-the right. Not yet in the port: the glow and dirty-lens effects, accelerator
-arrows and the other entities.
+the right. Not yet in the port: car shadows and wall outlines (next PR),
+the glow and dirty-lens effects, accelerator arrows and the other entities.
 
 Headless screenshots on Linux without a GPU:
 
