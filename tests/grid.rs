@@ -41,3 +41,14 @@ fn inside_corners_get_wedges() {
     assert_eq!(grid.edge(2, 2), None);
     assert!(grid.edge(1, 1).unwrap().height > 0.0);
 }
+
+#[test]
+fn ground_is_drawn_cells_and_the_gaps_between_them() {
+    // `_` is undrawn: the void, unless drawn cells close it in on a line.
+    let map = char_map("*:#FFFF0000;.:#100000A0;_:#00000000", "\n__*__\n_*_*_\n__*__\n");
+    let grid = MapGrid::build(&map, None);
+    assert!(grid.is_ground(2, 0), "a wall is ground");
+    assert!(grid.is_ground(2, 1), "a gap between walls is ground");
+    assert!(!grid.is_ground(0, 0), "the corner is void");
+    assert!(!grid.is_floor(2, 0), "but a wall is not floor");
+}

@@ -130,15 +130,19 @@ impl MapGrid {
     /// gaps in the image still get a floor). Fully transparent areas are
     /// outside the playable map.
     pub fn is_floor(&self, x: i32, y: i32) -> bool {
-        if self.is_wall(x, y) {
-            return false;
-        }
-        let opaque = |x: i32, y: i32| {
+        !self.is_wall(x, y) && self.is_ground(x, y)
+    }
+
+    /// Part of the map's ground, walls included (`MapManager.IsFloor`): a
+    /// drawn cell, or a gap between two; past the edge, the nearest cell.
+    /// What is not ground is the void around the map.
+    pub fn is_ground(&self, x: i32, y: i32) -> bool {
+        let drawn = |x: i32, y: i32| {
             let x = x.clamp(0, self.width as i32 - 1);
             let y = y.clamp(0, self.height as i32 - 1);
             self.cells[y as usize * self.width + x as usize].color.a > 0
         };
-        opaque(x, y) || (opaque(x - 1, y) && opaque(x + 1, y)) || (opaque(x, y - 1) && opaque(x, y + 1))
+        drawn(x, y) || (drawn(x - 1, y) && drawn(x + 1, y)) || (drawn(x, y - 1) && drawn(x, y + 1))
     }
 
     pub fn height_at(&self, x: i32, y: i32) -> f32 {

@@ -196,7 +196,7 @@ fn build_floor(grid: &MapGrid, light: &LightMap, cell: f32, rng: &mut SmallRng) 
                     c.z -= top - FLOOR_TOP;
                 }
             }
-            let colors = corners.map(|p| mul(color, light.sample(p.x / cell, -p.y / cell)));
+            let colors = corners.map(|p| mul(color, light.sample_layer(p.x / cell, -p.y / cell)));
             mb.quad(corners, colors);
         }
     }

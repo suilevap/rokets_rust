@@ -50,10 +50,10 @@ impl LoadedMap {
         self.cell.to_world(x, y)
     }
 
-    /// The light at a world point.
+    /// The light layer at a world point (what sprites are multiplied by).
     pub fn light_at(&self, p: Vec2) -> [f32; 3] {
         let (x, y) = self.cell.to_cells(p);
-        self.light.sample(x, y)
+        self.light.sample_layer(x, y)
     }
 }
 

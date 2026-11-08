@@ -27,3 +27,19 @@ fn lamp_lights_and_walls_shadow() {
     assert!(far < near && far > 0.0, "far {far}");
     assert!(behind_wall < 0.1, "shadow {behind_wall}");
 }
+
+#[test]
+fn light_layer_is_full_over_the_void() {
+    // A dark room (the lamp is far away behind walls) with void to the right.
+    let map = map("\n*****____\n*...*____\n*...*____\n*****____\n");
+    let grid = MapGrid::build(&map, None);
+    let light = LightMap::bake(&map, &grid);
+    let room = light.sample_layer(2.5, 1.5);
+    let void = light.sample_layer(7.5, 1.5);
+    let past_edge = light.sample_layer(20.0, 1.5);
+    assert_eq!(room, light.sample(2.5, 1.5), "the room keeps its light");
+    assert_eq!(void, [1.0; 3]);
+    assert_eq!(past_edge, [1.0; 3]);
+    // Walls keep the plain light map.
+    assert!(light.sample(7.5, 1.5)[0] < 1.0);
+}
