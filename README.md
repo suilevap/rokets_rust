@@ -23,8 +23,14 @@ cargo run --release -- -m LetItSnowDay
 | `-m MAP` | Map name from `assets/Maps/Singleplayer` (default `EditorTest`) |
 | `--screenshot PATH` | Save a PNG after `--frames N` frames of play (default 90), then exit |
 | `--record DIR` | Save every frame (time stepped 1/30 s per frame) for `--frames N` frames, then exit; make a video with `ffmpeg -framerate 30 -i DIR/frame_%05d.png out.mp4` |
+| `--size WxH` | Window size (default 1280x720; `720x1280` for portrait) |
 | `--start x,y` | Put the car at that map cell instead of the map's start (first map only) |
 | `--drive SCRIPT` | Drive by script, `x,y:seconds;...` (stick in world directions, y up), logging the car's path every 0.1 s |
+
+Portrait screens (a phone held upright) show the landscape view turned a
+quarter turn: up on the screen is right on the map, and the controls follow
+the screen. The short side of the screen always shows as much of the map as
+the C# camera did; the long side shows more.
 
 Keys: arrows / WASD drive (point where you want to go), `R` restarts,
 `N` skips to the next map. A gamepad's left stick or d-pad and touch (a

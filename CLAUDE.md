@@ -2,7 +2,8 @@
 
 TileRider ported from C# / MonoGame (`suilevap/rokets`) to Rust, Bevy 0.20
 and Avian 2D. Read `README.md` (running, options) and `ARCHITECTURE.md`
-(modules, conventions, what is not ported) first. The migration plan is in
+(modules, conventions, what is not ported) first, and `docs/BACKLOG.md`
+for agreed work not yet scheduled. The migration plan is in
 the C# repository: `docs/plans/RUST_BEVY_MIGRATION.md`.
 
 - **Port intent, not implementation.** Find the C# code a feature comes
@@ -15,6 +16,16 @@ the C# repository: `docs/plans/RUST_BEVY_MIGRATION.md`.
   app code so they stay unit-testable.
 - Content comes from the C# repository via `tools/import_content.py`; do
   not edit files under `assets/` by hand.
+- **Tests live apart from the code they test**, never in the same file:
+  - a test of public behaviour goes in `tests/` (an integration test);
+  - a test that needs private items goes in its own file next to the
+    module, `src/<module>/tests.rs` (or `src/<module>_tests.rs` for a
+    single-file module), pulled in by one line in the module:
+    `#[cfg(test)] mod tests;` (with `#[path = "<module>_tests.rs"]` where
+    needed);
+  - no `#[cfg(test)] mod tests { ... }` blocks inside a source file, and no
+    test-only helpers in production code. Some existing modules still have
+    inline tests; move them out when touching those modules.
 - Documentation and code comments are in English.
 - Toolchain: Rust 1.97.1 (`rust-toolchain.toml`). Run `cargo test` and
   `cargo clippy --all-targets` before committing.

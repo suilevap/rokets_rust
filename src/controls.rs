@@ -9,10 +9,16 @@
 //! Schemes here: keyboard (arrows / WASD), gamepad (left stick, d-pad), and
 //! touch (a floating stick that starts where the finger lands; with no
 //! weapons yet, the whole screen is for driving).
+//!
+//! Every scheme reads directions on the screen; they are turned into the
+//! world by the camera's [`ViewRotation`], so up is up on a portrait phone
+//! too, where the view is turned a quarter turn.
 
 use bevy::input::gamepad::{Gamepad, GamepadAxis, GamepadButton};
 use bevy::input::touch::Touches;
 use bevy::prelude::*;
+
+use crate::render::camera::ViewRotation;
 
 /// What the player wants the car to do, in world space.
 #[derive(Component, Debug, Default, Clone, Copy, PartialEq)]
@@ -72,7 +78,11 @@ impl Plugin for ControlsPlugin {
     }
 }
 
-fn read_keyboard(keys: Res<ButtonInput<KeyCode>>, mut readings: ResMut<SchemeReadings>, mut active: ResMut<ActiveScheme>) {
+fn read_keyboard(
+    keys: Res<ButtonInput<KeyCode>>,
+    mut readings: ResMut<SchemeReadings>,
+    mut active: ResMut<ActiveScheme>,
+) {
     let pressed = |a: KeyCode, b: KeyCode| keys.pressed(a) || keys.pressed(b);
     let mut v = Vec2::ZERO;
     if pressed(KeyCode::ArrowLeft, KeyCode::KeyA) {
@@ -103,7 +113,11 @@ fn read_keyboard(keys: Res<ButtonInput<KeyCode>>, mut readings: ResMut<SchemeRea
     readings.keyboard = Some(v.normalize_or_zero());
 }
 
-fn read_gamepad(gamepads: Query<&Gamepad>, mut readings: ResMut<SchemeReadings>, mut active: ResMut<ActiveScheme>) {
+fn read_gamepad(
+    gamepads: Query<&Gamepad>,
+    mut readings: ResMut<SchemeReadings>,
+    mut active: ResMut<ActiveScheme>,
+) {
     let mut reading = None;
     for pad in &gamepads {
         let mut v = Vec2::new(
@@ -114,8 +128,10 @@ fn read_gamepad(gamepads: Query<&Gamepad>, mut readings: ResMut<SchemeReadings>,
             v = Vec2::ZERO;
         }
         let dpad = Vec2::new(
-            pad.pressed(GamepadButton::DPadRight) as i32 as f32 - pad.pressed(GamepadButton::DPadLeft) as i32 as f32,
-            pad.pressed(GamepadButton::DPadUp) as i32 as f32 - pad.pressed(GamepadButton::DPadDown) as i32 as f32,
+            pad.pressed(GamepadButton::DPadRight) as i32 as f32
+                - pad.pressed(GamepadButton::DPadLeft) as i32 as f32,
+            pad.pressed(GamepadButton::DPadUp) as i32 as f32
+                - pad.pressed(GamepadButton::DPadDown) as i32 as f32,
         );
         if dpad != Vec2::ZERO {
             v = dpad.normalize();
@@ -149,12 +165,15 @@ fn read_touch(
         stick.origin = t.position();
         *active = ActiveScheme::Touch;
     }
-    readings.touch = stick.finger.and_then(|id| touches.get_pressed(id)).map(|t| {
-        stick.current = t.position();
-        // Screen y points down; the world's points up.
-        let d = (t.position() - stick.origin) / TOUCH_STICK_RADIUS;
-        Vec2::new(d.x, -d.y).clamp_length_max(1.0)
-    });
+    readings.touch = stick
+        .finger
+        .and_then(|id| touches.get_pressed(id))
+        .map(|t| {
+            stick.current = t.position();
+            // Screen y points down; the world's points up.
+            let d = (t.position() - stick.origin) / TOUCH_STICK_RADIUS;
+            Vec2::new(d.x, -d.y).clamp_length_max(1.0)
+        });
     if readings.touch.is_none() && *active == ActiveScheme::Touch {
         readings.touch = Some(Vec2::ZERO);
     }
@@ -163,6 +182,7 @@ fn read_touch(
 fn apply_active_scheme(
     active: Res<ActiveScheme>,
     readings: Res<SchemeReadings>,
+    view: Res<ViewRotation>,
     mut players: Query<&mut PlayerIntent, With<LocalPlayer>>,
 ) {
     let v = match *active {
@@ -171,6 +191,7 @@ fn apply_active_scheme(
         ActiveScheme::Touch => readings.touch,
     }
     .unwrap_or(Vec2::ZERO);
+    let v = view.screen_to_world(v);
     for mut intent in &mut players {
         intent.move_dir = v;
     }
