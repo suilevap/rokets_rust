@@ -28,8 +28,16 @@ pub struct MapData {
     pub image_wall_treshold: u8,
     #[serde(default, deserialize_with = "boolean")]
     pub have_outland_vizualization: bool,
-    #[serde(default)]
-    pub outland_color_l_t: Option<XColor>,
+    /// The outland's colours at its outer corners (left-top, right-top,
+    /// right-bottom, left-bottom); C# defaults when a map leaves them out.
+    #[serde(default = "default_outland_lt")]
+    pub outland_color_l_t: XColor,
+    #[serde(default = "default_outland_rt")]
+    pub outland_color_r_t: XColor,
+    #[serde(default = "default_outland_rb")]
+    pub outland_color_r_b: XColor,
+    #[serde(default = "default_outland_lb")]
+    pub outland_color_l_b: XColor,
     #[serde(default)]
     pub friction: Option<f32>,
     #[serde(default = "default_ambient")]
@@ -50,6 +58,20 @@ pub struct MapData {
     pub char_map_dictionary: Option<String>,
     #[serde(default)]
     pub char_map: Option<String>,
+}
+
+/// `MapData.OutlandColor*` defaults: Black, DeepSkyBlue, Orange, Yellow.
+fn default_outland_lt() -> XColor {
+    XColor::BLACK
+}
+fn default_outland_rt() -> XColor {
+    XColor::rgba(0, 191, 255, 255)
+}
+fn default_outland_rb() -> XColor {
+    XColor::rgba(255, 165, 0, 255)
+}
+fn default_outland_lb() -> XColor {
+    XColor::rgba(255, 255, 0, 255)
 }
 
 fn default_scale() -> f32 {
