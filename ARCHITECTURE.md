@@ -52,6 +52,9 @@ main
   `Layer` there; nothing picks a z height or sort order of its own.
 - The car only reads `PlayerIntent`; new control schemes and AI write it.
 - Physics and driving run in `FixedUpdate` at 60 Hz (the C# frame).
+- Tests are never in the same file as the code: public behaviour is
+  tested in `tests/`, private details in a separate `tests.rs` next to the
+  module (see `CLAUDE.md`).
 
 ## Not ported yet
 
