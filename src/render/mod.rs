@@ -25,7 +25,7 @@ impl Plugin for RenderPlugin {
         // the outland's rim.
         let [r, g, b] = map_mesh::BACKGROUND;
         app.insert_resource(ClearColor(Color::srgb(r, g, b)))
-            .add_plugins((camera::CameraPlugin, sprite::SpritePlugin))
+            .add_plugins((camera::CameraPlugin, sprite::SpritePlugin, outland::OutlandPlugin))
             .add_systems(OnEnter(GameState::Playing), spawn_map_meshes);
     }
 }
@@ -35,6 +35,8 @@ fn spawn_map_meshes(
     map: Res<LoadedMap>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    mut outland_materials: ResMut<Assets<outland::OutlandMaterial>>,
+    mut images: ResMut<Assets<Image>>,
 ) {
     let (floor, walls) = map_mesh::build_map_meshes(&map);
     let material = materials.add(StandardMaterial {
@@ -50,8 +52,8 @@ fn spawn_map_meshes(
         Transform::default(),
     ));
     let outland = outland::build_outland(
-        &map.grid,
-        &map.light,
+        map.grid.width,
+        map.grid.height,
         map.cell.0,
         outland::corner_colors(&map),
     );
@@ -59,7 +61,7 @@ fn spawn_map_meshes(
         Name::new("Outland"),
         MapEntity,
         Mesh3d(meshes.add(outland)),
-        MeshMaterial3d(material.clone()),
+        MeshMaterial3d(outland_materials.add(outland::outland_material(&map, &mut images))),
         Transform::default(),
     ));
     commands.spawn((

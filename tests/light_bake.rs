@@ -43,3 +43,17 @@ fn light_layer_is_full_over_the_void() {
     // Walls keep the plain light map.
     assert!(light.sample(7.5, 1.5)[0] < 1.0);
 }
+
+#[test]
+fn light_layer_image_covers_the_border() {
+    let map = map("\n*****____\n*...*____\n*...*____\n*****____\n");
+    let grid = MapGrid::build(&map, None);
+    let light = LightMap::bake(&map, &grid);
+    let (w, h, texels) = light.layer_texels(4);
+    let per_cell = tilerider::light::bake::TEXELS_PER_CELL;
+    assert_eq!((w, h), ((9 + 8) * per_cell, (4 + 8) * per_cell));
+    // The texel over the middle of cell (2, 1) is that cell's light.
+    let (x, y) = ((2 + 4) * per_cell + per_cell / 2, (1 + 4) * per_cell + per_cell / 2);
+    let expected = light.sample_layer(2.0 + 0.625, 1.0 + 0.625);
+    assert_eq!(texels[y * w + x], expected);
+}

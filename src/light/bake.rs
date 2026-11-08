@@ -125,6 +125,20 @@ impl LightMap {
         self.sample(x, y).map(|l| (l + void).min(1.0))
     }
 
+    /// The light layer as an image over the map and `border` cells around
+    /// it, `TEXELS_PER_CELL` texels per cell, row-major from the top-left
+    /// corner (map cell `-border, -border`): `(width, height, texels)`.
+    pub fn layer_texels(&self, border: usize) -> (usize, usize, Vec<[f32; 3]>) {
+        let w = self.width + 2 * border * TEXELS_PER_CELL;
+        let h = self.height + 2 * border * TEXELS_PER_CELL;
+        let to_cells = |i: usize| (i as f32 + 0.5) / TEXELS_PER_CELL as f32 - border as f32;
+        let texels = (0..h)
+            .flat_map(|y| (0..w).map(move |x| (x, y)))
+            .map(|(x, y)| self.sample_layer(to_cells(x), to_cells(y)))
+            .collect();
+        (w, h, texels)
+    }
+
     /// Light at a point in map cells (bilinear; the nearest edge texel
     /// outside the map). Lights the walls' vertices.
     pub fn sample(&self, x: f32, y: f32) -> [f32; 3] {
