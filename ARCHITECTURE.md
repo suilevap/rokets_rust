@@ -38,8 +38,10 @@ main
 | `car` | Spawns the player's car on Avian; sprites; front wheels | `Car`, `ControlableEntity` |
 | `triggers` | Trigger areas; only level-end actions run so far | `TriggerManager`, `ActionTemplates` |
 | `pickups` | `Pickup`: collected by driving into it; the count | `Coin` |
-| `boost` | `Booster`: throws touching bodies along its facing; `PadArrows`: the blinking double arrow | `Accelerator` |
-| `render/spin` | `Spin`: turns on the spot | — |
+| `boost` | `Booster`: throws touching bodies along its facing and plays its flash | `Accelerator` |
+| `render/spin` | `Spin`: turns on the spot | `Coin` |
+| `animation` | Animation as plain data: `Wave` (sawtooth / triangle phase over game time), `ColorTrack` (colour keyframes, stepped or blended), `Pulse` (one-shot blend). Unit-tested | `PhaseHelper`, `PeriodicUpdate.RemainPart` |
+| `render/animate` | `TintLoop` (a colour track on a wave, per sprite) and `TintPulse` (a one-shot blend over an entity's sprites); game time pauses and slows with the game, and loops on the same wave stay in step | `PhaseHelper` users |
 | `hud` | Debug text, `R` / `N` keys | — |
 | `script` | `--drive`: scripted stick input and a logged path, for comparing driving | — |
 
@@ -56,6 +58,9 @@ main
   a set of components; systems act on components (`Pickup`, `Booster`,
   bodies), never on the type. A new kind is a new template arm composed of
   existing pieces, or a new piece with the system that gives it behaviour.
+- **Small animations are data**: a `Wave` and a `ColorTrack` (or a `Pulse`)
+  in a template or component, played by `render/animate`; no per-entity
+  blink or flash systems.
 - **Draw order lives in `render/layers.rs`.** A new kind of sprite gets a
   `Layer` there; nothing picks a z height or sort order of its own.
 - The car only reads `PlayerIntent`; new control schemes and AI write it.

@@ -9,6 +9,7 @@
 //!
 //! Plain data, no Bevy app: unit-testable.
 
+use crate::animation::{ColorTrack, GRAY, Pulse, WHITE, Wave, YELLOW};
 use crate::content::map::{EntityData, EntityType};
 use crate::render::layers::Layer;
 
@@ -16,20 +17,18 @@ use crate::render::layers::Layer;
 const HEAVY_BOX_DENSITY: f32 = 64.0;
 /// `Accelerator.OnCollide`: impulse `30 × mass`, i.e. 30 units/s.
 const ACCELERATOR_BOOST: f32 = 30.0;
-/// Radians per second gears turn.
-const GEAR_SPIN: f32 = 1.5;
+/// Radians per second gears turn (`Coin`: a turn per 6.28 s).
+const GEAR_SPIN: f32 = 1.0;
 
 /// How a map entity is built.
 #[derive(Clone, Debug, PartialEq)]
 pub struct EntityTemplate {
-    pub sprite: SpriteSpec,
+    /// What it is drawn with; the first sprite also sizes its body.
+    pub sprites: Vec<SpriteSpec>,
     /// A physics body, if it has one.
     pub body: Option<BodySpec>,
-    /// Throws bodies that touch it along its facing, at this speed.
-    pub boost: Option<f32>,
-    /// Drawn as two arrows that light in turn (the second three quarters
-    /// of a sprite ahead), flashing after a boost.
-    pub pad_arrows: bool,
+    /// Throws bodies that touch it along its facing.
+    pub boost: Option<BoostSpec>,
     /// The player picks it up by driving into it (gears).
     pub pickup: bool,
     /// Turns on the spot, radians per second.
@@ -42,6 +41,30 @@ pub struct SpriteSpec {
     pub name: String,
     pub scale: f32,
     pub layer: Layer,
+    /// How far ahead along the entity's facing, in sprite widths.
+    pub ahead: f32,
+    /// A repeating colour animation, if any.
+    pub tint_loop: Option<(Wave, ColorTrack)>,
+}
+
+impl SpriteSpec {
+    fn new(name: impl Into<String>, scale: f32, layer: Layer) -> Self {
+        SpriteSpec {
+            name: name.into(),
+            scale,
+            layer,
+            ahead: 0.0,
+            tint_loop: None,
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct BoostSpec {
+    /// Speed added, units per second.
+    pub speed: f32,
+    /// Played over the entity's sprites after each boost.
+    pub flash: Option<Pulse>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -81,16 +104,11 @@ impl BodySpec {
 
 /// The template for a map entity, or `None` for types not ported yet.
 pub fn template_for(e: &EntityData) -> Option<EntityTemplate> {
-    let map_sprite = |layer| SpriteSpec {
-        name: e.sprite.clone(),
-        scale: e.scale,
-        layer,
-    };
+    let map_sprite = |layer| SpriteSpec::new(e.sprite.clone(), e.scale, layer);
     let plain = |sprite| EntityTemplate {
-        sprite,
+        sprites: vec![sprite],
         body: None,
         boost: None,
-        pad_arrows: false,
         pickup: false,
         spin: None,
     };
@@ -110,11 +128,7 @@ pub fn template_for(e: &EntityData) -> Option<EntityTemplate> {
         // `EntitiesManager.CreateDamagableBox`: its own sprite, scale 1.
         EntityType::DamagableBox => EntityTemplate {
             body: Some(BodySpec::pushable(e, 1.0)),
-            ..plain(SpriteSpec {
-                name: "Entities\\DamagableBox".into(),
-                scale: 1.0,
-                layer: Layer::Prop,
-            })
+            ..plain(SpriteSpec::new("Entities\\DamagableBox", 1.0, Layer::Prop))
         },
         // As heavy as while nothing tows it.
         EntityType::HeavyBox => EntityTemplate {
@@ -129,15 +143,38 @@ pub fn template_for(e: &EntityData) -> Option<EntityTemplate> {
                 lock_y: false,
                 lock_rotation: false,
             }),
-            boost: Some(ACCELERATOR_BOOST),
-            pad_arrows: true,
-            ..plain(SpriteSpec {
-                name: "Entities\\Accelerator".into(),
-                scale: e.scale,
-                layer: Layer::Accelerator,
-            })
+            boost: Some(BoostSpec {
+                speed: ACCELERATOR_BOOST,
+                flash: Some(Pulse {
+                    start: WHITE,
+                    end: GRAY,
+                    duration: 1.0,
+                }),
+            }),
+            sprites: accelerator_arrows(e.scale),
+            ..plain(SpriteSpec::new("", 0.0, Layer::Accelerator))
         },
         EntityType::Bomb | EntityType::CoinDynamic | EntityType::Unknown => return None,
     };
-    (!template.sprite.name.is_empty()).then_some(template)
+    template
+        .sprites
+        .iter()
+        .all(|s| !s.name.is_empty())
+        .then_some(template)
+}
+
+/// `Accelerator.Draw`: the arrow twice, the second three quarters of its
+/// length ahead, lit yellow in turn on the shared 1 s sawtooth (0–0.4 the
+/// first, 0.4–0.8 the second, then neither).
+fn accelerator_arrows(scale: f32) -> Vec<SpriteSpec> {
+    let wave = Wave::Sawtooth { period: 1.0 };
+    let arrow = |ahead, track| SpriteSpec {
+        ahead,
+        tint_loop: Some((wave, track)),
+        ..SpriteSpec::new("Entities\\Accelerator", scale, Layer::Accelerator)
+    };
+    vec![
+        arrow(0.0, ColorTrack::steps(&[(0.0, YELLOW), (0.4, GRAY)])),
+        arrow(0.75, ColorTrack::steps(&[(0.0, GRAY), (0.4, YELLOW), (0.8, GRAY)])),
+    ]
 }

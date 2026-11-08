@@ -5,6 +5,7 @@
 //! just above it. Everything is unlit (colours carry the baked light), so
 //! the picture does not depend on Bevy's lighting.
 
+pub mod animate;
 pub mod camera;
 pub mod layers;
 pub mod spin;

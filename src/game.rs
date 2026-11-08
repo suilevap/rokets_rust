@@ -93,7 +93,7 @@ fn sprites_for(map: &MapData, cars: &CarCatalog) -> Vec<String> {
     let mut skipped: std::collections::BTreeMap<_, usize> = Default::default();
     for e in map.entities.iter() {
         match crate::map::templates::template_for(e) {
-            Some(template) => names.push(template.sprite.name),
+            Some(template) => names.extend(template.sprites.into_iter().map(|s| s.name)),
             None => *skipped.entry(e.kind).or_default() += 1,
         }
     }

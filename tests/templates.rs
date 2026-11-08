@@ -1,5 +1,6 @@
 //! What each map entity type is built from.
 
+use tilerider::animation::{GRAY, WHITE, YELLOW};
 use tilerider::content::map::{EntityData, EntityType, MapData};
 use tilerider::map::templates::{BodyKind, template_for};
 use tilerider::render::layers::Layer;
@@ -16,7 +17,7 @@ fn entity(kind: &str, extra: &str) -> EntityData {
 #[test]
 fn decor_is_only_a_sprite() {
     let t = template_for(&entity("Tile", "")).unwrap();
-    assert_eq!(t.sprite.layer, Layer::GroundDecor);
+    assert_eq!(t.sprites[0].layer, Layer::GroundDecor);
     assert_eq!((t.body, t.boost, t.pickup, t.spin), (None, None, false, None));
 }
 
@@ -24,7 +25,7 @@ fn decor_is_only_a_sprite() {
 fn gears_are_spinning_pickups() {
     let t = template_for(&entity("Coin", "")).unwrap();
     assert!(t.pickup && t.spin.is_some() && t.body.is_none());
-    assert_eq!(t.sprite.layer, Layer::Coin);
+    assert_eq!(t.sprites[0].layer, Layer::Coin);
 }
 
 #[test]
@@ -37,7 +38,8 @@ fn boxes_are_pushable_and_heavy_ones_denser() {
     assert_eq!(heavy.density, 64.0);
     // A damagable box ignores the map's sprite and scale.
     let damagable = template_for(&entity("DamagableBox", "")).unwrap();
-    assert_eq!((damagable.sprite.name.as_str(), damagable.sprite.scale), ("Entities\\DamagableBox", 1.0));
+    let sprite = &damagable.sprites[0];
+    assert_eq!((sprite.name.as_str(), sprite.scale), ("Entities\\DamagableBox", 1.0));
 }
 
 #[test]
@@ -52,9 +54,22 @@ fn map_locks_axes_and_all_three_fix_a_box() {
 fn accelerators_are_boosting_sensors_with_arrows() {
     let t = template_for(&entity("Accelerator", "")).unwrap();
     assert_eq!(t.body.unwrap().kind, BodyKind::Sensor);
-    assert_eq!(t.boost, Some(30.0));
-    assert!(t.pad_arrows);
-    assert_eq!(t.sprite.name, "Entities\\Accelerator");
+    let boost = t.boost.as_ref().unwrap();
+    assert_eq!(boost.speed, 30.0);
+    // After a boost both arrows flash white, fading to gray over a second.
+    let flash = boost.flash.unwrap();
+    assert_eq!((flash.start, flash.end, flash.duration), (WHITE, GRAY, 1.0));
+    // Two arrows, the second three quarters ahead, lit yellow in turn.
+    assert_eq!(t.sprites.len(), 2);
+    assert!(t.sprites.iter().all(|s| s.name == "Entities\\Accelerator"));
+    assert_eq!((t.sprites[0].ahead, t.sprites[1].ahead), (0.0, 0.75));
+    let lit_at = |i: usize, phase: f32| {
+        let (wave, track) = t.sprites[i].tint_loop.clone().unwrap();
+        track.sample(wave.phase(phase)) == YELLOW
+    };
+    assert!(lit_at(0, 0.1) && !lit_at(1, 0.1));
+    assert!(!lit_at(0, 0.5) && lit_at(1, 0.5));
+    assert!(!lit_at(0, 0.9) && !lit_at(1, 0.9));
 }
 
 #[test]

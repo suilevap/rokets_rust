@@ -1,6 +1,6 @@
 //! Builds the map's entities from their templates (`templates.rs`): a
 //! sprite, a physics body, and the components that give them behaviour
-//! (`Pickup`, `Booster`, `PadArrows`, `Spin`). Nothing here or later looks
+//! (`Pickup`, `Booster`, `Spin`, `TintLoop`). Nothing here or later looks
 //! at the map's entity type.
 //!
 //! Bodies follow the C# entities (`Entity`, `PhysicEntity`): a box the
@@ -10,12 +10,13 @@
 use avian2d::prelude::*;
 use bevy::prelude::*;
 
-use crate::boost::{Booster, PadArrow, PadArrows};
+use crate::boost::Booster;
 use crate::game::{GameState, LoadedMap, MapEntity};
 use crate::map::templates::{BodyKind, BodySpec, EntityTemplate, template_for};
 use crate::pickups::Pickup;
+use crate::render::animate::TintLoop;
 use crate::render::spin::Spin;
-use crate::render::sprite::{SpriteInfo, SpriteTint, UnitQuad, sprite_bundle};
+use crate::render::sprite::{SpriteTint, UnitQuad, sprite_bundle};
 use crate::units::{map_degrees_to_world, px};
 
 const LINEAR_DAMPING: f32 = 0.95;
@@ -40,10 +41,13 @@ fn spawn_map_entities(
         let Some(template) = template_for(e) else {
             continue;
         };
-        let Some(info) = map.sprites.get(&template.sprite.name).cloned() else {
+        let Some(first) = template.sprites.first() else {
             continue;
         };
-        let size = info.size * px(1.0) * template.sprite.scale;
+        let Some(info) = map.sprites.get(&first.name).cloned() else {
+            continue;
+        };
+        let size = info.size * px(1.0) * first.scale;
         let angle = map_degrees_to_world(e.direction_deg);
         let mut entity = commands.spawn((
             Name::new(format!("Map entity {}", e.id)),
@@ -55,8 +59,11 @@ fn spawn_map_entities(
         if let Some(body) = template.body {
             insert_body(&mut entity, body, size, friction);
         }
-        if let Some(speed) = template.boost {
-            entity.insert(Booster { speed });
+        if let Some(boost) = &template.boost {
+            entity.insert(Booster {
+                speed: boost.speed,
+                flash: boost.flash,
+            });
         }
         if template.pickup {
             entity.insert(Pickup {
@@ -66,7 +73,7 @@ fn spawn_map_entities(
         if let Some(rate) = template.spin {
             entity.insert(Spin(rate));
         }
-        spawn_sprites(&mut entity, &template, &info, size, &quad, &mut materials);
+        spawn_sprites(&mut entity, &template, &map, &quad, &mut materials);
     }
 }
 
@@ -110,8 +117,7 @@ fn insert_body(entity: &mut EntityCommands, body: BodySpec, size: Vec2, friction
 fn spawn_sprites(
     entity: &mut EntityCommands,
     template: &EntityTemplate,
-    info: &SpriteInfo,
-    size: Vec2,
+    map: &LoadedMap,
     quad: &UnitQuad,
     materials: &mut Assets<StandardMaterial>,
 ) {
@@ -119,19 +125,20 @@ fn spawn_sprites(
         color: [1.0; 4],
         lit: true,
     };
-    let sprite = &template.sprite;
-    if template.pad_arrows {
-        entity.insert(PadArrows::default());
-        entity.with_children(|p| {
-            for (i, offset) in [0.0, size.x * 0.75].into_iter().enumerate() {
-                let mut quad_bundle = sprite_bundle(info, sprite.scale, sprite.layer, lit, quad, materials);
-                quad_bundle.2.translation.x = offset;
-                p.spawn((quad_bundle, PadArrow(i)));
+    entity.with_children(|p| {
+        for spec in &template.sprites {
+            let Some(info) = map.sprites.get(&spec.name) else {
+                continue;
+            };
+            let mut sprite = sprite_bundle(info, spec.scale, spec.layer, lit, quad, materials);
+            sprite.2.translation.x = info.size.x * px(1.0) * spec.scale * spec.ahead;
+            let mut child = p.spawn(sprite);
+            if let Some((wave, track)) = &spec.tint_loop {
+                child.insert(TintLoop {
+                    wave: *wave,
+                    track: track.clone(),
+                });
             }
-        });
-    } else {
-        entity.with_children(|p| {
-            p.spawn(sprite_bundle(info, sprite.scale, sprite.layer, lit, quad, materials));
-        });
-    }
+        }
+    });
 }
