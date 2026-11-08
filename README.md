@@ -22,6 +22,8 @@ cargo run --release -- -m LetItSnowDay
 |---|---|
 | `-m MAP` | Map name from `assets/Maps/Singleplayer` (default `EditorTest`) |
 | `--screenshot PATH` | Save a PNG after `--frames N` frames of play (default 90), then exit |
+| `--record DIR` | Save every frame (time stepped 1/30 s per frame) for `--frames N` frames, then exit; make a video with `ffmpeg -framerate 30 -i DIR/frame_%05d.png out.mp4` |
+| `--start x,y` | Put the car at that map cell instead of the map's start (first map only) |
 | `--drive SCRIPT` | Drive by script, `x,y:seconds;...` (stick in world directions, y up), logging the car's path every 0.1 s |
 
 Keys: arrows / WASD drive (point where you want to go), `R` restarts,
@@ -39,7 +41,8 @@ its enemies and boxes do not appear yet).
 
 ## Compared with the C# game
 
-`docs/comparison/` holds side-by-side screenshots: the C# game on the left
+`docs/media/` holds recorded clips (driving through Middleware, picking up
+a gear, crossing the finish to the next map). `docs/comparison/` holds side-by-side screenshots: the C# game on the left
 (taken through its debug command server, `GET /screenshot`), this port on
 the right. Not yet in the port: the glow and dirty-lens effects, accelerator
 arrows and the other entities.
