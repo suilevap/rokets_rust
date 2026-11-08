@@ -18,3 +18,22 @@ the C# repository: `docs/plans/RUST_BEVY_MIGRATION.md`.
 - Documentation and code comments are in English.
 - Toolchain: Rust 1.97.1 (`rust-toolchain.toml`). Run `cargo test` and
   `cargo clippy --all-targets` before committing.
+
+## Web build and pull request previews
+
+The game runs in the browser. `.github/workflows/pages.yml` builds it to
+WebAssembly and publishes it to GitHub Pages from the `gh-pages` branch:
+`main` at https://suilevap.github.io/rokets_rust/ and each pull request from
+this repository at `https://suilevap.github.io/rokets_rust/pr/<number>/`
+(built from the branch's own commit, about 10 minutes per push; removed
+when the pull request closes). Previews run `main`'s copy of the workflow
+(`pull_request_target`), so changes to `.github/workflows/pages.yml` or
+`.github/scripts/` only affect previews once merged. The page's
+bottom-right corner names the build it serves (`PR #<n> · <sha>`).
+
+When a pull request changes anything a player could notice in the browser,
+put the preview link in its description, pointed at what changed with URL
+options (`map`, `start`, `drive`, e.g. `.../pr/42/?map=LetItSnowDay`), and
+say what to try. Pull requests that only touch `**.md`, `docs/`, `tests/`,
+`tools/` or `.claude/` build no preview; for other changes nobody needs to
+play, add the `no-preview` label. Do not link a preview that does not exist.
