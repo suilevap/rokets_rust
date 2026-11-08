@@ -36,7 +36,10 @@ request; remove it here when it lands.
 
 ## Rendering and camera
 
-- Per-map camera zoom (LightTest uses a farther camera in C#).
+- Camera zoom as in C#: `Camera2DOperatoAllInCadr` zooms out to keep all
+  focus entities (players, and in some maps more) in frame, never closer
+  than the map's `MinScale`. That is why C# shows more of EditorTest (two
+  players) and LightTest than the fixed height here.
 - Glow and dirty-lens effects; dynamic lights; the outland around the map;
   the cabin's springy wobble; tyre marks.
 
