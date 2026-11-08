@@ -30,6 +30,11 @@ const Z_BODY: f32 = 0.06;
 /// How fast the drawn wheels follow the stick (`Hardastic(0, 12)`).
 const WHEEL_TURN_RATE: f32 = 12.0;
 
+/// Debug: start the player's car at this point (map cells) instead of the
+/// map's own start (`--start x,y`); used once, on the first map.
+#[derive(Resource, Debug, Clone, Copy)]
+pub struct StartOverride(pub Vec2);
+
 #[derive(Component, Debug)]
 pub struct Car {
     pub params: DriveParams,
@@ -59,6 +64,7 @@ pub fn spawn_player_car(
     map: Res<LoadedMap>,
     quad: Res<UnitQuad>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    start: Option<Res<StartOverride>>,
 ) {
     let players = &map.data.players.items;
     let Some(player) = players
@@ -80,7 +86,10 @@ pub fn spawn_player_car(
     let size = base.size * px(1.0) * car.scale;
     let radius = size.max_element() / 2.0;
     let friction = map.data.friction.unwrap_or(1.0);
-    let position = map.world(player.position.x, player.position.y);
+    let at = start.map_or(Vec2::new(player.position.x, player.position.y), |s| s.0);
+    // Only the first map: later maps start where they say.
+    commands.remove_resource::<StartOverride>();
+    let position = map.world(at.x, at.y);
     let angle = map_degrees_to_world(player.direction_deg);
 
     let mut entity = commands.spawn((
