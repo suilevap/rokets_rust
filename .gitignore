@@ -25,3 +25,4 @@ rustc-ice-*.txt
 
 # Screenshots from --screenshot
 *.screenshot.png
+/dist
