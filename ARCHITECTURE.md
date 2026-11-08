@@ -35,6 +35,7 @@ main
 | `car/drive` | The driving model as a pure function, run at 60 Hz | `Car.MovementControl`, `Brake`, `AdditionalFriction` |
 | `car` | Spawns the player's car on Avian; sprites; front wheels | `Car`, `ControlableEntity` |
 | `pickups` | Decor tiles and gears | `Coin`, `Tile` entities |
+| `props` | Boxes (pushable bodies; heavy boxes 64× heavier; map axis locks) and accelerator pads (sensors that throw bodies 30 units/s along them, blinking arrows) | `Box`, `HeavyBox`, `DamagableBox`, `Accelerator`, `EntitiesFactory` |
 | `triggers` | Trigger areas; only level-end actions run so far | `TriggerManager`, `ActionTemplates` |
 | `hud` | Debug text, `R` / `N` keys | — |
 | `script` | `--drive`: scripted stick input and a logged path, for comparing driving | — |
@@ -59,8 +60,8 @@ main
 ## Not ported yet
 
 Everything outside MVP 0.1: menus and HUD, sound, localisation, saves;
-weapons and gadgets; other cars and AI; boxes, doors, accelerators, bombs,
-teleports, platforms, fake walls; the other ~74 action types; particles;
+weapons and gadgets; other cars and AI; doors, bombs, teleports, platforms,
+fake walls; towing, box damage and explosions; the other ~74 action types; particles;
 slow motion; the agent/command server; editor hot reload. Rendering gaps:
 car shadows (`DynamicShadow`: sprite streaks from the nearest lamp) and
 the black outline along wall tops, both deferred to their own PR; the outland around the map, the cabin's springy wobble, tyre marks,
