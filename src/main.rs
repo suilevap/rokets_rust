@@ -8,6 +8,10 @@
 //! time stepped exactly 1/30 s per frame (whatever the rendering speed),
 //! for `--frames N` frames, then exits: turn them into a video with ffmpeg.
 //! `--start x,y` puts the car at that map cell instead of the map's start.
+//!
+//! In the browser the page's URL parameters are the options, without `--`:
+//! `?map=Middleware&start=84,9.5&drive=1,0:3`. Only `map`, `start` and
+//! `drive` apply there; the file-writing options are native only.
 
 use bevy::prelude::*;
 use bevy::render::view::screenshot::{Screenshot, save_to_disk};
@@ -40,6 +44,66 @@ struct Args {
     start: Option<Vec2>,
 }
 
+/// The command line, or the page's URL parameters in the browser.
+fn raw_args() -> Vec<String> {
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        std::env::args().skip(1).collect()
+    }
+    #[cfg(target_arch = "wasm32")]
+    {
+        web::url_args()
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+mod web {
+    use wasm_bindgen::prelude::*;
+
+    #[wasm_bindgen(inline_js = "export function search() { return window.location.search; }")]
+    extern "C" {
+        fn search() -> String;
+    }
+
+    /// Options the browser build accepts, as URL parameters.
+    const WEB_OPTIONS: &[&str] = &["map", "start", "drive"];
+
+    /// `?map=Middleware&start=84,9.5` → `["--map", "Middleware", "--start", "84,9.5"]`.
+    pub fn url_args() -> Vec<String> {
+        let query = search();
+        let mut args = Vec::new();
+        for pair in query.trim_start_matches('?').split('&').filter(|p| !p.is_empty()) {
+            let (name, value) = pair.split_once('=').unwrap_or((pair, ""));
+            let value = decode(value);
+            if WEB_OPTIONS.contains(&name) && !value.is_empty() {
+                args.push(format!("--{name}"));
+                args.push(value);
+            }
+        }
+        args
+    }
+
+    /// Percent-decoding for the few characters options use (`,` `;` `:`).
+    fn decode(s: &str) -> String {
+        let bytes = s.replace('+', " ").into_bytes();
+        let mut out = Vec::with_capacity(bytes.len());
+        let mut i = 0;
+        while i < bytes.len() {
+            if bytes[i] == b'%'
+                && i + 2 < bytes.len()
+                && let Ok(b) = u8::from_str_radix(std::str::from_utf8(&bytes[i + 1..i + 3]).unwrap_or(""), 16)
+            {
+                out.push(b);
+                i += 3;
+            } else {
+                out.push(bytes[i]);
+                i += 1;
+            }
+        }
+        String::from_utf8_lossy(&out).into_owned()
+    }
+}
+
 fn parse_args() -> Args {
     let mut map = "EditorTest".to_string();
     let mut drive = None;
@@ -47,7 +111,7 @@ fn parse_args() -> Args {
     let mut start = None;
     let mut shot: Option<ScreenshotRequest> = None;
     let mut frames = 90;
-    let mut args = std::env::args().skip(1);
+    let mut args = raw_args().into_iter();
     while let Some(a) = args.next() {
         match a.as_str() {
             "-m" | "--map" => map = args.next().unwrap_or(map),
@@ -101,7 +165,15 @@ fn main() {
         start,
     } = parse_args();
     let mut app = App::new();
-    app.add_plugins(DefaultPlugins.set(WindowPlugin {
+    app.add_plugins(
+        DefaultPlugins
+            // No `.meta` files ship with the assets; asking for them is a
+            // failed request per asset in the browser.
+            .set(AssetPlugin {
+                meta_check: bevy::asset::AssetMetaCheck::Never,
+                ..default()
+            })
+            .set(WindowPlugin {
         primary_window: Some(Window {
             title: "TileRider".into(),
             resolution: WindowResolution::new(1280, 720),
@@ -111,7 +183,8 @@ fn main() {
             ..default()
         }),
         ..default()
-    }))
+    }),
+    )
     .add_plugins(TileRiderPlugin { map });
     if let Some(start) = start {
         app.insert_resource(tilerider::car::StartOverride(start));

@@ -33,6 +33,40 @@ floating stick where your finger lands) work too; the last one used wins.
 On Linux, Bevy needs `pkg-config libwayland-dev libxkbcommon-dev libudev-dev
 libasound2-dev libx11-dev`.
 
+## Web build
+
+The game runs in the browser (WebGL2). `.github/workflows/pages.yml`, adapted
+from gridvail, builds it to WebAssembly and publishes it to GitHub Pages from
+the `gh-pages` branch:
+
+- `main` at `https://suilevap.github.io/rokets_rust/`;
+- each pull request from this repository at
+  `https://suilevap.github.io/rokets_rust/pr/<number>/`, linked in a comment,
+  rebuilt on every push and removed when the pull request closes. Previews
+  build the branch's own commit. Changes to `**.md`, `docs/`, `tests/`,
+  `tools/` or `.claude/` build nothing; the `no-preview` label skips a build.
+
+The page's bottom-right corner names the build it serves (`PR #<n> · <sha>`
+for a preview, "dev" locally). URL parameters are the options without `--`:
+`map`, `start` and `drive`, for example
+`?map=LetItSnowDay` or `?map=Middleware&start=84,9.5` (next to the finish).
+
+Pages has to be switched on once: Settings → Pages → Deploy from a branch →
+`gh-pages`, `/ (root)`. For a private repository that needs a paid GitHub
+plan, and the published site (with the game's assets) is public.
+
+To build locally:
+
+```sh
+rustup target add wasm32-unknown-unknown
+cargo install wasm-bindgen-cli --version 0.2.130 --locked  # match Cargo.lock
+cargo build --profile web --target wasm32-unknown-unknown
+wasm-bindgen --no-typescript --target web --out-dir dist --out-name tilerider \
+  target/wasm32-unknown-unknown/web/tilerider.wasm
+cp web/index.html dist/ && cp -r assets dist/assets
+python3 -m http.server -d dist 8000
+```
+
 ## MVP maps
 
 `EditorTest`, `CharMapTest` (walls drawn as text), `LightTest`,
