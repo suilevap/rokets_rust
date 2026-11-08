@@ -30,20 +30,19 @@ use crate::light::bake::LightMap;
 use crate::render::layers::FLOOR_TOP;
 use crate::map::grid::MapGrid;
 
-/// `MapManager.BackgroundColor`: what shows between the tiles.
+/// `MapManager.BackgroundColor` (CornflowerBlue): the clear colour, the
+/// bottom of the outland, and what pale tiles are mixed from.
 pub const BACKGROUND: [f32; 3] = [100.0 / 255.0, 149.0 / 255.0, 237.0 / 255.0];
 /// `Settings.WallFadeStart` / `WallFadeEnd`.
 const WALL_FADE_START: f32 = 0.5;
 const WALL_FADE_END: f32 = 0.95;
-/// How far below the walls' base the background lies (below the deepest tiles).
-const BACKGROUND_DEPTH: f32 = 17.0;
 /// How far tiles sink, per C# depth unit (`DepthConst.FloorMaxDepthScale`):
 /// `amount × cell × 2 + 1` units below the walls' base, so in perspective
 /// the floor reads smaller than the cars and walls above it.
 const FLOOR_DEPTH_SCALE: f32 = 1.0;
 
 #[derive(Default)]
-struct MeshBuilder {
+pub(crate) struct MeshBuilder {
     positions: Vec<[f32; 3]>,
     normals: Vec<[f32; 3]>,
     colors: Vec<[f32; 4]>,
@@ -53,7 +52,7 @@ struct MeshBuilder {
 impl MeshBuilder {
     /// A quad from four corners (counter-clockwise seen from its front),
     /// each with an sRGB colour.
-    fn quad(&mut self, corners: [Vec3; 4], colors: [[f32; 3]; 4]) {
+    pub(crate) fn quad(&mut self, corners: [Vec3; 4], colors: [[f32; 3]; 4]) {
         let n = (corners[1] - corners[0])
             .cross(corners[3] - corners[0])
             .normalize_or_zero();
@@ -69,7 +68,7 @@ impl MeshBuilder {
             .extend_from_slice(&[base, base + 1, base + 2, base, base + 2, base + 3]);
     }
 
-    fn build(self) -> Mesh {
+    pub(crate) fn build(self) -> Mesh {
         Mesh::new(PrimitiveTopology::TriangleList, RenderAssetUsages::default())
             .with_inserted_attribute(Mesh::ATTRIBUTE_POSITION, self.positions)
             .with_inserted_attribute(Mesh::ATTRIBUTE_NORMAL, self.normals)
@@ -78,11 +77,11 @@ impl MeshBuilder {
     }
 }
 
-fn mul(a: [f32; 3], b: [f32; 3]) -> [f32; 3] {
+pub(crate) fn mul(a: [f32; 3], b: [f32; 3]) -> [f32; 3] {
     [a[0] * b[0], a[1] * b[1], a[2] * b[2]]
 }
 
-fn lerp3(a: [f32; 3], b: [f32; 3], t: f32) -> [f32; 3] {
+pub(crate) fn lerp3(a: [f32; 3], b: [f32; 3], t: f32) -> [f32; 3] {
     [
         a[0] + (b[0] - a[0]) * t,
         a[1] + (b[1] - a[1]) * t,
@@ -110,17 +109,6 @@ pub fn build_map_meshes(map: &LoadedMap) -> (Mesh, Mesh) {
 
 fn build_floor(grid: &MapGrid, light: &LightMap, cell: f32, rng: &mut SmallRng) -> Mesh {
     let mut mb = MeshBuilder::default();
-    // The background between the tiles: under the light layer too, so it
-    // is dark where the map is dark. It reaches past the map's edge.
-    let border = 4;
-    for y in -border..grid.height as i32 + border {
-        for x in -border..grid.width as i32 + border {
-            let p = [(x, y), (x, y + 1), (x + 1, y + 1), (x + 1, y)];
-            let corners = p.map(|(px, py)| Vec3::new(px as f32 * cell, -(py as f32) * cell, -BACKGROUND_DEPTH));
-            let colors = p.map(|(px, py)| mul(BACKGROUND, light.sample(px as f32, py as f32)));
-            mb.quad(corners, colors);
-        }
-    }
     let mut done = vec![false; (grid.width + 1) * (grid.height + 1)];
     let idx = |x: usize, y: usize| y * (grid.width + 1) + x;
     for y in 0..grid.height {
