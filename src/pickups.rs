@@ -4,14 +4,13 @@
 //! - `Coin`: a gear the player picks up by driving into it; it spins. The
 //!   count is shown in the debug text until the HUD exists.
 //!
-//! Other entity types are counted and reported once per map.
-
-use std::collections::BTreeMap;
+//! Boxes and accelerators are in `props.rs`; types not handled anywhere are
+//! reported once per map when it loads.
 
 use bevy::prelude::*;
 
 use crate::controls::LocalPlayer;
-use crate::game::{DRAWN_ENTITY_KINDS, GameState, LoadedMap, MapEntity};
+use crate::game::{GameState, LoadedMap, MapEntity};
 use crate::render::layers::Layer;
 use crate::render::sprite::{SpriteTint, UnitQuad, sprite_bundle};
 use crate::units::map_degrees_to_world;
@@ -54,14 +53,12 @@ fn spawn_entities(
     mut coins: ResMut<CoinCount>,
 ) {
     *coins = CoinCount::default();
-    let mut skipped: BTreeMap<&str, usize> = BTreeMap::new();
     let lit = SpriteTint {
         color: [1.0; 4],
         lit: true,
     };
     for e in map.data.entities.iter() {
-        if !DRAWN_ENTITY_KINDS.contains(&e.kind.as_str()) {
-            *skipped.entry(e.kind.as_str()).or_default() += 1;
+        if !matches!(e.kind.as_str(), "Coin" | "Tile") {
             continue;
         }
         let Some(info) = map.sprites.get(&e.sprite) else {
@@ -86,9 +83,6 @@ fn spawn_entities(
                 radius: size.max_element() / 2.0,
             });
         }
-    }
-    if !skipped.is_empty() {
-        info!("entities not supported yet (skipped): {skipped:?}");
     }
 }
 

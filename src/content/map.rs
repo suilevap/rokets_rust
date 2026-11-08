@@ -132,6 +132,13 @@ pub struct EntityData {
     pub probability: f32,
     #[serde(default, deserialize_with = "boolean")]
     pub try_cast_static_shadow: bool,
+    /// Lock the entity's x / y position or its rotation; all three fix it.
+    #[serde(default, deserialize_with = "boolean")]
+    pub restrict_x: bool,
+    #[serde(default, deserialize_with = "boolean")]
+    pub restrict_y: bool,
+    #[serde(default, deserialize_with = "boolean")]
+    pub restrict_rotation: bool,
 }
 
 fn one() -> f32 {
