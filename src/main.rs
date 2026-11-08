@@ -8,6 +8,8 @@
 //! time stepped exactly 1/30 s per frame (whatever the rendering speed),
 //! for `--frames N` frames, then exits: turn them into a video with ffmpeg.
 //! `--start x,y` puts the car at that map cell instead of the map's start.
+//! `--size WxH` sets the window size (default 1280x720; e.g. 720x1280 to
+//! try portrait).
 //!
 //! In the browser the page's URL parameters are the options, without `--`:
 //! `?map=Middleware&start=84,9.5&drive=1,0:3`. Only `map`, `start` and
@@ -42,6 +44,7 @@ struct Args {
     drive: Option<DriveScript>,
     record: Option<RecordRequest>,
     start: Option<Vec2>,
+    size: (u32, u32),
 }
 
 /// The command line, or the page's URL parameters in the browser.
@@ -72,7 +75,11 @@ mod web {
     pub fn url_args() -> Vec<String> {
         let query = search();
         let mut args = Vec::new();
-        for pair in query.trim_start_matches('?').split('&').filter(|p| !p.is_empty()) {
+        for pair in query
+            .trim_start_matches('?')
+            .split('&')
+            .filter(|p| !p.is_empty())
+        {
             let (name, value) = pair.split_once('=').unwrap_or((pair, ""));
             let value = decode(value);
             if WEB_OPTIONS.contains(&name) && !value.is_empty() {
@@ -91,7 +98,8 @@ mod web {
         while i < bytes.len() {
             if bytes[i] == b'%'
                 && i + 2 < bytes.len()
-                && let Ok(b) = u8::from_str_radix(std::str::from_utf8(&bytes[i + 1..i + 3]).unwrap_or(""), 16)
+                && let Ok(b) =
+                    u8::from_str_radix(std::str::from_utf8(&bytes[i + 1..i + 3]).unwrap_or(""), 16)
             {
                 out.push(b);
                 i += 3;
@@ -109,6 +117,7 @@ fn parse_args() -> Args {
     let mut drive = None;
     let mut record_dir = None;
     let mut start = None;
+    let mut size = (1280, 720);
     let mut shot: Option<ScreenshotRequest> = None;
     let mut frames = 90;
     let mut args = raw_args().into_iter();
@@ -139,6 +148,16 @@ fn parse_args() -> Args {
                     Some(Vec2::new(x.trim().parse().ok()?, y.trim().parse().ok()?))
                 })
             }
+            "--size" => {
+                if let Some((w, h)) = args
+                    .next()
+                    .as_deref()
+                    .and_then(|v| v.split_once('x'))
+                    .and_then(|(w, h)| Some((w.parse().ok()?, h.parse().ok()?)))
+                {
+                    size = (w, h);
+                }
+            }
             "--frames" => frames = args.next().and_then(|v| v.parse().ok()).unwrap_or(frames),
             _ => {}
         }
@@ -146,13 +165,18 @@ fn parse_args() -> Args {
     if let Some(s) = shot.as_mut() {
         s.frames = frames;
     }
-    let record = record_dir.map(|dir| RecordRequest { dir, frames, counted: 0 });
+    let record = record_dir.map(|dir| RecordRequest {
+        dir,
+        frames,
+        counted: 0,
+    });
     Args {
         map,
         shot,
         drive,
         record,
         start,
+        size,
     }
 }
 
@@ -163,6 +187,7 @@ fn main() {
         drive,
         record,
         start,
+        size,
     } = parse_args();
     let mut app = App::new();
     app.add_plugins(
@@ -174,16 +199,16 @@ fn main() {
                 ..default()
             })
             .set(WindowPlugin {
-        primary_window: Some(Window {
-            title: "TileRider".into(),
-            resolution: WindowResolution::new(1280, 720),
-            canvas: Some("#bevy".into()),
-            fit_canvas_to_parent: true,
-            prevent_default_event_handling: true,
-            ..default()
-        }),
-        ..default()
-    }),
+                primary_window: Some(Window {
+                    title: "TileRider".into(),
+                    resolution: WindowResolution::new(size.0, size.1),
+                    canvas: Some("#bevy".into()),
+                    fit_canvas_to_parent: true,
+                    prevent_default_event_handling: true,
+                    ..default()
+                }),
+                ..default()
+            }),
     )
     .add_plugins(TileRiderPlugin { map });
     if let Some(start) = start {
@@ -207,20 +232,32 @@ fn main() {
     app.run();
 }
 
-fn take_screenshot(mut commands: Commands, mut shot: ResMut<ScreenshotRequest>, mut exit: MessageWriter<AppExit>) {
+fn take_screenshot(
+    mut commands: Commands,
+    mut shot: ResMut<ScreenshotRequest>,
+    mut exit: MessageWriter<AppExit>,
+) {
     shot.counted += 1;
     if !shot.taken && shot.counted >= shot.frames {
         shot.taken = true;
-        commands.spawn(Screenshot::primary_window()).observe(save_to_disk(shot.path.clone()));
+        commands
+            .spawn(Screenshot::primary_window())
+            .observe(save_to_disk(shot.path.clone()));
     } else if shot.taken && shot.counted >= shot.frames + 10 {
         exit.write(AppExit::Success);
     }
 }
 
-fn record_frame(mut commands: Commands, mut rec: ResMut<RecordRequest>, mut exit: MessageWriter<AppExit>) {
+fn record_frame(
+    mut commands: Commands,
+    mut rec: ResMut<RecordRequest>,
+    mut exit: MessageWriter<AppExit>,
+) {
     if rec.counted < rec.frames {
         let path = format!("{}/frame_{:05}.png", rec.dir, rec.counted);
-        commands.spawn(Screenshot::primary_window()).observe(save_to_disk(path));
+        commands
+            .spawn(Screenshot::primary_window())
+            .observe(save_to_disk(path));
     } else if rec.counted > rec.frames + 10 {
         exit.write(AppExit::Success);
     }
