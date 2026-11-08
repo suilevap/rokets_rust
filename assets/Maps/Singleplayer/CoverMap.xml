@@ -1,0 +1,227 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>CoverMap</Name>
+    <GameMode>SinglePlayer</GameMode>
+    <Image>Maps\Singleplayer\CoverMap</Image>
+    <Scale>64</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>false</HaveOutlandVizualization>
+    <OutlandColorLT>FF000000</OutlandColorLT>
+    <OutlandColorRT>FF00BFFF</OutlandColorRT>
+    <OutlandColorRB>FFFFA500</OutlandColorRB>
+    <OutlandColorLB>FFFFFF00</OutlandColorLB>
+    <TargetTimeSec>0</TargetTimeSec>
+    <Friction>1</Friction>
+    <AmbientLight>2DFFFFFF</AmbientLight>
+    <Splash>MapDefault</Splash>
+    <LevelEffect>None</LevelEffect>
+    <CameraReadAccelerometer>true</CameraReadAccelerometer>
+    <Lights>
+      <Item>
+        <Position>24 27</Position>
+        <Color>FF82FFFF</Color>
+        <R>12</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>41.5 9</Position>
+        <Color>DCFFFF00</Color>
+        <R>10</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+    </Lights>
+    <Players>
+      <Item>
+        <Id>4001</Id>
+        <Name>Player1</Name>
+        <Position>14.5 8</Position>
+        <DirectionDeg>135</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>SandBuggyNoGadget</CarName>
+      </Item>
+      <Item>
+        <Id>4003</Id>
+        <Name>Player1</Name>
+        <Position>9 14</Position>
+        <DirectionDeg>30.05598</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>HoverScout</CarName>
+      </Item>
+      <Item>
+        <Id>4004</Id>
+        <Name>Player1</Name>
+        <Position>11 5.5</Position>
+        <DirectionDeg>147.257278</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>Truck</CarName>
+      </Item>
+    </Players>
+    <SimpleCars>
+      <Item>
+        <Id>3001</Id>
+        <Position>9.5 9</Position>
+        <DirectionDeg>45</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+    </SimpleCars>
+    <Entities>
+      <Item>
+        <Id>1001</Id>
+        <Position>28.5 10</Position>
+        <Sprite>Entities\CargoQuest</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+      </Item>
+      <Item>
+        <Id>1002</Id>
+        <Position>18.5 9</Position>
+        <Sprite>Entities\DamagableBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.8121212</Scale>
+        <DirectionDeg>153.370682</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+      </Item>
+      <Item>
+        <Id>1003</Id>
+        <Position>22 5</Position>
+        <Sprite>Entities\CargoQuest</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.86195457</Scale>
+        <DirectionDeg>300.001862</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+      </Item>
+      <Item>
+        <Id>1004</Id>
+        <Position>26.5 6</Position>
+        <Sprite>Entities\HeavyBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.816581666</Scale>
+        <DirectionDeg>188.047424</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+      </Item>
+      <Item>
+        <Id>1005</Id>
+        <Position>19 26</Position>
+        <Sprite>Entities\CargoQuest</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.8020272</Scale>
+        <DirectionDeg>206.2607</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+      </Item>
+      <Item>
+        <Id>1006</Id>
+        <Position>11.3913031 10.73913</Position>
+        <Sprite>Entities\HeavyBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>323.7818</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+      </Item>
+      <Item>
+        <Id>1007</Id>
+        <Position>29 28.5</Position>
+        <Sprite>Entities\CargoQuest</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.8020272</Scale>
+        <DirectionDeg>206.2607</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+      </Item>
+      <Item>
+        <Id>1008</Id>
+        <Position>25 22</Position>
+        <Sprite>Entities\CargoQuest</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.8020272</Scale>
+        <DirectionDeg>206.2607</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+      </Item>
+      <Item>
+        <Id>1009</Id>
+        <Position>22.5 32</Position>
+        <Sprite>Entities\CargoQuest</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.8020272</Scale>
+        <DirectionDeg>206.2607</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+      </Item>
+    </Entities>
+    <Actions>
+      <Item Type="GameLibrary.AttachAdditionalView">
+        <Name>AttachAdditionalView1006</Name>
+        <Groups>
+          <Item>AttachAdditionalView</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Position>11.3913031 10.73913</Position>
+        <Sprite>UI\IconLikeCircle</Sprite>
+        <Scale>0.6</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Animated>false</Animated>
+        <Color>FF4B0082</Color>
+        <ItemId>1006</ItemId>
+        <Depth>0.01</Depth>
+        <RelativeDepth>true</RelativeDepth>
+      </Item>
+      <Item Type="GameLibrary.AddEntitiesToFocus">
+        <Name>FocusStart</Name>
+        <RunOnMapStart>true</RunOnMapStart>
+        <ItemIds>2001</ItemIds>
+        <RemoveAllOthers>true</RemoveAllOthers>
+      </Item>
+    </Actions>
+    <Hints>
+      <Item>
+        <Id>2001</Id>
+        <Position>24 27</Position>
+        <Sprite>Entities\ButtonBorder</Sprite>
+        <DirectionDeg>0</DirectionDeg>
+        <Animated>false</Animated>
+        <Timer>0</Timer>
+        <Scale>1</Scale>
+        <Area>24 27 1 1</Area>
+        <DrawOnUI>false</DrawOnUI>
+      </Item>
+    </Hints>
+  </Asset>
+</XnaContent>

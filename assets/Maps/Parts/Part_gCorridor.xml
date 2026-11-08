@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>Part_gCorridor</Name>
+    <GameMode>SinglePlayer</GameMode>
+    <Image>Maps\Parts\Part_gCorridor</Image>
+    <Scale>48</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>false</HaveOutlandVizualization>
+    <OutlandColorLT>FF000000</OutlandColorLT>
+    <OutlandColorRT>FF00BFFF</OutlandColorRT>
+    <OutlandColorRB>FFFFA500</OutlandColorRB>
+    <OutlandColorLB>FFFFFF00</OutlandColorLB>
+    <TargetTimeSec>0</TargetTimeSec>
+    <Friction>1</Friction>
+    <AmbientLight>0C0C0C0C</AmbientLight>
+    <Splash>MapDefault</Splash>
+    <LevelEffect>None</LevelEffect>
+    <CameraReadAccelerometer>true</CameraReadAccelerometer>
+    <Width>16</Width>
+    <Height>16</Height>
+    <Lights>
+      <Item>
+        <Position>5.5 6</Position>
+        <Color>FFFFFFFF</Color>
+        <R>15</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+    </Lights>
+    <Players />
+    <Actions>
+      <Item Type="GameLibrary.MapPartPortal">
+        <Name>Portal</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>1 15 6 1</Area>
+        <AllowIn>true</AllowIn>
+        <AllowOut>true</AllowOut>
+      </Item>
+      <Item Type="GameLibrary.MapPartPortal">
+        <Name>Portal</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>15 1 1 6</Area>
+        <AllowIn>true</AllowIn>
+        <AllowOut>true</AllowOut>
+      </Item>
+      <Item Type="GameLibrary.WallWithProbability">
+        <Name>WallWithProbability</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>7 7 2 2</Area>
+        <Color>FFFF8C00</Color>
+        <Probability>0.2</Probability>
+        <WallGroup Null="true" />
+      </Item>
+    </Actions>
+  </Asset>
+</XnaContent>

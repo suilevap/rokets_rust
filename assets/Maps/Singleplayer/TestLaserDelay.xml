@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>Test Laser Delay</Name>
+    <GameMode>SinglePlayer</GameMode>
+    <Image>Maps\Singleplayer\Arena</Image>
+    <Scale>64</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>false</HaveOutlandVizualization>
+    <OutlandColorLT>FF000000</OutlandColorLT>
+    <OutlandColorRT>FF000022</OutlandColorRT>
+    <OutlandColorRB>FF220000</OutlandColorRB>
+    <OutlandColorLB>FF002200</OutlandColorLB>
+    <TargetTimeSec>0</TargetTimeSec>
+    <Friction>1</Friction>
+    <AmbientLight>AA222222</AmbientLight>
+    <Splash>MapDefault</Splash>
+    <LevelEffect>None</LevelEffect>
+    <CameraReadAccelerometer>true</CameraReadAccelerometer>
+    <Width>48</Width>
+    <Height>48</Height>
+    <Lights>
+      <!-- Central bright light -->
+      <Item>
+        <Position>27.5 24.5</Position>
+        <Color>FFFFFFFF</Color>
+        <R>28</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <!-- Top area warm light -->
+      <Item>
+        <Position>27.5 14.5</Position>
+        <Color>FFFFA040</Color>
+        <R>18</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <!-- Bottom-left light -->
+      <Item>
+        <Position>20.5 34.5</Position>
+        <Color>FFFF6060</Color>
+        <R>14</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <!-- Bottom-right light -->
+      <Item>
+        <Position>34.5 34.5</Position>
+        <Color>FF40FF80</Color>
+        <R>14</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <!-- Right side light -->
+      <Item>
+        <Position>36.5 22.5</Position>
+        <Color>FF40A0FF</Color>
+        <R>14</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+    </Lights>
+    <Players>
+      <Item>
+        <Id>4000</Id>
+        <Name>Player</Name>
+        <Position>27.5 22.5</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>Local</Control>
+        <CarName>SandBuggyMinigun</CarName>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+    </Players>
+    <SimpleCars>
+      <!-- Turret 1: ShootPattern + LaserWithDelay, aiming LEFT (180deg) toward left wall ~10 units -->
+      <Item>
+        <Id>3001</Id>
+        <Position>24.5 24.5</Position>
+        <DirectionDeg>180</DirectionDeg>
+        <Control>ShootPattern</Control>
+        <CarName>TurretStat</CarName>
+        <Weapon>LaserWithDelay</Weapon>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <!-- Turret 2: ShootPattern + LaserWithDelay, aiming RIGHT (0deg) toward right wall ~10 units -->
+      <Item>
+        <Id>3002</Id>
+        <Position>30.5 18.5</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>ShootPattern</Control>
+        <CarName>TurretStat</CarName>
+        <Weapon>LaserWithDelay</Weapon>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <!-- Turret 3: AlwaysShoot + LaserWithDelay, aiming DOWN (90deg) toward bottom wall ~12 units -->
+      <Item>
+        <Id>3003</Id>
+        <Position>30.5 30.5</Position>
+        <DirectionDeg>90</DirectionDeg>
+        <Control>AlwaysShoot</Control>
+        <CarName>TurretStat</CarName>
+        <Weapon>LaserWithDelay</Weapon>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <!-- Turret 4: ShootPattern + Laser (no delay), aiming UP (270deg) toward top wall ~12 units -->
+      <Item>
+        <Id>3004</Id>
+        <Position>20.5 16.5</Position>
+        <DirectionDeg>270</DirectionDeg>
+        <Control>ShootPattern</Control>
+        <CarName>TurretStat</CarName>
+        <Weapon>LaserNoReflection</Weapon>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <!-- Turret 5: AiSimpleTurret + LaserWithDelay (tracks player) -->
+      <Item>
+        <Id>3005</Id>
+        <Position>34.5 36.5</Position>
+        <DirectionDeg>90</DirectionDeg>
+        <Control>AiSimpleTurret</Control>
+        <CarName>TurretStat</CarName>
+        <Weapon>LaserWithDelay</Weapon>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+    </SimpleCars>
+    <Actions>
+      <!-- Set all turrets to Team 0 so they don't damage each other -->
+      <Item Type="GameLibrary.AIAdjustment">
+        <Name>AIAdjustment3001</Name>
+        <RunOnMapStart>true</RunOnMapStart>
+        <ItemId>3001</ItemId>
+        <Team>0</Team>
+        <ScanDistance>-1</ScanDistance>
+        <WeaponMaxAngleDeg>-1</WeaponMaxAngleDeg>
+        <FireAccuracy>1</FireAccuracy>
+        <IsVisibleForAutoAim>DoNotChange</IsVisibleForAutoAim>
+      </Item>
+      <Item Type="GameLibrary.AIAdjustment">
+        <Name>AIAdjustment3002</Name>
+        <RunOnMapStart>true</RunOnMapStart>
+        <ItemId>3002</ItemId>
+        <Team>0</Team>
+        <ScanDistance>-1</ScanDistance>
+        <WeaponMaxAngleDeg>-1</WeaponMaxAngleDeg>
+        <FireAccuracy>1</FireAccuracy>
+        <IsVisibleForAutoAim>DoNotChange</IsVisibleForAutoAim>
+      </Item>
+      <Item Type="GameLibrary.AIAdjustment">
+        <Name>AIAdjustment3003</Name>
+        <RunOnMapStart>true</RunOnMapStart>
+        <ItemId>3003</ItemId>
+        <Team>0</Team>
+        <ScanDistance>-1</ScanDistance>
+        <WeaponMaxAngleDeg>-1</WeaponMaxAngleDeg>
+        <FireAccuracy>1</FireAccuracy>
+        <IsVisibleForAutoAim>DoNotChange</IsVisibleForAutoAim>
+      </Item>
+      <Item Type="GameLibrary.AIAdjustment">
+        <Name>AIAdjustment3004</Name>
+        <RunOnMapStart>true</RunOnMapStart>
+        <ItemId>3004</ItemId>
+        <Team>0</Team>
+        <ScanDistance>-1</ScanDistance>
+        <WeaponMaxAngleDeg>-1</WeaponMaxAngleDeg>
+        <FireAccuracy>1</FireAccuracy>
+        <IsVisibleForAutoAim>DoNotChange</IsVisibleForAutoAim>
+      </Item>
+      <Item Type="GameLibrary.AIAdjustment">
+        <Name>AIAdjustment3005</Name>
+        <RunOnMapStart>true</RunOnMapStart>
+        <ItemId>3005</ItemId>
+        <Team>0</Team>
+        <ScanDistance>20</ScanDistance>
+        <WeaponMaxAngleDeg>-1</WeaponMaxAngleDeg>
+        <FireAccuracy>1</FireAccuracy>
+        <IsVisibleForAutoAim>DoNotChange</IsVisibleForAutoAim>
+      </Item>
+    </Actions>
+    <Hints>
+      <!-- Label for Turret 1 -->
+      <Item>
+        <Id>2001</Id>
+        <Position>24.5 22.5</Position>
+        <Sprite>WhitePixel</Sprite>
+        <DirectionDeg>0</DirectionDeg>
+        <Animated>false</Animated>
+        <Timer>0</Timer>
+        <Scale>0.6</Scale>
+        <Area>14 10 40 40</Area>
+        <Text>ShootPattern + LaserWithDelay (LEFT)</Text>
+        <DrawOnUI>false</DrawOnUI>
+        <PulseAmount>0</PulseAmount>
+      </Item>
+      <!-- Label for Turret 2 -->
+      <Item>
+        <Id>2002</Id>
+        <Position>30.5 16.5</Position>
+        <Sprite>WhitePixel</Sprite>
+        <DirectionDeg>0</DirectionDeg>
+        <Animated>false</Animated>
+        <Timer>0</Timer>
+        <Scale>0.6</Scale>
+        <Area>14 10 40 40</Area>
+        <Text>ShootPattern + LaserWithDelay (RIGHT)</Text>
+        <DrawOnUI>false</DrawOnUI>
+        <PulseAmount>0</PulseAmount>
+      </Item>
+      <!-- Label for Turret 3 -->
+      <Item>
+        <Id>2003</Id>
+        <Position>30.5 28.5</Position>
+        <Sprite>WhitePixel</Sprite>
+        <DirectionDeg>0</DirectionDeg>
+        <Animated>false</Animated>
+        <Timer>0</Timer>
+        <Scale>0.6</Scale>
+        <Area>14 10 40 40</Area>
+        <Text>AlwaysShoot + LaserWithDelay (DOWN)</Text>
+        <DrawOnUI>false</DrawOnUI>
+        <PulseAmount>0</PulseAmount>
+      </Item>
+      <!-- Label for Turret 4 -->
+      <Item>
+        <Id>2004</Id>
+        <Position>20.5 18.5</Position>
+        <Sprite>WhitePixel</Sprite>
+        <DirectionDeg>0</DirectionDeg>
+        <Animated>false</Animated>
+        <Timer>0</Timer>
+        <Scale>0.6</Scale>
+        <Area>14 10 40 40</Area>
+        <Text>ShootPattern + Laser no delay (UP)</Text>
+        <DrawOnUI>false</DrawOnUI>
+        <PulseAmount>0</PulseAmount>
+      </Item>
+      <!-- Label for Turret 5 -->
+      <Item>
+        <Id>2005</Id>
+        <Position>34.5 34.5</Position>
+        <Sprite>WhitePixel</Sprite>
+        <DirectionDeg>0</DirectionDeg>
+        <Animated>false</Animated>
+        <Timer>0</Timer>
+        <Scale>0.6</Scale>
+        <Area>14 10 40 40</Area>
+        <Text>AiSimpleTurret + LaserWithDelay (TRACKS)</Text>
+        <DrawOnUI>false</DrawOnUI>
+        <PulseAmount>0</PulseAmount>
+      </Item>
+    </Hints>
+  </Asset>
+</XnaContent>

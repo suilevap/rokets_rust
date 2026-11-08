@@ -1,0 +1,134 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>Part_Arena</Name>
+    <GameMode>SinglePlayer</GameMode>
+    <Image>Maps\Parts\Part_Arena</Image>
+    <Scale>48</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>false</HaveOutlandVizualization>
+    <OutlandColorLT>FF000000</OutlandColorLT>
+    <OutlandColorRT>FF00BFFF</OutlandColorRT>
+    <OutlandColorRB>FFFFA500</OutlandColorRB>
+    <OutlandColorLB>FFFFFF00</OutlandColorLB>
+    <TargetTimeSec>0</TargetTimeSec>
+    <Friction>1</Friction>
+    <AmbientLight>0C0C0C0C</AmbientLight>
+    <Splash>MapDefault</Splash>
+    <LevelEffect>None</LevelEffect>
+    <CameraReadAccelerometer>true</CameraReadAccelerometer>
+    <Width>32</Width>
+    <Height>32</Height>
+    <Lights>
+      <Item>
+        <Position>18.5 11</Position>
+        <Color>FF00FFFF</Color>
+        <R>27</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>15.5 26</Position>
+        <Color>551AFFFF</Color>
+        <R>20</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>8.5 8</Position>
+        <Color>551AFFFF</Color>
+        <R>20</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>19 3.5</Position>
+        <Color>551AFFFF</Color>
+        <R>20</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>24 7</Position>
+        <Color>551AFFFF</Color>
+        <R>20</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>28.0833321 26.5</Position>
+        <Color>551AFFFF</Color>
+        <R>20</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>17 18.5</Position>
+        <Color>551AFFFF</Color>
+        <R>8</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+      </Item>
+    </Lights>
+    <Players />
+    <SimpleCars />
+    <Entities>
+      <Item>
+        <Id>1001</Id>
+        <Position>29.5 28</Position>
+        <Sprite>Entities\GearStar</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Coin</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+      </Item>
+      <Item>
+        <Id>1002</Id>
+        <Position>14 4</Position>
+        <Sprite>Entities\GearStar</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Coin</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+      </Item>
+    </Entities>
+    <Triggers />
+    <Actions>
+      <Item Type="GameLibrary.MapPartPortal">
+        <Name>Portal</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>0 13 1 14</Area>
+        <AllowIn>true</AllowIn>
+        <AllowOut>true</AllowOut>
+      </Item>
+      <Item Type="GameLibrary.MapPartPortal">
+        <Name>Portal</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>12 31 14 1</Area>
+        <AllowIn>true</AllowIn>
+        <AllowOut>true</AllowOut>
+      </Item>
+      <Item Type="GameLibrary.MapPartPortal">
+        <Name>Portal</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>31 1 1 14</Area>
+        <AllowIn>true</AllowIn>
+        <AllowOut>true</AllowOut>
+      </Item>
+      <Item Type="GameLibrary.TriggerWithPeriodicCheck">
+        <Name>Trigger</Name>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Actions>
+          <Item>EnemySpawnArea</Item>
+        </Actions>
+        <Area>-6 0 44 38</Area>
+      </Item>
+      <Item Type="GameLibrary.EnemySpawnArea">
+        <Name>EnemySpawnArea</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>12 7 10 9</Area>
+      </Item>
+    </Actions>
+  </Asset>
+</XnaContent>

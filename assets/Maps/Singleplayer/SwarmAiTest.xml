@@ -1,0 +1,169 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>SwarmAiTest</Name>
+    <GameMode>SinglePlayer</GameMode>
+    <Image>Maps\Singleplayer\SwarmAiTest</Image>
+    <Scale>48</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>false</HaveOutlandVizualization>
+    <OutlandColorLT>FF000000</OutlandColorLT>
+    <OutlandColorRT>FF00BFFF</OutlandColorRT>
+    <OutlandColorRB>FFFFA500</OutlandColorRB>
+    <OutlandColorLB>FFFFFF00</OutlandColorLB>
+    <TargetTimeSec>0</TargetTimeSec>
+    <Friction>1</Friction>
+    <AmbientLight>0C0C0C0C</AmbientLight>
+    <Splash>MapDefault</Splash>
+    <LevelEffect>None</LevelEffect>
+    <Lights>
+      <Item>
+        <Position>46 41.5</Position>
+        <Color>FFDCD9FF</Color>
+        <R>60</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>11.5 88</Position>
+        <Color>FFDCD9FF</Color>
+        <R>60</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>86.5 6.5</Position>
+        <Color>FFDCD9FF</Color>
+        <R>60</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>90.5 84.5</Position>
+        <Color>FFDCD9FF</Color>
+        <R>60</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+    </Lights>
+    <Players Null="true" />
+    <SimpleCars>
+      <Item>
+        <Id>3001</Id>
+        <Position>30.5 24.3498764</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>Local</Control>
+        <CarName>Zombie</CarName>
+        <ActionOnCreate>FocusOnEntity(0)</ActionOnCreate>
+      </Item>
+      <Item>
+        <Id>3002</Id>
+        <Position>31 20.5</Position>
+        <DirectionDeg>283.147034</DirectionDeg>
+        <Control>ZombieFlockingFriend</Control>
+        <CarName>Zombie</CarName>
+      </Item>
+      <Item>
+        <Id>3003</Id>
+        <Position>27 28.5</Position>
+        <DirectionDeg>197.381958</DirectionDeg>
+        <Control>ZombieFlockingFriend</Control>
+        <CarName>Zombie</CarName>
+      </Item>
+      <Item>
+        <Id>3004</Id>
+        <Position>30.5 27.5</Position>
+        <DirectionDeg>303.861084</DirectionDeg>
+        <Control>ZombieFlockingFriend</Control>
+        <CarName>Zombie</CarName>
+      </Item>
+      <Item>
+        <Id>3005</Id>
+        <Position>27 24</Position>
+        <DirectionDeg>325.877167</DirectionDeg>
+        <Control>ZombieFlockingFriend</Control>
+        <CarName>Zombie</CarName>
+      </Item>
+      <Item>
+        <Id>3006</Id>
+        <Position>24.5 26</Position>
+        <DirectionDeg>153.852585</DirectionDeg>
+        <Control>ZombieFlockingFriend</Control>
+        <CarName>Zombie</CarName>
+      </Item>
+      <Item>
+        <Id>3007</Id>
+        <Position>26.5 19.5</Position>
+        <DirectionDeg>251.092377</DirectionDeg>
+        <Control>ZombieFlockingFriend</Control>
+        <CarName>Zombie</CarName>
+      </Item>
+      <Item>
+        <Id>3008</Id>
+        <Position>34 22.5</Position>
+        <DirectionDeg>196.591446</DirectionDeg>
+        <Control>ZombieFlockingFriend</Control>
+        <CarName>Zombie</CarName>
+      </Item>
+      <Item>
+        <Id>3009</Id>
+        <Position>31 31</Position>
+        <DirectionDeg>110.029358</DirectionDeg>
+        <Control>ZombieFlockingFriend</Control>
+        <CarName>Zombie</CarName>
+      </Item>
+      <Item>
+        <Id>3010</Id>
+        <Position>34.5 27.5</Position>
+        <DirectionDeg>263.010529</DirectionDeg>
+        <Control>ZombieFlockingFriend</Control>
+        <CarName>Zombie</CarName>
+      </Item>
+      <Item>
+        <Id>3011</Id>
+        <Position>26 32.5</Position>
+        <DirectionDeg>183.470673</DirectionDeg>
+        <Control>ZombieFlockingFriend</Control>
+        <CarName>Zombie</CarName>
+      </Item>
+      <Item>
+        <Id>3012</Id>
+        <Position>24.5 22</Position>
+        <DirectionDeg>3.84527087</DirectionDeg>
+        <Control>ZombieFlockingFriend</Control>
+        <CarName>Zombie</CarName>
+      </Item>
+      <Item>
+        <Id>3013</Id>
+        <Position>29.5 17.5</Position>
+        <DirectionDeg>348.017456</DirectionDeg>
+        <Control>ZombieFlockingFriend</Control>
+        <CarName>Zombie</CarName>
+      </Item>
+      <Item>
+        <Id>3014</Id>
+        <Position>21.5 17.5</Position>
+        <DirectionDeg>15.5614433</DirectionDeg>
+        <Control>ZombieFlockingFriend</Control>
+        <CarName>Zombie</CarName>
+      </Item>
+      <Item>
+        <Id>3015</Id>
+        <Position>21 26</Position>
+        <DirectionDeg>39.00245</DirectionDeg>
+        <Control>ZombieFlockingFriend</Control>
+        <CarName>Zombie</CarName>
+      </Item>
+      <Item>
+        <Id>3016</Id>
+        <Position>26.5 16</Position>
+        <DirectionDeg>349.693359</DirectionDeg>
+        <Control>ZombieFlockingFriend</Control>
+        <CarName>Zombie</CarName>
+      </Item>
+      <Item>
+        <Id>3017</Id>
+        <Position>36.5 20.5</Position>
+        <DirectionDeg>330.006744</DirectionDeg>
+        <Control>ZombieFlockingFriend</Control>
+        <CarName>Zombie</CarName>
+      </Item>
+    </SimpleCars>
+  </Asset>
+</XnaContent>

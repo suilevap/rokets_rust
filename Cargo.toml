@@ -1,0 +1,57 @@
+[package]
+name = "tilerider"
+version = "0.1.0"
+edition = "2024"
+description = "TileRider, a 2.5D vehicle action game, ported to Rust and Bevy"
+license = "MIT"
+rust-version = "1.97.1"
+
+[dependencies]
+bevy = { version = "0.20.1", default-features = false, features = [
+    # App, windowing, input, assets, logging (incl. gamepads via gilrs,
+    # x11/wayland, multi-threading, webgl2 for the browser build).
+    "default_app",
+    "default_platform",
+    "keyboard",
+    "mouse",
+    "touch",
+    "gamepad",
+    # 3D rendering: walls and floor are real geometry seen in perspective.
+    "3d_api",
+    "bevy_render",
+    "bevy_core_pipeline",
+    "bevy_pbr",
+    "bevy_post_process",
+    "bevy_anti_alias",
+    # Debug text and the HUD.
+    "ui_api",
+    "bevy_ui_render",
+    "png",
+] }
+avian2d = { version = "0.8.0", default-features = false, features = ["2d", "parry-f32", "default-collider", "parallel"] }
+serde = { version = "1", features = ["derive"] }
+quick-xml = { version = "0.42", features = ["serialize"] }
+thiserror = "2"
+rand = { version = "0.9", default-features = false, features = ["small_rng"] }
+
+[dev-dependencies]
+# Map tests read every map from assets/ directly.
+
+[profile.dev]
+opt-level = 1
+# Full debug info for Bevy and its dependencies takes ~18 GB; line tables
+# are enough for backtraces.
+debug = "line-tables-only"
+
+[profile.dev.package."*"]
+opt-level = 3
+debug = false
+
+# `cargo build --profile web --target wasm32-unknown-unknown`: small download.
+[profile.web]
+inherits = "release"
+opt-level = "z"
+lto = "fat"
+codegen-units = 1
+strip = "debuginfo"
+panic = "abort"
