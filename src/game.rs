@@ -78,17 +78,11 @@ struct Pending {
     sprites: Vec<(String, Handle<Image>)>,
 }
 
-/// Entity types the game spawns so far; the rest are reported per map.
-pub const SUPPORTED_ENTITY_KINDS: &[&str] = &[
-    "Coin",
-    "Tile",
-    "Box",
-    "NonLinkableBox",
-    "IgnoreWeaponBox",
-    "DamagableBox",
-    "HeavyBox",
-    "Accelerator",
-];
+/// Whether any module spawns entities of this type; the rest are reported
+/// per map when it loads.
+fn spawned(kind: crate::content::map::EntityType) -> bool {
+    crate::pickups::handles(kind) || crate::props::PropKind::from_entity_type(kind).is_some()
+}
 
 /// The sprite names a map needs: its player car's parts and its drawn entities.
 fn sprites_for(map: &MapData, cars: &CarCatalog) -> Vec<String> {
@@ -101,12 +95,12 @@ fn sprites_for(map: &MapData, cars: &CarCatalog) -> Vec<String> {
             }
         }
     }
-    let mut skipped: std::collections::BTreeMap<&str, usize> = Default::default();
+    let mut skipped: std::collections::BTreeMap<_, usize> = Default::default();
     for e in map.entities.iter() {
-        if SUPPORTED_ENTITY_KINDS.contains(&e.kind.as_str()) {
+        if spawned(e.kind) {
             names.extend(crate::props::entity_sprite(e));
         } else {
-            *skipped.entry(e.kind.as_str()).or_default() += 1;
+            *skipped.entry(e.kind).or_default() += 1;
         }
     }
     if !skipped.is_empty() {

@@ -9,6 +9,7 @@
 
 use bevy::prelude::*;
 
+use crate::content::map::EntityType;
 use crate::controls::LocalPlayer;
 use crate::game::{GameState, LoadedMap, MapEntity};
 use crate::render::layers::Layer;
@@ -34,6 +35,11 @@ pub struct CoinCount {
 #[derive(Message, Debug)]
 pub struct CoinCollected;
 
+/// Whether this module spawns entities of this type.
+pub fn handles(kind: EntityType) -> bool {
+    matches!(kind, EntityType::Coin | EntityType::Tile)
+}
+
 pub struct PickupsPlugin;
 
 impl Plugin for PickupsPlugin {
@@ -58,17 +64,18 @@ fn spawn_entities(
         lit: true,
     };
     for e in map.data.entities.iter() {
-        if !matches!(e.kind.as_str(), "Coin" | "Tile") {
-            continue;
-        }
+        let layer = match e.kind {
+            EntityType::Coin => Layer::Coin,
+            EntityType::Tile => Layer::GroundDecor,
+            _ => continue,
+        };
         let Some(info) = map.sprites.get(&e.sprite) else {
             continue;
         };
         let position = map.world(e.position.x, e.position.y);
         let angle = map_degrees_to_world(e.direction_deg);
-        let layer = if e.kind == "Coin" { Layer::Coin } else { Layer::GroundDecor };
         let mut entity = commands.spawn((
-            Name::new(format!("{} {}", e.kind, e.id)),
+            Name::new(format!("{:?} {}", e.kind, e.id)),
             MapEntity,
             Transform::from_translation(position.extend(0.0)).with_rotation(Quat::from_rotation_z(angle)),
             Visibility::default(),
@@ -77,7 +84,7 @@ fn spawn_entities(
         entity.with_children(|p| {
             p.spawn(sprite_bundle(info, e.scale, layer, lit, &quad, &mut materials));
         });
-        if e.kind == "Coin" {
+        if e.kind == EntityType::Coin {
             coins.total += 1;
             entity.insert(Coin {
                 radius: size.max_element() / 2.0,

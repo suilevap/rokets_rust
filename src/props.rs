@@ -19,7 +19,7 @@
 use avian2d::prelude::*;
 use bevy::prelude::*;
 
-use crate::content::map::EntityData;
+use crate::content::map::{EntityData, EntityType};
 use crate::game::{GameState, LoadedMap, MapEntity};
 use crate::render::layers::Layer;
 use crate::render::sprite::{SpriteTint, UnitQuad, sprite_bundle};
@@ -45,13 +45,15 @@ pub enum PropKind {
 
 impl PropKind {
     /// The prop for a map entity type, if this module handles it.
-    pub fn from_entity_type(kind: &str) -> Option<PropKind> {
+    pub fn from_entity_type(kind: EntityType) -> Option<PropKind> {
         match kind {
-            "Box" | "NonLinkableBox" | "IgnoreWeaponBox" | "DamagableBox" => Some(PropKind::Box { density: 1.0 }),
-            "HeavyBox" => Some(PropKind::Box {
+            EntityType::Box | EntityType::NonLinkableBox | EntityType::IgnoreWeaponBox | EntityType::DamagableBox => {
+                Some(PropKind::Box { density: 1.0 })
+            }
+            EntityType::HeavyBox => Some(PropKind::Box {
                 density: HEAVY_BOX_FACTOR,
             }),
-            "Accelerator" => Some(PropKind::Accelerator),
+            EntityType::Accelerator => Some(PropKind::Accelerator),
             _ => None,
         }
     }
@@ -59,16 +61,16 @@ impl PropKind {
 
 /// The sprite an entity is drawn with: some kinds ignore the map's choice.
 pub fn entity_sprite(e: &EntityData) -> Option<String> {
-    match e.kind.as_str() {
-        "DamagableBox" => Some("Entities\\DamagableBox".into()),
-        "Accelerator" => Some("Entities\\Accelerator".into()),
+    match e.kind {
+        EntityType::DamagableBox => Some("Entities\\DamagableBox".into()),
+        EntityType::Accelerator => Some("Entities\\Accelerator".into()),
         _ => (!e.sprite.is_empty()).then(|| e.sprite.clone()),
     }
 }
 
 /// The scale an entity is drawn and sized with.
 fn entity_scale(e: &EntityData) -> f32 {
-    if e.kind == "DamagableBox" { 1.0 } else { e.scale }
+    if e.kind == EntityType::DamagableBox { 1.0 } else { e.scale }
 }
 
 /// The axes the map locks for an entity, or `None` if it is fixed in place.
@@ -124,7 +126,7 @@ fn spawn_props(
         lit: true,
     };
     for e in map.data.entities.iter() {
-        let Some(kind) = PropKind::from_entity_type(&e.kind) else {
+        let Some(kind) = PropKind::from_entity_type(e.kind) else {
             continue;
         };
         let Some(info) = entity_sprite(e).and_then(|s| map.sprites.get(&s).cloned()) else {
@@ -137,7 +139,7 @@ fn spawn_props(
             Transform::from_translation(map.world(e.position.x, e.position.y).extend(0.0))
                 .with_rotation(Quat::from_rotation_z(angle));
         let mut entity = commands.spawn((
-            Name::new(format!("{} {}", e.kind, e.id)),
+            Name::new(format!("{:?} {}", e.kind, e.id)),
             MapEntity,
             transform,
             Visibility::default(),

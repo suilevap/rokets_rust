@@ -1,18 +1,24 @@
 //! Which map entities become props, and how the map locks their axes.
 
 use avian2d::prelude::LockedAxes;
+use tilerider::content::map::EntityType;
 use tilerider::props::{PropKind, locked_axes};
 
 #[test]
 fn box_kinds_and_accelerators() {
-    for kind in ["Box", "NonLinkableBox", "IgnoreWeaponBox", "DamagableBox"] {
-        assert_eq!(PropKind::from_entity_type(kind), Some(PropKind::Box { density: 1.0 }), "{kind}");
+    for kind in [
+        EntityType::Box,
+        EntityType::NonLinkableBox,
+        EntityType::IgnoreWeaponBox,
+        EntityType::DamagableBox,
+    ] {
+        assert_eq!(PropKind::from_entity_type(kind), Some(PropKind::Box { density: 1.0 }), "{kind:?}");
     }
     // A heavy box is 64 times heavier while nothing tows it.
-    assert_eq!(PropKind::from_entity_type("HeavyBox"), Some(PropKind::Box { density: 64.0 }));
-    assert_eq!(PropKind::from_entity_type("Accelerator"), Some(PropKind::Accelerator));
-    assert_eq!(PropKind::from_entity_type("Coin"), None);
-    assert_eq!(PropKind::from_entity_type("Bomb"), None);
+    assert_eq!(PropKind::from_entity_type(EntityType::HeavyBox), Some(PropKind::Box { density: 64.0 }));
+    assert_eq!(PropKind::from_entity_type(EntityType::Accelerator), Some(PropKind::Accelerator));
+    assert_eq!(PropKind::from_entity_type(EntityType::Coin), None);
+    assert_eq!(PropKind::from_entity_type(EntityType::Bomb), None);
 }
 
 #[test]
