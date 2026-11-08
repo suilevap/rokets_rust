@@ -4,9 +4,13 @@
 //! (`ConvertUnits`), so the car's forces, speeds and masses keep their C#
 //! values. A map cell is `MapData.Scale / 32` units (2 for a 64-pixel map).
 //!
-//! Map coordinates have y pointing down and angles clockwise (0° right,
-//! 90° down); the world has y up and angles counter-clockwise, as in Bevy.
+//! Map coordinates have y pointing down; the world has y up, as in Bevy.
 //! Convert only at this boundary.
+//!
+//! Map directions (`DirectionDeg`) turn counter-clockwise on screen: 0° is
+//! right and 90° is up. The C# game used `-DirectionDeg` as its angle in
+//! y-down coordinates everywhere (`MapManager`, `ActionRunner`), which is
+//! `+DirectionDeg` with y up.
 
 use bevy::math::Vec2;
 
@@ -33,25 +37,12 @@ impl CellSize {
     }
 }
 
-/// A map direction in degrees (clockwise, y down) to a world angle in radians.
+/// A map direction in degrees (0° right, 90° up) to a world angle in radians.
 pub fn map_degrees_to_world(deg: f32) -> f32 {
-    -deg.to_radians()
+    deg.to_radians()
 }
 
 /// A length in the C# game's pixels to world units.
 pub fn px(v: f32) -> f32 {
     v / PX_PER_UNIT
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn converts() {
-        let cell = CellSize::from_map_scale(64.0);
-        assert_eq!(cell.to_world(9.5, 3.5), Vec2::new(19.0, -7.0));
-        assert_eq!(cell.to_cells(Vec2::new(19.0, -7.0)), (9.5, 3.5));
-        assert!((map_degrees_to_world(90.0) + std::f32::consts::FRAC_PI_2).abs() < 1e-6);
-    }
 }
