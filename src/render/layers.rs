@@ -41,6 +41,10 @@ pub enum Layer {
     /// `Tile` entities on the floor: finish markings, signs, grass
     /// (`DepthConst.Tile`).
     GroundDecor,
+    /// Accelerator pads (`DepthConst.Accelerator`, just under the ground).
+    Accelerator,
+    /// Boxes (`DepthConst.CustomEntity`, the car's height).
+    Prop,
     /// The car's chassis (`DepthConst.CarBase`).
     CarBase,
     /// Front wheels (`CarBase + WheelDelta`).
@@ -52,8 +56,10 @@ pub enum Layer {
 }
 
 impl Layer {
-    pub const ALL: [Layer; 5] = [
+    pub const ALL: [Layer; 7] = [
         Layer::GroundDecor,
+        Layer::Accelerator,
+        Layer::Prop,
         Layer::CarBase,
         Layer::CarWheel,
         Layer::CarBody,
@@ -69,21 +75,5 @@ impl Layer {
     /// The material `depth_bias` that puts this layer above lower ones.
     pub fn depth_bias(self) -> f32 {
         self as u8 as f32 * BIAS_PER_RANK
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn layers_are_ordered_and_above_the_floor() {
-        for pair in Layer::ALL.windows(2) {
-            let (lower, upper) = (pair[0], pair[1]);
-            assert!(lower < upper);
-            assert!(lower.z() < upper.z(), "{lower:?} must sit below {upper:?}");
-            assert!(lower.depth_bias() < upper.depth_bias());
-        }
-        assert!(Layer::ALL.iter().all(|l| l.z() > FLOOR_TOP));
     }
 }

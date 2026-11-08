@@ -78,8 +78,6 @@ struct Pending {
     sprites: Vec<(String, Handle<Image>)>,
 }
 
-/// Entity types whose sprites are drawn so far.
-pub const DRAWN_ENTITY_KINDS: &[&str] = &["Coin", "Tile"];
 
 /// The sprite names a map needs: its player car's parts and its drawn entities.
 fn sprites_for(map: &MapData, cars: &CarCatalog) -> Vec<String> {
@@ -92,10 +90,15 @@ fn sprites_for(map: &MapData, cars: &CarCatalog) -> Vec<String> {
             }
         }
     }
+    let mut skipped: std::collections::BTreeMap<_, usize> = Default::default();
     for e in map.entities.iter() {
-        if DRAWN_ENTITY_KINDS.contains(&e.kind.as_str()) && !e.sprite.is_empty() {
-            names.push(e.sprite.clone());
+        match crate::map::templates::template_for(e) {
+            Some(template) => names.extend(template.sprites.into_iter().map(|s| s.name)),
+            None => *skipped.entry(e.kind).or_default() += 1,
         }
+    }
+    if !skipped.is_empty() {
+        info!("entities not supported yet (skipped): {skipped:?}");
     }
     names.sort_by_key(|n| n.to_ascii_lowercase());
     names.dedup_by_key(|n| n.to_ascii_lowercase());

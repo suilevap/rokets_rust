@@ -69,6 +69,14 @@ fn make_unit_quad(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
     commands.insert_resource(UnitQuad(meshes.add(Rectangle::new(1.0, 1.0))));
 }
 
+/// A sprite quad's components; the transform (`.2`) may be moved.
+pub type SpriteQuad = (
+    Mesh3d,
+    MeshMaterial3d<StandardMaterial>,
+    Transform,
+    SpriteTint,
+);
+
 /// Components for a sprite quad: `scale` is the entity's scale from the
 /// XML, `layer` decides its height and its place in the draw order (see
 /// `layers.rs`). The quad's parent must sit on the ground plane (z = 0).
@@ -79,7 +87,7 @@ pub fn sprite_bundle(
     tint: SpriteTint,
     quad: &UnitQuad,
     materials: &mut Assets<StandardMaterial>,
-) -> impl Bundle {
+) -> SpriteQuad {
     let size = info.size * px(1.0) * scale;
     let material = materials.add(StandardMaterial {
         base_color: Color::srgba(tint.color[0], tint.color[1], tint.color[2], tint.color[3]),

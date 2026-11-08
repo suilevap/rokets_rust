@@ -76,8 +76,9 @@ python3 -m http.server -d dist 8000
 ## MVP maps
 
 `EditorTest`, `CharMapTest` (walls drawn as text), `LightTest`,
-`LetItSnowDay` (gears and a finish), `Middleware` (the first campaign map;
-its enemies and boxes do not appear yet).
+`LetItSnowDay` (gears and a finish), `Middleware` (the first campaign map,
+with accelerator pads), `Unboxing` (boxes). Enemies, doors and bombs do not
+appear yet.
 
 ## Compared with the C# game
 
