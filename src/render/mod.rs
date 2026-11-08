@@ -7,6 +7,7 @@
 
 pub mod camera;
 pub mod layers;
+pub mod spin;
 pub mod map_mesh;
 pub mod sprite;
 

@@ -25,6 +25,8 @@ main
 | `assets` | Resolves C# content names case-insensitively through `assets/manifest.txt`; loads XML as text assets (works on the web) | content pipeline |
 | `map/grid` | The map as cells from the image (alpha: floor below `ImageWallTreshold`, wall above, height in 32 px steps) and `CharMap`; `IsFloor`; distance to walls; corner wedges; walls merged into rectangles | `MapManager`, `TilesMap.GetH`, `MapInfo.BuildTextureFromCharMap`, `MapManager.GetEdgeIndex` |
 | `map/colliders` | Static wall colliders | `PhysicsManager.CreateWalls` |
+| `map/templates` | **The only place that reads a map entity's type**: turns each map entity into a template of properties (sprite and layer, body kind and density, axis locks, boost, pickup, spin). Plain data, unit-tested | `EntitiesFactory`, entity classes |
+| `map/spawn` | Builds entities from templates: sprite quads, Avian bodies (box, friction 0.8, bounce 0.5, C# damping) and behaviour components | `Entity`, `PhysicEntity` |
 | `light/bake` | Static light map baked on the CPU: lamps with the `flash2` falloff, wall shadows, two-copy penumbra, ambient, saturation, blur. Kept on the CPU for gameplay and shadows | `LightManager` |
 | `game` | States `Loading → Playing` (`Failed`), `LoadedMap`, `MapEntity` (despawned on leaving a map), `ChangeMap` (restart / next) | `MapManager.SetMap` |
 | `render/map_mesh` | Floor of loose, tilted tiles, always below the ground plane; walls as blocks with fading faces; light baked into vertex colours | `TilesMap.AddTiles2`, `Primitive3d`, `RenderSettings` "Mul_Add05" |
@@ -34,9 +36,10 @@ main
 | `controls` | `PlayerIntent` (where to go, aim, fire) written by keyboard, gamepad and touch schemes; the last one used is active; screen directions are turned into the world by `ViewRotation` | `IControl`, `CompositePlayerControl` |
 | `car/drive` | The driving model as a pure function, run at 60 Hz | `Car.MovementControl`, `Brake`, `AdditionalFriction` |
 | `car` | Spawns the player's car on Avian; sprites; front wheels | `Car`, `ControlableEntity` |
-| `pickups` | Decor tiles and gears | `Coin`, `Tile` entities |
-| `props` | Boxes (pushable bodies; heavy boxes 64× heavier; map axis locks) and accelerator pads (sensors that throw bodies 30 units/s along them, blinking arrows) | `Box`, `HeavyBox`, `DamagableBox`, `Accelerator`, `EntitiesFactory` |
 | `triggers` | Trigger areas; only level-end actions run so far | `TriggerManager`, `ActionTemplates` |
+| `pickups` | `Pickup`: collected by driving into it; the count | `Coin` |
+| `boost` | `Booster`: throws touching bodies along its facing; `PadArrows`: the blinking double arrow | `Accelerator` |
+| `render/spin` | `Spin`: turns on the spot | — |
 | `hud` | Debug text, `R` / `N` keys | — |
 | `script` | `--drive`: scripted stick input and a logged path, for comparing driving | — |
 
@@ -49,6 +52,10 @@ main
   walls, soft baked light) before trying engine-standard replacements.
 - Map data is parsed in full even when unused; unsupported entities and
   actions are logged per map, so coverage is visible.
+- **Map entity types stop at loading.** `map/templates.rs` turns each into
+  a set of components; systems act on components (`Pickup`, `Booster`,
+  bodies), never on the type. A new kind is a new template arm composed of
+  existing pieces, or a new piece with the system that gives it behaviour.
 - **Draw order lives in `render/layers.rs`.** A new kind of sprite gets a
   `Layer` there; nothing picks a z height or sort order of its own.
 - The car only reads `PlayerIntent`; new control schemes and AI write it.

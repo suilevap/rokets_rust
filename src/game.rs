@@ -78,11 +78,6 @@ struct Pending {
     sprites: Vec<(String, Handle<Image>)>,
 }
 
-/// Whether any module spawns entities of this type; the rest are reported
-/// per map when it loads.
-fn spawned(kind: crate::content::map::EntityType) -> bool {
-    crate::pickups::handles(kind) || crate::props::PropKind::from_entity_type(kind).is_some()
-}
 
 /// The sprite names a map needs: its player car's parts and its drawn entities.
 fn sprites_for(map: &MapData, cars: &CarCatalog) -> Vec<String> {
@@ -97,10 +92,9 @@ fn sprites_for(map: &MapData, cars: &CarCatalog) -> Vec<String> {
     }
     let mut skipped: std::collections::BTreeMap<_, usize> = Default::default();
     for e in map.entities.iter() {
-        if spawned(e.kind) {
-            names.extend(crate::props::entity_sprite(e));
-        } else {
-            *skipped.entry(e.kind).or_default() += 1;
+        match crate::map::templates::template_for(e) {
+            Some(template) => names.push(template.sprite.name),
+            None => *skipped.entry(e.kind).or_default() += 1,
         }
     }
     if !skipped.is_empty() {
