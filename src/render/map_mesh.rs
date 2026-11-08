@@ -37,10 +37,10 @@ const WALL_FADE_START: f32 = 0.5;
 const WALL_FADE_END: f32 = 0.95;
 /// How far below the walls' base the background lies (below the deepest tiles).
 const BACKGROUND_DEPTH: f32 = 17.0;
-/// How far tiles sink, per C# depth unit (`DepthConst.FloorMaxDepthScale`).
-/// The C# formula gives 1.8–5 units, but its screenshots show the floor
-/// nearly level with the walls' base, so it is scaled down to match them.
-const FLOOR_DEPTH_SCALE: f32 = 0.25;
+/// How far tiles sink, per C# depth unit (`DepthConst.FloorMaxDepthScale`):
+/// `amount × cell × 2 + 1` units below the walls' base, so in perspective
+/// the floor reads smaller than the cars and walls above it.
+const FLOOR_DEPTH_SCALE: f32 = 1.0;
 
 #[derive(Default)]
 struct MeshBuilder {
@@ -130,11 +130,12 @@ fn build_floor(grid: &MapGrid, light: &LightMap, cell: f32, rng: &mut SmallRng) 
                 continue;
             }
             done[idx(x, y)] = true;
-            let d = grid.distance_to_wall(xi, yi);
-            // amount = clamp(distance / (512·cell/96)). Compared with the C#
-            // screenshots the distance field there counts cells, so most
-            // tiles stay at the 0.2 floor: nearly full size, shallow.
-            let amount = (d / (512.0 * cell / 96.0)).clamp(0.2, 1.0);
+            // `MapManager.CreateDistanceField` measures from the cell's corner
+            // in cells × cell size, at least one cell for open ground: about
+            // our centre distance + ½. `amount = clamp(d / (512·cell/96))`, the
+            // cell size cancels: tiles far from walls shrink and sink most.
+            let d = grid.distance_to_wall(xi, yi) + 0.5;
+            let amount = (d * 96.0 / 512.0).clamp(0.2, 1.0);
             let mut center = Vec2::new(x as f32 + 0.5, y as f32 + 0.5);
             let mut size = 1.0;
             let big = grid.is_floor(xi + 1, yi + 1)
