@@ -28,7 +28,7 @@ main
 | `light/bake` | Static light map baked on the CPU: lamps with the `flash2` falloff, wall shadows, two-copy penumbra, ambient, saturation, blur. Kept on the CPU for gameplay and shadows | `LightManager` |
 | `game` | States `Loading → Playing` (`Failed`), `LoadedMap`, `MapEntity` (despawned on leaving a map), `ChangeMap` (restart / next) | `MapManager.SetMap` |
 | `render/map_mesh` | Floor of loose, tilted tiles, always below the ground plane; walls as blocks with fading faces; light baked into vertex colours | `TilesMap.AddTiles2`, `Primitive3d`, `RenderSettings` "Mul_Add05" |
-| `render/layers` | **The draw order**: floor geometry under `FLOOR_TOP`, then sprite layers (ground decor, car chassis, wheels, cabin, gears), each with a height and a `depth_bias` rank, as the C# `DepthConst` table and its `BackToFront` sprite sort | `DepthConst`, `Renderer.Draw` |
+| `render/layers` | **The draw order**: floor geometry under `FLOOR_TOP`, then sprite layers (ground decor, car chassis, wheels, cabin, gears), ordered by a `depth_bias` rank, as the C# `DepthConst` table and its `BackToFront` sprite sort; all lie within a hundredth of a unit of the ground, so order never changes a sprite's size | `DepthConst`, `Renderer.Draw` |
 | `render/sprite` | Sprites as unlit quads tinted by the light map, placed by their layer | `SpriteView` + light layer |
 | `render/camera` | Perspective camera from above, trailing its target | `Camera2D` |
 | `controls` | `PlayerIntent` (where to go, aim, fire) written by keyboard, gamepad and touch schemes; the last one used is active | `IControl`, `CompositePlayerControl` |

@@ -17,11 +17,19 @@
 //!   camera. (Its effect on the depth test against walls is ~1e-5 units.)
 //!   Within one layer, nearer meshes draw last.
 //!
-//! Heights are the C# `DepthConst` values with the sign flipped (there z
-//! grew away from the camera; here it grows towards it), in world units.
+//! Order and height are separate. The order comes from the C#
+//! `DepthConst` table (which is what the sprite batch sorted by). The
+//! height is only how far above the ground plane a sprite lies: every
+//! sprite layer lies within a hundredth of a unit of it, so nothing is
+//! lifted towards the camera and drawn larger or shifted in perspective;
+//! the small steps only keep them above the floor and below the walls in
+//! the depth test.
 
 /// Highest point any floor tile may reach.
 pub const FLOOR_TOP: f32 = -0.15;
+
+/// Height between consecutive layers: tiny, only for the depth test.
+const Z_STEP: f32 = 0.002;
 
 /// `depth_bias` between consecutive ranks, in sort-distance units (world
 /// units); larger than any camera-tilt difference across the screen.
@@ -31,7 +39,7 @@ const BIAS_PER_RANK: f32 = 100.0;
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Layer {
     /// `Tile` entities on the floor: finish markings, signs, grass
-    /// (`DepthConst.Tile` = 0.1 below the ground plane).
+    /// (`DepthConst.Tile`).
     GroundDecor,
     /// The car's chassis (`DepthConst.CarBase`).
     CarBase,
@@ -39,7 +47,7 @@ pub enum Layer {
     CarWheel,
     /// The cabin (`CarBase + BodyDelta`).
     CarBody,
-    /// Gears (`DepthConst.Coin`): above the cars.
+    /// Gears (`DepthConst.Coin`): drawn over the cars.
     Coin,
 }
 
@@ -52,18 +60,10 @@ impl Layer {
         Layer::Coin,
     ];
 
-    /// Height above the ground plane, world units.
+    /// Height above the ground plane, world units: all near zero (see the
+    /// module doc); the order comes from [`Layer::depth_bias`].
     pub fn z(self) -> f32 {
-        // `toFixLightIssuesNewarWorlScale` in DepthConst.
-        const S: f32 = 1.0 / 16.0;
-        const CAR_BASE: f32 = 16.0 / 32.0 * S;
-        match self {
-            Layer::GroundDecor => -0.1,
-            Layer::CarBase => CAR_BASE,
-            Layer::CarWheel => CAR_BASE + 0.05 / 32.0 * S,
-            Layer::CarBody => CAR_BASE + 1.0 / 32.0 * S,
-            Layer::Coin => 16.0 / 32.0 - 0.1 * S,
-        }
+        self as u8 as f32 * Z_STEP
     }
 
     /// The material `depth_bias` that puts this layer above lower ones.
