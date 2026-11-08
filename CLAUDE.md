@@ -2,7 +2,8 @@
 
 TileRider ported from C# / MonoGame (`suilevap/rokets`) to Rust, Bevy 0.20
 and Avian 2D. Read `README.md` (running, options) and `ARCHITECTURE.md`
-(modules, conventions, what is not ported) first. The migration plan is in
+(modules, conventions, what is not ported) first, and `docs/BACKLOG.md`
+for agreed work not yet scheduled. The migration plan is in
 the C# repository: `docs/plans/RUST_BEVY_MIGRATION.md`.
 
 - **Port intent, not implementation.** Find the C# code a feature comes
