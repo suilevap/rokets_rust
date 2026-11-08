@@ -12,8 +12,9 @@
 //! - **The floor stays under everything else**: however a tile tilts, it
 //!   is lowered until no corner rises above `layers::FLOOR_TOP`, below
 //!   every sprite layer, as the C# renderer kept the floor below them.
-//! - **Light**: floor tiles take the light map's colour (multiplied); walls
-//!   take `colour × light + light / 2` (the "Mul_Add05" vertex light).
+//! - **Light**: floor tiles are unlit here; the light layer
+//!   (`render/light_layer`) multiplies them on screen. Walls take
+//!   `colour × light + light / 2` (the "Mul_Add05" vertex light).
 //!
 //! Colours are mixed in sRGB as the C# game did, then converted to linear
 //! for Bevy.
@@ -77,10 +78,6 @@ impl MeshBuilder {
     }
 }
 
-pub(crate) fn mul(a: [f32; 3], b: [f32; 3]) -> [f32; 3] {
-    [a[0] * b[0], a[1] * b[1], a[2] * b[2]]
-}
-
 pub(crate) fn lerp3(a: [f32; 3], b: [f32; 3], t: f32) -> [f32; 3] {
     [
         a[0] + (b[0] - a[0]) * t,
@@ -102,12 +99,12 @@ pub fn build_map_meshes(map: &LoadedMap) -> (Mesh, Mesh) {
             .bytes()
             .fold(7u64, |h, b| h.wrapping_mul(31).wrapping_add(b as u64)),
     );
-    let floor = build_floor(&map.grid, &map.light, map.cell.0, &mut rng);
+    let floor = build_floor(&map.grid, map.cell.0, &mut rng);
     let walls = build_walls(&map.grid, &map.light, map.cell.0);
     (floor, walls)
 }
 
-fn build_floor(grid: &MapGrid, light: &LightMap, cell: f32, rng: &mut SmallRng) -> Mesh {
+fn build_floor(grid: &MapGrid, cell: f32, rng: &mut SmallRng) -> Mesh {
     let mut mb = MeshBuilder::default();
     let mut done = vec![false; (grid.width + 1) * (grid.height + 1)];
     let idx = |x: usize, y: usize| y * (grid.width + 1) + x;
@@ -184,8 +181,7 @@ fn build_floor(grid: &MapGrid, light: &LightMap, cell: f32, rng: &mut SmallRng) 
                     c.z -= top - FLOOR_TOP;
                 }
             }
-            let colors = corners.map(|p| mul(color, light.sample_layer(p.x / cell, -p.y / cell)));
-            mb.quad(corners, colors);
+            mb.quad(corners, [color; 4]);
         }
     }
     mb.build()
