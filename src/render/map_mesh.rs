@@ -10,8 +10,8 @@
 //!   only where the neighbour is lower, darkening towards the floor. (The
 //!   black outline along their top edges is not drawn yet.)
 //! - **The floor stays under everything else**: however a tile tilts, it
-//!   is lowered until no corner reaches the ground plane the car and
-//!   sprites ride on, as the C# renderer kept the floor below them.
+//!   is lowered until no corner rises above `layers::FLOOR_TOP`, below
+//!   every sprite layer, as the C# renderer kept the floor below them.
 //! - **Light**: floor tiles take the light map's colour (multiplied); walls
 //!   take `colour × light + light / 2` (the "Mul_Add05" vertex light).
 //!
@@ -27,6 +27,7 @@ use std::f32::consts::PI;
 
 use crate::game::LoadedMap;
 use crate::light::bake::LightMap;
+use crate::render::layers::FLOOR_TOP;
 use crate::map::grid::MapGrid;
 
 /// `MapManager.BackgroundColor`: what shows between the tiles.
@@ -34,8 +35,6 @@ pub const BACKGROUND: [f32; 3] = [100.0 / 255.0, 149.0 / 255.0, 237.0 / 255.0];
 /// `Settings.WallFadeStart` / `WallFadeEnd`.
 const WALL_FADE_START: f32 = 0.5;
 const WALL_FADE_END: f32 = 0.95;
-/// The highest a floor tile's corner may reach, below the ground plane.
-const FLOOR_CLEARANCE: f32 = 0.05;
 /// How far below the walls' base the background lies (below the deepest tiles).
 const BACKGROUND_DEPTH: f32 = 17.0;
 /// How far tiles sink, per C# depth unit (`DepthConst.FloorMaxDepthScale`).
@@ -191,9 +190,9 @@ fn build_floor(grid: &MapGrid, light: &LightMap, cell: f32, rng: &mut SmallRng) 
             ];
             let mut corners = corners_local.map(|c| world_center + rot * (c * cell));
             let top = corners.iter().map(|c| c.z).fold(f32::MIN, f32::max);
-            if top > -FLOOR_CLEARANCE {
+            if top > FLOOR_TOP {
                 for c in &mut corners {
-                    c.z -= top + FLOOR_CLEARANCE;
+                    c.z -= top - FLOOR_TOP;
                 }
             }
             let colors = corners.map(|p| mul(color, light.sample(p.x / cell, -p.y / cell)));

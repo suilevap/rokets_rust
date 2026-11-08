@@ -12,11 +12,10 @@ use bevy::prelude::*;
 
 use crate::controls::LocalPlayer;
 use crate::game::{DRAWN_ENTITY_KINDS, GameState, LoadedMap, MapEntity};
+use crate::render::layers::Layer;
 use crate::render::sprite::{SpriteTint, UnitQuad, sprite_bundle};
 use crate::units::map_degrees_to_world;
 
-const Z_TILE: f32 = 0.005;
-const Z_COIN: f32 = 0.08;
 /// Radians per second.
 const COIN_SPIN: f32 = 1.5;
 
@@ -70,7 +69,7 @@ fn spawn_entities(
         };
         let position = map.world(e.position.x, e.position.y);
         let angle = map_degrees_to_world(e.direction_deg);
-        let z = if e.kind == "Coin" { Z_COIN } else { Z_TILE };
+        let layer = if e.kind == "Coin" { Layer::Coin } else { Layer::GroundDecor };
         let mut entity = commands.spawn((
             Name::new(format!("{} {}", e.kind, e.id)),
             MapEntity,
@@ -79,7 +78,7 @@ fn spawn_entities(
         ));
         let size = info.size * crate::units::px(1.0) * e.scale;
         entity.with_children(|p| {
-            p.spawn(sprite_bundle(info, e.scale, z, lit, &quad, &mut materials));
+            p.spawn(sprite_bundle(info, e.scale, layer, lit, &quad, &mut materials));
         });
         if e.kind == "Coin" {
             coins.total += 1;

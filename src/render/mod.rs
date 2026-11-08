@@ -6,6 +6,7 @@
 //! the picture does not depend on Bevy's lighting.
 
 pub mod camera;
+pub mod layers;
 pub mod map_mesh;
 pub mod sprite;
 

@@ -11,6 +11,7 @@ use std::collections::HashMap;
 use bevy::prelude::*;
 
 use crate::game::LoadedMap;
+use crate::render::layers::Layer;
 use crate::units::px;
 
 #[derive(Clone, Debug)]
@@ -69,11 +70,12 @@ fn make_unit_quad(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
 }
 
 /// Components for a sprite quad: `scale` is the entity's scale from the
-/// XML, `z` its height above the ground plane.
+/// XML, `layer` decides its height and its place in the draw order (see
+/// `layers.rs`). The quad's parent must sit on the ground plane (z = 0).
 pub fn sprite_bundle(
     info: &SpriteInfo,
     scale: f32,
-    z: f32,
+    layer: Layer,
     tint: SpriteTint,
     quad: &UnitQuad,
     materials: &mut Assets<StandardMaterial>,
@@ -86,12 +88,13 @@ pub fn sprite_bundle(
         unlit: true,
         double_sided: true,
         cull_mode: None,
+        depth_bias: layer.depth_bias(),
         ..default()
     });
     (
         Mesh3d(quad.0.clone()),
         MeshMaterial3d(material),
-        Transform::from_xyz(0.0, 0.0, z).with_scale(size.extend(1.0)),
+        Transform::from_xyz(0.0, 0.0, layer.z()).with_scale(size.extend(1.0)),
         tint,
     )
 }

@@ -16,6 +16,7 @@ use crate::content::cars::CarData;
 use crate::controls::{LocalPlayer, PlayerIntent};
 use crate::game::{GameState, LoadedMap, MapEntity};
 use crate::render::camera::CameraTarget;
+use crate::render::layers::Layer;
 use crate::render::sprite::{SpriteTint, UnitQuad, sprite_bundle};
 use crate::units::{map_degrees_to_world, px};
 use drive::{Body, DriveParams, DriveState, drive_step};
@@ -23,9 +24,6 @@ use drive::{Body, DriveParams, DriveState, drive_step};
 /// `Entity.MaxAngularVelocityDefault`.
 const MAX_ANGULAR_VELOCITY: f32 = 50.0;
 /// Heights of the car's layers above the ground plane.
-const Z_BASE: f32 = 0.04;
-const Z_WHEEL: f32 = 0.05;
-const Z_BODY: f32 = 0.06;
 /// How fast the drawn wheels follow the stick (`Hardastic(0, 12)`).
 const WHEEL_TURN_RATE: f32 = 12.0;
 
@@ -134,7 +132,7 @@ fn spawn_car_sprites(
     };
     let sprite = |name: Option<String>| name.and_then(|n| map.sprites.get(&n).cloned());
     if let Some(info) = sprite(car.base_sprite()) {
-        parent.spawn(sprite_bundle(&info, car.scale, Z_BASE, lit, quad, materials));
+        parent.spawn(sprite_bundle(&info, car.scale, Layer::CarBase, lit, quad, materials));
     }
     if car.load_wheel_body_color_views {
         if let (Some(info), Some(left)) = (sprite(car.part_sprite("Wheel")), car.left_wheel_position) {
@@ -142,13 +140,13 @@ fn spawn_car_sprites(
             let at = Vec2::new(left.x, -left.y) * px(1.0) * car.scale;
             for side in [at, Vec2::new(at.x, -at.y)] {
                 parent.spawn((
-                    sprite_bundle(&info, car.scale, Z_WHEEL, lit, quad, materials),
+                    sprite_bundle(&info, car.scale, Layer::CarWheel, lit, quad, materials),
                     FrontWheel { offset: side, angle: 0.0 },
                 ));
             }
         }
         if let Some(info) = sprite(car.part_sprite("Body")) {
-            parent.spawn(sprite_bundle(&info, car.scale, Z_BODY, lit, quad, materials));
+            parent.spawn(sprite_bundle(&info, car.scale, Layer::CarBody, lit, quad, materials));
         }
     }
 }
@@ -185,7 +183,7 @@ fn turn_front_wheels(
             if let Ok((mut wheel, mut transform)) = wheels.get_mut(child) {
                 wheel.angle += (target - wheel.angle) * k;
                 transform.rotation = Quat::from_rotation_z(wheel.angle);
-                transform.translation = wheel.offset.extend(Z_WHEEL);
+                transform.translation = wheel.offset.extend(Layer::CarWheel.z());
             }
         }
     }
