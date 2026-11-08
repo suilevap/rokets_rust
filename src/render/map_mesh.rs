@@ -7,8 +7,11 @@
 //!   wall they lean towards it. One in ten open spots gets a double tile;
 //!   one in twenty tiles drops deep and dark.
 //! - **Walls are blocks** as tall as their cell's alpha says, with faces
-//!   only where the neighbour is lower, a black outline along the top
-//!   edges, and faces that darken towards the floor.
+//!   only where the neighbour is lower, darkening towards the floor. (The
+//!   black outline along their top edges is not drawn yet.)
+//! - **The floor stays under everything else**: however a tile tilts, it
+//!   is lowered until no corner reaches the ground plane the car and
+//!   sprites ride on, as the C# renderer kept the floor below them.
 //! - **Light**: floor tiles take the light map's colour (multiplied); walls
 //!   take `colour × light + light / 2` (the "Mul_Add05" vertex light).
 //!
@@ -31,14 +34,14 @@ pub const BACKGROUND: [f32; 3] = [100.0 / 255.0, 149.0 / 255.0, 237.0 / 255.0];
 /// `Settings.WallFadeStart` / `WallFadeEnd`.
 const WALL_FADE_START: f32 = 0.5;
 const WALL_FADE_END: f32 = 0.95;
+/// The highest a floor tile's corner may reach, below the ground plane.
+const FLOOR_CLEARANCE: f32 = 0.05;
 /// How far below the walls' base the background lies (below the deepest tiles).
 const BACKGROUND_DEPTH: f32 = 17.0;
 /// How far tiles sink, per C# depth unit (`DepthConst.FloorMaxDepthScale`).
 /// The C# formula gives 1.8–5 units, but its screenshots show the floor
 /// nearly level with the walls' base, so it is scaled down to match them.
 const FLOOR_DEPTH_SCALE: f32 = 0.25;
-/// Outline width in world units.
-const OUTLINE: f32 = 0.06;
 
 #[derive(Default)]
 struct MeshBuilder {
@@ -186,7 +189,13 @@ fn build_floor(grid: &MapGrid, light: &LightMap, cell: f32, rng: &mut SmallRng) 
                 Vec3::new(half, half, 0.0),
                 Vec3::new(-half, half, 0.0),
             ];
-            let corners = corners_local.map(|c| world_center + rot * (c * cell));
+            let mut corners = corners_local.map(|c| world_center + rot * (c * cell));
+            let top = corners.iter().map(|c| c.z).fold(f32::MIN, f32::max);
+            if top > -FLOOR_CLEARANCE {
+                for c in &mut corners {
+                    c.z -= top + FLOOR_CLEARANCE;
+                }
+            }
             let colors = corners.map(|p| mul(color, light.sample(p.x / cell, -p.y / cell)));
             mb.quad(corners, colors);
         }
@@ -238,15 +247,6 @@ fn build_walls(grid: &MapGrid, light: &LightMap, cell: f32) -> Mesh {
                         lerp3(black, lit[b], fade_top.min(1.0)),
                     ],
                 );
-                // Outline along the top edge, lying on the top face.
-                let inward = (Vec2::new(x as f32 + 0.5, y as f32 + 0.5) - (pa + pb) / 2.0)
-                    .normalize()
-                    * (OUTLINE / cell);
-                let z = h + 0.01;
-                mb.quad(
-                    [to3(pa, z), to3(pa + inward, z), to3(pb + inward, z), to3(pb, z)],
-                    [black; 4],
-                );
             }
         }
     }
@@ -284,12 +284,6 @@ fn build_walls(grid: &MapGrid, light: &LightMap, cell: f32) -> Mesh {
                     lerp3(black, lit[c], fade_top),
                     lerp3(black, lit[a], fade_top),
                 ],
-            );
-            let inward = (corners[bb] - corners[edge.open]).normalize() * (OUTLINE / cell);
-            let z = h + 0.01;
-            mb.quad(
-                [to3(corners[a], z), to3(corners[a] + inward, z), to3(corners[c] + inward, z), to3(corners[c], z)],
-                [black; 4],
             );
         }
     }

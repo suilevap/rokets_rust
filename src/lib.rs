@@ -11,7 +11,6 @@ pub mod map;
 pub mod pickups;
 pub mod render;
 pub mod script;
-pub mod shadow;
 pub mod triggers;
 pub mod units;
 
@@ -37,7 +36,6 @@ impl Plugin for TileRiderPlugin {
                 render::RenderPlugin,
                 controls::ControlsPlugin,
                 car::CarPlugin,
-                shadow::ShadowPlugin,
                 pickups::PickupsPlugin,
                 triggers::TriggersPlugin,
                 hud::HudPlugin,

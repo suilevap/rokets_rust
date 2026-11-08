@@ -4,8 +4,8 @@
 //! Body (from `Entity`, `PhysicEntity`, `ControlableEntity`, `Car`): a box
 //! the size of the car's `Base` sprite, mass from `Cars.xml`, friction 0.8,
 //! bounce 0.5, linear damping `0.95 × map friction`, angular damping 9.
-//! Drawn as four sprites: a black outline, the chassis, two front wheels
-//! that turn towards the stick, and the cabin on top.
+//! Drawn from its own sprites: the chassis (`Base`), two front wheels that
+//! turn towards the stick, and the cabin (`Body`) on top.
 
 pub mod drive;
 
@@ -23,7 +23,6 @@ use drive::{Body, DriveParams, DriveState, drive_step};
 /// `Entity.MaxAngularVelocityDefault`.
 const MAX_ANGULAR_VELOCITY: f32 = 50.0;
 /// Heights of the car's layers above the ground plane.
-const Z_BORDER: f32 = 0.02;
 const Z_BASE: f32 = 0.04;
 const Z_WHEEL: f32 = 0.05;
 const Z_BODY: f32 = 0.06;
@@ -134,13 +133,6 @@ fn spawn_car_sprites(
         lit: true,
     };
     let sprite = |name: Option<String>| name.and_then(|n| map.sprites.get(&n).cloned());
-    if let Some(info) = sprite(car.part_sprite("Border")) {
-        let tint = SpriteTint {
-            color: [0.0, 0.0, 0.0, 1.0],
-            lit: false,
-        };
-        parent.spawn(sprite_bundle(&info, car.scale, Z_BORDER, tint, quad, materials));
-    }
     if let Some(info) = sprite(car.base_sprite()) {
         parent.spawn(sprite_bundle(&info, car.scale, Z_BASE, lit, quad, materials));
     }

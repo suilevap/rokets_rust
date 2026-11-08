@@ -9,7 +9,7 @@
 //! The result multiplies the floor and lights the walls' vertices.
 //!
 //! It is kept on the CPU: gameplay asks how dark a spot is
-//! (`HighlightInDark`), and the car's shadow needs the nearest lamp.
+//! (`HighlightInDark`), and the car's shadow (later) needs the lamps.
 
 use crate::content::map::{LightData, MapData};
 use crate::map::grid::MapGrid;
@@ -130,21 +130,6 @@ impl LightMap {
             })
             .collect()
     }
-
-    /// The nearest lamp that can see the point (for the car's shadow).
-    pub fn nearest_visible_lamp(&self, grid: &MapGrid, x: f32, y: f32) -> Option<&Lamp> {
-        self.lamps
-            .iter()
-            .filter(|l| {
-                let d2 = (l.x - x).powi(2) + (l.y - y).powi(2);
-                d2 < l.radius * l.radius && !grid.line_hits_wall((l.x, l.y), (x, y))
-            })
-            .min_by(|a, b| {
-                let da = (a.x - x).powi(2) + (a.y - y).powi(2);
-                let db = (b.x - x).powi(2) + (b.y - y).powi(2);
-                da.total_cmp(&db)
-            })
-    }
 }
 
 fn add_lamp(texels: &mut [[f32; 3]], width: usize, height: usize, grid: &MapGrid, lamp: &Lamp) {
@@ -261,8 +246,5 @@ mod tests {
         assert!(near > 0.8, "near {near}");
         assert!(far < near && far > 0.0, "far {far}");
         assert!(behind_wall < 0.1, "shadow {behind_wall}");
-        let lamp = light.nearest_visible_lamp(&grid, 3.0, 3.0).unwrap();
-        assert_eq!((lamp.x, lamp.y), (2.5, 2.5));
-        assert!(light.nearest_visible_lamp(&grid, 8.5, 4.5).is_none());
     }
 }

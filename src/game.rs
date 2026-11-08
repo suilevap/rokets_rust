@@ -78,18 +78,16 @@ struct Pending {
     sprites: Vec<(String, Handle<Image>)>,
 }
 
-/// Sprites every map uses (car shadows).
-const COMMON_SPRITES: &[&str] = &["Gradient4Pixel", "Gradient4PixelUniform"];
 /// Entity types whose sprites are drawn so far.
 pub const DRAWN_ENTITY_KINDS: &[&str] = &["Coin", "Tile"];
 
 /// The sprite names a map needs: its player car's parts and its drawn entities.
 fn sprites_for(map: &MapData, cars: &CarCatalog) -> Vec<String> {
-    let mut names: Vec<String> = COMMON_SPRITES.iter().map(|s| s.to_string()).collect();
+    let mut names: Vec<String> = Vec::new();
     for player in map.players.iter() {
         if let Some(car) = cars.get(&player.car_name) {
             names.extend(car.base_sprite());
-            for part in ["Body", "Wheel", "Border"] {
+            for part in ["Body", "Wheel"] {
                 names.extend(car.part_sprite(part));
             }
         }

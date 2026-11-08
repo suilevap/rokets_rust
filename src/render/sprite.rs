@@ -108,13 +108,6 @@ fn tint_sprites(
         } else {
             [1.0; 3]
         };
-        // Black overlays (shadows) darken by `alpha` in sRGB, as XNA blended;
-        // Bevy blends in linear light, where the same alpha darkens less.
-        let a = if r == 0.0 && g == 0.0 && b == 0.0 {
-            1.0 - (1.0 - a).powf(2.2)
-        } else {
-            a
-        };
         let color = Color::srgba(r * l[0], g * l[1], b * l[2], a);
         // Only touch materials whose colour changes: a write re-uploads it.
         if materials.get(&material.0).is_some_and(|m| m.base_color != color)
