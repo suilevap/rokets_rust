@@ -7,8 +7,8 @@
 //!   wall they lean towards it. One in ten open spots gets a double tile;
 //!   one in twenty tiles drops deep and dark.
 //! - **Walls are blocks** as tall as their cell's alpha says, with faces
-//!   only where the neighbour is lower, darkening towards the floor. (The
-//!   black outline along their top edges is not drawn yet.)
+//!   only where the neighbour is lower, darkening towards the floor; their
+//!   black outline is `render/wall_outline`.
 //! - **The floor stays under everything else**: however a tile tilts, it
 //!   is lowered until no corner rises above `layers::FLOOR_TOP`, below
 //!   every sprite layer, as the C# renderer kept the floor below them.

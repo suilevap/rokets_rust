@@ -31,6 +31,7 @@ main
 | `light/raster` | A software stand-in for the render-target drawing the C# light used: linear-sampled sprites, vertex-coloured triangles, premultiplied alpha and additive blending into a saturating target, `BlurSurface` | `LightManager.DrawOnLightMap`, XNA blend states |
 | `game` | States `Loading → Playing` (`Failed`), `LoadedMap`, `MapEntity` (despawned on leaving a map), `ChangeMap` (restart / next) | `MapManager.SetMap` |
 | `render/map_mesh` | Floor of loose, tilted tiles, always below the ground plane; walls as blocks with fading faces and their light in the vertex colours; tiles are lit by the light layer | `TilesMap.AddTiles2`, `Primitive3d`, `RenderSettings` "Mul_Add05" |
+| `render/wall_outline` | One-pixel black lines (a line-list mesh) along the top edge of every wall side with a height step, and along its foot where it meets the floor; corner wedges too. Nudged off the edge so the faces meeting there do not hide them | `Primitive3d.AddBorders` |
 | `render/outland` | Four vertex-coloured quads, a funnel under and around the map that shows between the tiles and past the walls: background colour at the inner edge 32 units down, the map's four `OutlandColor*` at the outer edge 32 units up | `OutlandPrimitive` |
 | `render/light_layer` | The light map as one quad at ground level with a multiply blend, over the map and 4 cells around it: darkens the floor and the outland under it on screen; walls stand above it, sprites are drawn after it | `LightManager` light target, `LightBlendState`, `MapManager.AddOutSideLight` |
 | `render/layers` | **The draw order**: floor geometry under `FLOOR_TOP`, then sprite layers (ground decor, car chassis, wheels, cabin, gears), ordered by a `depth_bias` rank, as the C# `DepthConst` table and its `BackToFront` sprite sort; all lie within a hundredth of a unit of the ground, so order never changes a sprite's size | `DepthConst`, `Renderer.Draw` |
@@ -78,6 +79,6 @@ Everything outside MVP 0.1: menus and HUD, sound, localisation, saves;
 weapons and gadgets; other cars and AI; doors, bombs, teleports, platforms,
 fake walls; towing, box damage and explosions; the other ~74 action types; particles;
 slow motion; the agent/command server; editor hot reload. Rendering gaps:
-car shadows (`DynamicShadow`: sprite streaks from the nearest lamp) and
-the black outline along wall tops, both deferred to their own PR; the cabin's springy wobble, tyre marks,
+car shadows (`DynamicShadow`: sprite streaks from the nearest lamp),
+deferred to its own PR; the cabin's springy wobble, tyre marks,
 dynamic lights, HDR glow and the dirty-lens effect, per-map camera zoom.
