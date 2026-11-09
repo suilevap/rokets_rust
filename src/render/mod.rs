@@ -86,6 +86,8 @@ fn spawn_map_meshes(
         MeshMaterial3d(materials.add(StandardMaterial {
             base_color: Color::BLACK,
             unlit: true,
+            // Flat strips seen from above, whichever way they wind.
+            cull_mode: None,
             ..default()
         })),
         Transform::default(),

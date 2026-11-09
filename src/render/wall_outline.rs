@@ -1,13 +1,19 @@
-//! The black outline of the walls: thin lines along the edges where a
-//! wall's height changes, which make the blocks read as blocks from above.
+//! The black outline of the walls: lines along the edges where a wall's
+//! height changes, which make the blocks read as blocks from above.
 //!
 //! C# origin: `Primitive3d.AddBorders`, called for every wall cell and
 //! corner wedge from `TilesMap.AddTiles2`. For each side of a wall cell
-//! whose neighbour has another height (lower or higher), a line along the
-//! side's top edge, lifted a hair (`StaticLinesOffset`); where the side
-//! reaches the floor, one along its foot too (`DrawLowBorders`). They were
-//! one-pixel lines (`Drawer.Lines.AddStaticLine`), as here: a line-list
-//! mesh, which draws one pixel wide on every backend, the web included.
+//! whose neighbour has another height (lower or higher; a wedge counts as
+//! a wall of its own height, as `TilesMap._height` had it), a line along
+//! the side's top edge, lifted a hair (`StaticLinesOffset`); where the side
+//! reaches the floor, one along its foot too (`DrawLowBorders`); for a
+//! wedge, the top and foot of its slanted face.
+//!
+//! The lines are flat strips of a fixed width in the world
+//! (`LinePrimitive`, `StaticLinesWidth`: 1.5 px each side of the edge), so
+//! on screen they grow with the resolution and pixel density, as C# scaled
+//! them by `DpiSizeMultiplier`; one-pixel lines vanish on dense screens and
+//! along slanted edges.
 
 use bevy::asset::RenderAssetUsages;
 use bevy::mesh::{Indices, PrimitiveTopology};
@@ -20,14 +26,32 @@ use crate::units::PX_PER_UNIT;
 /// (C#: `StaticLinesOffset`, up only). Lying exactly on the edge, a line
 /// shares the depth of the faces meeting there and loses to them.
 const LIFT: f32 = 0.5 / PX_PER_UNIT;
+/// Half the width of a line, world units (`StaticLinesWidthBasic`).
+const HALF_WIDTH: f32 = 1.5 / PX_PER_UNIT;
 /// Heights closer than this are the same (`ConvertUnits.SimUnitRation`,
 /// one pixel).
 const SAME: f32 = 1.0 / PX_PER_UNIT;
 
-/// The outline of the map's walls as a line list, in world units.
+/// A line along an edge: its ends in map cells, its height, and which way
+/// (in map cells) is out of the wall.
+struct Line {
+    a: Vec2,
+    b: Vec2,
+    z: f32,
+    out: Vec2,
+    /// A foot line lies wholly on the floor in front of the face; a top
+    /// line straddles the edge.
+    foot: bool,
+}
+
+/// The outline of the map's walls as flat black strips, in world units.
 pub fn build_wall_outline(grid: &MapGrid, cell: f32) -> Mesh {
-    let mut lines: Vec<[Vec3; 2]> = Vec::new();
-    let at = |p: Vec2, z: f32| Vec3::new(p.x * cell, -p.y * cell, z);
+    let mut lines: Vec<Line> = Vec::new();
+    // What a side of a wall cell faces: a wedge stands as tall as it is.
+    let neighbour_height = |x: i32, y: i32| {
+        grid.edge(x, y)
+            .map_or_else(|| grid.height_at(x, y), |e| e.height)
+    };
     for y in 0..grid.height as i32 {
         for x in 0..grid.width as i32 {
             let Some(c) = grid.cell(x, y).filter(|c| c.is_wall()) else {
@@ -49,20 +73,31 @@ pub fn build_wall_outline(grid: &MapGrid, cell: f32) -> Mesh {
                 if grid.cell(x + dx, y + dy).is_none() {
                     continue;
                 }
-                let nh = grid.height_at(x + dx, y + dy);
+                let nh = neighbour_height(x + dx, y + dy);
                 if (h - nh).abs() <= SAME {
                     continue;
                 }
-                let out = Vec2::new(dx as f32, dy as f32) * LIFT / cell;
-                let (a, b) = (corners[i] + out, corners[(i + 1) % 4] + out);
-                lines.push([at(a, h + LIFT), at(b, h + LIFT)]);
+                let (a, b) = (corners[i], corners[(i + 1) % 4]);
+                let out = Vec2::new(dx as f32, dy as f32);
+                lines.push(Line {
+                    a,
+                    b,
+                    z: h,
+                    out,
+                    foot: false,
+                });
                 if nh <= SAME {
-                    lines.push([at(a, LIFT), at(b, LIFT)]);
+                    lines.push(Line {
+                        a,
+                        b,
+                        z: 0.0,
+                        out,
+                        foot: true,
+                    });
                 }
             }
         }
     }
-    // Corner wedges: the top and the foot of the slanted face.
     for y in 0..grid.height as i32 {
         for x in 0..grid.width as i32 {
             let Some(edge) = grid.edge(x, y) else {
@@ -77,17 +112,52 @@ pub fn build_wall_outline(grid: &MapGrid, cell: f32) -> Mesh {
             ];
             let (a, b) = (corners[(edge.open + 1) % 4], corners[(edge.open + 3) % 4]);
             // Out of the slanted face, towards the open corner.
-            let out = (corners[edge.open] - (a + b) / 2.0).normalize() * LIFT / cell;
-            let (a, b) = (a + out, b + out);
-            lines.push([at(a, edge.height + LIFT), at(b, edge.height + LIFT)]);
-            lines.push([at(a, LIFT), at(b, LIFT)]);
+            let out = (corners[edge.open] - (a + b) / 2.0).normalize();
+            lines.push(Line {
+                a,
+                b,
+                z: edge.height,
+                out,
+                foot: false,
+            });
+            lines.push(Line {
+                a,
+                b,
+                z: 0.0,
+                out,
+                foot: true,
+            });
         }
     }
-    let positions: Vec<[f32; 3]> = lines.iter().flat_map(|l| l.map(|p| p.to_array())).collect();
+
+    let mut positions: Vec<[f32; 3]> = Vec::with_capacity(lines.len() * 4);
+    let mut indices: Vec<u32> = Vec::with_capacity(lines.len() * 6);
+    for line in &lines {
+        // To the world (y up), then a strip across the edge, lengthened by
+        // its width at both ends so strips meet at corners.
+        let world = |p: Vec2| Vec2::new(p.x * cell, -p.y * cell);
+        let (a, b) = (world(line.a), world(line.b));
+        let out = Vec2::new(line.out.x, -line.out.y).normalize();
+        let along = (b - a).normalize();
+        let (near, far, reach) = if line.foot {
+            (LIFT, LIFT + 2.0 * HALF_WIDTH, 2.0 * HALF_WIDTH)
+        } else {
+            (-HALF_WIDTH, HALF_WIDTH, HALF_WIDTH)
+        };
+        let (a, b) = (a - along * reach, b + along * reach);
+        let z = line.z + LIFT;
+        let base = positions.len() as u32;
+        for p in [a + out * near, a + out * far, b + out * far, b + out * near] {
+            positions.push([p.x, p.y, z]);
+        }
+        indices.extend_from_slice(&[base, base + 1, base + 2, base, base + 2, base + 3]);
+    }
     let normals = vec![[0.0, 0.0, 1.0]; positions.len()];
-    let indices = (0..positions.len() as u32).collect();
-    Mesh::new(PrimitiveTopology::LineList, RenderAssetUsages::default())
-        .with_inserted_attribute(Mesh::ATTRIBUTE_POSITION, positions)
-        .with_inserted_attribute(Mesh::ATTRIBUTE_NORMAL, normals)
-        .with_inserted_indices(Indices::U32(indices))
+    Mesh::new(
+        PrimitiveTopology::TriangleList,
+        RenderAssetUsages::default(),
+    )
+    .with_inserted_attribute(Mesh::ATTRIBUTE_POSITION, positions)
+    .with_inserted_attribute(Mesh::ATTRIBUTE_NORMAL, normals)
+    .with_inserted_indices(Indices::U32(indices))
 }
