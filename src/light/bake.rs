@@ -1,43 +1,45 @@
-//! The static light map: the map's lamps baked into a soft, low-resolution
-//! grid of colours at load time.
+//! The static light: the map's lamps baked at load time into the light
+//! layer (laid over the map, multiplying what lies under it) and the
+//! walls' light (sampled per wall vertex).
 //!
-//! Intent (from `LightManager`): each lamp adds a round spot (the `flash2`
-//! falloff) of its colour; walls stop it; the edges of shadows are softened
-//! by adding the light twice, turned by a small angle around the lamp
-//! (`MergeLayersWithAngle`, the penumbra); the sum starts from the map's
-//! ambient light and saturates at white; the whole map is then blurred.
-//! The result lights the walls' vertices. What lies under the C# light
-//! layer (floor, sprites, the outland) also gets full light off the map's
-//! ground (`MapManager.AddOutSideLight`): see [`LightMap::sample_layer`].
+//! C# origin: `LightManager` (2012–2015; "Light: Reworked blur alg" 2014).
+//! It drew on small render targets and read the result back; the same
+//! steps here, on [`raster`](super::raster):
+//!
+//! 1. A target about 512 texels on its long side covers the map and 4
+//!    cells around it, so each map gets the same softness on screen
+//!    whatever its size. It starts at the map's ambient light, the border
+//!    all white (`ClearStaticLightBuffer`, `AddBorder`).
+//! 2. Each lamp: the `flash2` sprite at its radius on black, then a black
+//!    quad behind every wall edge in reach, stretched away from the lamp
+//!    (`RenderLight`, `AddShadow`); the result added twice in the lamp's
+//!    colour at half strength, turned ±0.02 rad around the lamp, which
+//!    softens shadow edges (`MergeLayersWithAngle`, the penumbra).
+//! 3. The light layer is that, blurred (`BlurSurface`: copies at ½, ¼ and
+//!    ⅛ size averaged), plus full light over the void around the map's
+//!    ground (`MapManager.AddOutSideLight`).
+//! 4. The walls' light is the same before the blur and the void, at a
+//!    quarter of the size, blurred, and read per texel without blending
+//!    (`PrepareLightMapImage`, `GetColor`).
 //!
 //! It is kept on the CPU: gameplay asks how dark a spot is
 //! (`HighlightInDark`), and the car's shadow (later) needs the lamps.
 
 use crate::content::map::{LightData, MapData};
+use crate::light::raster::{BLACK, Blend, Canvas, Placement, Rgba, WHITE};
 use crate::map::grid::MapGrid;
 
-/// Texels per map cell.
-pub const TEXELS_PER_CELL: usize = 4;
-
-/// The `flash2` sprite's alpha from its centre (0) to its radius (1).
-const FALLOFF: [f32; 16] = [
-    251.0, 246.0, 237.0, 224.0, 207.0, 187.0, 164.0, 137.0, 106.0, 82.0, 65.0, 48.0, 30.0, 13.0,
-    0.0, 0.0,
-];
-
+/// How far past the map's edge the light reaches, in cells
+/// (`LightManager.BorderCells`).
+pub const BORDER_CELLS: usize = 4;
+/// Texels on the long side of the light target.
+const TARGET_SIZE: f32 = 512.0;
 /// `RenderSettings.PenumbraMergeAngle`.
 const PENUMBRA_ANGLE: f32 = 0.02;
-
-fn falloff(t: f32) -> f32 {
-    if t >= 1.0 {
-        return 0.0;
-    }
-    let f = t * (FALLOFF.len() - 1) as f32;
-    let i = f.floor() as usize;
-    let a = FALLOFF[i];
-    let b = FALLOFF[(i + 1).min(FALLOFF.len() - 1)];
-    (a + (b - a) * (f - i as f32)) / 255.0
-}
+/// Closer than this (texels) a lamp counts as lying on a wall edge.
+const ON_EDGE: f32 = 1e-3;
+/// The walls' light is this many times smaller (`_lightMapImageLevel` 2).
+const WALL_LEVEL: usize = 2;
 
 /// A lamp, in map cells.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -45,214 +47,479 @@ pub struct Lamp {
     pub x: f32,
     pub y: f32,
     pub radius: f32,
+    /// sRGB 0..1, already scaled by its alpha.
     pub color: [f32; 3],
     pub use_for_dynamic_shadow: bool,
 }
 
 impl Lamp {
     pub fn from_data(l: &LightData) -> Self {
-        // `color *= A/255` with A then set to 255.
-        let [r, g, b, a] = l.color.to_f32();
+        // `color *= A / 255f` on bytes, truncating; then A = 255.
+        let a = l.color.a as f32 / 255.0;
+        let scaled = |c: u8| (c as f32 * a).floor() / 255.0;
         Lamp {
             x: l.position.x,
             y: l.position.y,
             radius: l.r,
-            color: [r * a, g * a, b * a],
+            color: [scaled(l.color.r), scaled(l.color.g), scaled(l.color.b)],
             use_for_dynamic_shadow: l.use_for_dynamic_shadow,
         }
     }
 }
 
+/// Where the light target lies in the world, in C# units (y down).
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct LightFrame {
+    /// World units per texel (`LightManager.Scale`).
+    pub scale: f32,
+    /// The border around the map, world units (`_border`, whole units).
+    pub border: f32,
+    /// The map's size, world units (`World.RoomSize`, whole units).
+    pub room: [f32; 2],
+    /// Map cell size, world units.
+    pub cell: f32,
+}
+
+impl LightFrame {
+    pub fn new(map_width: usize, map_height: usize, cell: f32) -> LightFrame {
+        let room = [
+            (map_width as f32 * cell).trunc(),
+            (map_height as f32 * cell).trunc(),
+        ];
+        let border = (BORDER_CELLS as f32 * cell).trunc();
+        let scale = (room[0].max(room[1]) + border * 2.0) / TARGET_SIZE;
+        LightFrame {
+            scale,
+            border,
+            room,
+            cell,
+        }
+    }
+
+    /// The target's size in texels (`_fullArea`).
+    pub fn size(&self) -> (usize, usize) {
+        (
+            ((self.room[0] + self.border * 2.0) / self.scale) as usize,
+            ((self.room[1] + self.border * 2.0) / self.scale) as usize,
+        )
+    }
+
+    /// A point in map cells to the target's texels.
+    pub fn texel(&self, x: f32, y: f32) -> [f32; 2] {
+        [
+            (x * self.cell + self.border) / self.scale,
+            (y * self.cell + self.border) / self.scale,
+        ]
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct LightMap {
-    pub width: usize,
-    pub height: usize,
-    /// Linear 0..1 RGB, row-major, y down.
-    texels: Vec<[f32; 3]>,
-    /// Per map cell: 1 off the map's ground (the void around it), else 0.
-    void: Vec<f32>,
+    pub frame: LightFrame,
+    /// The light layer (`FinalLightTarget`), over the map and its border.
+    layer: Canvas,
+    /// The walls' light (`_lightMapImage`).
+    walls: Canvas,
     pub lamps: Vec<Lamp>,
 }
 
 impl LightMap {
-    pub fn bake(map: &MapData, grid: &MapGrid) -> LightMap {
-        let width = grid.width * TEXELS_PER_CELL;
-        let height = grid.height * TEXELS_PER_CELL;
-        let [ar, ag, ab, aa] = map.ambient_light.to_f32();
-        let ambient = [ar * aa, ag * aa, ab * aa];
-        let mut texels = vec![ambient; width * height];
+    /// Bakes the map's lamps; `flash` is the lamp sprite (`Particles\flash2`),
+    /// `objects` the outlines of fixed objects that cast shadows, in map
+    /// cells (`map::templates::static_shadow_outline`).
+    pub fn bake(
+        map: &MapData,
+        grid: &MapGrid,
+        flash: &Canvas,
+        objects: &[[[f32; 2]; 4]],
+    ) -> LightMap {
+        let frame = LightFrame::new(grid.width, grid.height, cell_size(map));
+        let (w, h) = frame.size();
         let lamps: Vec<Lamp> = map.lights.iter().map(Lamp::from_data).collect();
 
+        let mut lit = Canvas::new(w, h, ambient(map));
+        add_border(&mut lit, frame.border / frame.scale);
+        let blockers = Blockers {
+            walls: wall_edges(grid, &frame),
+            objects: object_edges(objects, &frame),
+        };
         for lamp in &lamps {
-            add_lamp(&mut texels, width, height, grid, lamp);
+            add_lamp(&mut lit, &frame, &blockers, flash, lamp);
         }
-        for t in texels.iter_mut() {
-            for c in t.iter_mut() {
-                *c = c.min(1.0);
-            }
-        }
-        let texels = blur(&texels, width, height, 2);
-        let void = (0..grid.height as i32)
-            .flat_map(|y| (0..grid.width as i32).map(move |x| (x, y)))
-            .map(|(x, y)| if grid.is_ground(x, y) { 0.0 } else { 1.0 })
-            .collect();
+
+        let mut layer = lit.clone();
+        layer.blur(WHITE);
+        let void = void_image(grid);
+        let full = layer.rect();
+        layer.draw(
+            &void,
+            void.rect(),
+            Placement::onto(void.rect(), full),
+            WHITE,
+            Blend::Additive,
+        );
+
+        let mut walls = Canvas::new(w >> WALL_LEVEL, h >> WALL_LEVEL, BLACK);
+        let small = walls.rect();
+        walls.draw(
+            &lit,
+            lit.rect(),
+            Placement::onto(lit.rect(), small),
+            WHITE,
+            Blend::Additive,
+        );
+        walls.blur(WHITE);
+
         LightMap {
-            width,
-            height,
-            texels,
-            void,
+            frame,
+            layer,
+            walls,
             lamps,
         }
     }
 
-    /// The C# light layer at a point in map cells: the light plus full
-    /// light over the void, one value per cell blended between cell centres
-    /// (the C# texture), at most white. Multiplies the floor, sprites and
-    /// the outland.
+    /// The light layer at a point in map cells (bilinear), as it lies over
+    /// the map and its border: what the floor, the outland and sprites
+    /// are multiplied by. Beyond the border there is no layer: white.
     pub fn sample_layer(&self, x: f32, y: f32) -> [f32; 3] {
-        let (cw, ch) = (self.width / TEXELS_PER_CELL, self.height / TEXELS_PER_CELL);
-        let (fx, fy) = (x - 0.5, y - 0.5);
-        let (x0, y0) = (fx.floor(), fy.floor());
-        let (tx, ty) = (fx - x0, fy - y0);
-        let void = |dx: i32, dy: i32| {
-            let x = (x0 as i32 + dx).clamp(0, cw as i32 - 1) as usize;
-            let y = (y0 as i32 + dy).clamp(0, ch as i32 - 1) as usize;
-            self.void[y * cw + x]
-        };
-        let top = void(0, 0) + (void(1, 0) - void(0, 0)) * tx;
-        let bottom = void(0, 1) + (void(1, 1) - void(0, 1)) * tx;
-        let void = top + (bottom - top) * ty;
-        self.sample(x, y).map(|l| (l + void).min(1.0))
+        let [u, v] = self.layer_uv(x, y);
+        if !(0.0..=1.0).contains(&u) || !(0.0..=1.0).contains(&v) {
+            return [1.0; 3];
+        }
+        let c = self
+            .layer
+            .sample(u * self.layer.width as f32, v * self.layer.height as f32);
+        [c[0], c[1], c[2]]
     }
 
-    /// The light layer as an image over the map and `border` cells around
-    /// it, `TEXELS_PER_CELL` texels per cell, row-major from the top-left
-    /// corner (map cell `-border, -border`): `(width, height, texels)`.
-    pub fn layer_texels(&self, border: usize) -> (usize, usize, Vec<[f32; 3]>) {
-        let w = self.width + 2 * border * TEXELS_PER_CELL;
-        let h = self.height + 2 * border * TEXELS_PER_CELL;
-        let to_cells = |i: usize| (i as f32 + 0.5) / TEXELS_PER_CELL as f32 - border as f32;
-        let texels = (0..h)
-            .flat_map(|y| (0..w).map(move |x| (x, y)))
-            .map(|(x, y)| self.sample_layer(to_cells(x), to_cells(y)))
-            .collect();
-        (w, h, texels)
+    /// A point in map cells to the layer's 0..1 coordinates: the layer is
+    /// stretched over the map's rectangle and border, as C# drew it.
+    fn layer_uv(&self, x: f32, y: f32) -> [f32; 2] {
+        let f = &self.frame;
+        [
+            (x * f.cell + f.border) / (f.room[0] + 2.0 * f.border),
+            (y * f.cell + f.border) / (f.room[1] + 2.0 * f.border),
+        ]
     }
 
-    /// Light at a point in map cells (bilinear; the nearest edge texel
-    /// outside the map). Lights the walls' vertices.
-    pub fn sample(&self, x: f32, y: f32) -> [f32; 3] {
-        let fx = x * TEXELS_PER_CELL as f32 - 0.5;
-        let fy = y * TEXELS_PER_CELL as f32 - 0.5;
-        let (x0, y0) = (fx.floor(), fy.floor());
-        let (tx, ty) = (fx - x0, fy - y0);
-        let get = |x: i32, y: i32| -> [f32; 3] {
-            let x = x.clamp(0, self.width as i32 - 1) as usize;
-            let y = y.clamp(0, self.height as i32 - 1) as usize;
-            self.texels[y * self.width + x]
-        };
-        let (x0, y0) = (x0 as i32, y0 as i32);
-        let (a, b, c, d) = (get(x0, y0), get(x0 + 1, y0), get(x0, y0 + 1), get(x0 + 1, y0 + 1));
-        std::array::from_fn(|i| {
-            let top = a[i] + (b[i] - a[i]) * tx;
-            let bottom = c[i] + (d[i] - c[i]) * tx;
-            top + (bottom - top) * ty
-        })
-    }
-
-    /// RGBA8 sRGB-encoded bytes, for a texture.
-    pub fn to_rgba8(&self) -> Vec<u8> {
-        self.texels
+    /// The light layer's texels, row-major from its top-left corner:
+    /// `(width, height, sRGB)`.
+    pub fn layer_image(&self) -> (usize, usize, Vec<[f32; 3]>) {
+        let texels = self
+            .layer
+            .texels
             .iter()
-            .flat_map(|c| {
-                [
-                    (c[0] * 255.0) as u8,
-                    (c[1] * 255.0) as u8,
-                    (c[2] * 255.0) as u8,
-                    255,
-                ]
-            })
-            .collect()
+            .map(|c| [c[0], c[1], c[2]])
+            .collect();
+        (self.layer.width, self.layer.height, texels)
+    }
+
+    /// The walls' light image: `(width, height, sRGB)`.
+    pub fn walls_image(&self) -> (usize, usize, Vec<[f32; 3]>) {
+        let texels = self
+            .walls
+            .texels
+            .iter()
+            .map(|c| [c[0], c[1], c[2]])
+            .collect();
+        (self.walls.width, self.walls.height, texels)
+    }
+
+    /// The light layer's rectangle in map cells: `(left, top, width,
+    /// height)`.
+    pub fn layer_rect(&self) -> [f32; 4] {
+        let f = &self.frame;
+        let b = f.border / f.cell;
+        [
+            -b,
+            -b,
+            f.room[0] / f.cell + 2.0 * b,
+            f.room[1] / f.cell + 2.0 * b,
+        ]
+    }
+
+    /// Which way the walls' light grows at a point in map cells: the
+    /// brightness of the next texel right and the next one down minus this
+    /// one's, in whole bytes (`LightManager.GetGradient`; only the signs
+    /// are used, to lay wall tops' triangles along the light).
+    pub fn gradient(&self, x: f32, y: f32) -> [i32; 2] {
+        let [u, v] = self.frame.texel(x, y);
+        let k = (1usize << WALL_LEVEL) as f32;
+        let (tx, ty) = ((u / k) as i64, (v / k) as i64);
+        // `ColorHelper.AvgColor`: the mean of the bytes, black off the image.
+        let brightness = |x: i64, y: i64| -> i32 {
+            if x < 0 || y < 0 || x >= self.walls.width as i64 || y >= self.walls.height as i64 {
+                return 0;
+            }
+            let c = self.walls.get(x as usize, y as usize);
+            let byte = |v: f32| (v.clamp(0.0, 1.0) * 255.0).round() as i32;
+            (byte(c[0]) + byte(c[1]) + byte(c[2])) / 3
+        };
+        let here = brightness(tx, ty);
+        [brightness(tx + 1, ty) - here, brightness(tx, ty + 1) - here]
+    }
+
+    /// The walls' light at a point in map cells: the texel it falls in, no
+    /// blending; black off the image (`LightManager.GetColor`).
+    pub fn sample(&self, x: f32, y: f32) -> [f32; 3] {
+        let [u, v] = self.frame.texel(x, y);
+        let k = (1usize << WALL_LEVEL) as f32;
+        // C# casts to int, which rounds towards zero.
+        let (tx, ty) = ((u / k) as i64, (v / k) as i64);
+        if tx < 0 || ty < 0 || tx >= self.walls.width as i64 || ty >= self.walls.height as i64 {
+            return [0.0; 3];
+        }
+        let c = self.walls.get(tx as usize, ty as usize);
+        [c[0], c[1], c[2]]
     }
 }
 
-fn add_lamp(texels: &mut [[f32; 3]], width: usize, height: usize, grid: &MapGrid, lamp: &Lamp) {
-    let t = TEXELS_PER_CELL as f32;
-    let r = lamp.radius * t;
-    let (cx, cy) = (lamp.x * t, lamp.y * t);
-    let x0 = ((cx - r).floor().max(0.0)) as usize;
-    let y0 = ((cy - r).floor().max(0.0)) as usize;
-    let x1 = ((cx + r).ceil() as usize).min(width);
-    let y1 = ((cy + r).ceil() as usize).min(height);
-    for ty in y0..y1 {
-        for tx in x0..x1 {
-            let (px, py) = ((tx as f32 + 0.5) / t, (ty as f32 + 0.5) / t);
-            let d = ((px - lamp.x).powi(2) + (py - lamp.y).powi(2)).sqrt();
-            let k = falloff(d / lamp.radius);
-            if k <= 0.0 {
+/// Map cell size in world units (`MapManager.CellSize`: pixels / 32).
+fn cell_size(map: &MapData) -> f32 {
+    map.scale / crate::units::PX_PER_UNIT
+}
+
+/// `AmbientLight * (A / 255)` on bytes, opaque.
+fn ambient(map: &MapData) -> Rgba {
+    let c = map.ambient_light;
+    let a = c.a as f32 / 255.0;
+    let scaled = |v: u8| (v as f32 * a).floor() / 255.0;
+    [scaled(c.r), scaled(c.g), scaled(c.b), 1.0]
+}
+
+/// `AddBorder`: white, added, everywhere within `size` texels of the edge.
+fn add_border(target: &mut Canvas, size: f32) {
+    let (w, h) = (target.width as f32, target.height as f32);
+    let outer = [[0.0, 0.0], [w, 0.0], [w, h], [0.0, h]];
+    let inner = [
+        [size, size],
+        [w - size, size],
+        [w - size, h - size],
+        [size, h - size],
+    ];
+    for i in 0..4 {
+        let k = (i + 1) % 4;
+        target.triangle([outer[i], outer[k], inner[i]], [WHITE; 3], Blend::Additive);
+        target.triangle([inner[i], outer[k], inner[k]], [WHITE; 3], Blend::Additive);
+    }
+}
+
+/// What casts shadows, as edges in texels.
+struct Blockers {
+    /// Wall edges: hard shadows to the lamp's reach (`AddShadow`).
+    walls: Vec<[[f32; 2]; 2]>,
+    /// Fixed objects' edges: shadows fading out by the lamp's reach
+    /// (`AddEntShadow`).
+    objects: Vec<[[f32; 2]; 2]>,
+}
+
+/// Each outline's edges in texels, going round it.
+fn object_edges(objects: &[[[f32; 2]; 4]], frame: &LightFrame) -> Vec<[[f32; 2]; 2]> {
+    objects
+        .iter()
+        .flat_map(|o| {
+            let t = o.map(|[x, y]| frame.texel(x, y));
+            (0..4).map(move |i| [t[i], t[(i + 1) % 4]])
+        })
+        .collect()
+}
+
+/// The walls' outlines in texels: each merged wall rectangle, and the
+/// diagonal of each corner wedge (`PhysicsManager.CreateWall`), as the
+/// C# light got them from the physics shapes.
+fn wall_edges(grid: &MapGrid, frame: &LightFrame) -> Vec<[[f32; 2]; 2]> {
+    let t = |x: f32, y: f32| frame.texel(x, y);
+    let mut edges = Vec::new();
+    for (x, y, w, h) in grid.wall_rects() {
+        let (x0, y0, x1, y1) = (x as f32, y as f32, (x + w) as f32, (y + h) as f32);
+        let c = [t(x0, y0), t(x1, y0), t(x1, y1), t(x0, y1)];
+        for i in 0..4 {
+            edges.push([c[i], c[(i + 1) % 4]]);
+        }
+    }
+    for y in 0..grid.height as i32 {
+        for x in 0..grid.width as i32 {
+            let Some(edge) = grid.edge(x, y) else {
                 continue;
-            }
-            // Two copies turned by ±angle around the lamp, half each.
-            let mut seen = 0.0;
-            for sign in [-1.0f32, 1.0] {
-                let (s, c) = (sign * PENUMBRA_ANGLE).sin_cos();
-                let (dx, dy) = (px - lamp.x, py - lamp.y);
-                let (rx, ry) = (lamp.x + dx * c - dy * s, lamp.y + dx * s + dy * c);
-                if lit(grid, lamp, rx, ry) {
-                    seen += 0.5;
-                }
-            }
-            if seen <= 0.0 {
-                continue;
-            }
-            let texel = &mut texels[ty * width + tx];
-            for (t, c) in texel.iter_mut().zip(lamp.color) {
-                *t += c * k * seen;
-            }
+            };
+            let (fx, fy) = (x as f32, y as f32);
+            let corners = [
+                t(fx, fy),
+                t(fx + 1.0, fy),
+                t(fx + 1.0, fy + 1.0),
+                t(fx, fy + 1.0),
+            ];
+            let (a, b) = (corners[(edge.open + 1) % 4], corners[(edge.open + 3) % 4]);
+            // A two-point outline: both ways round, as the C# loop went.
+            edges.push([a, b]);
+            edges.push([b, a]);
+        }
+    }
+    edges
+}
+
+/// `AddLight`: the lamp's spot and shadows on a scratch target, then added to
+/// `lit` twice, turned by ± the penumbra angle, in its colour at half.
+fn add_lamp(
+    lit: &mut Canvas,
+    frame: &LightFrame,
+    blockers: &Blockers,
+    flash: &Canvas,
+    lamp: &Lamp,
+) {
+    let center = frame.texel(lamp.x, lamp.y);
+    let size = lamp.radius * frame.cell / frame.scale;
+
+    // C# drew on a target as big as the map, but past the spot it stays
+    // black and adds nothing: only the square around the spot is drawn,
+    // on a scratch target that size (the shadows' long quads clip to it).
+    let reach = size + 2.0;
+    let x0 = (center[0] - reach).floor().max(0.0);
+    let y0 = (center[1] - reach).floor().max(0.0);
+    let x1 = (center[0] + reach).ceil().min(lit.width as f32);
+    let y1 = (center[1] + reach).ceil().min(lit.height as f32);
+    if x1 <= x0 || y1 <= y0 {
+        return;
+    }
+    let local = |p: [f32; 2]| [p[0] - x0, p[1] - y0];
+    let spot = local(center);
+    let mut scratch = Canvas::new((x1 - x0) as usize, (y1 - y0) as usize, BLACK);
+
+    // `RenderLight`: the spot on black, then the shadows.
+    let half = flash.width as f32 / 2.0;
+    scratch.draw(
+        flash,
+        flash.rect(),
+        Placement {
+            position: spot,
+            origin: [half, flash.height as f32 / 2.0],
+            rotation: 0.0,
+            scale: [size / half; 2],
+        },
+        WHITE,
+        Blend::Alpha,
+    );
+    for [a, b] in &blockers.walls {
+        let d = distance_to_segment(center, *a, *b);
+        // A lamp on the edge's line casts no shadow from it (the quad has
+        // no area); rounding must not turn it into a half-plane.
+        if d < size && d > ON_EDGE {
+            add_shadow(&mut scratch, spot, local(*a), local(*b), size, d);
+        }
+    }
+    for [a, b] in &blockers.objects {
+        if distance_to_segment(center, *a, *b) < size {
+            add_object_shadow(&mut scratch, spot, local(*a), local(*b), size);
+        }
+    }
+
+    // `MergeLayersWithAngle`: alpha 255 / 2, added.
+    let tint = [
+        lamp.color[0],
+        lamp.color[1],
+        lamp.color[2],
+        (255 / 2) as f32 / 255.0,
+    ];
+    for angle in [-PENUMBRA_ANGLE, PENUMBRA_ANGLE] {
+        let place = Placement {
+            position: center,
+            origin: spot,
+            rotation: angle,
+            scale: [1.0, 1.0],
+        };
+        lit.draw(&scratch, scratch.rect(), place, tint, Blend::Additive);
+    }
+}
+
+/// `AddShadow`: a black quad from the edge away from the lamp, long
+/// enough to leave the lamp's reach.
+fn add_shadow(
+    target: &mut Canvas,
+    lamp: [f32; 2],
+    v1: [f32; 2],
+    v2: [f32; 2],
+    size: f32,
+    distance: f32,
+) {
+    let away = |v: [f32; 2]| {
+        let (dx, dy) = (v[0] - lamp[0], v[1] - lamp[1]);
+        let len = (dx * dx + dy * dy).sqrt();
+        if len == 0.0 || distance <= 0.0 {
+            return v;
+        }
+        let l = size / distance * len;
+        [v[0] + dx / len * l, v[1] + dy / len * l]
+    };
+    let (v3, v4) = (away(v2), away(v1));
+    for tri in [[v1, v2, v3], [v1, v3, v4]] {
+        if front_facing(tri) {
+            target.triangle(tri, [BLACK; 3], Blend::Alpha);
         }
     }
 }
 
-/// Whether light from the lamp reaches the point. The wall cell a ray
-/// stops in is lit too, so walls catch light on their faces.
-fn lit(grid: &MapGrid, lamp: &Lamp, x: f32, y: f32) -> bool {
-    let (dx, dy) = (x - lamp.x, y - lamp.y);
-    let len = (dx * dx + dy * dy).sqrt();
-    let steps = (len * 4.0).ceil().max(1.0) as i32;
-    let target = (x.floor() as i32, y.floor() as i32);
-    for i in 0..steps {
-        let s = i as f32 / steps as f32;
-        let (sx, sy) = (lamp.x + dx * s, lamp.y + dy * s);
-        let cell = (sx.floor() as i32, sy.floor() as i32);
-        if cell != target && grid.is_wall(cell.0, cell.1) {
-            return false;
+/// `AddEntShadow`: a quad from the edge away from the lamp to its reach,
+/// black at the edge and clear at the far end.
+fn add_object_shadow(target: &mut Canvas, lamp: [f32; 2], v1: [f32; 2], v2: [f32; 2], size: f32) {
+    let away = |v: [f32; 2]| {
+        let (dx, dy) = (v[0] - lamp[0], v[1] - lamp[1]);
+        let len = (dx * dx + dy * dy).sqrt();
+        if len == 0.0 {
+            return v;
+        }
+        let l = size - len;
+        [v[0] + dx / len * l, v[1] + dy / len * l]
+    };
+    let (v3, v4) = (away(v2), away(v1));
+    let clear = [0.0; 4];
+    for (tri, colors) in [
+        ([v3, v2, v1], [clear, BLACK, BLACK]),
+        ([v4, v3, v1], [clear, clear, BLACK]),
+    ] {
+        if front_facing(tri) {
+            target.triangle(tri, colors, Blend::Alpha);
         }
     }
-    true
 }
 
-/// Box blur, `passes` times: soft, like the C# mip-pyramid blur.
-fn blur(src: &[[f32; 3]], w: usize, h: usize, passes: usize) -> Vec<[f32; 3]> {
-    let mut a = src.to_vec();
-    let mut b = vec![[0.0; 3]; a.len()];
-    for _ in 0..passes {
-        for y in 0..h {
-            for x in 0..w {
-                let mut sum = [0.0; 3];
-                let mut n = 0.0;
-                for yy in y.saturating_sub(1)..(y + 2).min(h) {
-                    for xx in x.saturating_sub(1)..(x + 2).min(w) {
-                        let c = a[yy * w + xx];
-                        sum[0] += c[0];
-                        sum[1] += c[1];
-                        sum[2] += c[2];
-                        n += 1.0;
-                    }
-                }
-                b[y * w + x] = [sum[0] / n, sum[1] / n, sum[2] / n];
+/// Whether a shadow triangle survives the C# rasterizer, which culled
+/// counter-clockwise ones (`RasterizerState.CullCounterClockwise`, left on
+/// by the sprite batch). Outlines go clockwise on screen, so a wall edge's
+/// quad (`AddShadow`) is kept only for edges facing the lamp, and the
+/// walls stay dark inside; an object edge's quad (`AddEntShadow`, wound
+/// the other way) only for edges facing away, so objects stay lit and
+/// their shadow starts behind them.
+fn front_facing(p: [[f32; 2]; 3]) -> bool {
+    (p[1][0] - p[0][0]) * (p[2][1] - p[0][1]) - (p[2][0] - p[0][0]) * (p[1][1] - p[0][1]) > 0.0
+}
+
+fn distance_to_segment(p: [f32; 2], a: [f32; 2], b: [f32; 2]) -> f32 {
+    let (abx, aby) = (b[0] - a[0], b[1] - a[1]);
+    let len2 = abx * abx + aby * aby;
+    let t = if len2 > 0.0 {
+        (((p[0] - a[0]) * abx + (p[1] - a[1]) * aby) / len2).clamp(0.0, 1.0)
+    } else {
+        0.0
+    };
+    let (cx, cy) = (a[0] + abx * t - p[0], a[1] + aby * t - p[1]);
+    (cx * cx + cy * cy).sqrt()
+}
+
+/// `MapManager.AddOutSideLight`: one texel per cell over the map and its
+/// border, white off the map's ground.
+fn void_image(grid: &MapGrid) -> Canvas {
+    let b = BORDER_CELLS as i32;
+    let (w, h) = (
+        grid.width + 2 * BORDER_CELLS,
+        grid.height + 2 * BORDER_CELLS,
+    );
+    let mut image = Canvas::new(w, h, BLACK);
+    for y in 0..h {
+        for x in 0..w {
+            if !grid.is_ground(x as i32 - b, y as i32 - b) {
+                image.texels[y * w + x] = WHITE;
             }
         }
-        std::mem::swap(&mut a, &mut b);
     }
-    a
+    image
 }

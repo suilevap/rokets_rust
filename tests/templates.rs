@@ -2,7 +2,7 @@
 
 use tilerider::animation::{GRAY, WHITE, YELLOW};
 use tilerider::content::map::{EntityData, EntityType, MapData};
-use tilerider::map::templates::{BodyKind, template_for};
+use tilerider::map::templates::{BodyKind, static_shadow_outline, template_for};
 use tilerider::render::layers::Layer;
 
 fn entity(kind: &str, extra: &str) -> EntityData {
@@ -78,4 +78,40 @@ fn types_not_ported_have_no_template() {
         assert!(template_for(&entity(kind, "")).is_none(), "{kind}");
     }
     assert_eq!(entity("Spaceship", "").kind, EntityType::Unknown);
+}
+
+const FIXED: &str = "<RestrictX>true</RestrictX><RestrictY>true</RestrictY><RestrictRotation>true</RestrictRotation>";
+const CASTS: &str = "<TryCastStaticShadow>true</TryCastStaticShadow>";
+
+#[test]
+fn physical_entities_have_shadows_but_bulletproof_walls() {
+    for kind in ["Box", "NonLinkableBox", "HeavyBox", "DamagableBox", "Accelerator", "Coin"] {
+        assert!(template_for(&entity(kind, "")).unwrap().casts_shadow, "{kind}");
+    }
+    for kind in ["IgnoreWeaponBox", "Tile"] {
+        assert!(!template_for(&entity(kind, "")).unwrap().casts_shadow, "{kind}");
+    }
+}
+
+#[test]
+fn only_fixed_marked_objects_cast_shadows_into_the_light() {
+    let outline = |kind: &str, extra: &str| {
+        let e = entity(kind, extra);
+        static_shadow_outline(&e, &template_for(&e).unwrap(), [2.0, 1.0])
+    };
+    assert!(outline("Box", &format!("{FIXED}{CASTS}")).is_some());
+    assert!(outline("Box", FIXED).is_none(), "not marked");
+    assert!(outline("Box", CASTS).is_none(), "moves");
+    assert!(outline("IgnoreWeaponBox", &format!("{FIXED}{CASTS}")).is_none(), "no shadow");
+}
+
+#[test]
+fn shadow_outlines_turn_with_the_entity() {
+    let e = entity("Box", &format!("{FIXED}{CASTS}<DirectionDeg>90</DirectionDeg>"));
+    let o = static_shadow_outline(&e, &template_for(&e).unwrap(), [2.0, 1.0]).unwrap();
+    // 2 × 1 cells turned a quarter: 1 wide and 2 tall around (1, 1).
+    let xs = o.map(|p| p[0]);
+    let ys = o.map(|p| p[1]);
+    let span = |v: [f32; 4]| v.iter().cloned().fold(f32::MIN, f32::max) - v.iter().cloned().fold(f32::MAX, f32::min);
+    assert!((span(xs) - 1.0).abs() < 1e-5 && (span(ys) - 2.0).abs() < 1e-5, "{o:?}");
 }

@@ -41,7 +41,7 @@ request; remove it here when it lands.
   than the map's `MinScale`. That is why C# shows more of EditorTest (two
   players) and LightTest than the fixed height here.
 - C#'s additive HDR light layer and the dirty lens tint the picture
-  (green on LetItSnowDay); its light map is blurred softer than ours.
+  (green on LetItSnowDay).
 - Glow and dirty-lens effects (and `DarkCorners`, the vignette); dynamic lights;
   the cabin's springy wobble; tyre marks.
 
