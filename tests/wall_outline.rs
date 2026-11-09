@@ -38,11 +38,13 @@ fn segments(grid: &MapGrid) -> Vec<[Vec3; 2]> {
         .collect()
 }
 
-/// The strips standing up: corner edges.
+/// The upright corner edges.
 fn uprights(grid: &MapGrid) -> Vec<[Vec3; 2]> {
+    // Each is a column of four standing faces; one stands for it.
     strips(grid)
         .into_iter()
         .filter(|s| (s[0].z - s[1].z).abs() >= 1e-4)
+        .step_by(4)
         .collect()
 }
 

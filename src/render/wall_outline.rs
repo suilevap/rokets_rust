@@ -7,8 +7,8 @@
 //! a wall of its own height, as `TilesMap._height` had it), a line along
 //! the side's top edge, lifted a hair (`StaticLinesOffset`); where the side
 //! reaches the floor, one along its foot too (`DrawLowBorders`); down each
-//! outer corner where both sides meeting there drop, an upright one as
-//! long as the shorter drop (`LinePrimitive.InitVertical`; C# drew it at
+//! outer corner where both sides meeting there drop, an upright one (a
+//! thin column, seen from every side) as long as the shorter drop (`LinePrimitive.InitVertical`; C# drew it at
 //! two of the four corners, its screenshots show all); for a wedge, the
 //! top and foot of its slanted face.
 //!
@@ -185,21 +185,26 @@ pub fn build_wall_outline(grid: &MapGrid, cell: f32) -> Mesh {
         indices.extend_from_slice(&[base, base + 1, base + 2, base, base + 2, base + 3]);
     }
     for upright in &uprights {
-        // A strip standing across the corner's diagonal, nudged out of it.
+        // A thin square column down the corner, nudged out of it: a flat
+        // strip seen edge-on from some sides would shrink to nothing.
         let out = Vec2::new(upright.out.x, -upright.out.y).normalize();
-        let across = out.perp() * HALF_WIDTH;
         let at = Vec2::new(upright.at.x * cell, -upright.at.y * cell) + out * LIFT;
         let (top, bottom) = (upright.top + LIFT, upright.bottom);
-        let base = positions.len() as u32;
-        for (p, z) in [
-            (at - across, top),
-            (at + across, top),
-            (at + across, bottom),
-            (at - across, bottom),
-        ] {
-            positions.push([p.x, p.y, z]);
+        let r = HALF_WIDTH;
+        let ring = [
+            at + Vec2::new(-r, -r),
+            at + Vec2::new(r, -r),
+            at + Vec2::new(r, r),
+            at + Vec2::new(-r, r),
+        ];
+        for k in 0..4 {
+            let (p, q) = (ring[k], ring[(k + 1) % 4]);
+            let base = positions.len() as u32;
+            for (v, z) in [(p, top), (q, top), (q, bottom), (p, bottom)] {
+                positions.push([v.x, v.y, z]);
+            }
+            indices.extend_from_slice(&[base, base + 1, base + 2, base, base + 2, base + 3]);
         }
-        indices.extend_from_slice(&[base, base + 1, base + 2, base, base + 2, base + 3]);
     }
     let normals = vec![[0.0, 0.0, 1.0]; positions.len()];
     Mesh::new(
