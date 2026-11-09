@@ -26,7 +26,7 @@
 //! (`HighlightInDark`), and the car's shadow (later) needs the lamps.
 
 use crate::content::map::{LightData, MapData};
-use crate::light::raster::{BLACK, Blend, Canvas, Placement, Rect, Rgba, WHITE};
+use crate::light::raster::{BLACK, Blend, Canvas, Placement, Rgba, WHITE};
 use crate::map::grid::MapGrid;
 
 /// How far past the map's edge the light reaches, in cells
@@ -143,9 +143,8 @@ impl LightMap {
             walls: wall_edges(grid, &frame),
             objects: object_edges(objects, &frame),
         };
-        let mut scratch = Canvas::new(w, h, BLACK);
         for lamp in &lamps {
-            add_lamp(&mut lit, &mut scratch, &frame, &blockers, flash, lamp);
+            add_lamp(&mut lit, &frame, &blockers, flash, lamp);
         }
 
         let mut layer = lit.clone();
@@ -359,11 +358,10 @@ fn wall_edges(grid: &MapGrid, frame: &LightFrame) -> Vec<[[f32; 2]; 2]> {
     edges
 }
 
-/// `AddLight`: the lamp's spot and shadows on `scratch`, then added to
+/// `AddLight`: the lamp's spot and shadows on a scratch target, then added to
 /// `lit` twice, turned by ± the penumbra angle, in its colour at half.
 fn add_lamp(
     lit: &mut Canvas,
-    scratch: &mut Canvas,
     frame: &LightFrame,
     blockers: &Blockers,
     flash: &Canvas,
@@ -372,14 +370,28 @@ fn add_lamp(
     let center = frame.texel(lamp.x, lamp.y);
     let size = lamp.radius * frame.cell / frame.scale;
 
+    // C# drew on a target as big as the map, but past the spot it stays
+    // black and adds nothing: only the square around the spot is drawn,
+    // on a scratch target that size (the shadows' long quads clip to it).
+    let reach = size + 2.0;
+    let x0 = (center[0] - reach).floor().max(0.0);
+    let y0 = (center[1] - reach).floor().max(0.0);
+    let x1 = (center[0] + reach).ceil().min(lit.width as f32);
+    let y1 = (center[1] + reach).ceil().min(lit.height as f32);
+    if x1 <= x0 || y1 <= y0 {
+        return;
+    }
+    let local = |p: [f32; 2]| [p[0] - x0, p[1] - y0];
+    let spot = local(center);
+    let mut scratch = Canvas::new((x1 - x0) as usize, (y1 - y0) as usize, BLACK);
+
     // `RenderLight`: the spot on black, then the shadows.
-    scratch.fill(BLACK);
     let half = flash.width as f32 / 2.0;
     scratch.draw(
         flash,
         flash.rect(),
         Placement {
-            position: center,
+            position: spot,
             origin: [half, flash.height as f32 / 2.0],
             rotation: 0.0,
             scale: [size / half; 2],
@@ -392,12 +404,12 @@ fn add_lamp(
         // A lamp on the edge's line casts no shadow from it (the quad has
         // no area); rounding must not turn it into a half-plane.
         if d < size && d > ON_EDGE {
-            add_shadow(scratch, center, *a, *b, size, d);
+            add_shadow(&mut scratch, spot, local(*a), local(*b), size, d);
         }
     }
     for [a, b] in &blockers.objects {
         if distance_to_segment(center, *a, *b) < size {
-            add_object_shadow(scratch, center, *a, *b, size);
+            add_object_shadow(&mut scratch, spot, local(*a), local(*b), size);
         }
     }
 
@@ -408,25 +420,14 @@ fn add_lamp(
         lamp.color[2],
         (255 / 2) as f32 / 255.0,
     ];
-    // Past the spot the scratch target is black and adds nothing: only
-    // the square around it is drawn.
-    let reach = size + 2.0;
-    let x0 = (center[0] - reach).floor().max(0.0);
-    let y0 = (center[1] - reach).floor().max(0.0);
-    let x1 = (center[0] + reach).ceil().min(scratch.width as f32);
-    let y1 = (center[1] + reach).ceil().min(scratch.height as f32);
-    if x1 <= x0 || y1 <= y0 {
-        return;
-    }
-    let around = Rect::new(x0, y0, x1 - x0, y1 - y0);
     for angle in [-PENUMBRA_ANGLE, PENUMBRA_ANGLE] {
         let place = Placement {
             position: center,
-            origin: [center[0] - x0, center[1] - y0],
+            origin: spot,
             rotation: angle,
             scale: [1.0, 1.0],
         };
-        lit.draw(scratch, around, place, tint, Blend::Additive);
+        lit.draw(&scratch, scratch.rect(), place, tint, Blend::Additive);
     }
 }
 

@@ -11,6 +11,28 @@
 //! the content pipeline is premultiplied, and a tint multiplies every
 //! channel. Like an 8-bit target, every blend saturates at 1.
 
+/// The x range where a horizontal line at `y` crosses a triangle, if it does.
+fn row_span(p: [[f32; 2]; 3], y: f32) -> Option<(f32, f32)> {
+    let mut lo = f32::INFINITY;
+    let mut hi = f32::NEG_INFINITY;
+    for i in 0..3 {
+        let (a, b) = (p[i], p[(i + 1) % 3]);
+        let (ymin, ymax) = (a[1].min(b[1]), a[1].max(b[1]));
+        if y < ymin || y > ymax {
+            continue;
+        }
+        let x = if b[1] == a[1] {
+            lo = lo.min(a[0].min(b[0]));
+            a[0].max(b[0])
+        } else {
+            a[0] + (y - a[1]) / (b[1] - a[1]) * (b[0] - a[0])
+        };
+        lo = lo.min(x);
+        hi = hi.max(x);
+    }
+    (lo <= hi).then_some((lo, hi))
+}
+
 /// Premultiplied RGBA, 0..1.
 pub type Rgba = [f32; 4];
 
@@ -120,17 +142,31 @@ impl Canvas {
         let (fx, fy) = (u - 0.5, v - 0.5);
         let (x0, y0) = (fx.floor(), fy.floor());
         let (tx, ty) = (fx - x0, fy - y0);
-        let at = |x: f32, y: f32| {
-            let x = (x as i64).clamp(0, self.width as i64 - 1) as usize;
-            let y = (y as i64).clamp(0, self.height as i64 - 1) as usize;
-            self.get(x, y)
+        let (xi, yi) = (x0 as i64, y0 as i64);
+        let (w, h) = (self.width as i64, self.height as i64);
+        let (a, b, c, d) = if xi >= 0 && yi >= 0 && xi + 1 < w && yi + 1 < h {
+            // All four texels inside: no clamping.
+            let i = (yi * w + xi) as usize;
+            let row = self.width;
+            (
+                self.texels[i],
+                self.texels[i + 1],
+                self.texels[i + row],
+                self.texels[i + row + 1],
+            )
+        } else {
+            let at = |x: i64, y: i64| {
+                let x = x.clamp(0, w - 1) as usize;
+                let y = y.clamp(0, h - 1) as usize;
+                self.get(x, y)
+            };
+            (
+                at(xi, yi),
+                at(xi + 1, yi),
+                at(xi, yi + 1),
+                at(xi + 1, yi + 1),
+            )
         };
-        let (a, b, c, d) = (
-            at(x0, y0),
-            at(x0 + 1.0, y0),
-            at(x0, y0 + 1.0),
-            at(x0 + 1.0, y0 + 1.0),
-        );
         std::array::from_fn(|i| {
             let top = a[i] + (b[i] - a[i]) * tx;
             let bottom = c[i] + (d[i] - c[i]) * tx;
@@ -140,6 +176,14 @@ impl Canvas {
 
     fn blend(&mut self, x: usize, y: usize, src: Rgba, blend: Blend) {
         let dst = &mut self.texels[y * self.width + x];
+        // Skip what changes nothing: clear over anything, and black added
+        // where the target is already opaque.
+        let clear_rgb = src[0] == 0.0 && src[1] == 0.0 && src[2] == 0.0;
+        match blend {
+            Blend::Alpha if clear_rgb && src[3] == 0.0 => return,
+            Blend::Additive if clear_rgb && (src[3] == 0.0 || dst[3] >= 1.0) => return,
+            _ => {}
+        }
         for i in 0..4 {
             let v = match blend {
                 Blend::Alpha => src[i] + dst[i] * (1.0 - src[3]),
@@ -208,8 +252,16 @@ impl Canvas {
             return;
         }
         for y in y0..y1 {
-            for x in x0..x1 {
-                let (px, py) = (x as f32 + 0.5, y as f32 + 0.5);
+            let py = y as f32 + 0.5;
+            // Where this row's centre line crosses the triangle, give or
+            // take a texel; only that span is tested.
+            let Some((sx0, sx1)) = row_span(p, py) else {
+                continue;
+            };
+            let sx0 = ((sx0 - 1.0).floor().max(x0 as f32)) as usize;
+            let sx1 = ((sx1 + 1.0).ceil().min(x1 as f32)) as usize;
+            for x in sx0..sx1 {
+                let px = x as f32 + 0.5;
                 let w = |a: [f32; 2], b: [f32; 2]| {
                     ((b[0] - a[0]) * (py - a[1]) - (px - a[0]) * (b[1] - a[1])) / area
                 };
