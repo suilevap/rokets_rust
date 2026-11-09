@@ -116,6 +116,8 @@ cargo test
 
 Every map in `assets/` must parse; the driving model, light baking, map
 grid and trigger resolution have unit tests that run without a window.
+The baked light is checked against light targets saved from the C# game
+(`tests/data/light_cs`).
 
 See `ARCHITECTURE.md` for how the code is laid out and what is not ported
 yet.

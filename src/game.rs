@@ -15,6 +15,7 @@ use crate::content::cars::CarCatalog;
 use crate::content::map::MapData;
 use crate::content::map_list::MapList;
 use crate::light::bake::LightMap;
+use crate::light::raster::Canvas;
 use crate::map::grid::MapGrid;
 use crate::render::sprite::{SpriteInfo, SpriteSet};
 use crate::units::CellSize;
@@ -75,6 +76,8 @@ struct Pending {
     list: Handle<XmlText>,
     parsed: Option<(MapData, CarCatalog, MapList)>,
     image: Option<Handle<Image>>,
+    /// The lamp sprite the light is baked with (`Particles\flash2`).
+    flash: Handle<Image>,
     sprites: Vec<(String, Handle<Image>)>,
 }
 
@@ -143,6 +146,7 @@ fn start_loading(
         map: server.load(map_path),
         cars: server.load("Cars/Cars.xml"),
         list: server.load("Maps/MapList.xml"),
+        flash: load_cpu_image(&server, "Sprites/Particles/flash2.png"),
         ..default()
     });
 }
@@ -183,14 +187,7 @@ fn poll_loading(
                 if let Some(image) = p.0.image.as_deref().filter(|s| !s.trim().is_empty()) {
                     match assets::sprite_path(image) {
                         Some(path) => {
-                            pending.image = Some(
-                                server
-                                    .load_builder()
-                                    .with_settings(|s: &mut ImageLoaderSettings| {
-                                        s.asset_usage = RenderAssetUsages::all();
-                                    })
-                                    .load(path),
-                            );
+                            pending.image = Some(load_cpu_image(&server, path));
                         }
                         None => warn!("map image {image:?} not found; using the CharMap only"),
                     }
@@ -228,6 +225,19 @@ fn poll_loading(
         None => None,
     };
 
+    let Some(flash) = images.get(&pending.flash) else {
+        if let Some(bevy::asset::LoadState::Failed(e)) = server.get_load_state(&pending.flash) {
+            fail(&mut commands, &mut next, format!("could not load the lamp sprite: {e}"));
+            commands.remove_resource::<Pending>();
+        }
+        return;
+    };
+    let Some(flash) = rgba8(flash).map(|(w, h, data)| Canvas::from_rgba8(w, h, &data)) else {
+        fail(&mut commands, &mut next, "the lamp sprite is not 8-bit RGBA".to_string());
+        commands.remove_resource::<Pending>();
+        return;
+    };
+
     let mut sprites = SpriteSet::default();
     for (name, handle) in &pending.sprites {
         match images.get(handle) {
@@ -246,15 +256,9 @@ fn poll_loading(
     }
 
     let (data, cars, list) = pending.parsed.take().expect("parsed above");
-    let pixels = image.and_then(|img| {
-        let size = img.size();
-        let data = img.data.as_ref()?;
-        // PNGs load as 8-bit RGBA; anything else is not a map image.
-        (data.len() == (size.x * size.y * 4) as usize)
-            .then(|| (size.x as usize, size.y as usize, data.clone()))
-    });
+    let pixels = image.and_then(rgba8);
     let grid = MapGrid::build(&data, pixels.as_ref().map(|(w, h, p)| (*w, *h, p.as_slice())));
-    let light = LightMap::bake(&data, &grid);
+    let light = LightMap::bake(&data, &grid, &flash);
     let cell = CellSize::from_map_scale(data.scale);
     info!(
         "map {} ready: {}x{} cells, {} lamps",
@@ -271,6 +275,24 @@ fn poll_loading(
     });
     commands.remove_resource::<Pending>();
     next.set(GameState::Playing);
+}
+
+/// Loads an image keeping its pixels on the CPU too.
+fn load_cpu_image(server: &AssetServer, path: impl Into<bevy::asset::AssetPath<'static>>) -> Handle<Image> {
+    server
+        .load_builder()
+        .with_settings(|s: &mut ImageLoaderSettings| {
+            s.asset_usage = RenderAssetUsages::all();
+        })
+        .load(path)
+}
+
+/// An image's pixels as `(width, height, RGBA bytes)`; PNGs load as 8-bit
+/// RGBA, anything else is `None`.
+fn rgba8(img: &Image) -> Option<(usize, usize, Vec<u8>)> {
+    let size = img.size();
+    let data = img.data.as_ref()?;
+    (data.len() == (size.x * size.y * 4) as usize).then(|| (size.x as usize, size.y as usize, data.clone()))
 }
 
 fn despawn_map(mut commands: Commands, entities: Query<Entity, With<MapEntity>>) {
