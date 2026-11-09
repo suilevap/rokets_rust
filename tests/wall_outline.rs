@@ -18,7 +18,8 @@ fn grid(rows: &str) -> MapGrid {
     MapGrid::build(&map, None)
 }
 
-fn segments(grid: &MapGrid) -> Vec<[Vec3; 2]> {
+/// Every strip as two opposite corners.
+fn strips(grid: &MapGrid) -> Vec<[Vec3; 2]> {
     let mesh = build_wall_outline(grid, 1.0);
     let Some(VertexAttributeValues::Float32x3(p)) = mesh.attribute(Mesh::ATTRIBUTE_POSITION) else {
         panic!("positions");
@@ -26,6 +27,22 @@ fn segments(grid: &MapGrid) -> Vec<[Vec3; 2]> {
     // Each line is a strip of four corners; two opposite ones stand for it.
     p.chunks(4)
         .map(|s| [Vec3::from(s[0]), Vec3::from(s[2])])
+        .collect()
+}
+
+/// The strips lying flat: lines along edges.
+fn segments(grid: &MapGrid) -> Vec<[Vec3; 2]> {
+    strips(grid)
+        .into_iter()
+        .filter(|s| (s[0].z - s[1].z).abs() < 1e-4)
+        .collect()
+}
+
+/// The strips standing up: corner edges.
+fn uprights(grid: &MapGrid) -> Vec<[Vec3; 2]> {
+    strips(grid)
+        .into_iter()
+        .filter(|s| (s[0].z - s[1].z).abs() >= 1e-4)
         .collect()
 }
 
@@ -92,4 +109,31 @@ fn a_side_against_a_wedge_gets_no_line() {
         })
         .count();
     assert_eq!(feet_over_wedge, 0);
+}
+
+#[test]
+fn outer_corners_get_a_vertical_edge_down_the_shorter_side() {
+    let g = grid("\n...\n.#.\n...\n");
+    let h = g.cell(1, 1).unwrap().height;
+    let up = uprights(&g);
+    assert_eq!(up.len(), 4, "one per corner of a lone wall");
+    for s in &up {
+        assert!(
+            s[0].z > h - 0.1 && s[1].z.abs() < 1e-3,
+            "from the top to the floor: {s:?}"
+        );
+    }
+    // At a step from a tall wall to a short one, the corners on the step
+    // only go down to the short wall's top.
+    let g = grid("\n....\n.#+.\n....\n");
+    let short = g.cell(2, 1).unwrap().height;
+    let at_step = uprights(&g)
+        .into_iter()
+        .filter(|s| (s[0].x - 2.0).abs() < 0.1)
+        .collect::<Vec<_>>();
+    assert_eq!(at_step.len(), 2);
+    assert!(
+        at_step.iter().all(|s| (s[1].z - short).abs() < 1e-3),
+        "{at_step:?}"
+    );
 }

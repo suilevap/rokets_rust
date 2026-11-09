@@ -6,8 +6,11 @@
 //! whose neighbour has another height (lower or higher; a wedge counts as
 //! a wall of its own height, as `TilesMap._height` had it), a line along
 //! the side's top edge, lifted a hair (`StaticLinesOffset`); where the side
-//! reaches the floor, one along its foot too (`DrawLowBorders`); for a
-//! wedge, the top and foot of its slanted face.
+//! reaches the floor, one along its foot too (`DrawLowBorders`); down each
+//! outer corner where both sides meeting there drop, an upright one as
+//! long as the shorter drop (`LinePrimitive.InitVertical`; C# drew it at
+//! two of the four corners, its screenshots show all); for a wedge, the
+//! top and foot of its slanted face.
 //!
 //! The lines are flat strips of a fixed width in the world
 //! (`LinePrimitive`, `StaticLinesWidth`: 1.5 px each side of the edge), so
@@ -44,9 +47,19 @@ struct Line {
     foot: bool,
 }
 
-/// The outline of the map's walls as flat black strips, in world units.
+/// A vertical edge at a wall's outer corner: where, in map cells, its top
+/// and bottom heights, and which way (in map cells) is out of the corner.
+struct Upright {
+    at: Vec2,
+    top: f32,
+    bottom: f32,
+    out: Vec2,
+}
+
+/// The outline of the map's walls as black strips, in world units.
 pub fn build_wall_outline(grid: &MapGrid, cell: f32) -> Mesh {
     let mut lines: Vec<Line> = Vec::new();
+    let mut uprights: Vec<Upright> = Vec::new();
     // What a side of a wall cell faces: a wedge stands as tall as it is.
     let neighbour_height = |x: i32, y: i32| {
         grid.edge(x, y)
@@ -68,12 +81,15 @@ pub fn build_wall_outline(grid: &MapGrid, cell: f32) -> Mesh {
                 corner(0.0, 1.0),
             ];
             let sides = [(0, -1), (1, 0), (0, 1), (-1, 0)];
+            // How far each side drops to its neighbour.
+            let mut drops = [0.0f32; 4];
             for (i, (dx, dy)) in sides.into_iter().enumerate() {
                 // Past the map's edge there are no faces to outline.
                 if grid.cell(x + dx, y + dy).is_none() {
                     continue;
                 }
                 let nh = neighbour_height(x + dx, y + dy);
+                drops[i] = h - nh;
                 if (h - nh).abs() <= SAME {
                     continue;
                 }
@@ -93,6 +109,22 @@ pub fn build_wall_outline(grid: &MapGrid, cell: f32) -> Mesh {
                         z: 0.0,
                         out,
                         foot: true,
+                    });
+                }
+            }
+            // `LinePrimitive.InitVertical`: down an outer corner where both
+            // sides meeting there drop, as far as the shorter drop. Corner
+            // i ends side i - 1 and starts side i.
+            for i in 0..4 {
+                let prev = (i + 3) % 4;
+                let drop = drops[prev].min(drops[i]);
+                if drop > SAME {
+                    let (a, b) = (sides[prev], sides[i]);
+                    uprights.push(Upright {
+                        at: corners[i],
+                        top: h,
+                        bottom: h - drop,
+                        out: Vec2::new((a.0 + b.0) as f32, (a.1 + b.1) as f32),
                     });
                 }
             }
@@ -148,6 +180,23 @@ pub fn build_wall_outline(grid: &MapGrid, cell: f32) -> Mesh {
         let z = line.z + LIFT;
         let base = positions.len() as u32;
         for p in [a + out * near, a + out * far, b + out * far, b + out * near] {
+            positions.push([p.x, p.y, z]);
+        }
+        indices.extend_from_slice(&[base, base + 1, base + 2, base, base + 2, base + 3]);
+    }
+    for upright in &uprights {
+        // A strip standing across the corner's diagonal, nudged out of it.
+        let out = Vec2::new(upright.out.x, -upright.out.y).normalize();
+        let across = out.perp() * HALF_WIDTH;
+        let at = Vec2::new(upright.at.x * cell, -upright.at.y * cell) + out * LIFT;
+        let (top, bottom) = (upright.top + LIFT, upright.bottom);
+        let base = positions.len() as u32;
+        for (p, z) in [
+            (at - across, top),
+            (at + across, top),
+            (at + across, bottom),
+            (at - across, bottom),
+        ] {
             positions.push([p.x, p.y, z]);
         }
         indices.extend_from_slice(&[base, base + 1, base + 2, base, base + 2, base + 3]);
