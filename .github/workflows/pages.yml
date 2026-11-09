@@ -95,7 +95,11 @@ jobs:
             target/wasm32-unknown-unknown/web/tilerider.wasm
       - name: Shrink with wasm-opt
         run: |
-          curl -sSL https://github.com/WebAssembly/binaryen/releases/download/version_123/binaryen-version_123-x86_64-linux.tar.gz | tar xz
+          # Download to a file first: a failed or cut-off download from
+          # GitHub's release CDN is retried instead of reaching tar.
+          curl -sSL --fail --retry 5 --retry-delay 5 --retry-all-errors -o binaryen.tar.gz \
+            https://github.com/WebAssembly/binaryen/releases/download/version_123/binaryen-version_123-x86_64-linux.tar.gz
+          tar xzf binaryen.tar.gz
           ./binaryen-version_123/bin/wasm-opt -Oz --all-features -o dist/tilerider_bg.wasm dist/tilerider_bg.wasm
       - name: Assemble site
         env:
