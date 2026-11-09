@@ -11,6 +11,8 @@ const SAMPLE: &str = r#"<?xml version="1.0" encoding="utf-8"?>
     <Scale>64</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <AmbientLight>0C0C0C0C</AmbientLight>
+    <OutlandColorLT>FF00FFFF</OutlandColorLT>
+    <OutlandColorLB>FF7FFFD4</OutlandColorLB>
     <Lights>
       <Item><Position>8.5 3.5</Position><Color>FFFFFF00</Color><R>12</R></Item>
     </Lights>
@@ -39,6 +41,11 @@ fn parses_sample() {
     assert_eq!(map.name, "Sample");
     assert_eq!(map.scale, 64.0);
     assert_eq!(map.ambient_light, XColor::rgba(12, 12, 12, 12));
+    // Given colours are read; missing ones take the C# defaults.
+    assert_eq!(map.outland_color_l_t, XColor::rgba(0, 255, 255, 255));
+    assert_eq!(map.outland_color_r_t, XColor::rgba(0, 191, 255, 255));
+    assert_eq!(map.outland_color_r_b, XColor::rgba(255, 165, 0, 255));
+    assert_eq!(map.outland_color_l_b, XColor::rgba(127, 255, 212, 255));
     assert_eq!(map.lights.items[0].color, XColor::rgba(255, 255, 0, 255));
     assert_eq!(map.players.items[0].direction_deg, 90.0);
     assert_eq!(map.entities.items[0].kind, EntityType::Coin);

@@ -40,7 +40,9 @@ request; remove it here when it lands.
   focus entities (players, and in some maps more) in frame, never closer
   than the map's `MinScale`. That is why C# shows more of EditorTest (two
   players) and LightTest than the fixed height here.
-- Glow and dirty-lens effects; dynamic lights; the outland around the map;
+- C#'s additive HDR light layer and the dirty lens tint the picture
+  (green on LetItSnowDay); its light map is blurred softer than ours.
+- Glow and dirty-lens effects (and `DarkCorners`, the vignette); dynamic lights;
   the cabin's springy wobble; tyre marks.
 
 ## Web

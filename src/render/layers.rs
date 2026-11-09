@@ -28,6 +28,15 @@
 /// Highest point any floor tile may reach.
 pub const FLOOR_TOP: f32 = -0.15;
 
+/// Height of the light layer (`DepthConst.Light`): above every floor
+/// tile, below every sprite and wall, so it darkens the floor and the
+/// outland under it and nothing else.
+pub const LIGHT_Z: f32 = FLOOR_TOP / 2.0;
+
+/// The light layer's `depth_bias`: sorted before every sprite layer, so it
+/// never multiplies a sprite drawn before it.
+pub const LIGHT_DEPTH_BIAS: f32 = -BIAS_PER_RANK;
+
 /// Height between consecutive layers: tiny, only for the depth test.
 const Z_STEP: f32 = 0.002;
 

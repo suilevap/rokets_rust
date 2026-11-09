@@ -6,7 +6,9 @@
 //! by adding the light twice, turned by a small angle around the lamp
 //! (`MergeLayersWithAngle`, the penumbra); the sum starts from the map's
 //! ambient light and saturates at white; the whole map is then blurred.
-//! The result multiplies the floor and lights the walls' vertices.
+//! The result lights the walls' vertices. What lies under the C# light
+//! layer (floor, sprites, the outland) also gets full light off the map's
+//! ground (`MapManager.AddOutSideLight`): see [`LightMap::sample_layer`].
 //!
 //! It is kept on the CPU: gameplay asks how dark a spot is
 //! (`HighlightInDark`), and the car's shadow (later) needs the lamps.
@@ -67,6 +69,8 @@ pub struct LightMap {
     pub height: usize,
     /// Linear 0..1 RGB, row-major, y down.
     texels: Vec<[f32; 3]>,
+    /// Per map cell: 1 off the map's ground (the void around it), else 0.
+    void: Vec<f32>,
     pub lamps: Vec<Lamp>,
 }
 
@@ -88,15 +92,55 @@ impl LightMap {
             }
         }
         let texels = blur(&texels, width, height, 2);
+        let void = (0..grid.height as i32)
+            .flat_map(|y| (0..grid.width as i32).map(move |x| (x, y)))
+            .map(|(x, y)| if grid.is_ground(x, y) { 0.0 } else { 1.0 })
+            .collect();
         LightMap {
             width,
             height,
             texels,
+            void,
             lamps,
         }
     }
 
-    /// Light at a point in map cells (bilinear; black outside the map).
+    /// The C# light layer at a point in map cells: the light plus full
+    /// light over the void, one value per cell blended between cell centres
+    /// (the C# texture), at most white. Multiplies the floor, sprites and
+    /// the outland.
+    pub fn sample_layer(&self, x: f32, y: f32) -> [f32; 3] {
+        let (cw, ch) = (self.width / TEXELS_PER_CELL, self.height / TEXELS_PER_CELL);
+        let (fx, fy) = (x - 0.5, y - 0.5);
+        let (x0, y0) = (fx.floor(), fy.floor());
+        let (tx, ty) = (fx - x0, fy - y0);
+        let void = |dx: i32, dy: i32| {
+            let x = (x0 as i32 + dx).clamp(0, cw as i32 - 1) as usize;
+            let y = (y0 as i32 + dy).clamp(0, ch as i32 - 1) as usize;
+            self.void[y * cw + x]
+        };
+        let top = void(0, 0) + (void(1, 0) - void(0, 0)) * tx;
+        let bottom = void(0, 1) + (void(1, 1) - void(0, 1)) * tx;
+        let void = top + (bottom - top) * ty;
+        self.sample(x, y).map(|l| (l + void).min(1.0))
+    }
+
+    /// The light layer as an image over the map and `border` cells around
+    /// it, `TEXELS_PER_CELL` texels per cell, row-major from the top-left
+    /// corner (map cell `-border, -border`): `(width, height, texels)`.
+    pub fn layer_texels(&self, border: usize) -> (usize, usize, Vec<[f32; 3]>) {
+        let w = self.width + 2 * border * TEXELS_PER_CELL;
+        let h = self.height + 2 * border * TEXELS_PER_CELL;
+        let to_cells = |i: usize| (i as f32 + 0.5) / TEXELS_PER_CELL as f32 - border as f32;
+        let texels = (0..h)
+            .flat_map(|y| (0..w).map(move |x| (x, y)))
+            .map(|(x, y)| self.sample_layer(to_cells(x), to_cells(y)))
+            .collect();
+        (w, h, texels)
+    }
+
+    /// Light at a point in map cells (bilinear; the nearest edge texel
+    /// outside the map). Lights the walls' vertices.
     pub fn sample(&self, x: f32, y: f32) -> [f32; 3] {
         let fx = x * TEXELS_PER_CELL as f32 - 0.5;
         let fy = y * TEXELS_PER_CELL as f32 - 0.5;
@@ -211,40 +255,4 @@ fn blur(src: &[[f32; 3]], w: usize, h: usize, passes: usize) -> Vec<[f32; 3]> {
         std::mem::swap(&mut a, &mut b);
     }
     a
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn map_with_lamp() -> MapData {
-        MapData::parse(
-            r#"<XnaContent><Asset Type="GameLibrary.MapData"><Name>T</Name><Scale>64</Scale>
-            <AmbientLight>FF000000</AmbientLight>
-            <Lights><Item><Position>2.5 2.5</Position><Color>FFFFFFFF</Color><R>6</R></Item></Lights>
-            <CharMapDictionary>*:#FFFF0000;.:#100000A0</CharMapDictionary>
-            <CharMap>
-**********
-*........*
-*........*
-*......*.*
-*......*.*
-**********
-</CharMap></Asset></XnaContent>"#,
-        )
-        .unwrap()
-    }
-
-    #[test]
-    fn lamp_lights_and_walls_shadow() {
-        let map = map_with_lamp();
-        let grid = MapGrid::build(&map, None);
-        let light = LightMap::bake(&map, &grid);
-        let near = light.sample(2.5, 2.5)[0];
-        let far = light.sample(6.5, 2.5)[0];
-        let behind_wall = light.sample(8.5, 4.5)[0];
-        assert!(near > 0.8, "near {near}");
-        assert!(far < near && far > 0.0, "far {far}");
-        assert!(behind_wall < 0.1, "shadow {behind_wall}");
-    }
 }

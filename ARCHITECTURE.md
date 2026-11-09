@@ -27,9 +27,11 @@ main
 | `map/colliders` | Static wall colliders | `PhysicsManager.CreateWalls` |
 | `map/templates` | **The only place that reads a map entity's type**: turns each map entity into a template of properties (sprite and layer, body kind and density, axis locks, boost, pickup, spin). Plain data, unit-tested | `EntitiesFactory`, entity classes |
 | `map/spawn` | Builds entities from templates: sprite quads, Avian bodies (box, friction 0.8, bounce 0.5, C# damping) and behaviour components | `Entity`, `PhysicEntity` |
-| `light/bake` | Static light map baked on the CPU: lamps with the `flash2` falloff, wall shadows, two-copy penumbra, ambient, saturation, blur. Kept on the CPU for gameplay and shadows | `LightManager` |
+| `light/bake` | Static light map baked on the CPU: lamps with the `flash2` falloff, wall shadows, two-copy penumbra, ambient, saturation, blur. Walls sample it as is; the light layer (and sprites' tints) add full light over the void around the map. Kept on the CPU for gameplay and shadows | `LightManager` |
 | `game` | States `Loading → Playing` (`Failed`), `LoadedMap`, `MapEntity` (despawned on leaving a map), `ChangeMap` (restart / next) | `MapManager.SetMap` |
-| `render/map_mesh` | Floor of loose, tilted tiles, always below the ground plane; walls as blocks with fading faces; light baked into vertex colours | `TilesMap.AddTiles2`, `Primitive3d`, `RenderSettings` "Mul_Add05" |
+| `render/map_mesh` | Floor of loose, tilted tiles, always below the ground plane; walls as blocks with fading faces and their light in the vertex colours; tiles are lit by the light layer | `TilesMap.AddTiles2`, `Primitive3d`, `RenderSettings` "Mul_Add05" |
+| `render/outland` | Four vertex-coloured quads, a funnel under and around the map that shows between the tiles and past the walls: background colour at the inner edge 32 units down, the map's four `OutlandColor*` at the outer edge 32 units up | `OutlandPrimitive` |
+| `render/light_layer` | The light map as one quad at ground level with a multiply blend, over the map and 4 cells around it: darkens the floor and the outland under it on screen; walls stand above it, sprites are drawn after it | `LightManager` light target, `LightBlendState`, `MapManager.AddOutSideLight` |
 | `render/layers` | **The draw order**: floor geometry under `FLOOR_TOP`, then sprite layers (ground decor, car chassis, wheels, cabin, gears), ordered by a `depth_bias` rank, as the C# `DepthConst` table and its `BackToFront` sprite sort; all lie within a hundredth of a unit of the ground, so order never changes a sprite's size | `DepthConst`, `Renderer.Draw` |
 | `render/sprite` | Sprites as unlit quads tinted by the light map, placed by their layer | `SpriteView` + light layer |
 | `render/camera` | Perspective camera from above, trailing its target; in portrait the view turns a quarter turn and the field of view keeps the landscape amount of world on the short side (`ViewRotation`) | `Camera2D` |
@@ -76,5 +78,5 @@ weapons and gadgets; other cars and AI; doors, bombs, teleports, platforms,
 fake walls; towing, box damage and explosions; the other ~74 action types; particles;
 slow motion; the agent/command server; editor hot reload. Rendering gaps:
 car shadows (`DynamicShadow`: sprite streaks from the nearest lamp) and
-the black outline along wall tops, both deferred to their own PR; the outland around the map, the cabin's springy wobble, tyre marks,
+the black outline along wall tops, both deferred to their own PR; the cabin's springy wobble, tyre marks,
 dynamic lights, HDR glow and the dirty-lens effect, per-map camera zoom.
