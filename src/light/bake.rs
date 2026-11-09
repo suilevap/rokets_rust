@@ -124,18 +124,28 @@ pub struct LightMap {
 }
 
 impl LightMap {
-    /// Bakes the map's lamps; `flash` is the lamp sprite (`Particles\flash2`).
-    pub fn bake(map: &MapData, grid: &MapGrid, flash: &Canvas) -> LightMap {
+    /// Bakes the map's lamps; `flash` is the lamp sprite (`Particles\flash2`),
+    /// `objects` the outlines of fixed objects that cast shadows, in map
+    /// cells (`map::templates::static_shadow_outline`).
+    pub fn bake(
+        map: &MapData,
+        grid: &MapGrid,
+        flash: &Canvas,
+        objects: &[[[f32; 2]; 4]],
+    ) -> LightMap {
         let frame = LightFrame::new(grid.width, grid.height, cell_size(map));
         let (w, h) = frame.size();
         let lamps: Vec<Lamp> = map.lights.iter().map(Lamp::from_data).collect();
 
         let mut lit = Canvas::new(w, h, ambient(map));
         add_border(&mut lit, frame.border / frame.scale);
-        let edges = wall_edges(grid, &frame);
+        let blockers = Blockers {
+            walls: wall_edges(grid, &frame),
+            objects: object_edges(objects, &frame),
+        };
         let mut scratch = Canvas::new(w, h, BLACK);
         for lamp in &lamps {
-            add_lamp(&mut lit, &mut scratch, &frame, &edges, flash, lamp);
+            add_lamp(&mut lit, &mut scratch, &frame, &blockers, flash, lamp);
         }
 
         let mut layer = lit.clone();
@@ -274,6 +284,26 @@ fn add_border(target: &mut Canvas, size: f32) {
     }
 }
 
+/// What casts shadows, as edges in texels.
+struct Blockers {
+    /// Wall edges: hard shadows to the lamp's reach (`AddShadow`).
+    walls: Vec<[[f32; 2]; 2]>,
+    /// Fixed objects' edges: shadows fading out by the lamp's reach
+    /// (`AddEntShadow`).
+    objects: Vec<[[f32; 2]; 2]>,
+}
+
+/// Each outline's edges in texels, going round it.
+fn object_edges(objects: &[[[f32; 2]; 4]], frame: &LightFrame) -> Vec<[[f32; 2]; 2]> {
+    objects
+        .iter()
+        .flat_map(|o| {
+            let t = o.map(|[x, y]| frame.texel(x, y));
+            (0..4).map(move |i| [t[i], t[(i + 1) % 4]])
+        })
+        .collect()
+}
+
 /// The walls' outlines in texels: each merged wall rectangle, and the
 /// diagonal of each corner wedge (`PhysicsManager.CreateWall`), as the
 /// C# light got them from the physics shapes.
@@ -314,7 +344,7 @@ fn add_lamp(
     lit: &mut Canvas,
     scratch: &mut Canvas,
     frame: &LightFrame,
-    edges: &[[[f32; 2]; 2]],
+    blockers: &Blockers,
     flash: &Canvas,
     lamp: &Lamp,
 ) {
@@ -336,12 +366,17 @@ fn add_lamp(
         WHITE,
         Blend::Alpha,
     );
-    for [a, b] in edges {
+    for [a, b] in &blockers.walls {
         let d = distance_to_segment(center, *a, *b);
         // A lamp on the edge's line casts no shadow from it (the quad has
         // no area); rounding must not turn it into a half-plane.
         if d < size && d > ON_EDGE {
             add_shadow(scratch, center, *a, *b, size, d);
+        }
+    }
+    for [a, b] in &blockers.objects {
+        if distance_to_segment(center, *a, *b) < size {
+            add_object_shadow(scratch, center, *a, *b, size);
         }
     }
 
@@ -394,8 +429,46 @@ fn add_shadow(
         [v[0] + dx / len * l, v[1] + dy / len * l]
     };
     let (v3, v4) = (away(v2), away(v1));
-    target.triangle([v1, v2, v3], [BLACK; 3], Blend::Alpha);
-    target.triangle([v1, v3, v4], [BLACK; 3], Blend::Alpha);
+    for tri in [[v1, v2, v3], [v1, v3, v4]] {
+        if front_facing(tri) {
+            target.triangle(tri, [BLACK; 3], Blend::Alpha);
+        }
+    }
+}
+
+/// `AddEntShadow`: a quad from the edge away from the lamp to its reach,
+/// black at the edge and clear at the far end.
+fn add_object_shadow(target: &mut Canvas, lamp: [f32; 2], v1: [f32; 2], v2: [f32; 2], size: f32) {
+    let away = |v: [f32; 2]| {
+        let (dx, dy) = (v[0] - lamp[0], v[1] - lamp[1]);
+        let len = (dx * dx + dy * dy).sqrt();
+        if len == 0.0 {
+            return v;
+        }
+        let l = size - len;
+        [v[0] + dx / len * l, v[1] + dy / len * l]
+    };
+    let (v3, v4) = (away(v2), away(v1));
+    let clear = [0.0; 4];
+    for (tri, colors) in [
+        ([v3, v2, v1], [clear, BLACK, BLACK]),
+        ([v4, v3, v1], [clear, clear, BLACK]),
+    ] {
+        if front_facing(tri) {
+            target.triangle(tri, colors, Blend::Alpha);
+        }
+    }
+}
+
+/// Whether a shadow triangle survives the C# rasterizer, which culled
+/// counter-clockwise ones (`RasterizerState.CullCounterClockwise`, left on
+/// by the sprite batch). Outlines go clockwise on screen, so a wall edge's
+/// quad (`AddShadow`) is kept only for edges facing the lamp, and the
+/// walls stay dark inside; an object edge's quad (`AddEntShadow`, wound
+/// the other way) only for edges facing away, so objects stay lit and
+/// their shadow starts behind them.
+fn front_facing(p: [[f32; 2]; 3]) -> bool {
+    (p[1][0] - p[0][0]) * (p[2][1] - p[0][1]) - (p[2][0] - p[0][0]) * (p[1][1] - p[0][1]) > 0.0
 }
 
 fn distance_to_segment(p: [f32; 2], a: [f32; 2], b: [f32; 2]) -> f32 {

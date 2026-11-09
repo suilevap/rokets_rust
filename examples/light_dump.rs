@@ -14,6 +14,7 @@ use tilerider::content::map::MapData;
 use tilerider::light::bake::LightMap;
 use tilerider::light::raster::Canvas;
 use tilerider::map::grid::MapGrid;
+use tilerider::map::templates::static_shadows;
 
 fn read_png(path: &Path) -> (usize, usize, Vec<u8>) {
     let mut decoder =
@@ -37,6 +38,13 @@ fn read_png(path: &Path) -> (usize, usize, Vec<u8>) {
         other => panic!("unsupported png colour type {other:?}"),
     };
     (w, h, rgba)
+}
+
+fn sprite_size(root: &Path, name: &str) -> Option<[f32; 2]> {
+    let path = root.join(assets::sprite_path(name)?);
+    let decoder = png::Decoder::new(std::io::BufReader::new(File::open(path).ok()?));
+    let info = decoder.read_info().ok()?.info().clone();
+    Some([info.width as f32, info.height as f32])
 }
 
 fn write_png(path: &Path, (w, h, texels): (usize, usize, Vec<[f32; 3]>)) {
@@ -78,7 +86,12 @@ fn main() {
     let (fw, fh, fdata) = read_png(&root.join("Sprites/Particles/flash2.png"));
     let flash = Canvas::from_rgba8(fw, fh, &fdata);
     let start = std::time::Instant::now();
-    let light = LightMap::bake(&map, &grid, &flash);
+    let light = LightMap::bake(
+        &map,
+        &grid,
+        &flash,
+        &static_shadows(&map, |name| sprite_size(&root, name)),
+    );
     eprintln!(
         "{name}: baked in {:?}, frame {:?}",
         start.elapsed(),

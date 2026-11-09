@@ -258,7 +258,8 @@ fn poll_loading(
     let (data, cars, list) = pending.parsed.take().expect("parsed above");
     let pixels = image.and_then(rgba8);
     let grid = MapGrid::build(&data, pixels.as_ref().map(|(w, h, p)| (*w, *h, p.as_slice())));
-    let light = LightMap::bake(&data, &grid, &flash);
+    let objects = crate::map::templates::static_shadows(&data, |name| sprites.get(name).map(|i| i.size.into()));
+    let light = LightMap::bake(&data, &grid, &flash, &objects);
     let cell = CellSize::from_map_scale(data.scale);
     info!(
         "map {} ready: {}x{} cells, {} lamps",

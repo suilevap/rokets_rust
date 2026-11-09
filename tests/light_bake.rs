@@ -25,7 +25,7 @@ fn map_with_lamp(rows: &str, x: f32, y: f32) -> MapData {
 fn lamp_lights_and_walls_shadow() {
     let map = map("\n**********\n*........*\n*........*\n*......*.*\n*......*.*\n**********\n");
     let grid = MapGrid::build(&map, None);
-    let light = LightMap::bake(&map, &grid, &common::flash());
+    let light = LightMap::bake(&map, &grid, &common::flash(), &[]);
     let near = light.sample_layer(2.5, 2.5)[0];
     let far = light.sample_layer(6.5, 2.5)[0];
     let behind_wall = light.sample_layer(8.5, 4.5)[0];
@@ -43,7 +43,7 @@ fn light_layer_is_full_over_the_void_and_past_the_border() {
         -40.0,
     );
     let grid = MapGrid::build(&map, None);
-    let light = LightMap::bake(&map, &grid, &common::flash());
+    let light = LightMap::bake(&map, &grid, &common::flash(), &[]);
     assert!(light.sample_layer(2.5, 1.5)[0] < 0.5, "the room is dark");
     assert_eq!(light.sample_layer(7.5, 1.5), [1.0; 3], "the void");
     assert_eq!(light.sample_layer(30.0, 1.5), [1.0; 3], "past the border");
@@ -53,7 +53,7 @@ fn light_layer_is_full_over_the_void_and_past_the_border() {
 fn layer_covers_the_map_and_four_cells_around_it() {
     let map = map("\n*****\n*...*\n*****\n");
     let grid = MapGrid::build(&map, None);
-    let light = LightMap::bake(&map, &grid, &common::flash());
+    let light = LightMap::bake(&map, &grid, &common::flash(), &[]);
     // Scale 64 px: two world units a cell; the border is 8 units.
     assert_eq!(light.layer_rect(), [-4.0, -4.0, 5.0 + 8.0, 3.0 + 8.0]);
     let (w, h, _) = light.layer_image();
@@ -65,7 +65,7 @@ fn layer_covers_the_map_and_four_cells_around_it() {
 fn walls_light_is_black_off_its_image() {
     let map = map("\n*****\n*...*\n*****\n");
     let grid = MapGrid::build(&map, None);
-    let light = LightMap::bake(&map, &grid, &common::flash());
+    let light = LightMap::bake(&map, &grid, &common::flash(), &[]);
     assert_eq!(light.sample(-10.0, 1.0), [0.0; 3]);
     assert!(light.sample(2.5, 1.5)[0] > 0.0);
 }

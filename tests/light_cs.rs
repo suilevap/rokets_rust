@@ -6,6 +6,7 @@ mod common;
 use std::path::Path;
 
 use tilerider::light::bake::LightMap;
+use tilerider::map::templates::static_shadows;
 
 /// Mean and largest per-channel difference (0..255), and the share of
 /// texels off by more than 16.
@@ -37,9 +38,25 @@ fn compare(name: &str, file: &str, (w, h, ours): (usize, usize, Vec<[f32; 3]>)) 
 #[test]
 fn light_matches_the_csharp_game() {
     let flash = common::flash();
-    for name in ["EditorTest", "LightTest", "LetItSnowDay", "Middleware"] {
+    // Fixed objects cast shadows on Teleport, Escort2, UnderPressure and
+    // LetItSnow.
+    for name in [
+        "EditorTest",
+        "LightTest",
+        "LetItSnowDay",
+        "Middleware",
+        "Teleport",
+        "Escort2",
+        "UnderPressure",
+        "LetItSnow",
+    ] {
         let (map, grid) = common::load_map(name);
-        let light = LightMap::bake(&map, &grid, &flash);
+        let light = LightMap::bake(
+            &map,
+            &grid,
+            &flash,
+            &static_shadows(&map, common::sprite_size),
+        );
         for (file, image) in [
             ("final.png", light.layer_image()),
             ("walls.png", light.walls_image()),
