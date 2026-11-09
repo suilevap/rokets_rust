@@ -204,11 +204,14 @@ fn build_walls(grid: &MapGrid, light: &LightMap, cell: f32) -> Mesh {
             let lit: [[f32; 3]; 4] = cells.map(|p| wall_light(base, light.sample(p.x, p.y)));
             let to3 = |p: Vec2, z: f32| Vec3::new(p.x * cell, -p.y * cell, z);
 
-            // Top, counter-clockwise in the world (y up): TL, BL, BR, TR.
-            mb.quad(
-                [to3(cells[0], h), to3(cells[3], h), to3(cells[2], h), to3(cells[1], h)],
-                [lit[0], lit[3], lit[2], lit[1]],
-            );
+            // Top, counter-clockwise in the world (y up): TL, BL, BR, TR,
+            // split along the diagonal that follows the light so its
+            // gradient reads smoothly (`Primitive3d.GetIndices`, 2015):
+            // TR–BL where the light grows the same way along x and y,
+            // else TL–BR.
+            let [gx, gy] = light.gradient(x as f32 + 0.5, y as f32 + 0.5);
+            let order = if gx.signum() == gy.signum() { [3, 2, 1, 0] } else { [0, 3, 2, 1] };
+            mb.quad(order.map(|i| to3(cells[i], h)), order.map(|i| lit[i]));
 
             // Faces: up (y-1), right, down, left, with the two top corners
             // of each face going round the cell.

@@ -239,6 +239,27 @@ impl LightMap {
         ]
     }
 
+    /// Which way the walls' light grows at a point in map cells: the
+    /// brightness of the next texel right and the next one down minus this
+    /// one's, in whole bytes (`LightManager.GetGradient`; only the signs
+    /// are used, to lay wall tops' triangles along the light).
+    pub fn gradient(&self, x: f32, y: f32) -> [i32; 2] {
+        let [u, v] = self.frame.texel(x, y);
+        let k = (1usize << WALL_LEVEL) as f32;
+        let (tx, ty) = ((u / k) as i64, (v / k) as i64);
+        // `ColorHelper.AvgColor`: the mean of the bytes, black off the image.
+        let brightness = |x: i64, y: i64| -> i32 {
+            if x < 0 || y < 0 || x >= self.walls.width as i64 || y >= self.walls.height as i64 {
+                return 0;
+            }
+            let c = self.walls.get(x as usize, y as usize);
+            let byte = |v: f32| (v.clamp(0.0, 1.0) * 255.0).round() as i32;
+            (byte(c[0]) + byte(c[1]) + byte(c[2])) / 3
+        };
+        let here = brightness(tx, ty);
+        [brightness(tx + 1, ty) - here, brightness(tx, ty + 1) - here]
+    }
+
     /// The walls' light at a point in map cells: the texel it falls in, no
     /// blending; black off the image (`LightManager.GetColor`).
     pub fn sample(&self, x: f32, y: f32) -> [f32; 3] {
