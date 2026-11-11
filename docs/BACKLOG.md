@@ -13,8 +13,6 @@ request; remove it here when it lands.
   original; the removed code is in commit 67be4b9. Read the author's
   article on light and shadow first (moddb "Tile Rider: the history of
   light and shadow…").
-- **Wall outlines**: the black line along wall tops (`Primitive3d.AddBorders`).
-  Also in 67be4b9.
 
 ## Phone
 

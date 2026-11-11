@@ -13,6 +13,7 @@ pub mod map_mesh;
 pub mod light_layer;
 pub mod outland;
 pub mod sprite;
+pub mod wall_outline;
 
 use bevy::prelude::*;
 
@@ -77,6 +78,19 @@ fn spawn_map_meshes(
         Mesh3d(meshes.add(quad)),
         MeshMaterial3d(materials.add(light)),
         transform,
+    ));
+    commands.spawn((
+        Name::new("Wall outline"),
+        MapEntity,
+        Mesh3d(meshes.add(wall_outline::build_wall_outline(&map.grid, map.cell.0))),
+        MeshMaterial3d(materials.add(StandardMaterial {
+            base_color: Color::BLACK,
+            unlit: true,
+            // Flat strips seen from above, whichever way they wind.
+            cull_mode: None,
+            ..default()
+        })),
+        Transform::default(),
     ));
     commands.spawn((
         Name::new("Walls mesh"),
