@@ -37,6 +37,10 @@ pub const LIGHT_Z: f32 = FLOOR_TOP / 2.0;
 /// never multiplies a sprite drawn before it.
 pub const LIGHT_DEPTH_BIAS: f32 = -BIAS_PER_RANK;
 
+/// The additive light's `depth_bias`: sorted after every sprite layer, as
+/// C# drew it last (`IgnoreDepthWorldAdditive`), over everything.
+pub const ADDITIVE_DEPTH_BIAS: f32 = 100.0 * BIAS_PER_RANK;
+
 /// Height between consecutive layers: tiny, only for the depth test.
 const Z_STEP: f32 = 0.002;
 
