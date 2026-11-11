@@ -14,6 +14,7 @@ pub mod light_layer;
 pub mod outland;
 pub mod sprite;
 pub mod wall_outline;
+pub mod wall_material;
 
 use bevy::prelude::*;
 
@@ -27,7 +28,7 @@ impl Plugin for RenderPlugin {
         // the outland's rim.
         let [r, g, b] = map_mesh::BACKGROUND;
         app.insert_resource(ClearColor(Color::srgb(r, g, b)))
-            .add_plugins((camera::CameraPlugin, sprite::SpritePlugin))
+            .add_plugins((camera::CameraPlugin, sprite::SpritePlugin, wall_material::WallMaterialPlugin))
             .add_systems(OnEnter(GameState::Playing), spawn_map_meshes);
     }
 }
@@ -37,6 +38,7 @@ fn spawn_map_meshes(
     map: Res<LoadedMap>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    mut wall_materials: ResMut<Assets<wall_material::WallMaterial>>,
     mut images: ResMut<Assets<Image>>,
 ) {
     let (floor, walls) = map_mesh::build_map_meshes(&map);
@@ -96,7 +98,7 @@ fn spawn_map_meshes(
         Name::new("Walls mesh"),
         MapEntity,
         Mesh3d(meshes.add(walls)),
-        MeshMaterial3d(material),
+        MeshMaterial3d(wall_materials.add(wall_material::WallMaterial {})),
         Transform::default(),
     ));
 }
