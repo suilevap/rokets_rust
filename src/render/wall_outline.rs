@@ -1,22 +1,14 @@
-//! The black outline of the walls: lines along the edges where a wall's
-//! height changes, which make the blocks read as blocks from above.
+//! The walls' black outline (`Primitive3d.AddBorders`, `LinePrimitive` in
+//! XNA): top edges at height changes, feet at ground level, and vertical
+//! ribbons down convex corners as far as the shorter of the two drops.
 //!
-//! C# origin: `Primitive3d.AddBorders`, called for every wall cell and
-//! corner wedge from `TilesMap.AddTiles2`. For each side of a wall cell
-//! whose neighbour has another height (lower or higher; a wedge counts as
-//! a wall of its own height, as `TilesMap._height` had it), a line along
-//! the side's top edge, lifted a hair (`StaticLinesOffset`); where the side
-//! reaches the floor, one along its foot too (`DrawLowBorders`); down each
-//! outer corner where both sides meeting there drop, an upright one (a
-//! thin column, seen from every side) as long as the shorter drop (`LinePrimitive.InitVertical`; C# drew it at
-//! two of the four corners, its screenshots show all); for a wedge, the
-//! top and foot of its slanted face.
-//!
-//! The lines are flat strips of a fixed width in the world
-//! (`LinePrimitive`, `StaticLinesWidth`: 1.5 px each side of the edge), so
-//! on screen they grow with the resolution and pixel density, as C# scaled
-//! them by `DpiSizeMultiplier`; one-pixel lines vanish on dense screens and
-//! along slanted edges.
+//! Squares and corner wedges contribute to the same contours, including
+//! the map's outer boundary. Adjacent strips share their offset-line
+//! intersection (a miter), rather than running past each other's ends.
+//! The width is fixed in world units (`StaticLinesWidthBasic`), so it
+//! scales with the view's resolution like XNA's `DpiSizeMultiplier`.
+
+use std::collections::HashMap;
 
 use bevy::asset::RenderAssetUsages;
 use bevy::mesh::{Indices, PrimitiveTopology};
@@ -25,185 +17,195 @@ use bevy::prelude::*;
 use crate::map::grid::MapGrid;
 use crate::units::PX_PER_UNIT;
 
-/// How far lines float off the edge they follow, up and out of the wall
-/// (C#: `StaticLinesOffset`, up only). Lying exactly on the edge, a line
-/// shares the depth of the faces meeting there and loses to them.
-const LIFT: f32 = 0.5 / PX_PER_UNIT;
-/// Half the width of a line, world units (`StaticLinesWidthBasic`).
+/// XNA's `StaticLinesOffset`: lift tops, lower feet so their inner half
+/// is hidden by the wall. No lateral nudge: it separates corner joins.
+const LIFT: f32 = 0.1 / PX_PER_UNIT;
+/// Half the width of a line (`StaticLinesWidthBasic`), in world units.
 const HALF_WIDTH: f32 = 1.5 / PX_PER_UNIT;
-/// Heights closer than this are the same (`ConvertUnits.SimUnitRation`,
-/// one pixel).
+/// Heights within one pixel count as equal (`ConvertUnits.SimUnitRation`).
 const SAME: f32 = 1.0 / PX_PER_UNIT;
 
-/// A line along an edge: its ends in map cells, its height, and which way
-/// (in map cells) is out of the wall.
+/// Directed with the wall on the right in map coordinates (y down).
 struct Line {
     a: Vec2,
     b: Vec2,
     z: f32,
-    out: Vec2,
-    /// A foot line lies wholly on the floor in front of the face; a top
-    /// line straddles the edge.
+    bottom: f32,
     foot: bool,
 }
 
-/// A vertical edge at a wall's outer corner: where, in map cells, its top
-/// and bottom heights, and which way (in map cells) is out of the corner.
-struct Upright {
-    at: Vec2,
-    top: f32,
-    bottom: f32,
-    out: Vec2,
+impl Line {
+    fn direction(&self) -> Vec2 {
+        (self.b - self.a).normalize()
+    }
+
+    fn out(&self) -> Vec2 {
+        let d = self.direction();
+        Vec2::new(d.y, -d.x)
+    }
+
+    fn key(&self, at: Vec2) -> (i32, i32, u32, bool) {
+        // Endpoints are cell corners and heights come from the same
+        // quantized grid; keep distinct contours at a height step apart.
+        (at.x as i32, at.y as i32, self.z.to_bits(), self.foot)
+    }
 }
 
-/// The outline of the map's walls as black strips, in world units.
+fn add_face(lines: &mut Vec<Line>, a: Vec2, b: Vec2, top: f32, bottom: f32) {
+    if (top - bottom).abs() <= SAME {
+        return;
+    }
+    lines.push(Line {
+        a,
+        b,
+        z: top,
+        bottom,
+        foot: false,
+    });
+    if bottom <= SAME {
+        lines.push(Line {
+            a,
+            b,
+            z: 0.0,
+            bottom: 0.0,
+            foot: true,
+        });
+    }
+}
+
+/// Offset shared by the ends of two strips. The map's square/diagonal
+/// edges turn by at most 135 degrees, so their miters stay bounded.
+fn miter(a: Vec2, b: Vec2) -> Vec2 {
+    (a + b) / (1.0 + a.dot(b))
+}
+
+/// The outline of the map's walls as one static mesh, in world units.
 pub fn build_wall_outline(grid: &MapGrid, cell: f32) -> Mesh {
-    let mut lines: Vec<Line> = Vec::new();
-    let mut uprights: Vec<Upright> = Vec::new();
-    // What a side of a wall cell faces: a wedge stands as tall as it is.
-    let neighbour_height = |x: i32, y: i32| {
+    let mut lines = Vec::new();
+    // `TilesMap._height`: a wedge counts as a wall of its own height;
+    // `GetWallH`: outside the image the neighbour's height is zero.
+    let height = |x, y| {
         grid.edge(x, y)
             .map_or_else(|| grid.height_at(x, y), |e| e.height)
     };
+    let sides = [(0, -1), (1, 0), (0, 1), (-1, 0)];
     for y in 0..grid.height as i32 {
         for x in 0..grid.width as i32 {
-            let Some(c) = grid.cell(x, y).filter(|c| c.is_wall()) else {
-                continue;
-            };
-            let h = c.height;
-            // Corners in map cells, clockwise from the top-left; side i runs
-            // from corner i to corner i + 1 (up, right, down, left).
-            let corner = |dx: f32, dy: f32| Vec2::new(x as f32 + dx, y as f32 + dy);
             let corners = [
-                corner(0.0, 0.0),
-                corner(1.0, 0.0),
-                corner(1.0, 1.0),
-                corner(0.0, 1.0),
+                Vec2::new(x as f32, y as f32),
+                Vec2::new(x as f32 + 1.0, y as f32),
+                Vec2::new(x as f32 + 1.0, y as f32 + 1.0),
+                Vec2::new(x as f32, y as f32 + 1.0),
             ];
-            let sides = [(0, -1), (1, 0), (0, 1), (-1, 0)];
-            // How far each side drops to its neighbour.
-            let mut drops = [0.0f32; 4];
-            for (i, (dx, dy)) in sides.into_iter().enumerate() {
-                // Past the map's edge there are no faces to outline.
-                if grid.cell(x + dx, y + dy).is_none() {
-                    continue;
+            if let Some(c) = grid.cell(x, y).filter(|c| c.is_wall()) {
+                for (i, (dx, dy)) in sides.into_iter().enumerate() {
+                    add_face(
+                        &mut lines,
+                        corners[i],
+                        corners[(i + 1) % 4],
+                        c.height,
+                        height(x + dx, y + dy),
+                    );
                 }
-                let nh = neighbour_height(x + dx, y + dy);
-                drops[i] = h - nh;
-                if (h - nh).abs() <= SAME {
-                    continue;
-                }
-                let (a, b) = (corners[i], corners[(i + 1) % 4]);
-                let out = Vec2::new(dx as f32, dy as f32);
-                lines.push(Line {
-                    a,
-                    b,
-                    z: h,
-                    out,
-                    foot: false,
-                });
-                if nh <= SAME {
-                    lines.push(Line {
-                        a,
-                        b,
-                        z: 0.0,
-                        out,
-                        foot: true,
-                    });
+            } else if let Some(edge) = grid.edge(x, y) {
+                // The three filled corners, clockwise. Unlike a square,
+                // one face crosses the cell towards its open corner.
+                let filled = [
+                    (edge.open + 1) % 4,
+                    (edge.open + 2) % 4,
+                    (edge.open + 3) % 4,
+                ];
+                for i in 0..3 {
+                    let (a, b) = (filled[i], filled[(i + 1) % 3]);
+                    let bottom = if b == (a + 1) % 4 {
+                        let (dx, dy) = sides[a];
+                        height(x + dx, y + dy)
+                    } else {
+                        0.0
+                    };
+                    add_face(&mut lines, corners[a], corners[b], edge.height, bottom);
                 }
             }
-            // `LinePrimitive.InitVertical`: down an outer corner where both
-            // sides meeting there drop, as far as the shorter drop. Corner
-            // i ends side i - 1 and starts side i.
-            for i in 0..4 {
-                let prev = (i + 3) % 4;
-                let drop = drops[prev].min(drops[i]);
-                if drop > SAME {
-                    let (a, b) = (sides[prev], sides[i]);
-                    uprights.push(Upright {
-                        at: corners[i],
-                        top: h,
-                        bottom: h - drop,
-                        out: Vec2::new((a.0 + b.0) as f32, (a.1 + b.1) as f32),
-                    });
-                }
-            }
-        }
-    }
-    for y in 0..grid.height as i32 {
-        for x in 0..grid.width as i32 {
-            let Some(edge) = grid.edge(x, y) else {
-                continue;
-            };
-            let corner = |dx: f32, dy: f32| Vec2::new(x as f32 + dx, y as f32 + dy);
-            let corners = [
-                corner(0.0, 0.0),
-                corner(1.0, 0.0),
-                corner(1.0, 1.0),
-                corner(0.0, 1.0),
-            ];
-            let (a, b) = (corners[(edge.open + 1) % 4], corners[(edge.open + 3) % 4]);
-            // Out of the slanted face, towards the open corner.
-            let out = (corners[edge.open] - (a + b) / 2.0).normalize();
-            lines.push(Line {
-                a,
-                b,
-                z: edge.height,
-                out,
-                foot: false,
-            });
-            lines.push(Line {
-                a,
-                b,
-                z: 0.0,
-                out,
-                foot: true,
-            });
         }
     }
 
-    let mut positions: Vec<[f32; 3]> = Vec::with_capacity(lines.len() * 4);
-    let mut indices: Vec<u32> = Vec::with_capacity(lines.len() * 6);
-    for line in &lines {
-        // To the world (y up), then a strip across the edge, lengthened by
-        // its width at both ends so strips meet at corners.
-        let world = |p: Vec2| Vec2::new(p.x * cell, -p.y * cell);
-        let (a, b) = (world(line.a), world(line.b));
-        let out = Vec2::new(line.out.x, -line.out.y).normalize();
-        let along = (b - a).normalize();
-        let (near, far, reach) = if line.foot {
-            (LIFT, LIFT + 2.0 * HALF_WIDTH, 2.0 * HALF_WIDTH)
-        } else {
-            (-HALF_WIDTH, HALF_WIDTH, HALF_WIDTH)
-        };
-        let (a, b) = (a - along * reach, b + along * reach);
-        let z = line.z + LIFT;
-        let base = positions.len() as u32;
-        for p in [a + out * near, a + out * far, b + out * far, b + out * near] {
-            positions.push([p.x, p.y, z]);
-        }
-        indices.extend_from_slice(&[base, base + 1, base + 2, base, base + 2, base + 3]);
+    let mut starts = HashMap::<_, Vec<usize>>::new();
+    let mut ends = HashMap::<_, Vec<usize>>::new();
+    for (i, line) in lines.iter().enumerate() {
+        starts.entry(line.key(line.a)).or_default().push(i);
+        ends.entry(line.key(line.b)).or_default().push(i);
     }
-    for upright in &uprights {
-        // A thin square column down the corner, nudged out of it: a flat
-        // strip seen edge-on from some sides would shrink to nothing.
-        let out = Vec2::new(upright.out.x, -upright.out.y).normalize();
-        let at = Vec2::new(upright.at.x * cell, -upright.at.y * cell) + out * LIFT;
-        let (top, bottom) = (upright.top + LIFT, upright.bottom);
-        let r = HALF_WIDTH;
-        let ring = [
-            at + Vec2::new(-r, -r),
-            at + Vec2::new(r, -r),
-            at + Vec2::new(r, r),
-            at + Vec2::new(-r, r),
-        ];
-        for k in 0..4 {
-            let (p, q) = (ring[k], ring[(k + 1) % 4]);
-            let base = positions.len() as u32;
-            for (v, z) in [(p, top), (q, top), (q, bottom), (p, bottom)] {
-                positions.push([v.x, v.y, z]);
+    // At diagonally touching blocks several contours can share a node.
+    // Take the sharpest right turn to stay on the same block, rather than
+    // joining across the touching point (or dividing by a zero miter).
+    let turn = |from: &Line, to: &Line| {
+        let (a, b) = (from.direction(), to.direction());
+        a.perp_dot(b).atan2(a.dot(b))
+    };
+    let previous: Vec<_> = lines
+        .iter()
+        .map(|line| {
+            ends.get(&line.key(line.a))
+                .into_iter()
+                .flatten()
+                .copied()
+                .filter(|&j| lines[j].direction().dot(line.direction()) > -0.99)
+                .max_by(|&a, &b| turn(&lines[a], line).total_cmp(&turn(&lines[b], line)))
+        })
+        .collect();
+    let next: Vec<_> = lines
+        .iter()
+        .map(|line| {
+            starts
+                .get(&line.key(line.b))
+                .into_iter()
+                .flatten()
+                .copied()
+                .filter(|&j| line.direction().dot(lines[j].direction()) > -0.99)
+                .max_by(|&a, &b| turn(line, &lines[a]).total_cmp(&turn(line, &lines[b])))
+        })
+        .collect();
+
+    let world = |p: Vec2| Vec2::new(p.x * cell, -p.y * cell);
+    let offset = |v: Vec2| Vec2::new(v.x, -v.y) * HALF_WIDTH;
+    let mut positions = Vec::with_capacity(lines.len() * 4);
+    let mut indices = Vec::with_capacity(lines.len() * 6);
+    let mut quad = |vertices: [Vec3; 4]| {
+        let base = positions.len() as u32;
+        positions.extend(vertices.map(|v| v.to_array()));
+        indices.extend_from_slice(&[base, base + 1, base + 2, base, base + 2, base + 3]);
+    };
+    for (i, line) in lines.iter().enumerate() {
+        let n = line.out();
+        let a_offset = offset(previous[i].map_or(n, |j| miter(lines[j].out(), n)));
+        let b_offset = offset(next[i].map_or(n, |j| miter(n, lines[j].out())));
+        let (a, b) = (world(line.a), world(line.b));
+        let z = line.z + if line.foot { -LIFT } else { LIFT };
+        quad([
+            (a - a_offset).extend(z),
+            (a + a_offset).extend(z),
+            (b + b_offset).extend(z),
+            (b - b_offset).extend(z),
+        ]);
+
+        if let Some(j) = previous[i] {
+            let prev = &lines[j];
+            let bottom = prev.bottom.max(line.bottom);
+            if !line.foot
+                && line.z - bottom > SAME
+                && prev.direction().perp_dot(line.direction()) > 0.01
+            {
+                // `LinePrimitive.InitVertical`: a flat diagonal ribbon,
+                // tangent to the corner's outward bisector, not a column.
+                // Its cap fits under the top join, with the same height.
+                let across = offset((prev.direction() + line.direction()).normalize());
+                quad([
+                    (a - across).extend(z),
+                    (a + across).extend(z),
+                    (a + across).extend(bottom - LIFT),
+                    (a - across).extend(bottom - LIFT),
+                ]);
             }
-            indices.extend_from_slice(&[base, base + 1, base + 2, base, base + 2, base + 3]);
         }
     }
     let normals = vec![[0.0, 0.0, 1.0]; positions.len()];
