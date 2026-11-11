@@ -65,3 +65,12 @@ fn stretching_a_texture_samples_it_linearly() {
     let row: Vec<f32> = (0..4).map(|x| c.get(x, 0)[0]).collect();
     assert_eq!(row, vec![0.0, 0.25, 0.75, 1.0]);
 }
+
+#[test]
+fn blur_with_the_original_keeps_a_flat_target_flat() {
+    let mut c = Canvas::new(64, 32, [0.5, 0.5, 0.5, 1.0]);
+    c.blur_with_original(BLACK);
+    // Four copies at 63 / 255 each: just under the original.
+    let v = c.get(10, 10)[0];
+    assert!((v - 0.5 * 4.0 * 63.0 / 255.0).abs() < 0.01, "{v}");
+}
