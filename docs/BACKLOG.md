@@ -38,9 +38,12 @@ request; remove it here when it lands.
   focus entities (players, and in some maps more) in frame, never closer
   than the map's `MinScale`. That is why C# shows more of EditorTest (two
   players) and LightTest than the fixed height here.
-- C#'s dirty lens tints the picture (green on LetItSnowDay). The
-  additive light adds in linear colour here, in sRGB in C#, so its glow
-  is a little stronger where it is faint.
+- C#'s dirty lens tints the picture (green on LetItSnowDay).
+- The additive light adds in linear colour here and in sRGB numbers in
+  C# (XNA has no gamma): over a lit spot the glow is much weaker here
+  (0.3 + 0.3 is 0.6 in C#, about 0.41 here). Exact only with the glow
+  added in sRGB (a small post-process pass) or the whole picture drawn
+  in sRGB numbers as XNA did.
 - Glow and dirty-lens effects (and `DarkCorners`, the vignette); dynamic lights;
   the cabin's springy wobble; tyre marks.
 
