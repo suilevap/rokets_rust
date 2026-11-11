@@ -16,8 +16,9 @@
 //!   (`render/light_layer`) multiplies them on screen. Walls take
 //!   `colour × light + light / 2` (the "Mul_Add05" vertex light).
 //!
-//! Colours are mixed in sRGB as the C# game did, then converted to linear
-//! for Bevy.
+//! All meshes use Bevy's standard unlit material and linear vertex colours.
+//! Wall sides share one colour ramp by absolute height, so unequal wall
+//! heights do not give their common edge different gradients.
 
 use bevy::asset::RenderAssetUsages;
 use bevy::mesh::{Indices, PrimitiveTopology};
@@ -28,8 +29,8 @@ use std::f32::consts::PI;
 
 use crate::game::LoadedMap;
 use crate::light::bake::LightMap;
-use crate::render::layers::FLOOR_TOP;
 use crate::map::grid::MapGrid;
+use crate::render::layers::FLOOR_TOP;
 
 /// `MapManager.BackgroundColor` (CornflowerBlue): the clear colour, the
 /// bottom of the outland, and what pale tiles are mixed from.
@@ -37,6 +38,8 @@ pub const BACKGROUND: [f32; 3] = [100.0 / 255.0, 149.0 / 255.0, 237.0 / 255.0];
 /// `Settings.WallFadeStart` / `WallFadeEnd`.
 const WALL_FADE_START: f32 = 0.5;
 const WALL_FADE_END: f32 = 0.95;
+/// Reference height for the face fade in `Primitive3d.InitPositionWithLight`.
+const WALL_FADE_HEIGHT: f32 = 8.0;
 /// How far tiles sink, per C# depth unit (`DepthConst.FloorMaxDepthScale`):
 /// `amount × cell × 2 + 1` units below the walls' base, so in perspective
 /// the floor reads smaller than the cars and walls above it.
@@ -54,6 +57,10 @@ impl MeshBuilder {
     /// A quad from four corners (counter-clockwise seen from its front),
     /// each with an sRGB colour.
     pub(crate) fn quad(&mut self, corners: [Vec3; 4], colors: [[f32; 3]; 4]) {
+        self.quad_linear(corners, colors.map(linear_color));
+    }
+
+    fn quad_linear(&mut self, corners: [Vec3; 4], colors: [[f32; 4]; 4]) {
         let n = (corners[1] - corners[0])
             .cross(corners[3] - corners[0])
             .normalize_or_zero();
@@ -61,20 +68,21 @@ impl MeshBuilder {
         for (p, c) in corners.iter().zip(colors) {
             self.positions.push(p.to_array());
             self.normals.push(n.to_array());
-            let lin = Color::srgb(c[0].clamp(0.0, 1.0), c[1].clamp(0.0, 1.0), c[2].clamp(0.0, 1.0))
-                .to_linear();
-            self.colors.push([lin.red, lin.green, lin.blue, 1.0]);
+            self.colors.push(c);
         }
         self.indices
             .extend_from_slice(&[base, base + 1, base + 2, base, base + 2, base + 3]);
     }
 
     pub(crate) fn build(self) -> Mesh {
-        Mesh::new(PrimitiveTopology::TriangleList, RenderAssetUsages::default())
-            .with_inserted_attribute(Mesh::ATTRIBUTE_POSITION, self.positions)
-            .with_inserted_attribute(Mesh::ATTRIBUTE_NORMAL, self.normals)
-            .with_inserted_attribute(Mesh::ATTRIBUTE_COLOR, self.colors)
-            .with_inserted_indices(Indices::U32(self.indices))
+        Mesh::new(
+            PrimitiveTopology::TriangleList,
+            RenderAssetUsages::default(),
+        )
+        .with_inserted_attribute(Mesh::ATTRIBUTE_POSITION, self.positions)
+        .with_inserted_attribute(Mesh::ATTRIBUTE_NORMAL, self.normals)
+        .with_inserted_attribute(Mesh::ATTRIBUTE_COLOR, self.colors)
+        .with_inserted_indices(Indices::U32(self.indices))
     }
 }
 
@@ -86,9 +94,29 @@ pub(crate) fn lerp3(a: [f32; 3], b: [f32; 3], t: f32) -> [f32; 3] {
     ]
 }
 
-/// `RenderSettings` "Mul_Add05".
+/// `RenderSettings` "Mul_Add05": XNA's Color saturates before the
+/// side-face fade, rather than letting overbright light leak into it.
 fn wall_light(c: [f32; 3], l: [f32; 3]) -> [f32; 3] {
-    [c[0] * l[0] + l[0] / 2.0, c[1] * l[1] + l[1] / 2.0, c[2] * l[2] + l[2] / 2.0]
+    std::array::from_fn(|i| (c[i] * l[i] + l[i] / 2.0).clamp(0.0, 1.0))
+}
+
+fn linear_color(c: [f32; 3]) -> [f32; 4] {
+    Color::srgb(
+        c[0].clamp(0.0, 1.0),
+        c[1].clamp(0.0, 1.0),
+        c[2].clamp(0.0, 1.0),
+    )
+    .to_linear()
+    .to_f32_array()
+}
+
+/// Interpolate the same linear RGB ramp for every wall, using absolute
+/// height. Converting a separate sRGB ramp for each wall makes its curve
+/// depend on that wall's height and leaves seams with StandardMaterial.
+fn wall_side_color(lit: [f32; 3], height: f32) -> [f32; 4] {
+    let low = linear_color(lit.map(|c| c * WALL_FADE_START));
+    let high = linear_color(lit.map(|c| c * WALL_FADE_END));
+    std::array::from_fn(|i| low[i] + (high[i] - low[i]) * height / WALL_FADE_HEIGHT)
 }
 
 /// Builds the floor and wall meshes of a loaded map.
@@ -189,7 +217,6 @@ fn build_floor(grid: &MapGrid, cell: f32, rng: &mut SmallRng) -> Mesh {
 
 fn build_walls(grid: &MapGrid, light: &LightMap, cell: f32) -> Mesh {
     let mut mb = MeshBuilder::default();
-    let black = [0.0; 3];
     for y in 0..grid.height as i32 {
         for x in 0..grid.width as i32 {
             let Some(c) = grid.cell(x, y).copied().filter(|c| c.is_wall()) else {
@@ -200,7 +227,12 @@ fn build_walls(grid: &MapGrid, light: &LightMap, cell: f32) -> Mesh {
             let base = [r, g, b];
             // Corners of the cell, map coordinates (y down), clockwise from top-left.
             let corner = |dx: f32, dy: f32| Vec2::new(x as f32 + dx, y as f32 + dy);
-            let cells = [corner(0.0, 0.0), corner(1.0, 0.0), corner(1.0, 1.0), corner(0.0, 1.0)];
+            let cells = [
+                corner(0.0, 0.0),
+                corner(1.0, 0.0),
+                corner(1.0, 1.0),
+                corner(0.0, 1.0),
+            ];
             let lit: [[f32; 3]; 4] = cells.map(|p| wall_light(base, light.sample(p.x, p.y)));
             let to3 = |p: Vec2, z: f32| Vec3::new(p.x * cell, -p.y * cell, z);
 
@@ -210,27 +242,43 @@ fn build_walls(grid: &MapGrid, light: &LightMap, cell: f32) -> Mesh {
             // TR–BL where the light grows the same way along x and y,
             // else TL–BR.
             let [gx, gy] = light.gradient(x as f32 + 0.5, y as f32 + 0.5);
-            let order = if gx.signum() == gy.signum() { [3, 2, 1, 0] } else { [0, 3, 2, 1] };
+            let order = if gx.signum() == gy.signum() {
+                [3, 2, 1, 0]
+            } else {
+                [0, 3, 2, 1]
+            };
             mb.quad(order.map(|i| to3(cells[i], h)), order.map(|i| lit[i]));
 
             // Faces: up (y-1), right, down, left, with the two top corners
             // of each face going round the cell.
-            let faces = [((0, -1), 0, 1), ((1, 0), 1, 2), ((0, 1), 2, 3), ((-1, 0), 3, 0)];
-            let fade_top = WALL_FADE_START + (WALL_FADE_END - WALL_FADE_START) * h / 8.0;
+            let faces = [
+                ((0, -1), 0, 1),
+                ((1, 0), 1, 2),
+                ((0, 1), 2, 3),
+                ((-1, 0), 3, 0),
+            ];
             for ((dx, dy), a, b) in faces {
-                let nh = grid.height_at(x + dx, y + dy).min(h);
+                // TilesMap._height includes the triangular corner fill.
+                // A hidden face against an equal-height wedge can bleed
+                // through its roof along the shared edge in WebGL.
+                let nh = grid
+                    .edge(x + dx, y + dy)
+                    .map_or_else(|| grid.height_at(x + dx, y + dy), |edge| edge.height);
                 if nh >= h {
                     continue;
                 }
-                let bottom = nh;
+                // XNA's Primitive3d keeps each face's gradient anchored
+                // at the floor. The neighbouring wall hides the lower
+                // part; restarting the fade at its top creates a seam.
+                let bottom = 0.0;
                 let (pa, pb) = (cells[a], cells[b]);
-                mb.quad(
+                mb.quad_linear(
                     [to3(pb, bottom), to3(pa, bottom), to3(pa, h), to3(pb, h)],
                     [
-                        lerp3(black, lit[b], WALL_FADE_START),
-                        lerp3(black, lit[a], WALL_FADE_START),
-                        lerp3(black, lit[a], fade_top.min(1.0)),
-                        lerp3(black, lit[b], fade_top.min(1.0)),
+                        wall_side_color(lit[b], bottom),
+                        wall_side_color(lit[a], bottom),
+                        wall_side_color(lit[a], h),
+                        wall_side_color(lit[b], h),
                     ],
                 );
             }
@@ -258,17 +306,26 @@ fn build_walls(grid: &MapGrid, light: &LightMap, cell: f32) -> Mesh {
             let bb = (edge.open + 2) % 4;
             let c = (edge.open + 3) % 4;
             // Top: clockwise in the map is counter-clockwise in the world.
-            let tri = [to3(corners[a], h), to3(corners[c], h), to3(corners[bb], h), to3(corners[bb], h)];
+            let tri = [
+                to3(corners[a], h),
+                to3(corners[c], h),
+                to3(corners[bb], h),
+                to3(corners[bb], h),
+            ];
             mb.quad(tri, [lit[a], lit[c], lit[bb], lit[bb]]);
             // The diagonal face from c to a, facing the open corner.
-            let fade_top = (WALL_FADE_START + (WALL_FADE_END - WALL_FADE_START) * h / 8.0).min(1.0);
-            mb.quad(
-                [to3(corners[a], 0.0), to3(corners[c], 0.0), to3(corners[c], h), to3(corners[a], h)],
+            mb.quad_linear(
                 [
-                    lerp3(black, lit[a], WALL_FADE_START),
-                    lerp3(black, lit[c], WALL_FADE_START),
-                    lerp3(black, lit[c], fade_top),
-                    lerp3(black, lit[a], fade_top),
+                    to3(corners[a], 0.0),
+                    to3(corners[c], 0.0),
+                    to3(corners[c], h),
+                    to3(corners[a], h),
+                ],
+                [
+                    wall_side_color(lit[a], 0.0),
+                    wall_side_color(lit[c], 0.0),
+                    wall_side_color(lit[c], h),
+                    wall_side_color(lit[a], h),
                 ],
             );
         }
