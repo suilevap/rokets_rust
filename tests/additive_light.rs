@@ -18,6 +18,6 @@ fn the_glow_errs_on_the_bright_side_by_default() {
     use tilerider::render::additive_light::{DEFAULT_GLOW_BOOST, GlowBoost};
     // Twice the linear light fits XNA's sRGB sums on average; the default
     // goes past it, so the brightest parts burn out rather than fall short.
+    const _: () = assert!(DEFAULT_GLOW_BOOST > 2.0);
     assert_eq!(GlowBoost::default().0, DEFAULT_GLOW_BOOST);
-    assert!(DEFAULT_GLOW_BOOST > 2.0);
 }

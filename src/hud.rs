@@ -66,8 +66,7 @@ fn log_frame_rate(time: Res<Time<Real>>, diagnostics: Res<DiagnosticsStore>, mut
 
 fn update_text(
     diagnostics: Res<DiagnosticsStore>,
-    boost: Res<crate::render::additive_light::GlowBoost>,
-    map: Option<Res<crate::game::LoadedMap>>,
+    (boost, map): (Res<crate::render::additive_light::GlowBoost>, Option<Res<crate::game::LoadedMap>>),
     name: Res<CurrentMapName>,
     coins: Res<CoinCount>,
     scheme: Res<ActiveScheme>,
