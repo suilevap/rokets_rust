@@ -28,6 +28,13 @@ use crate::render::light_layer::{light_quad, light_texture};
 /// Below this much additive light under the camera, the glow starts to
 /// show; in the dark it is full (`HdrHelper`).
 const DARK: f32 = 0.2;
+/// How much brighter the glow is added than its texture says. XNA added
+/// sRGB numbers (0.3 + 0.3 = 0.6); Bevy adds light in linear colour
+/// (0.3 + 0.3 comes out about 0.42), so over a lit spot the glow looked
+/// much weaker. Twice the linear light is the best single factor over
+/// the usual range of floors and glows (mean error 0.09 against 0.14),
+/// a touch strong over black: the look of the original, not its maths.
+const GLOW_BOOST: f32 = 2.0;
 /// How fast the eye adapts, per second (`Hardastic` K).
 const ADAPT_RATE: f32 = 0.75;
 
@@ -106,9 +113,11 @@ fn spawn_glow(
     ));
 }
 
-/// `Color.White × rate`, premultiplied: added, it gives the light × rate².
+/// `Color.White × rate`, premultiplied: added, it gives the light × rate²
+/// (times the boost).
 fn tint(rate: f32) -> Color {
-    Color::linear_rgba(rate, rate, rate, rate)
+    let glow = rate * GLOW_BOOST;
+    Color::linear_rgba(glow, glow, glow, rate)
 }
 
 /// The rate the spot under the camera calls for (`GetLuminocity`).
