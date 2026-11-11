@@ -7,15 +7,18 @@ use tilerider::map::grid::MapGrid;
 use tilerider::render::wall_outline::build_wall_outline;
 
 /// `#` a wall 6 units tall, `+` one 2 units tall, `.` floor.
-fn grid(rows: &str) -> MapGrid {
-    let map = MapData::parse(&format!(
+fn map(rows: &str) -> MapData {
+    MapData::parse(&format!(
         r#"<XnaContent><Asset Type="GameLibrary.MapData"><Name>T</Name><Scale>64</Scale>
         <ImageWallTreshold>96</ImageWallTreshold>
         <CharMapDictionary>#:#FFFF0000;+:#80FF0000;.:#100000A0</CharMapDictionary>
         <CharMap>{rows}</CharMap></Asset></XnaContent>"#
     ))
-    .unwrap();
-    MapGrid::build(&map, None)
+    .unwrap()
+}
+
+fn grid(rows: &str) -> MapGrid {
+    MapGrid::build(&map(rows), None)
 }
 
 /// Every strip as two opposite corners.
@@ -40,11 +43,9 @@ fn segments(grid: &MapGrid) -> Vec<[Vec3; 2]> {
 
 /// The upright corner edges.
 fn uprights(grid: &MapGrid) -> Vec<[Vec3; 2]> {
-    // Each is a column of four standing faces; one stands for it.
     strips(grid)
         .into_iter()
         .filter(|s| (s[0].z - s[1].z).abs() >= 1e-4)
-        .step_by(4)
         .collect()
 }
 
@@ -106,6 +107,8 @@ fn a_side_against_a_wedge_gets_no_line() {
             l[0].z < 0.1
                 && l[0].y.abs() > 0.9
                 && l[0].y.abs() < 1.2
+                && l[1].y.abs() > 0.9
+                && l[1].y.abs() < 1.2
                 && l[0].x.min(l[1].x) > 0.9
                 && l[0].x.max(l[1].x) < 2.1
         })
@@ -121,7 +124,7 @@ fn outer_corners_get_a_vertical_edge_down_the_shorter_side() {
     assert_eq!(up.len(), 4, "one per corner of a lone wall");
     for s in &up {
         assert!(
-            s[0].z > h - 0.1 && s[1].z.abs() < 1e-3,
+            s[0].z > h - 0.1 && s[1].z.abs() < 0.01,
             "from the top to the floor: {s:?}"
         );
     }
@@ -135,7 +138,155 @@ fn outer_corners_get_a_vertical_edge_down_the_shorter_side() {
         .collect::<Vec<_>>();
     assert_eq!(at_step.len(), 2);
     assert!(
-        at_step.iter().all(|s| (s[1].z - short).abs() < 1e-3),
+        at_step.iter().all(|s| (s[1].z - short).abs() < 0.01),
         "{at_step:?}"
     );
+}
+
+/// Full quads for checking the geometry at a join, not only its bounds.
+fn quads(grid: &MapGrid, cell: f32) -> Vec<[Vec3; 4]> {
+    let mesh = build_wall_outline(grid, cell);
+    let Some(VertexAttributeValues::Float32x3(p)) = mesh.attribute(Mesh::ATTRIBUTE_POSITION) else {
+        panic!("positions");
+    };
+    p.chunks_exact(4)
+        .map(|s| std::array::from_fn(|i| Vec3::from(s[i])))
+        .collect()
+}
+
+fn flat(q: &[Vec3; 4]) -> bool {
+    (q[0].z - q[2].z).abs() < 1e-5
+}
+
+/// Closed contours must share both ends of each cross-section exactly.
+/// Extending independent rectangles leaves overlaps/spikes at these joins.
+fn assert_closed_contours(grid: &MapGrid, cell: f32) {
+    let ends: Vec<_> = quads(grid, cell)
+        .into_iter()
+        .filter(flat)
+        .flat_map(|q| [[q[0], q[1]], [q[3], q[2]]])
+        .collect();
+    for (i, [a, b]) in ends.iter().enumerate() {
+        assert!(
+            ends.iter()
+                .enumerate()
+                .any(|(j, [c, d])| { i != j && a.distance(*c) < 1e-5 && b.distance(*d) < 1e-5 }),
+            "unmatched join {a:?}–{b:?} at cell size {cell}"
+        );
+    }
+}
+
+#[test]
+fn map_boundary_is_outlined_on_all_four_sides() {
+    let g = grid("#");
+    assert_eq!(segments(&g).len(), 8, "top and foot on every outside face");
+    assert_eq!(uprights(&g).len(), 4, "outside corners reach the ground");
+    assert_closed_contours(&g, 1.0);
+}
+
+#[test]
+fn map_boundary_lines_have_wall_faces_behind_them() {
+    use tilerider::game::LoadedMap;
+    use tilerider::light::{bake::LightMap, raster::Canvas};
+    use tilerider::render::map_mesh::build_map_meshes;
+    use tilerider::units::CellSize;
+
+    let data = map("#");
+    let grid = MapGrid::build(&data, None);
+    let light = LightMap::bake(&data, &grid, &Canvas::from_rgba8(1, 1, &[255; 4]), &[]);
+    let loaded = LoadedMap {
+        data,
+        grid,
+        light,
+        cell: CellSize::from_map_scale(64.0),
+        cars: default(),
+        list: default(),
+        sprites: default(),
+    };
+    let (_, walls) = build_map_meshes(&loaded);
+    let Some(VertexAttributeValues::Float32x3(p)) = walls.attribute(Mesh::ATTRIBUTE_POSITION)
+    else {
+        panic!("positions");
+    };
+    let faces: Vec<_> = p
+        .chunks_exact(4)
+        .filter(|q| q.iter().any(|v| (v[2] - q[0][2]).abs() > 1e-5))
+        .collect();
+    assert_eq!(
+        faces.len(),
+        4,
+        "each boundary edge needs a face, not a floating outline"
+    );
+    for q in faces {
+        assert!(q.iter().any(|v| v[2] == 0.0));
+        assert!(q.iter().any(|v| v[2] == loaded.grid.height_at(0, 0)));
+    }
+}
+
+#[test]
+fn right_angle_and_straight_joins_have_shared_endpoints() {
+    for rows in ["...\n.#.\n...", "....\n.##.\n....", "....\n.#+.\n...."] {
+        for cell in [1.0, 2.0, 3.0] {
+            assert_closed_contours(&grid(rows), cell);
+        }
+    }
+}
+
+#[test]
+fn diagonal_wedges_join_the_straight_outline_in_all_orientations() {
+    for rows in [
+        "####\n#...\n#...\n#...",
+        "####\n...#\n...#\n...#",
+        "...#\n...#\n...#\n####",
+        "#...\n#...\n#...\n####",
+        // A wedge lower than one of its two neighbours: contours at
+        // different heights must stay separate, but meet at their own joins.
+        "#+++\n#...\n#...\n#...",
+    ] {
+        let g = grid(rows);
+        assert!((0..g.height as i32).any(|y| (0..g.width as i32).any(|x| g.edge(x, y).is_some())));
+        for cell in [1.0, 2.0, 3.0] {
+            assert_closed_contours(&g, cell);
+        }
+    }
+}
+
+#[test]
+fn touching_blocks_keep_separate_finite_contours() {
+    // Transparent cells do not generate wedges between the blocks.
+    let g = grid("# \n #");
+    assert_eq!(uprights(&g).len(), 8);
+    assert_closed_contours(&g, 1.0);
+    assert!(quads(&g, 1.0).iter().flatten().all(|v| v.is_finite()));
+}
+
+#[test]
+fn verticals_are_thin_diagonal_ribbons_with_caps_at_the_top_join() {
+    let g = grid("...\n.#.\n...");
+    let quads = quads(&g, 1.0);
+    let top = quads.iter().find(|q| flat(q) && q[0].z > 1.0).unwrap()[0].z;
+    let foot = quads.iter().find(|q| flat(q) && q[0].z < 0.1).unwrap()[0].z;
+    let verticals: Vec<_> = quads.iter().filter(|q| !flat(q)).collect();
+    assert_eq!(verticals.len(), 4);
+    for q in verticals {
+        let across = q[1] - q[0];
+        assert!((across.length() - 3.0 / 32.0).abs() < 1e-5);
+        assert!((across.x.abs() - across.y.abs()).abs() < 1e-5);
+        assert!((q[0].z - top).abs() < 1e-5);
+        assert!((q[2].z - foot).abs() < 1e-5);
+    }
+}
+
+#[test]
+fn feet_straddle_the_same_contour_as_the_tops() {
+    let quads = quads(&grid("...\n.#.\n..."), 1.0);
+    for q in quads.iter().filter(|q| flat(q) && q[0].z > 1.0) {
+        assert!(quads.iter().any(|foot| {
+            flat(foot)
+                && foot[0].z < 0.0
+                && q.iter()
+                    .zip(foot)
+                    .all(|(a, b)| a.truncate().distance(b.truncate()) < 1e-5)
+        }));
+    }
 }

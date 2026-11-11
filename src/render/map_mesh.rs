@@ -219,8 +219,7 @@ fn build_walls(grid: &MapGrid, light: &LightMap, cell: f32) -> Mesh {
             let fade_top = WALL_FADE_START + (WALL_FADE_END - WALL_FADE_START) * h / 8.0;
             for ((dx, dy), a, b) in faces {
                 let nh = grid.height_at(x + dx, y + dy).min(h);
-                let outside = grid.cell(x + dx, y + dy).is_none();
-                if nh >= h || outside {
+                if nh >= h {
                     continue;
                 }
                 let bottom = nh;
