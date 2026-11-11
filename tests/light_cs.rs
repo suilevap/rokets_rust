@@ -76,3 +76,44 @@ fn light_matches_the_csharp_game() {
         }
     }
 }
+
+#[test]
+fn additive_light_matches_the_csharp_game() {
+    let flash = common::flash();
+    for name in ["Middleware", "Escort2", "UnderPressure", "LetItSnow"] {
+        let (map, grid) = common::load_map(name);
+        let light = LightMap::bake(
+            &map,
+            &grid,
+            &flash,
+            &static_shadows(&map, common::sprite_size),
+        );
+        let additive = light.additive.as_ref().expect("additive lamps");
+        for (file, image) in [
+            ("add.png", additive.image()),
+            ("add_info.png", additive.reach_image()),
+        ] {
+            let (mean, max, off) = compare(name, file, image);
+            eprintln!(
+                "{name} {file}: mean {mean:.2}, max {max}, off by >16: {:.2}%",
+                off * 100.0
+            );
+            assert!(mean < 1.0, "{name} {file}: mean difference {mean}");
+            assert!(
+                off < 0.005,
+                "{name} {file}: {:.2}% of texels differ",
+                off * 100.0
+            );
+        }
+    }
+}
+
+#[test]
+fn maps_without_additive_lamps_have_no_additive_light() {
+    let (map, grid) = common::load_map("LightTest");
+    assert!(
+        LightMap::bake(&map, &grid, &common::flash(), &[])
+            .additive
+            .is_none()
+    );
+}
