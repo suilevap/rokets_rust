@@ -28,13 +28,30 @@ use crate::render::light_layer::{light_quad, light_texture};
 /// Below this much additive light under the camera, the glow starts to
 /// show; in the dark it is full (`HdrHelper`).
 const DARK: f32 = 0.2;
-/// How much brighter the glow is added than its texture says. XNA added
-/// sRGB numbers (0.3 + 0.3 = 0.6); Bevy adds light in linear colour
-/// (0.3 + 0.3 comes out about 0.42), so over a lit spot the glow looked
-/// much weaker. Twice the linear light is the best single factor over
-/// the usual range of floors and glows (mean error 0.09 against 0.14),
-/// a touch strong over black: the look of the original, not its maths.
-const GLOW_BOOST: f32 = 2.0;
+/// How much brighter the glow is added than its texture says, by default.
+/// XNA added sRGB numbers (0.3 + 0.3 = 0.6); Bevy adds light in linear
+/// colour (0.3 + 0.3 comes out about 0.42), so over a lit spot the glow
+/// looked much weaker. Twice the linear light fits XNA's sums best on
+/// average; three times errs on the bright side, letting the brightest
+/// parts burn out, which reads closer to the original than too little.
+pub const DEFAULT_GLOW_BOOST: f32 = 3.0;
+/// The step of the `[` and `]` keys.
+const BOOST_STEP: f32 = 0.25;
+/// The most the keys turn it up to.
+const MAX_BOOST: f32 = 10.0;
+
+/// How strongly the additive light is added: a factor on its linear
+/// light. Set with `--glow X` (`?glow=X` on the web), turned by `[` and
+/// `]` while playing.
+#[derive(Resource, Debug, Clone, Copy, PartialEq)]
+pub struct GlowBoost(pub f32);
+
+impl Default for GlowBoost {
+    fn default() -> Self {
+        GlowBoost(DEFAULT_GLOW_BOOST)
+    }
+}
+
 /// How fast the eye adapts, per second (`Hardastic` K).
 const ADAPT_RATE: f32 = 0.75;
 
@@ -75,9 +92,15 @@ pub struct AdditiveLightPlugin;
 
 impl Plugin for AdditiveLightPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(MaterialPlugin::<OverAllMaterial>::default())
+        app.init_resource::<GlowBoost>()
+            .add_plugins(MaterialPlugin::<OverAllMaterial>::default())
             .add_systems(OnEnter(GameState::Playing), spawn_glow)
-            .add_systems(Update, adapt.run_if(in_state(GameState::Playing)));
+            .add_systems(
+                Update,
+                (turn_boost, adapt)
+                    .chain()
+                    .run_if(in_state(GameState::Playing)),
+            );
     }
 }
 
@@ -94,7 +117,7 @@ fn spawn_glow(
     let (mesh, transform) = light_quad(&map, LIGHT_Z);
     let material = ExtendedMaterial {
         base: StandardMaterial {
-            base_color: tint(1.0),
+            base_color: tint(1.0, DEFAULT_GLOW_BOOST),
             base_color_texture: Some(images.add(light_texture(additive.image()))),
             unlit: true,
             alpha_mode: AlphaMode::Add,
@@ -115,9 +138,22 @@ fn spawn_glow(
 
 /// `Color.White × rate`, premultiplied: added, it gives the light × rate²
 /// (times the boost).
-fn tint(rate: f32) -> Color {
-    let glow = rate * GLOW_BOOST;
+fn tint(rate: f32, boost: f32) -> Color {
+    let glow = rate * boost;
     Color::linear_rgba(glow, glow, glow, rate)
+}
+
+/// `[` and `]` turn the boost down and up, to try values while playing.
+fn turn_boost(keys: Res<ButtonInput<KeyCode>>, mut boost: ResMut<GlowBoost>) {
+    let step = if keys.just_pressed(KeyCode::BracketRight) {
+        BOOST_STEP
+    } else if keys.just_pressed(KeyCode::BracketLeft) {
+        -BOOST_STEP
+    } else {
+        return;
+    };
+    boost.0 = (boost.0 + step).clamp(0.0, MAX_BOOST);
+    info!("glow boost {:.2}", boost.0);
 }
 
 /// The rate the spot under the camera calls for (`GetLuminocity`).
@@ -127,6 +163,7 @@ pub fn target_rate(brightness: f32) -> f32 {
 
 fn adapt(
     time: Res<Time>,
+    boost: Res<GlowBoost>,
     map: Res<LoadedMap>,
     camera: Query<&MainCamera>,
     mut glows: Query<(&mut Glow, &MeshMaterial3d<OverAllMaterial>, &mut Visibility)>,
@@ -155,7 +192,7 @@ fn adapt(
             *visibility = shown;
         }
         if let Some(mut material) = materials.get_mut(&handle.0) {
-            material.base.base_color = tint(glow.rate);
+            material.base.base_color = tint(glow.rate, boost.0);
         }
     }
 }
