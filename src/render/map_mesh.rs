@@ -253,7 +253,11 @@ fn build_walls(grid: &MapGrid, light: &LightMap, cell: f32) -> Mesh {
             ];
             let fade_top = WALL_FADE_START + (WALL_FADE_END - WALL_FADE_START) * h / 8.0;
             for ((dx, dy), a, b) in faces {
-                let nh = grid.height_at(x + dx, y + dy).min(h);
+                // TilesMap._height includes the triangular corner fill.
+                // A hidden face against an equal-height wedge can bleed
+                // through its roof along the shared edge in WebGL.
+                let nh = grid.edge(x + dx, y + dy)
+                    .map_or_else(|| grid.height_at(x + dx, y + dy), |edge| edge.height);
                 if nh >= h {
                     continue;
                 }

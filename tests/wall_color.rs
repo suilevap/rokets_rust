@@ -143,3 +143,23 @@ fn bright_wall_and_wedge_light_saturates_before_the_side_fade() {
         }
     }
 }
+
+#[test]
+fn walls_only_draw_a_face_above_a_lower_corner_wedge() {
+    for (rows, count) in [("####\n#...\n#...\n#...", 0), ("####\n+...\n+...\n+...", 1)] {
+        let walls = walls(rows, "FFFFFFFF");
+        // The wall at (1,0) faces the wedge at (1,1). An equal-height
+        // face is entirely hidden and causes a dark roof seam in WebGL;
+        // a taller wall still needs the visible face above the wedge.
+        let faces = walls
+            .iter()
+            .filter(|q| {
+                upright(q)
+                    && q.positions
+                        .iter()
+                        .all(|p| (p.y + 1.0).abs() < 1e-5 && p.x >= 1.0 && p.x <= 2.0)
+            })
+            .count();
+        assert_eq!(faces, count, "{rows}");
+    }
+}
