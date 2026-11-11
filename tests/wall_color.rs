@@ -14,6 +14,10 @@ struct Quad {
     colors: [Vec3; 4],
 }
 
+fn linear_gray(value: f32) -> Vec3 {
+    Vec4::from_array(Color::srgb(value, value, value).to_linear().to_f32_array()).truncate()
+}
+
 fn walls(rows: &str, ambient: &str) -> Vec<Quad> {
     let data = MapData::parse(&format!(
         r#"<XnaContent><Asset Type="GameLibrary.MapData"><Name>T</Name><Scale>32</Scale>
@@ -117,7 +121,7 @@ fn a_step_keeps_the_tall_faces_fade_anchored_at_the_floor() {
         .filter(|(p, _)| p.z == 0.0);
     for (_, color) in foot {
         assert!(
-            color.distance(Vec3::splat(0.5)) < 1e-5,
+            color.distance(linear_gray(0.5)) < 1e-5,
             "XNA's ground colour: {color}"
         );
     }
@@ -138,7 +142,7 @@ fn bright_wall_and_wedge_light_saturates_before_the_side_fade() {
             if !upright(&q) {
                 assert!(color.distance(Vec3::ONE) < 1e-5, "top: {color}");
             } else if p.z == 0.0 {
-                assert!(color.distance(Vec3::splat(0.5)) < 1e-5, "foot: {color}");
+                assert!(color.distance(linear_gray(0.5)) < 1e-5, "foot: {color}");
             }
         }
     }
