@@ -1,29 +1,32 @@
-//! The camera: looks straight down from above, in perspective, and trails
-//! its target (`Camera2D`, `Camera2DOperator`).
+//! Perspective framing from XNA's `Camera2D` and `Camera2DOperatoAllInCadr`.
 //!
-//! It eases towards the target (`MoveSpeed` 4/s) but always looks at it,
-//! so a fast car tilts the view a little in the direction it is going.
+//! A solo target leads by 0.7 seconds of velocity and zooms out with speed.
+//! Multiple targets share the frame, including a six-radius driving margin.
+//! Focus (1.9/s), camera position (4/s) and scale (0.9/s) ease separately;
+//! scale stays between 1 and `CameraMinScaleBase` (0.4).
 //!
-//! **Portrait screens** (phones held upright; the C# game was landscape
-//! only) see the same picture as landscape, turned a quarter turn: the
-//! screen's long side still runs along the map's x axis, so up on the screen
-//! is right on the map. The screen's short side always shows as much of the
-//! world as the C# camera's height did (about 15 units), the long side more.
-//! [`ViewRotation`] turns screen directions into the world for the controls.
+//! Portrait screens turn the landscape view a quarter turn. The short side
+//! keeps the same field of view; [`ViewRotation`] applies the same turn to
+//! controls, and group framing accounts for that turn too.
 
 use std::f32::consts::{FRAC_PI_2, FRAC_PI_4};
 
+use avian2d::prelude::LinearVelocity;
 use bevy::core_pipeline::tonemapping::Tonemapping;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 
 use crate::game::{GameState, LoadedMap};
 
-/// Height above the ground in world units: about 25×15 units in view, as
-/// the C# camera shows at its usual zoom (`MinHeight` 16 / `Scale` ≈ 0.9).
-pub const CAMERA_HEIGHT: f32 = 18.0;
-/// `Camera2D.MoveSpeed`.
+/// Closest camera height: XNA's `MinHeight` (512 / 32), at scale 1.
+pub const CAMERA_HEIGHT: f32 = 16.0;
+/// XNA's `Settings.CameraMinScaleBase`: furthest height is 16 / 0.4 = 40.
+const MIN_SCALE: f32 = 0.4;
+const FOCUS_RATE: f32 = 1.9;
 const FOLLOW_RATE: f32 = 4.0;
+const SCALE_RATE: f32 = 0.9;
+const LOOK_AHEAD: f32 = 0.7;
+const TARGET_MARGIN: f32 = 6.0;
 
 /// How fast the view turns between landscape and portrait, per second.
 const TURN_RATE: f32 = 6.0;
@@ -72,14 +75,128 @@ impl ViewRotation {
     }
 }
 
-/// What the camera follows.
-#[derive(Component)]
-pub struct CameraTarget;
+/// A live entity included in camera framing. Attach to any focus entity;
+/// velocity is optional, so fixed points can share the frame with cars.
+#[derive(Component, Debug, Clone, Copy)]
+pub struct CameraTarget {
+    pub radius: f32,
+    pub max_speed: f32,
+}
 
 #[derive(Component)]
 pub struct MainCamera {
-    /// Where the camera is over the ground (it eases towards the target).
+    /// Position above the ground, following the eased focus.
     pub ground: Vec2,
+    /// Where the centre ray meets the ground (also used by HDR adaptation).
+    pub focus: Vec2,
+    /// Zoom: height is `CAMERA_HEIGHT / scale`.
+    pub scale: f32,
+}
+
+impl Default for MainCamera {
+    fn default() -> Self {
+        Self {
+            ground: Vec2::ZERO,
+            focus: Vec2::ZERO,
+            scale: 1.0,
+        }
+    }
+}
+
+impl MainCamera {
+    fn transform(&self, up: Vec3) -> Transform {
+        Transform::from_translation(self.ground.extend(CAMERA_HEIGHT / self.scale))
+            .looking_at(self.focus.extend(0.0), up)
+    }
+}
+
+#[derive(Clone, Copy)]
+struct FocusTarget {
+    position: Vec2,
+    velocity: Vec2,
+    radius: f32,
+    max_speed: f32,
+}
+
+#[derive(Debug, PartialEq)]
+struct Framing {
+    focus: Vec2,
+    scale: f32,
+}
+
+/// XNA's speed framing for one target, or midpoint/extent framing for a group.
+fn framing(
+    targets: impl IntoIterator<Item = FocusTarget>,
+    view: &ViewRotation,
+    projection: &PerspectiveProjection,
+) -> Option<Framing> {
+    let mut targets = targets.into_iter();
+    let first = targets.next()?;
+    let into_screen = Vec2::from_angle(-view.angle);
+    let bounds = |target: FocusTarget| {
+        let p = into_screen.rotate(target.position);
+        let margin = Vec2::splat(target.radius.max(0.0) * TARGET_MARGIN);
+        (p - margin, p + margin)
+    };
+    let (mut min, mut max) = bounds(first);
+    let mut sum = first.position;
+    let mut count = 1;
+    for target in targets {
+        let (lo, hi) = bounds(target);
+        min = min.min(lo);
+        max = max.max(hi);
+        sum += target.position;
+        count += 1;
+    }
+    if count == 1 {
+        let speed = if first.max_speed > 0.0 {
+            (first.velocity.length() / first.max_speed).clamp(0.0, 1.0)
+        } else {
+            0.0
+        };
+        return Some(Framing {
+            focus: first.position + first.velocity * LOOK_AHEAD,
+            scale: 1.0 - (1.0 - MIN_SCALE) * speed,
+        });
+    }
+    let focus = sum / count as f32;
+    let centre = into_screen.rotate(focus);
+    let extent = (max - centre).max(centre - min);
+    let tan_y = (projection.fov * 0.5).tan();
+    let height = (extent.x / (tan_y * projection.aspect_ratio))
+        .max(extent.y / tan_y)
+        .max(CAMERA_HEIGHT);
+    Some(Framing {
+        focus,
+        scale: (CAMERA_HEIGHT / height).clamp(MIN_SCALE, 1.0),
+    })
+}
+
+/// Exponential easing preserves the rates across different frame times.
+fn ease(rate: f32, dt: f32) -> f32 {
+    1.0 - (-rate * dt).exp()
+}
+
+type CameraTargets<'w, 's> = Query<
+    'w,
+    's,
+    (
+        &'static Transform,
+        &'static CameraTarget,
+        Option<&'static LinearVelocity>,
+    ),
+    Without<MainCamera>,
+>;
+
+fn target_snapshot(
+    (transform, target, velocity): (&Transform, &CameraTarget, Option<&LinearVelocity>),
+) -> FocusTarget {
+    FocusTarget {
+        position: transform.translation.truncate(),
+        velocity: velocity.map_or(Vec2::ZERO, |v| v.0),
+        radius: target.radius,
+        max_speed: target.max_speed,
+    }
 }
 
 pub struct CameraPlugin;
@@ -89,7 +206,10 @@ impl Plugin for CameraPlugin {
         app.init_resource::<ViewRotation>()
             .add_systems(Startup, spawn_camera)
             .add_systems(PreUpdate, fit_view_to_window)
-            .add_systems(OnEnter(GameState::Playing), snap_to_target)
+            .add_systems(
+                OnEnter(GameState::Playing),
+                snap_to_target.after(crate::car::spawn_player_car),
+            )
             .add_systems(
                 PostUpdate,
                 follow_target
@@ -112,7 +232,7 @@ fn spawn_camera(mut commands: Commands) {
         Tonemapping::None,
         bevy::core_pipeline::tonemapping::DebandDither::Disabled,
         Msaa::Sample4,
-        MainCamera { ground: Vec2::ZERO },
+        MainCamera::default(),
         Transform::from_xyz(0.0, 0.0, CAMERA_HEIGHT).looking_at(Vec3::ZERO, Vec3::Y),
     ));
 }
@@ -121,18 +241,24 @@ fn spawn_camera(mut commands: Commands) {
 fn snap_to_target(
     map: Res<LoadedMap>,
     view: Res<ViewRotation>,
-    targets: Query<&Transform, (With<CameraTarget>, Without<MainCamera>)>,
-    mut cameras: Query<(&mut MainCamera, &mut Transform)>,
+    targets: CameraTargets,
+    mut cameras: Query<(&mut MainCamera, &mut Transform, &Projection)>,
 ) {
-    let target = targets
-        .iter()
-        .next()
-        .map(|t| t.translation.truncate())
-        .unwrap_or_else(|| map.world(map.grid.width as f32 / 2.0, map.grid.height as f32 / 2.0));
-    for (mut cam, mut transform) in &mut cameras {
-        cam.ground = target;
-        *transform = Transform::from_translation(target.extend(CAMERA_HEIGHT))
-            .looking_at(target.extend(0.0), view.up());
+    for (mut cam, mut transform, projection) in &mut cameras {
+        let Projection::Perspective(projection) = projection else {
+            continue;
+        };
+        let frame =
+            framing(targets.iter().map(target_snapshot), &view, projection).unwrap_or_else(|| {
+                Framing {
+                    focus: map.world(map.grid.width as f32 / 2.0, map.grid.height as f32 / 2.0),
+                    scale: 1.0,
+                }
+            });
+        cam.ground = frame.focus;
+        cam.focus = frame.focus;
+        cam.scale = frame.scale;
+        *transform = cam.transform(view.up());
     }
 }
 
@@ -176,50 +302,24 @@ fn fit_view_to_window(
 fn follow_target(
     time: Res<Time>,
     view: Res<ViewRotation>,
-    targets: Query<&Transform, (With<CameraTarget>, Without<MainCamera>)>,
-    mut cameras: Query<(&mut MainCamera, &mut Transform)>,
+    targets: CameraTargets,
+    mut cameras: Query<(&mut MainCamera, &mut Transform, &Projection)>,
 ) {
-    let Some(target) = targets.iter().next().map(|t| t.translation.truncate()) else {
-        return;
-    };
     let dt = time.delta_secs();
-    for (mut cam, mut transform) in &mut cameras {
-        let delta = target - cam.ground;
-        cam.ground += delta * (FOLLOW_RATE * dt).min(1.0);
-        *transform = Transform::from_translation(cam.ground.extend(CAMERA_HEIGHT))
-            .looking_at(target.extend(0.0), view.up());
+    for (mut cam, mut transform, projection) in &mut cameras {
+        let Projection::Perspective(projection) = projection else {
+            continue;
+        };
+        let Some(frame) = framing(targets.iter().map(target_snapshot), &view, projection) else {
+            continue;
+        };
+        cam.focus = cam.focus.lerp(frame.focus, ease(FOCUS_RATE, dt));
+        cam.ground = cam.ground.lerp(cam.focus, ease(FOLLOW_RATE, dt));
+        cam.scale += (frame.scale - cam.scale) * ease(SCALE_RATE, dt);
+        *transform = cam.transform(view.up());
     }
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn short_side_keeps_the_landscape_view() {
-        // Landscape: the vertical (short) side spans π/4.
-        assert_eq!(fov_for_aspect(16.0 / 9.0), FRAC_PI_4);
-        // Portrait: the horizontal (short) side spans π/4, so vertically more.
-        let aspect = 9.0 / 16.0;
-        let fov = fov_for_aspect(aspect);
-        let horizontal = 2.0 * ((fov / 2.0).tan() * aspect).atan();
-        assert!((horizontal - FRAC_PI_4).abs() < 1e-5);
-        assert!(fov > FRAC_PI_4);
-    }
-
-    #[test]
-    fn portrait_turns_screen_up_into_map_right() {
-        let mut view = ViewRotation::default();
-        view.update_target(9.0 / 16.0);
-        view.angle = view.target;
-        let up = view.screen_to_world(Vec2::Y);
-        assert!((up - Vec2::X).length() < 1e-5, "{up}");
-        let right = view.screen_to_world(Vec2::X);
-        assert!((right - Vec2::NEG_Y).length() < 1e-5, "{right}");
-        // Nearly square: no switch back.
-        view.update_target(1.0);
-        assert_eq!(view.target, -FRAC_PI_2);
-        view.update_target(16.0 / 9.0);
-        assert_eq!(view.target, 0.0);
-    }
-}
+#[path = "camera_tests.rs"]
+mod tests;
