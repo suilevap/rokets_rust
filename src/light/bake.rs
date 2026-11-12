@@ -126,6 +126,8 @@ pub struct LightMap {
     /// The additive light of lamps with an `AdditiveRate`, if any.
     pub additive: Option<AdditiveLight>,
     pub lamps: Vec<Lamp>,
+    /// Shadowless light circles used by the screen-space dirty glass.
+    pub lens: Canvas,
 }
 
 /// The additive (HDR) light: what lamps with an `AdditiveRate` add on
@@ -231,12 +233,14 @@ impl LightMap {
         );
         walls.blur(WHITE);
 
+        let lens = super::effects::lens_light(&lamps, frame.room, frame.cell, flash);
         LightMap {
             frame,
             layer,
             walls,
             additive,
             lamps,
+            lens,
         }
     }
 

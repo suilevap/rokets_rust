@@ -26,6 +26,8 @@ cargo run --release -- -m LetItSnowDay
 | `--size WxH` | Window size (default 1280x720; `720x1280` for portrait) |
 | `--start x,y` | Put the car at that map cell instead of the map's start (first map only) |
 | `--glow X` | How strongly the additive (HDR) light of lamps with an `AdditiveRate` is added (default 3; `[` and `]` turn it by 0.25 while playing, shown as `glow` in the top line) |
+| `--effects 0` | Disable dirty lens, vignette and object shadows for comparison (enabled by default) |
+| `--lens X` | Dirty-lens amount on maps using the default environment effect (default 0.6) |
 | `--drive SCRIPT` | Drive by script, `x,y:seconds;...` (stick in world directions, y up), logging the car's path every 0.1 s |
 
 Portrait screens (a phone held upright) show the landscape view turned a
@@ -58,7 +60,7 @@ the `gh-pages` branch:
 
 The page's bottom-right corner names the build it serves (`PR #<n> · <sha>`
 for a preview, "dev" locally). URL parameters are the options without `--`:
-`map`, `start`, `drive` and `glow`, for example
+`map`, `start`, `drive`, `glow`, `effects` and `lens`, for example
 `?map=LetItSnowDay`, `?map=Middleware&start=84,9.5` (next to the finish) or
 `?map=UnderPressure&start=74,56.5&glow=4` (an additive lamp, brighter).
 
@@ -88,10 +90,15 @@ appear yet.
 ## Compared with the C# game
 
 `docs/media/` holds recorded clips (driving through Middleware, picking up
-a gear, crossing the finish to the next map). `docs/comparison/` holds side-by-side screenshots: the C# game on the left
-(taken through its debug command server, `GET /screenshot`), this port on
-the right. Not yet in the port: car shadows, the glow and dirty-lens
-effects, and the other entities.
+a gear, crossing the finish to the next map). `docs/comparison/` holds C# versus
+Rust screenshots and [lighting before/after](docs/comparison/lighting_effects.png).
+Dirty glass follows the lamps as the camera moves, with screen-fixed marks;
+objects have soft contact and directional shadows, and a vignette darkens the
+corners before the HUD. Compare with `?map=LetItSnowDay&effects=0`, or adjust
+`lens` alone. Dirty glass uses the default environment style (`LevelEffect=None`);
+snow/frozen-glass weather, other entities and moving light sources remain pending. The lighting
+techniques follow the [author’s article](https://www.moddb.com/games/tile-rider/tutorials/tile-rider-the-history-of-light-and-shadow-in-a-small-but-standing-tall-game)
+and the original XNA code.
 
 Headless screenshots on Linux without a GPU:
 

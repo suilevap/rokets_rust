@@ -28,6 +28,10 @@ pub struct MapData {
     pub image_wall_treshold: u8,
     #[serde(default, deserialize_with = "boolean")]
     pub have_outland_vizualization: bool,
+    /// `MapEffectFactory`: dirty glass is the default; snow has its own
+    /// weather overlay rather than the dirty-lens effect.
+    #[serde(default)]
+    pub level_effect: LevelEffect,
     /// The outland's colours at its outer corners (left-top, right-top,
     /// right-bottom, left-bottom); C# defaults when a map leaves them out.
     #[serde(default = "default_outland_lt")]
@@ -58,6 +62,16 @@ pub struct MapData {
     pub char_map_dictionary: Option<String>,
     #[serde(default)]
     pub char_map: Option<String>,
+}
+
+#[derive(Clone, Copy, Debug, Default, Deserialize, PartialEq, Eq)]
+pub enum LevelEffect {
+    #[default]
+    None,
+    Snow,
+    SnowWind,
+    #[serde(other)]
+    Other,
 }
 
 /// `MapData.OutlandColor*` defaults: Black, DeepSkyBlue, Orange, Yellow.
