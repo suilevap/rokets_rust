@@ -8,12 +8,13 @@
 pub mod animate;
 pub mod camera;
 pub mod layers;
-pub mod spin;
-pub mod map_mesh;
 pub mod light_layer;
+pub mod map_mesh;
 pub mod outland;
+pub mod spin;
 pub mod sprite;
 pub mod wall_outline;
+mod wall_outline_material;
 
 use bevy::prelude::*;
 
@@ -27,7 +28,11 @@ impl Plugin for RenderPlugin {
         // the outland's rim.
         let [r, g, b] = map_mesh::BACKGROUND;
         app.insert_resource(ClearColor(Color::srgb(r, g, b)))
-            .add_plugins((camera::CameraPlugin, sprite::SpritePlugin))
+            .add_plugins((
+                camera::CameraPlugin,
+                sprite::SpritePlugin,
+                wall_outline_material::plugin,
+            ))
             .add_systems(OnEnter(GameState::Playing), spawn_map_meshes);
     }
 }
@@ -38,6 +43,7 @@ fn spawn_map_meshes(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut images: ResMut<Assets<Image>>,
+    mut outline_materials: ResMut<Assets<wall_outline_material::WallOutlineMaterial>>,
 ) {
     let (floor, walls) = map_mesh::build_map_meshes(&map);
     let material = materials.add(StandardMaterial {
@@ -83,13 +89,7 @@ fn spawn_map_meshes(
         Name::new("Wall outline"),
         MapEntity,
         Mesh3d(meshes.add(wall_outline::build_wall_outline(&map.grid, map.cell.0))),
-        MeshMaterial3d(materials.add(StandardMaterial {
-            base_color: Color::BLACK,
-            unlit: true,
-            // Flat strips seen from above, whichever way they wind.
-            cull_mode: None,
-            ..default()
-        })),
+        MeshMaterial3d(outline_materials.add(wall_outline_material::WallOutlineMaterial {})),
         Transform::default(),
     ));
     commands.spawn((

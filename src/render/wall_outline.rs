@@ -7,11 +7,11 @@
 //! intersection (a miter), rather than running past each other's ends.
 //! The width is fixed in world units (`StaticLinesWidthBasic`), so it
 //! scales with the view's resolution like XNA's `DpiSizeMultiplier`.
-//! Uprights have a small octagonal cross-section: unlike XNA's flat
-//! ribbons, they retain their width when seen along a corner's diagonal.
+//! Uprights store their centre line and signed half-width in UV.x. The
+//! outline material turns these single quads towards the camera on the
+//! GPU, so they cannot turn edge-on. Horizontal strips keep their miters.
 
 use std::collections::HashMap;
-use std::f32::consts::TAU;
 
 use bevy::asset::RenderAssetUsages;
 use bevy::mesh::{Indices, PrimitiveTopology};
@@ -25,8 +25,6 @@ use crate::units::PX_PER_UNIT;
 const LIFT: f32 = 0.1 / PX_PER_UNIT;
 /// Half the width of a line (`StaticLinesWidthBasic`), in world units.
 const HALF_WIDTH: f32 = 1.5 / PX_PER_UNIT;
-/// An octagon keeps at least 92% of the diameter in every horizontal view.
-const UPRIGHT_SIDES: usize = 8;
 /// Heights within one pixel count as equal (`ConvertUnits.SimUnitRation`).
 const SAME: f32 = 1.0 / PX_PER_UNIT;
 
@@ -173,14 +171,13 @@ pub fn build_wall_outline(grid: &MapGrid, cell: f32) -> Mesh {
 
     let world = |p: Vec2| Vec2::new(p.x * cell, -p.y * cell);
     let offset = |v: Vec2| Vec2::new(v.x, -v.y) * HALF_WIDTH;
-    let ring: [Vec2; UPRIGHT_SIDES] = std::array::from_fn(|i| {
-        Vec2::from_angle(TAU * i as f32 / UPRIGHT_SIDES as f32) * HALF_WIDTH
-    });
     let mut positions = Vec::with_capacity(lines.len() * 4);
+    let mut widths = Vec::with_capacity(lines.len() * 4);
     let mut indices = Vec::with_capacity(lines.len() * 6);
-    let mut quad = |vertices: [Vec3; 4]| {
+    let mut quad = |vertices: [Vec3; 4], half_width: f32| {
         let base = positions.len() as u32;
         positions.extend(vertices.map(|v| v.to_array()));
+        widths.extend([-half_width, half_width, half_width, -half_width].map(|w| [w, 0.0]));
         indices.extend_from_slice(&[base, base + 1, base + 2, base, base + 2, base + 3]);
     };
     for (i, line) in lines.iter().enumerate() {
@@ -189,12 +186,15 @@ pub fn build_wall_outline(grid: &MapGrid, cell: f32) -> Mesh {
         let b_offset = offset(next[i].map_or(n, |j| miter(n, lines[j].out())));
         let (a, b) = (world(line.a), world(line.b));
         let z = line.z + if line.foot { -LIFT } else { LIFT };
-        quad([
-            (a - a_offset).extend(z),
-            (a + a_offset).extend(z),
-            (b + b_offset).extend(z),
-            (b - b_offset).extend(z),
-        ]);
+        quad(
+            [
+                (a - a_offset).extend(z),
+                (a + a_offset).extend(z),
+                (b + b_offset).extend(z),
+                (b - b_offset).extend(z),
+            ],
+            0.0,
+        );
 
         if let Some(j) = previous[i] {
             let prev = &lines[j];
@@ -203,27 +203,25 @@ pub fn build_wall_outline(grid: &MapGrid, cell: f32) -> Mesh {
                 && line.z - bottom > SAME
                 && prev.direction().perp_dot(line.direction()) > 0.01
             {
-                // A thin volume cannot turn edge-on as the view moves.
-                // Its radius fits inside the existing top/foot joins,
-                // which cover its ends at exactly the same heights.
-                for k in 0..UPRIGHT_SIDES {
-                    let (p, q) = (a + ring[k], a + ring[(k + 1) % UPRIGHT_SIDES]);
-                    quad([
-                        p.extend(z),
-                        q.extend(z),
-                        q.extend(bottom - LIFT),
-                        p.extend(bottom - LIFT),
-                    ]);
-                }
+                // The material expands this centre line sideways in the
+                // camera's direction. The ends meet the top/foot joins.
+                quad(
+                    [
+                        a.extend(z),
+                        a.extend(z),
+                        a.extend(bottom - LIFT),
+                        a.extend(bottom - LIFT),
+                    ],
+                    HALF_WIDTH,
+                );
             }
         }
     }
-    let normals = vec![[0.0, 0.0, 1.0]; positions.len()];
     Mesh::new(
         PrimitiveTopology::TriangleList,
         RenderAssetUsages::default(),
     )
     .with_inserted_attribute(Mesh::ATTRIBUTE_POSITION, positions)
-    .with_inserted_attribute(Mesh::ATTRIBUTE_NORMAL, normals)
+    .with_inserted_attribute(Mesh::ATTRIBUTE_UV_0, widths)
     .with_inserted_indices(Indices::U32(indices))
 }

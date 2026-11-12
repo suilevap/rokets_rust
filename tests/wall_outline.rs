@@ -43,16 +43,9 @@ fn segments(grid: &MapGrid) -> Vec<[Vec3; 2]> {
 
 /// The upright corner edges.
 fn uprights(grid: &MapGrid) -> Vec<[Vec3; 2]> {
-    // A run of standing faces between horizontal strips is one upright.
-    let mut standing = false;
     strips(grid)
         .into_iter()
-        .filter(|s| {
-            let vertical = (s[0].z - s[1].z).abs() >= 1e-4;
-            let first = vertical && !standing;
-            standing = vertical;
-            first
-        })
+        .filter(|s| (s[0].z - s[1].z).abs() >= 1e-4)
         .collect()
 }
 
@@ -268,52 +261,40 @@ fn touching_blocks_keep_separate_finite_contours() {
 }
 
 #[test]
-fn verticals_retain_their_width_from_every_horizontal_view_direction() {
+fn uprights_are_single_quads_with_camera_facing_widths() {
     let g = grid("...\n.#.\n...");
+    let mesh = build_wall_outline(&g, 1.0);
+    let Some(VertexAttributeValues::Float32x2(widths)) = mesh.attribute(Mesh::ATTRIBUTE_UV_0)
+    else {
+        panic!("signed billboard widths");
+    };
+    // Eight horizontal edges and four uprights, all just two triangles.
+    assert_eq!(mesh.count_vertices(), 12 * 4);
+    assert_eq!(mesh.indices().unwrap().len(), 12 * 6);
     let quads = quads(&g, 1.0);
-    let top = quads.iter().find(|q| flat(q) && q[0].z > 1.0).unwrap()[0].z;
-    let foot = quads.iter().find(|q| flat(q) && q[0].z < 0.1).unwrap()[0].z;
-    let mut corners: Vec<Vec<Vec2>> = Vec::new();
-    let mut standing = false;
-    for q in &quads {
+    let mut upright_count = 0;
+    for (q, widths) in quads.iter().zip(widths.chunks_exact(4)) {
         if flat(q) {
-            standing = false;
-            continue;
-        }
-        if !standing {
-            corners.push(Vec::new());
-        }
-        standing = true;
-        corners
-            .last_mut()
-            .unwrap()
-            .extend([q[0].truncate(), q[1].truncate()]);
-        assert!((q[0].z - top).abs() < 1e-5);
-        assert!((q[2].z - foot).abs() < 1e-5);
-    }
-    assert_eq!(corners.len(), 4);
-    for corner in corners {
-        for degrees in (0..360).step_by(5) {
-            let screen_right = Vec2::from_angle((degrees as f32).to_radians());
-            let min = corner
-                .iter()
-                .map(|p| p.dot(screen_right))
-                .fold(f32::INFINITY, f32::min);
-            let max = corner
-                .iter()
-                .map(|p| p.dot(screen_right))
-                .fold(f32::NEG_INFINITY, f32::max);
-            let width = max - min;
-            assert!(
-                width >= 0.9 * 3.0 / 32.0,
-                "edge-on at {degrees} degrees: {width}"
-            );
-            assert!(
-                width <= 3.0 / 32.0 + 1e-5,
-                "too thick at {degrees} degrees: {width}"
+            assert!(widths.iter().all(|uv| uv[0] == 0.0));
+        } else {
+            upright_count += 1;
+            // Both sides start on the actual corner, not an offset ribbon
+            // that can turn edge-on; the material expands them at render time.
+            assert_eq!(q[0], q[1]);
+            assert_eq!(q[2], q[3]);
+            assert_eq!(q[0].truncate(), q[2].truncate());
+            assert_eq!(
+                widths,
+                &[
+                    [-1.5 / 32.0, 0.0],
+                    [1.5 / 32.0, 0.0],
+                    [1.5 / 32.0, 0.0],
+                    [-1.5 / 32.0, 0.0]
+                ]
             );
         }
     }
+    assert_eq!(upright_count, 4);
 }
 
 fn covers(q: &[Vec3; 4], p: Vec3) -> bool {
@@ -329,7 +310,7 @@ fn covers(q: &[Vec3; 4], p: Vec3) -> bool {
 }
 
 #[test]
-fn upright_ends_fit_inside_the_flat_corner_joins() {
+fn upright_endpoints_meet_the_flat_corner_joins() {
     for rows in [
         "...\n.#.\n...",
         "....\n.#+.\n....",
