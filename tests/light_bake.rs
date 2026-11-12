@@ -1,4 +1,5 @@
-//! The baked light: lamps, wall shadows, the void, the walls' light.
+//! The baked light: lamps, wall shadows, the void, the walls' light, the
+//! additive light.
 
 mod common;
 
@@ -11,10 +12,15 @@ fn map(rows: &str) -> MapData {
 }
 
 fn map_with_lamp(rows: &str, x: f32, y: f32) -> MapData {
+    lamp_map(rows, x, y, 0.0)
+}
+
+fn lamp_map(rows: &str, x: f32, y: f32, additive_rate: f32) -> MapData {
     MapData::parse(&format!(
         r#"<XnaContent><Asset Type="GameLibrary.MapData"><Name>T</Name><Scale>64</Scale>
         <AmbientLight>FF000000</AmbientLight>
-        <Lights><Item><Position>{x} {y}</Position><Color>FFFFFFFF</Color><R>6</R></Item></Lights>
+        <Lights><Item><Position>{x} {y}</Position><Color>FFFFFFFF</Color><R>6</R>
+        <AdditiveRate>{additive_rate}</AdditiveRate></Item></Lights>
         <CharMapDictionary>*:#FFFF0000;.:#100000A0;_:#00000000</CharMapDictionary>
         <CharMap>{rows}</CharMap></Asset></XnaContent>"#
     ))
@@ -68,4 +74,27 @@ fn walls_light_is_black_off_its_image() {
     let light = LightMap::bake(&map, &grid, &common::flash(), &[]);
     assert_eq!(light.sample(-10.0, 1.0), [0.0; 3]);
     assert!(light.sample(2.5, 1.5)[0] > 0.0);
+}
+
+#[test]
+fn only_additive_lamps_make_additive_light() {
+    let rows = "\n************\n*..........*\n*..........*\n*..........*\n************\n";
+    let plain = lamp_map(rows, 2.5, 2.5, 0.0);
+    let grid = MapGrid::build(&plain, None);
+    assert!(LightMap::bake(&plain, &grid, &common::flash(), &[]).additive.is_none());
+
+    let glowing = lamp_map(rows, 2.5, 2.5, 1.0);
+    let light = LightMap::bake(&glowing, &grid, &common::flash(), &[]);
+    let additive = light.additive.as_ref().expect("an additive lamp");
+    // Its light reaches the spot under it; past its radius there is none.
+    assert!(additive.brightness_at(2.5, 2.5) > 0.2, "under the lamp");
+    assert_eq!(additive.brightness_at(30.0, 2.5), 0.0, "off the map");
+    // The glow lies over the same rectangle as the light layer, lit
+    // somewhere and dark somewhere else.
+    let (w, h, texels) = additive.image();
+    let (lw, lh, _) = light.layer_image();
+    assert_eq!((w, h), (lw, lh));
+    let brightest = texels.iter().map(|c| c[0]).fold(0.0f32, f32::max);
+    let darkest = texels.iter().map(|c| c[0]).fold(1.0f32, f32::min);
+    assert!(brightest > 0.3 && darkest == 0.0, "{brightest} {darkest}");
 }

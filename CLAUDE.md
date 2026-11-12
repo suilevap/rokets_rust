@@ -26,6 +26,11 @@ the C# repository: `docs/plans/RUST_BEVY_MIGRATION.md`.
   - no `#[cfg(test)] mod tests { ... }` blocks inside a source file, and no
     test-only helpers in production code. Some existing modules still have
     inline tests; move them out when touching those modules.
+- **Tests check behaviour, not pixels.** No binary test data (images,
+  dumps, recordings) and no tests that only pin output to a saved copy:
+  they break on every deliberate change and weigh down the repository.
+  Compare with the C# game by hand (`examples/light_dump`, `--screenshot`)
+  and put the numbers in the pull request instead.
 - Documentation and code comments are in English.
 - Toolchain: Rust 1.97.1 (`rust-toolchain.toml`). Run `cargo test` and
   `cargo clippy --all-targets` before committing.

@@ -61,10 +61,3 @@ pub fn flash() -> Canvas {
     Canvas::from_rgba8(w, h, &data)
 }
 
-/// A sprite's size in pixels, from its PNG header.
-pub fn sprite_size(name: &str) -> Option<[f32; 2]> {
-    let path = assets_root().join(assets::sprite_path(name)?);
-    let decoder = png::Decoder::new(std::io::BufReader::new(File::open(path).ok()?));
-    let info = decoder.read_info().ok()?.info().clone();
-    Some([info.width as f32, info.height as f32])
-}
