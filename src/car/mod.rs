@@ -89,14 +89,15 @@ pub fn spawn_player_car(
     let position = map.world(at.x, at.y);
     let angle = map_degrees_to_world(player.direction_deg);
 
+    let params = DriveParams::new(car, radius, friction);
     let mut entity = commands.spawn((
         Name::new(format!("Player car {}", car.name)),
         MapEntity,
         LocalPlayer,
         PlayerIntent::default(),
-        CameraTarget,
+        CameraTarget { radius, max_speed: params.max_speed },
         Car {
-            params: DriveParams::new(car, radius, friction),
+            params,
             drive: DriveState::default(),
         },
         Transform::from_translation(position.extend(0.0)).with_rotation(Quat::from_rotation_z(angle)),

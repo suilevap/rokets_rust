@@ -172,7 +172,7 @@ fn adapt(
     let (Some(additive), Ok(camera)) = (&map.light.additive, camera.single()) else {
         return;
     };
-    let (x, y) = map.cell.to_cells(camera.ground);
+    let (x, y) = map.cell.to_cells(camera.focus);
     let target = target_rate(additive.brightness_at(x, y));
     let dt = time.delta_secs();
     for (mut glow, handle, mut visibility) in &mut glows {

@@ -34,10 +34,6 @@ request; remove it here when it lands.
 
 ## Rendering and camera
 
-- Camera zoom as in C#: `Camera2DOperatoAllInCadr` zooms out to keep all
-  focus entities (players, and in some maps more) in frame, never closer
-  than the map's `MinScale`. That is why C# shows more of EditorTest (two
-  players) and LightTest than the fixed height here.
 - C#'s dirty lens tints the picture (green on LetItSnowDay).
 - The additive light adds in linear colour here and in sRGB numbers in
   C# (XNA has no gamma); a fixed ×2 boost (`GLOW_BOOST`) brings the look

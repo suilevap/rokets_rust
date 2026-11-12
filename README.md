@@ -33,6 +33,9 @@ quarter turn: up on the screen is right on the map, and the controls follow
 the screen. The short side of the screen always shows as much of the map as
 the C# camera did; the long side shows more.
 
+The camera looks ahead of the car and smoothly zooms out as it gains speed,
+then returns closer when it slows down. Multiple camera targets share the frame.
+
 Keys: arrows / WASD drive (point where you want to go), `R` restarts,
 `N` skips to the next map. A gamepad's left stick or d-pad and touch (a
 floating stick where your finger lands) work too; the last one used wins.
