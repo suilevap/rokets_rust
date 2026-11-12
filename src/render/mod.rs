@@ -9,12 +9,12 @@ pub mod animate;
 pub mod camera;
 pub mod layers;
 pub mod light_layer;
+pub mod lines;
 pub mod map_mesh;
 pub mod outland;
 pub mod spin;
 pub mod sprite;
 pub mod wall_outline;
-mod wall_outline_material;
 
 use bevy::prelude::*;
 
@@ -31,7 +31,7 @@ impl Plugin for RenderPlugin {
             .add_plugins((
                 camera::CameraPlugin,
                 sprite::SpritePlugin,
-                wall_outline_material::plugin,
+                lines::LinePlugin,
             ))
             .add_systems(OnEnter(GameState::Playing), spawn_map_meshes);
     }
@@ -43,7 +43,7 @@ fn spawn_map_meshes(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut images: ResMut<Assets<Image>>,
-    mut outline_materials: ResMut<Assets<wall_outline_material::WallOutlineMaterial>>,
+    mut line_materials: ResMut<Assets<lines::LineMaterial>>,
 ) {
     let (floor, walls) = map_mesh::build_map_meshes(&map);
     let material = materials.add(StandardMaterial {
@@ -89,7 +89,10 @@ fn spawn_map_meshes(
         Name::new("Wall outline"),
         MapEntity,
         Mesh3d(meshes.add(wall_outline::build_wall_outline(&map.grid, map.cell.0))),
-        MeshMaterial3d(outline_materials.add(wall_outline_material::WallOutlineMaterial {})),
+        MeshMaterial3d(line_materials.add(lines::LineMaterial {
+            color: LinearRgba::BLACK,
+            camera_offset: wall_outline::LIFT,
+        })),
         Transform::default(),
     ));
     commands.spawn((
