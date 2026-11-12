@@ -9,11 +9,12 @@
 //! for `--frames N` frames, then exits: turn them into a video with ffmpeg.
 //! `--start x,y` puts the car at that map cell instead of the map's start.
 //! `--size WxH` sets the window size (default 1280x720; e.g. 720x1280 to
-//! try portrait).
+//! try portrait). `--glow X` sets how strongly the additive (HDR) light is
+//! added (default 3; `[` and `]` turn it while playing).
 //!
 //! In the browser the page's URL parameters are the options, without `--`:
-//! `?map=Middleware&start=84,9.5&drive=1,0:3`. Only `map`, `start` and
-//! `drive` apply there; the file-writing options are native only.
+//! `?map=Middleware&start=84,9.5&drive=1,0:3&glow=4`. Only `map`, `start`,
+//! `drive` and `glow` apply there; the file-writing options are native only.
 
 use bevy::prelude::*;
 use bevy::render::view::screenshot::{Screenshot, save_to_disk};
@@ -45,6 +46,7 @@ struct Args {
     record: Option<RecordRequest>,
     start: Option<Vec2>,
     size: (u32, u32),
+    glow: Option<f32>,
 }
 
 /// The command line, or the page's URL parameters in the browser.
@@ -69,7 +71,7 @@ mod web {
     }
 
     /// Options the browser build accepts, as URL parameters.
-    const WEB_OPTIONS: &[&str] = &["map", "start", "drive"];
+    const WEB_OPTIONS: &[&str] = &["map", "start", "drive", "glow"];
 
     /// `?map=Middleware&start=84,9.5` → `["--map", "Middleware", "--start", "84,9.5"]`.
     pub fn url_args() -> Vec<String> {
@@ -118,6 +120,7 @@ fn parse_args() -> Args {
     let mut record_dir = None;
     let mut start = None;
     let mut size = (1280, 720);
+    let mut glow = None;
     let mut shot: Option<ScreenshotRequest> = None;
     let mut frames = 90;
     let mut args = raw_args().into_iter();
@@ -158,6 +161,7 @@ fn parse_args() -> Args {
                     size = (w, h);
                 }
             }
+            "--glow" => glow = args.next().and_then(|v| v.parse().ok()),
             "--frames" => frames = args.next().and_then(|v| v.parse().ok()).unwrap_or(frames),
             _ => {}
         }
@@ -177,6 +181,7 @@ fn parse_args() -> Args {
         record,
         start,
         size,
+        glow,
     }
 }
 
@@ -188,6 +193,7 @@ fn main() {
         record,
         start,
         size,
+        glow,
     } = parse_args();
     let mut app = App::new();
     app.add_plugins(
@@ -213,6 +219,9 @@ fn main() {
     .add_plugins(TileRiderPlugin { map });
     if let Some(start) = start {
         app.insert_resource(tilerider::car::StartOverride(start));
+    }
+    if let Some(glow) = glow {
+        app.insert_resource(tilerider::render::additive_light::GlowBoost(glow));
     }
     if let Some(drive) = drive {
         app.insert_resource(drive);

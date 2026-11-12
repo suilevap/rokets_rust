@@ -5,6 +5,7 @@
 //! just above it. Everything is unlit (colours carry the baked light), so
 //! the picture does not depend on Bevy's lighting.
 
+pub mod additive_light;
 pub mod animate;
 pub mod camera;
 pub mod layers;
@@ -32,6 +33,7 @@ impl Plugin for RenderPlugin {
                 camera::CameraPlugin,
                 sprite::SpritePlugin,
                 lines::LinePlugin,
+                additive_light::AdditiveLightPlugin,
             ))
             .add_systems(OnEnter(GameState::Playing), spawn_map_meshes);
     }

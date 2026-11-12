@@ -1,5 +1,6 @@
 //! Debug text until the real HUD: map name, coins, controls, level end,
-//! frames per second. `R` restarts the map; `N` skips to the next one.
+//! frames per second, the additive light's strength. `R` restarts the map;
+//! `N` skips to the next one.
 //! The frame rate is also logged every few seconds, to compare builds.
 
 use bevy::diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin};
@@ -65,6 +66,7 @@ fn log_frame_rate(time: Res<Time<Real>>, diagnostics: Res<DiagnosticsStore>, mut
 
 fn update_text(
     diagnostics: Res<DiagnosticsStore>,
+    (boost, map): (Res<crate::render::additive_light::GlowBoost>, Option<Res<crate::game::LoadedMap>>),
     name: Res<CurrentMapName>,
     coins: Res<CoinCount>,
     scheme: Res<ActiveScheme>,
@@ -72,9 +74,13 @@ fn update_text(
     mut text: Query<&mut Text, With<DebugText>>,
 ) {
     let done = if end.timer.is_some() { "\nLEVEL COMPLETE" } else { "" };
+    // The additive light's strength, on maps that have one.
+    let glow = map
+        .filter(|m| m.light.additive.is_some())
+        .map_or(String::new(), |_| format!("  glow {:.2}", boost.0));
     let fps = frame_rate(&diagnostics).map_or(String::new(), |(fps, ms)| format!("  {fps:.0} fps {ms:.1} ms"));
     let s = format!(
-        "{}  gears {}/{}  [{:?}]  R restart, N next{fps}{}",
+        "{}  gears {}/{}  [{:?}]  R restart, N next{fps}{glow}{}",
         name.0, coins.collected, coins.total, *scheme, done
     );
     for mut t in &mut text {
