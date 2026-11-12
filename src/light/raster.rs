@@ -302,38 +302,37 @@ impl Canvas {
     /// back over it, a third each. `clear` fills the unused helper area,
     /// which the linear sampler reaches at the copies' edges.
     pub fn blur(&mut self, clear: Rgba) {
-        const COPIES: usize = 3;
+        self.blur_surface(clear, false);
+    }
+
+    /// `BlurSurface` with `useOriginal`: as [`Canvas::blur`] with a copy at
+    /// full size too, four copies a quarter each (softer at the top level).
+    pub fn blur_with_original(&mut self, clear: Rgba) {
+        self.blur_surface(clear, true);
+    }
+
+    fn blur_surface(&mut self, clear: Rgba, use_original: bool) {
+        let copies_count = if use_original { 4 } else { 3 };
         let (w, h) = (self.width, self.height);
-        let mut helper = Canvas::new(w, h / 2, clear);
-        let mut rect = (0usize, 0usize, w / 2, h / 2);
-        let mut copies = Vec::with_capacity(COPIES);
-        for _ in 0..COPIES {
+        let (hw, hh) = if use_original { (w * 2, h) } else { (w, h / 2) };
+        let mut helper = Canvas::new(hw, hh, clear);
+        let mut rect = if use_original { (0usize, 0usize, w, h) } else { (0, 0, w / 2, h / 2) };
+        let mut copies = Vec::with_capacity(copies_count);
+        for _ in 0..copies_count {
             let r = Rect::new(rect.0 as f32, rect.1 as f32, rect.2 as f32, rect.3 as f32);
             copies.push(r);
-            helper.draw(
-                self,
-                self.rect(),
-                Placement::onto(self.rect(), r),
-                WHITE,
-                Blend::Alpha,
-            );
+            helper.draw(self, self.rect(), Placement::onto(self.rect(), r), WHITE, Blend::Alpha);
             rect.0 += rect.2;
             rect.2 /= 2;
             rect.3 /= 2;
         }
         self.fill(BLACK);
-        // `Color.White` with alpha 255 / 3, drawn additively.
-        let third = [1.0, 1.0, 1.0, (255 / COPIES) as f32 / 255.0];
+        // `Color.White` with alpha 255 / n, drawn additively.
+        let share = [1.0, 1.0, 1.0, (255 / copies_count) as f32 / 255.0];
         let full = self.rect();
         for r in copies.iter().rev() {
             if r.w >= 1.0 && r.h >= 1.0 {
-                self.draw(
-                    &helper,
-                    *r,
-                    Placement::onto(*r, full),
-                    third,
-                    Blend::Additive,
-                );
+                self.draw(&helper, *r, Placement::onto(*r, full), share, Blend::Additive);
             }
         }
     }

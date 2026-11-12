@@ -17,9 +17,10 @@ use bevy::render::render_resource::{Extent3d, TextureDimension, TextureFormat};
 use crate::game::LoadedMap;
 use crate::render::layers::{LIGHT_DEPTH_BIAS, LIGHT_Z};
 
-/// The layer's quad and material.
-pub fn build_light_layer(map: &LoadedMap, images: &mut Assets<Image>) -> (Mesh, StandardMaterial, Transform) {
-    let (w, h, texels) = map.light.layer_image();
+/// A light image as a texture: sRGB like the C# light (multiplying or
+/// adding linear values does to the sRGB ones what C# did, or near it),
+/// sampled linearly.
+pub fn light_texture((w, h, texels): (usize, usize, Vec<[f32; 3]>)) -> Image {
     let data = texels
         .iter()
         .flat_map(|t| {
@@ -35,28 +36,32 @@ pub fn build_light_layer(map: &LoadedMap, images: &mut Assets<Image>) -> (Mesh, 
         },
         TextureDimension::D2,
         data,
-        // sRGB like the C# light; multiplying linear values multiplies the
-        // sRGB ones the same way.
         TextureFormat::Rgba8UnormSrgb,
         RenderAssetUsages::RENDER_WORLD,
     );
     image.sampler = ImageSampler::linear();
-    // Stretched over the map and its border, as C# drew it.
+    image
+}
+
+/// The quad the light is laid on: the map and its border, as C# stretched
+/// its light targets over them; at `z`.
+pub fn light_quad(map: &LoadedMap, z: f32) -> (Mesh, Transform) {
     let [left, top, width, height] = map.light.layer_rect();
-    let cell = map.cell.0;
-    let size = Vec2::new(width, height) * cell;
+    let size = Vec2::new(width, height) * map.cell.0;
     let corner = map.world(left, top);
     let center = corner + Vec2::new(size.x, -size.y) / 2.0;
+    (Mesh::from(Rectangle::from_size(size)), Transform::from_translation(center.extend(z)))
+}
+
+/// The layer's quad and material.
+pub fn build_light_layer(map: &LoadedMap, images: &mut Assets<Image>) -> (Mesh, StandardMaterial, Transform) {
+    let (mesh, transform) = light_quad(map, LIGHT_Z);
     let material = StandardMaterial {
-        base_color_texture: Some(images.add(image)),
+        base_color_texture: Some(images.add(light_texture(map.light.layer_image()))),
         unlit: true,
         alpha_mode: AlphaMode::Multiply,
         depth_bias: LIGHT_DEPTH_BIAS,
         ..default()
     };
-    (
-        Mesh::from(Rectangle::from_size(size)),
-        material,
-        Transform::from_translation(center.extend(LIGHT_Z)),
-    )
+    (mesh, material, transform)
 }

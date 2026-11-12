@@ -26,7 +26,7 @@
 //! (`HighlightInDark`), and the car's shadow (later) needs the lamps.
 
 use crate::content::map::{LightData, MapData};
-use crate::light::raster::{BLACK, Blend, Canvas, Placement, Rgba, WHITE};
+use crate::light::raster::{BLACK, Blend, Canvas, Placement, Rect, Rgba, WHITE};
 use crate::map::grid::MapGrid;
 
 /// How far past the map's edge the light reaches, in cells
@@ -50,6 +50,8 @@ pub struct Lamp {
     /// sRGB 0..1, already scaled by its alpha.
     pub color: [f32; 3],
     pub use_for_dynamic_shadow: bool,
+    /// How much of it also goes to the additive (HDR) light, 0..1.
+    pub additive_rate: f32,
 }
 
 impl Lamp {
@@ -63,6 +65,7 @@ impl Lamp {
             radius: l.r,
             color: [scaled(l.color.r), scaled(l.color.g), scaled(l.color.b)],
             use_for_dynamic_shadow: l.use_for_dynamic_shadow,
+            additive_rate: l.additive_rate,
         }
     }
 }
@@ -120,7 +123,60 @@ pub struct LightMap {
     layer: Canvas,
     /// The walls' light (`_lightMapImage`).
     walls: Canvas,
+    /// The additive light of lamps with an `AdditiveRate`, if any.
+    pub additive: Option<AdditiveLight>,
     pub lamps: Vec<Lamp>,
+}
+
+/// The additive (HDR) light: what lamps with an `AdditiveRate` add on
+/// top of the picture, over the same rectangle as the light layer, and a
+/// coarse map of where it falls, which says how strongly to show it.
+///
+/// C# origin: `LightManager._finalLightAddTarget` and `_lightAddMapImage`,
+/// read by `HdrHelper` (2014).
+#[derive(Clone, Debug)]
+pub struct AdditiveLight {
+    /// `_finalLightAddTarget`: the lamps' colour times their rate, blurred.
+    layer: Canvas,
+    /// `_lightAddMapImage`: where additive lamps reach (white), over the
+    /// map only, about a texel per 1.3 world units, blurred.
+    reach: Canvas,
+    /// World units per texel of `reach`, across and down.
+    reach_texel: f32,
+    /// The map's size in world units.
+    room: [f32; 2],
+    cell: f32,
+}
+
+impl AdditiveLight {
+    /// The additive light's texels, like [`LightMap::layer_image`].
+    pub fn image(&self) -> (usize, usize, Vec<[f32; 3]>) {
+        let texels = self.layer.texels.iter().map(|c| [c[0], c[1], c[2]]).collect();
+        (self.layer.width, self.layer.height, texels)
+    }
+
+    /// The reach map: `(width, height, sRGB)`.
+    pub fn reach_image(&self) -> (usize, usize, Vec<[f32; 3]>) {
+        let texels = self.reach.texels.iter().map(|c| [c[0], c[1], c[2]]).collect();
+        (self.reach.width, self.reach.height, texels)
+    }
+
+    /// How much additive light falls at a point in map cells, 0..1: the
+    /// mean of the reach texel there (`HdrHelper`: `ColorHelper.GetLum`
+    /// over a `DataMap`), 0 off the map.
+    pub fn brightness_at(&self, x: f32, y: f32) -> f32 {
+        let (px, py) = (x * self.cell, y * self.cell);
+        if px < 0.0 || py < 0.0 || px >= self.room[0] || py >= self.room[1] {
+            return 0.0;
+        }
+        let (tx, ty) = ((px / self.reach_texel) as usize, (py / self.reach_texel) as usize);
+        if tx >= self.reach.width || ty >= self.reach.height {
+            return 0.0;
+        }
+        let c = self.reach.get(tx, ty);
+        let byte = |v: f32| (v.clamp(0.0, 1.0) * 255.0).round();
+        (byte(c[0]) + byte(c[1]) + byte(c[2])) / (255.0 * 3.0)
+    }
 }
 
 impl LightMap {
@@ -143,9 +199,14 @@ impl LightMap {
             walls: wall_edges(grid, &frame),
             objects: object_edges(objects, &frame),
         };
+        // `_staticLightAddTarget` and `_staticLightAddTargetInfo`, used
+        // only if some lamp is additive.
+        let any_additive = lamps.iter().any(|l| l.additive_rate > 0.0);
+        let mut added = any_additive.then(|| (Canvas::new(w, h, BLACK), Canvas::new(w, h, BLACK)));
         for lamp in &lamps {
-            add_lamp(&mut lit, &frame, &blockers, flash, lamp);
+            add_lamp(&mut lit, added.as_mut(), &frame, &blockers, flash, lamp);
         }
+        let additive = added.map(|(add, info)| additive_light(add, &info, &frame));
 
         let mut layer = lit.clone();
         layer.blur(WHITE);
@@ -174,6 +235,7 @@ impl LightMap {
             frame,
             layer,
             walls,
+            additive,
             lamps,
         }
     }
@@ -362,6 +424,7 @@ fn wall_edges(grid: &MapGrid, frame: &LightFrame) -> Vec<[[f32; 2]; 2]> {
 /// `lit` twice, turned by ± the penumbra angle, in its colour at half.
 fn add_lamp(
     lit: &mut Canvas,
+    mut added: Option<&mut (Canvas, Canvas)>,
     frame: &LightFrame,
     blockers: &Blockers,
     flash: &Canvas,
@@ -428,6 +491,44 @@ fn add_lamp(
             scale: [1.0, 1.0],
         };
         lit.draw(&scratch, scratch.rect(), place, tint, Blend::Additive);
+        // An additive lamp goes to the additive light too, in its colour
+        // with alpha `255 × rate` halved, and white to where it reaches.
+        if lamp.additive_rate > 0.0
+            && let Some((add, info)) = added.as_deref_mut()
+        {
+            let alpha = ((255.0 * lamp.additive_rate) as u8 / 2) as f32 / 255.0;
+            let colour = [lamp.color[0], lamp.color[1], lamp.color[2], alpha];
+            add.draw(&scratch, scratch.rect(), place, colour, Blend::Additive);
+            let white = [1.0, 1.0, 1.0, (255 / 2) as f32 / 255.0];
+            info.draw(&scratch, scratch.rect(), place, white, Blend::Additive);
+        }
+    }
+}
+
+/// World units per texel of the additive light's reach map: 2% of the
+/// widest view (`Camera2D.WorldViewSize.X × 0.02`, `ViewW × 1.2`).
+const REACH_TEXEL: f32 = 28.0 * 2.0 * 1.2 * 0.02;
+
+/// `UpdateLight` and `PrepareLightMapImage` for the additive light.
+fn additive_light(mut add: Canvas, info: &Canvas, frame: &LightFrame) -> AdditiveLight {
+    add.blur(BLACK);
+    // The reach over the map only, without its border, at a coarse size.
+    let (rw, rh) = (
+        (frame.room[0] / REACH_TEXEL) as usize,
+        (frame.room[1] / REACH_TEXEL) as usize,
+    );
+    let mut reach = Canvas::new(rw.max(1), rh.max(1), BLACK);
+    let b = (frame.border / frame.scale) as usize as f32;
+    let inner = Rect::new(b, b, info.width as f32 - 2.0 * b, info.height as f32 - 2.0 * b);
+    let all = reach.rect();
+    reach.draw(info, inner, Placement::onto(inner, all), WHITE, Blend::Additive);
+    reach.blur_with_original(BLACK);
+    AdditiveLight {
+        layer: add,
+        reach_texel: frame.room[0] / reach.width as f32,
+        reach,
+        room: frame.room,
+        cell: frame.cell,
     }
 }
 

@@ -3,7 +3,9 @@
 //!
 //! `cargo run --example light_dump -- <map> <out dir>` writes
 //! `final.png` (the light layer, C# `FinalLightTarget`) and `walls.png`
-//! (the walls' light, C# `_lightMapTargetTmp`).
+//! (the walls' light, C# `_lightMapTargetTmp`), and for maps with additive
+//! lamps `add.png` (`_finalLightAddTarget`) and `add_info.png` (where they
+//! reach, `_lightAddMapTargetTmp`).
 
 use std::fs::File;
 use std::io::BufWriter;
@@ -100,4 +102,8 @@ fn main() {
     std::fs::create_dir_all(out).expect("create out dir");
     write_png(&out.join("final.png"), light.layer_image());
     write_png(&out.join("walls.png"), light.walls_image());
+    if let Some(additive) = &light.additive {
+        write_png(&out.join("add.png"), additive.image());
+        write_png(&out.join("add_info.png"), additive.reach_image());
+    }
 }
