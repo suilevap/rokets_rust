@@ -43,9 +43,16 @@ fn segments(grid: &MapGrid) -> Vec<[Vec3; 2]> {
 
 /// The upright corner edges.
 fn uprights(grid: &MapGrid) -> Vec<[Vec3; 2]> {
+    // A run of standing faces between horizontal strips is one upright.
+    let mut standing = false;
     strips(grid)
         .into_iter()
-        .filter(|s| (s[0].z - s[1].z).abs() >= 1e-4)
+        .filter(|s| {
+            let vertical = (s[0].z - s[1].z).abs() >= 1e-4;
+            let first = vertical && !standing;
+            standing = vertical;
+            first
+        })
         .collect()
 }
 
@@ -261,19 +268,91 @@ fn touching_blocks_keep_separate_finite_contours() {
 }
 
 #[test]
-fn verticals_are_thin_diagonal_ribbons_with_caps_at_the_top_join() {
+fn verticals_retain_their_width_from_every_horizontal_view_direction() {
     let g = grid("...\n.#.\n...");
     let quads = quads(&g, 1.0);
     let top = quads.iter().find(|q| flat(q) && q[0].z > 1.0).unwrap()[0].z;
     let foot = quads.iter().find(|q| flat(q) && q[0].z < 0.1).unwrap()[0].z;
-    let verticals: Vec<_> = quads.iter().filter(|q| !flat(q)).collect();
-    assert_eq!(verticals.len(), 4);
-    for q in verticals {
-        let across = q[1] - q[0];
-        assert!((across.length() - 3.0 / 32.0).abs() < 1e-5);
-        assert!((across.x.abs() - across.y.abs()).abs() < 1e-5);
+    let mut corners: Vec<Vec<Vec2>> = Vec::new();
+    let mut standing = false;
+    for q in &quads {
+        if flat(q) {
+            standing = false;
+            continue;
+        }
+        if !standing {
+            corners.push(Vec::new());
+        }
+        standing = true;
+        corners
+            .last_mut()
+            .unwrap()
+            .extend([q[0].truncate(), q[1].truncate()]);
         assert!((q[0].z - top).abs() < 1e-5);
         assert!((q[2].z - foot).abs() < 1e-5);
+    }
+    assert_eq!(corners.len(), 4);
+    for corner in corners {
+        for degrees in (0..360).step_by(5) {
+            let screen_right = Vec2::from_angle((degrees as f32).to_radians());
+            let min = corner
+                .iter()
+                .map(|p| p.dot(screen_right))
+                .fold(f32::INFINITY, f32::min);
+            let max = corner
+                .iter()
+                .map(|p| p.dot(screen_right))
+                .fold(f32::NEG_INFINITY, f32::max);
+            let width = max - min;
+            assert!(
+                width >= 0.9 * 3.0 / 32.0,
+                "edge-on at {degrees} degrees: {width}"
+            );
+            assert!(
+                width <= 3.0 / 32.0 + 1e-5,
+                "too thick at {degrees} degrees: {width}"
+            );
+        }
+    }
+}
+
+fn covers(q: &[Vec3; 4], p: Vec3) -> bool {
+    if (q[0].z - p.z).abs() > 1e-5 {
+        return false;
+    }
+    let side: [f32; 4] = std::array::from_fn(|i| {
+        (q[(i + 1) % 4] - q[i])
+            .truncate()
+            .perp_dot((p - q[i]).truncate())
+    });
+    side.iter().all(|&s| s >= -1e-5) || side.iter().all(|&s| s <= 1e-5)
+}
+
+#[test]
+fn upright_ends_fit_inside_the_flat_corner_joins() {
+    for rows in [
+        "...\n.#.\n...",
+        "....\n.#+.\n....",
+        "####\n#...\n#...\n#...",
+    ] {
+        let quads = quads(&grid(rows), 1.0);
+        let joins: Vec<_> = quads.iter().filter(|q| flat(q)).collect();
+        for q in quads.iter().filter(|q| !flat(q)) {
+            for p in &q[..2] {
+                assert!(
+                    joins.iter().any(|join| covers(join, *p)),
+                    "uncovered top {p}"
+                );
+            }
+            // A step can hide the lower end under the shorter wall;
+            // ground-level ends must meet the foot outline itself.
+            for p in q[2..].iter().filter(|p| p.z < 0.0) {
+                assert!(
+                    joins.iter().any(|join| covers(join, *p)),
+                    "uncovered foot {p}"
+                );
+            }
+        }
     }
 }
 

@@ -1,14 +1,17 @@
 //! The walls' black outline (`Primitive3d.AddBorders`, `LinePrimitive` in
 //! XNA): top edges at height changes, feet at ground level, and vertical
-//! ribbons down convex corners as far as the shorter of the two drops.
+//! edges down convex corners as far as the shorter of the two drops.
 //!
 //! Squares and corner wedges contribute to the same contours, including
 //! the map's outer boundary. Adjacent strips share their offset-line
 //! intersection (a miter), rather than running past each other's ends.
 //! The width is fixed in world units (`StaticLinesWidthBasic`), so it
 //! scales with the view's resolution like XNA's `DpiSizeMultiplier`.
+//! Uprights have a small octagonal cross-section: unlike XNA's flat
+//! ribbons, they retain their width when seen along a corner's diagonal.
 
 use std::collections::HashMap;
+use std::f32::consts::TAU;
 
 use bevy::asset::RenderAssetUsages;
 use bevy::mesh::{Indices, PrimitiveTopology};
@@ -22,6 +25,8 @@ use crate::units::PX_PER_UNIT;
 const LIFT: f32 = 0.1 / PX_PER_UNIT;
 /// Half the width of a line (`StaticLinesWidthBasic`), in world units.
 const HALF_WIDTH: f32 = 1.5 / PX_PER_UNIT;
+/// An octagon keeps at least 92% of the diameter in every horizontal view.
+const UPRIGHT_SIDES: usize = 8;
 /// Heights within one pixel count as equal (`ConvertUnits.SimUnitRation`).
 const SAME: f32 = 1.0 / PX_PER_UNIT;
 
@@ -168,6 +173,9 @@ pub fn build_wall_outline(grid: &MapGrid, cell: f32) -> Mesh {
 
     let world = |p: Vec2| Vec2::new(p.x * cell, -p.y * cell);
     let offset = |v: Vec2| Vec2::new(v.x, -v.y) * HALF_WIDTH;
+    let ring: [Vec2; UPRIGHT_SIDES] = std::array::from_fn(|i| {
+        Vec2::from_angle(TAU * i as f32 / UPRIGHT_SIDES as f32) * HALF_WIDTH
+    });
     let mut positions = Vec::with_capacity(lines.len() * 4);
     let mut indices = Vec::with_capacity(lines.len() * 6);
     let mut quad = |vertices: [Vec3; 4]| {
@@ -195,16 +203,18 @@ pub fn build_wall_outline(grid: &MapGrid, cell: f32) -> Mesh {
                 && line.z - bottom > SAME
                 && prev.direction().perp_dot(line.direction()) > 0.01
             {
-                // `LinePrimitive.InitVertical`: a flat diagonal ribbon,
-                // tangent to the corner's outward bisector, not a column.
-                // Its cap fits under the top join, with the same height.
-                let across = offset((prev.direction() + line.direction()).normalize());
-                quad([
-                    (a - across).extend(z),
-                    (a + across).extend(z),
-                    (a + across).extend(bottom - LIFT),
-                    (a - across).extend(bottom - LIFT),
-                ]);
+                // A thin volume cannot turn edge-on as the view moves.
+                // Its radius fits inside the existing top/foot joins,
+                // which cover its ends at exactly the same heights.
+                for k in 0..UPRIGHT_SIDES {
+                    let (p, q) = (a + ring[k], a + ring[(k + 1) % UPRIGHT_SIDES]);
+                    quad([
+                        p.extend(z),
+                        q.extend(z),
+                        q.extend(bottom - LIFT),
+                        p.extend(bottom - LIFT),
+                    ]);
+                }
             }
         }
     }
