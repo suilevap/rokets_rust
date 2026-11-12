@@ -261,19 +261,79 @@ fn touching_blocks_keep_separate_finite_contours() {
 }
 
 #[test]
-fn verticals_are_thin_diagonal_ribbons_with_caps_at_the_top_join() {
+fn uprights_are_single_quads_with_camera_facing_widths() {
     let g = grid("...\n.#.\n...");
+    let mesh = build_wall_outline(&g, 1.0);
+    let Some(VertexAttributeValues::Float32x2(widths)) = mesh.attribute(Mesh::ATTRIBUTE_UV_0)
+    else {
+        panic!("signed billboard widths");
+    };
+    // Eight horizontal edges and four uprights, all just two triangles.
+    assert_eq!(mesh.count_vertices(), 12 * 4);
+    assert_eq!(mesh.indices().unwrap().len(), 12 * 6);
     let quads = quads(&g, 1.0);
-    let top = quads.iter().find(|q| flat(q) && q[0].z > 1.0).unwrap()[0].z;
-    let foot = quads.iter().find(|q| flat(q) && q[0].z < 0.1).unwrap()[0].z;
-    let verticals: Vec<_> = quads.iter().filter(|q| !flat(q)).collect();
-    assert_eq!(verticals.len(), 4);
-    for q in verticals {
-        let across = q[1] - q[0];
-        assert!((across.length() - 3.0 / 32.0).abs() < 1e-5);
-        assert!((across.x.abs() - across.y.abs()).abs() < 1e-5);
-        assert!((q[0].z - top).abs() < 1e-5);
-        assert!((q[2].z - foot).abs() < 1e-5);
+    let mut upright_count = 0;
+    for (q, widths) in quads.iter().zip(widths.chunks_exact(4)) {
+        if flat(q) {
+            assert!(widths.iter().all(|uv| uv[0] == 0.0));
+        } else {
+            upright_count += 1;
+            // Both sides start on the actual corner, not an offset ribbon
+            // that can turn edge-on; the material expands them at render time.
+            assert_eq!(q[0], q[1]);
+            assert_eq!(q[2], q[3]);
+            assert_eq!(q[0].truncate(), q[2].truncate());
+            assert_eq!(
+                widths,
+                &[
+                    [-1.5 / 32.0, 1.0],
+                    [1.5 / 32.0, 1.0],
+                    [1.5 / 32.0, 1.0],
+                    [-1.5 / 32.0, 1.0]
+                ]
+            );
+        }
+    }
+    assert_eq!(upright_count, 4);
+}
+
+fn covers(q: &[Vec3; 4], p: Vec3) -> bool {
+    if (q[0].z - p.z).abs() > 1e-5 {
+        return false;
+    }
+    let side: [f32; 4] = std::array::from_fn(|i| {
+        (q[(i + 1) % 4] - q[i])
+            .truncate()
+            .perp_dot((p - q[i]).truncate())
+    });
+    side.iter().all(|&s| s >= -1e-5) || side.iter().all(|&s| s <= 1e-5)
+}
+
+#[test]
+fn upright_endpoints_meet_the_flat_corner_joins() {
+    for rows in [
+        "...\n.#.\n...",
+        "....\n.#+.\n....",
+        "####\n#...\n#...\n#...",
+    ] {
+        let quads = quads(&grid(rows), 1.0);
+        let joins: Vec<_> = quads.iter().filter(|q| flat(q)).collect();
+        for q in quads.iter().filter(|q| !flat(q)) {
+            for p in &q[..2] {
+                assert!(
+                    joins.iter().any(|join| covers(join, *p)),
+                    "uncovered top {p}"
+                );
+            }
+            // A step can hide the lower end under the shorter wall;
+            // ground-level ends must meet the foot outline itself.
+            for p in q[2..].iter().filter(|p| p.z < 0.0) {
+                assert!(
+                    joins.iter().any(|join| covers(join, *p)),
+                    "uncovered foot {p}"
+                );
+            }
+        }
     }
 }
 

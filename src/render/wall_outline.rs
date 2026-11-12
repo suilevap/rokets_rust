@@ -1,25 +1,27 @@
 //! The walls' black outline (`Primitive3d.AddBorders`, `LinePrimitive` in
 //! XNA): top edges at height changes, feet at ground level, and vertical
-//! ribbons down convex corners as far as the shorter of the two drops.
+//! edges down convex corners as far as the shorter of the two drops.
 //!
 //! Squares and corner wedges contribute to the same contours, including
 //! the map's outer boundary. Adjacent strips share their offset-line
 //! intersection (a miter), rather than running past each other's ends.
 //! The width is fixed in world units (`StaticLinesWidthBasic`), so it
 //! scales with the view's resolution like XNA's `DpiSizeMultiplier`.
+//! Uprights store their centre line and signed half-width in UV.x. The
+//! outline material turns these single quads towards the camera on the
+//! GPU, so they cannot turn edge-on. Horizontal strips keep their miters.
 
 use std::collections::HashMap;
 
-use bevy::asset::RenderAssetUsages;
-use bevy::mesh::{Indices, PrimitiveTopology};
 use bevy::prelude::*;
 
+use super::lines::LineMeshBuilder;
 use crate::map::grid::MapGrid;
 use crate::units::PX_PER_UNIT;
 
 /// XNA's `StaticLinesOffset`: lift tops, lower feet so their inner half
 /// is hidden by the wall. No lateral nudge: it separates corner joins.
-const LIFT: f32 = 0.1 / PX_PER_UNIT;
+pub(super) const LIFT: f32 = 0.1 / PX_PER_UNIT;
 /// Half the width of a line (`StaticLinesWidthBasic`), in world units.
 const HALF_WIDTH: f32 = 1.5 / PX_PER_UNIT;
 /// Heights within one pixel count as equal (`ConvertUnits.SimUnitRation`).
@@ -168,20 +170,14 @@ pub fn build_wall_outline(grid: &MapGrid, cell: f32) -> Mesh {
 
     let world = |p: Vec2| Vec2::new(p.x * cell, -p.y * cell);
     let offset = |v: Vec2| Vec2::new(v.x, -v.y) * HALF_WIDTH;
-    let mut positions = Vec::with_capacity(lines.len() * 4);
-    let mut indices = Vec::with_capacity(lines.len() * 6);
-    let mut quad = |vertices: [Vec3; 4]| {
-        let base = positions.len() as u32;
-        positions.extend(vertices.map(|v| v.to_array()));
-        indices.extend_from_slice(&[base, base + 1, base + 2, base, base + 2, base + 3]);
-    };
+    let mut mesh = LineMeshBuilder::default();
     for (i, line) in lines.iter().enumerate() {
         let n = line.out();
         let a_offset = offset(previous[i].map_or(n, |j| miter(lines[j].out(), n)));
         let b_offset = offset(next[i].map_or(n, |j| miter(n, lines[j].out())));
         let (a, b) = (world(line.a), world(line.b));
         let z = line.z + if line.foot { -LIFT } else { LIFT };
-        quad([
+        mesh.add_quad([
             (a - a_offset).extend(z),
             (a + a_offset).extend(z),
             (b + b_offset).extend(z),
@@ -195,25 +191,11 @@ pub fn build_wall_outline(grid: &MapGrid, cell: f32) -> Mesh {
                 && line.z - bottom > SAME
                 && prev.direction().perp_dot(line.direction()) > 0.01
             {
-                // `LinePrimitive.InitVertical`: a flat diagonal ribbon,
-                // tangent to the corner's outward bisector, not a column.
-                // Its cap fits under the top join, with the same height.
-                let across = offset((prev.direction() + line.direction()).normalize());
-                quad([
-                    (a - across).extend(z),
-                    (a + across).extend(z),
-                    (a + across).extend(bottom - LIFT),
-                    (a - across).extend(bottom - LIFT),
-                ]);
+                // The material expands this centre line sideways in the
+                // camera's direction. The ends meet the top/foot joins.
+                mesh.add_line(a.extend(z), a.extend(bottom - LIFT), 2.0 * HALF_WIDTH);
             }
         }
     }
-    let normals = vec![[0.0, 0.0, 1.0]; positions.len()];
-    Mesh::new(
-        PrimitiveTopology::TriangleList,
-        RenderAssetUsages::default(),
-    )
-    .with_inserted_attribute(Mesh::ATTRIBUTE_POSITION, positions)
-    .with_inserted_attribute(Mesh::ATTRIBUTE_NORMAL, normals)
-    .with_inserted_indices(Indices::U32(indices))
+    mesh.build()
 }
