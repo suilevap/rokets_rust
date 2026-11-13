@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>Part_StartPoint1</Name>
+    <GameMode>SinglePlayer</GameMode>
+    <Image>Maps\Parts\Part_StartPoint1</Image>
+    <Scale>48</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>false</HaveOutlandVizualization>
+    <OutlandColorLT>FF000000</OutlandColorLT>
+    <OutlandColorRT>FF00BFFF</OutlandColorRT>
+    <OutlandColorRB>FFFFA500</OutlandColorRB>
+    <OutlandColorLB>FFFFFF00</OutlandColorLB>
+    <TargetTimeSec>0</TargetTimeSec>
+    <Friction>1</Friction>
+    <AmbientLight>0C0C0C0C</AmbientLight>
+    <Splash>MapDefault</Splash>
+    <LevelEffect>None</LevelEffect>
+    <CameraReadAccelerometer>true</CameraReadAccelerometer>
+    <Width>16</Width>
+    <Height>16</Height>
+    <Lights>
+      <Item>
+        <Position>13 2.5</Position>
+        <Color>FFFFFFFF</Color>
+        <R>24</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+    </Lights>
+    <Players>
+      <Item>
+        <Id>4001</Id>
+        <Name>Player1</Name>
+        <Position>6.5 8</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>Local</Control>
+        <CarName>SandBuggyWithProgress</CarName>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+    </Players>
+    <Triggers />
+    <Actions>
+      <Item Type="GameLibrary.MapPartPortal">
+        <Name>Portal</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>15 1 1 14</Area>
+        <AllowIn>false</AllowIn>
+        <AllowOut>true</AllowOut>
+      </Item>
+    </Actions>
+  </Asset>
+</XnaContent>

@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>The City</Name>
+    <Image>Maps\Singleplayer\Map1</Image>
+    <Scale>64</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <MusicAmbient>TheCitySong</MusicAmbient>
+    <AmbientLight>00000000</AmbientLight>
+    <Lights>
+      <Item>
+        <Position>12 55</Position>
+        <Color>FFFFD800</Color>
+        <R>8</R>
+      </Item>
+      <Item>
+        <Position>23 48</Position>
+        <Color>2FFFFFFF</Color>
+        <R>16</R>
+      </Item>
+      <Item>
+        <Position>24 15</Position>
+        <Color>FFFFFFFF</Color>
+        <R>16</R>
+      </Item>
+      <Item>
+        <Position>5 5</Position>
+        <Color>5FFFFFFF</Color>
+        <R>16</R>
+      </Item>
+      <Item>
+        <Position>7 45</Position>
+        <Color>2FFFFFFF</Color>
+        <R>16</R>
+      </Item>
+      <Item>
+        <Position>27 28</Position>
+        <Color>2FFFFFFF</Color>
+        <R>8</R>
+      </Item>
+      <Item>
+        <Position>47 46</Position>
+        <Color>FFFF321F</Color>
+        <R>24</R>
+      </Item>
+      <Item>
+        <Position>55 11</Position>
+        <Color>FFFFFFFF</Color>
+        <R>6</R>
+      </Item>
+      <Item>
+        <Position>55 21</Position>
+        <Color>FF21D2FF</Color>
+        <R>6</R>
+      </Item>
+      <Item>
+        <Position>23 58</Position>
+        <Color>FFFFD800</Color>
+        <R>9</R>
+      </Item>
+      
+    </Lights>
+    <Players>
+      <Item>
+        <Id>4000</Id>
+        <Name>Player1</Name>
+        <Position>12 56</Position>
+        <Control>Local</Control>
+        <CarName>Truck</CarName>
+      </Item>
+      <Item>
+        <Id>4001</Id>
+        <Name>Player2</Name>
+        <Position>56 3</Position>
+        <Control>Ai</Control>
+        <CarName>Scout</CarName>
+      </Item>
+      <Item>
+        <Id>4002</Id>
+        <Name>Player2</Name>
+        <Position>57 4</Position>
+        <Control>Ai</Control>
+        <CarName>Buggy</CarName>
+      </Item>
+    </Players>
+
+    <Entities>
+      <Item>
+        <Id>1</Id>
+        <Position>20 56</Position>
+        <Sprite>Entities\CargoQuest</Sprite>
+        <Scale>0.5</Scale>
+      </Item>
+      <Item>
+        <Id>2</Id>
+        <Position>26 56</Position>
+        <Sprite>Entities\CargoQuest</Sprite>
+        <Scale>0.75</Scale>
+      </Item>
+    </Entities>
+    
+    <Triggers>
+      <Item>
+        <Id>1</Id>        
+        <Area>18 55 1 3</Area>
+        <Amount>1</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>ActivateTrigger2</Item>
+          <Item>MarkTrigger2</Item>
+        </Actions>
+      </Item>
+
+      <Item>
+        <Id>2</Id>        
+        <Area>20 45 6 6</Area>
+        <Amount>1</Amount>
+        <Active>false</Active>
+        <Actions>
+          <Item>RemoveMarkTrigger2</Item>
+        </Actions>
+      </Item>
+    </Triggers>
+
+    <Actions>
+      <Item Type="GameLibrary.ActivateTriggerActionData">
+        <Name>ActivateTrigger2</Name>
+        <TriggerIds>2</TriggerIds>
+      </Item>
+      <Item Type="GameLibrary.AddMarkerActionData">
+        <Name>MarkTrigger2</Name>
+        <MarkerId>1</MarkerId>
+        <ItemId>2</ItemId>
+      </Item>
+      <Item Type="GameLibrary.RemoveMarkerActionData">
+        <Name>RemoveMarkTrigger2</Name>
+        <MarkerId>1</MarkerId>
+      </Item>
+    </Actions>
+
+    
+  </Asset>
+</XnaContent>

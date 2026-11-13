@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>EdgeTest</Name>
+    <GameMode>SinglePlayer</GameMode>
+    <Image>Maps\Singleplayer\EdgeTest</Image>
+    <Scale>48</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>true</HaveOutlandVizualization>
+    <OutlandColorLT>FF000000</OutlandColorLT>
+    <OutlandColorRT>FF00BFFF</OutlandColorRT>
+    <OutlandColorRB>FFFFA500</OutlandColorRB>
+    <OutlandColorLB>FFFFFF00</OutlandColorLB>
+    <TargetTimeSec>0</TargetTimeSec>
+    <Friction>1</Friction>
+    <AmbientLight>FFE8E6F2</AmbientLight>
+    <Splash>MapDefault</Splash>
+    <LevelEffect>None</LevelEffect>
+    <CameraReadAccelerometer>true</CameraReadAccelerometer>
+    <Width>48</Width>
+    <Height>48</Height>
+    <Players>
+      <Item>
+        <Id>4000</Id>
+        <Name>p</Name>
+        <Position>11.208333 6</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>Local</Control>
+        <CarName>Buggy</CarName>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+    </Players>
+    <Triggers>
+      <Item>
+        <Id>1</Id>
+        <Area>13 3 6 5</Area>
+        <Amount>999</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>UnlockAch(TR_PONG_MASTER)</Item>
+        </Actions>
+      </Item>
+    </Triggers>
+    <CameraAttachToEnemyEnable>false</CameraAttachToEnemyEnable>
+  </Asset>
+</XnaContent>

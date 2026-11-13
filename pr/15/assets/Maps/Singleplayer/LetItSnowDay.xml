@@ -1,0 +1,936 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>NewDay</Name>
+    <GameMode>SinglePlayer</GameMode>
+    <Image>Maps\Singleplayer\LetItSnowDay</Image>
+    <PreviewImage>Maps\Singleplayer\LetItSnowDay</PreviewImage>
+    <Scale>96</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>false</HaveOutlandVizualization>
+    <OutlandColorLT>FF00FFFF</OutlandColorLT>
+    <OutlandColorRT>FFFFFF00</OutlandColorRT>
+    <OutlandColorRB>FFFFFF00</OutlandColorRB>
+    <OutlandColorLB>FF7FFFD4</OutlandColorLB>
+    <TargetTimeSec>0</TargetTimeSec>
+    <Friction>0.1</Friction>
+    <MusicAmbient>2_1</MusicAmbient>
+    <AmbientLight>75B5B1D2</AmbientLight>
+    <Splash>Concept3</Splash>
+    <LevelEffect>None</LevelEffect>
+    <CameraReadAccelerometer>true</CameraReadAccelerometer>
+    <Width>96</Width>
+    <Height>67</Height>
+    <Lights>
+      <Item>
+        <Position>41 3</Position>
+        <Color>FFFFFF1D</Color>
+        <R>16</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>26 5.5</Position>
+        <Color>6FFFFFFF</Color>
+        <R>40</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>54 46</Position>
+        <Color>A9FFFFFF</Color>
+        <R>40</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>83.5 18.5</Position>
+        <Color>6FB1D4FF</Color>
+        <R>40</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>33.5 16.5</Position>
+        <Color>FFFF0000</Color>
+        <R>4</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>33.90039 23.9481354</Position>
+        <Color>B0FFFFFF</Color>
+        <R>4</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>28 19.5</Position>
+        <Color>B0FFFFFF</Color>
+        <R>4</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>30.5 21.5</Position>
+        <Color>B0FFFFFF</Color>
+        <R>4</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>37.5 23</Position>
+        <Color>B0FFFFFF</Color>
+        <R>4</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>41.5 17</Position>
+        <Color>B0FFFFFF</Color>
+        <R>4</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>42.5 25.5</Position>
+        <Color>B0FFFFFF</Color>
+        <R>4</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>38.5 15.5</Position>
+        <Color>B0FFFFFF</Color>
+        <R>4</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>30.5 24.5</Position>
+        <Color>FFFFFF00</Color>
+        <R>7</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>8.5 32</Position>
+        <Color>6FB1D4FF</Color>
+        <R>40</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>44 2.5</Position>
+        <Color>38FFFF1D</Color>
+        <R>24</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+    </Lights>
+    <Players>
+      <Item>
+        <Id>4001</Id>
+        <Name>Player1</Name>
+        <Position>39 3.5</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>Local</Control>
+        <CarName>SandBuggyMagnet</CarName>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+    </Players>
+    <SimpleCars />
+    <Entities>
+      <Item>
+        <Id>1002</Id>
+        <Position>44.5 4.5</Position>
+        <Sprite>Entities\DoorBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.05</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>NonLinkableBox</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <ActionOnCreate>DoorComponent</ActionOnCreate>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1003</Id>
+        <Position>44.5 5.5</Position>
+        <Sprite>Entities\DoorBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.05</Scale>
+        <DirectionDeg>180</DirectionDeg>
+        <Type>NonLinkableBox</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <ActionOnCreate>DoorComponent</ActionOnCreate>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1004</Id>
+        <Position>47.6287346 1.95833337</Position>
+        <Sprite>Entities\IceBoxAlpha</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.4</Scale>
+        <DirectionDeg>-110.792648</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1005</Id>
+        <Position>48 7</Position>
+        <Sprite>Entities\IceBoxAlpha</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.25</Scale>
+        <DirectionDeg>-71.4624</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1006</Id>
+        <Position>29.5 24.5</Position>
+        <Sprite>Entities\IceBoxAlpha</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.4</Scale>
+        <DirectionDeg>180</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1007</Id>
+        <Position>30.5 20.5</Position>
+        <Sprite>Entities\IceBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.4</Scale>
+        <DirectionDeg>180</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1008</Id>
+        <Position>37.5 20.5</Position>
+        <Sprite>Entities\IceBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.4</Scale>
+        <DirectionDeg>180</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1009</Id>
+        <Position>41.5 15.5</Position>
+        <Sprite>Entities\IceBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.4</Scale>
+        <DirectionDeg>180</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1010</Id>
+        <Position>37.5 25.5</Position>
+        <Sprite>Entities\IceBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.4</Scale>
+        <DirectionDeg>180</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1011</Id>
+        <Position>31.5 15.5</Position>
+        <Sprite>Entities\IceBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.4</Scale>
+        <DirectionDeg>180</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1012</Id>
+        <Position>42.5 17.5</Position>
+        <Sprite>Entities\IceBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.4</Scale>
+        <DirectionDeg>180</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1013</Id>
+        <Position>41.5 14.5</Position>
+        <Sprite>Entities\IceBoxAlpha</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.4</Scale>
+        <DirectionDeg>180</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1014</Id>
+        <Position>43.5 17.5</Position>
+        <Sprite>Entities\GearStar</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Coin</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1015</Id>
+        <Position>30 15.5</Position>
+        <Sprite>Entities\GearStar</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Coin</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1016</Id>
+        <Position>28 25</Position>
+        <Sprite>Entities\IceBoxAlpha</Sprite>
+        <Animated>false</Animated>
+        <Scale>2.75</Scale>
+        <DirectionDeg>180</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1017</Id>
+        <Position>29.5 24.5</Position>
+        <Sprite>Entities\GearStar</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Coin</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1018</Id>
+        <Position>44 7.5</Position>
+        <Sprite>Entities\IceBoxAlpha</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.4</Scale>
+        <DirectionDeg>180</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1019</Id>
+        <Position>45 7.5</Position>
+        <Sprite>Entities\IceBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.4</Scale>
+        <DirectionDeg>180</DirectionDeg>
+        <Type>NonLinkableBox</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1020</Id>
+        <Position>69.37814 16.291666</Position>
+        <Sprite>Entities\IceBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>2.75</Scale>
+        <DirectionDeg>-147.571609</DirectionDeg>
+        <Type>NonLinkableBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1021</Id>
+        <Position>69.62814 18.666666</Position>
+        <Sprite>Entities\IceBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>2.75</Scale>
+        <DirectionDeg>-6.58197546</DirectionDeg>
+        <Type>NonLinkableBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1022</Id>
+        <Position>71.96148 17.166666</Position>
+        <Sprite>Entities\IceBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>3.874998</Scale>
+        <DirectionDeg>50.90585</DirectionDeg>
+        <Type>NonLinkableBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1023</Id>
+        <Position>74.54481 15.791667</Position>
+        <Sprite>Entities\IceBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>3.874998</Scale>
+        <DirectionDeg>50.90585</DirectionDeg>
+        <Type>NonLinkableBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1024</Id>
+        <Position>74.08648 18.708334</Position>
+        <Sprite>Entities\IceBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>2.75</Scale>
+        <DirectionDeg>-156.801331</DirectionDeg>
+        <Type>NonLinkableBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1025</Id>
+        <Position>55.7478638 37.375</Position>
+        <Sprite>Entities\IceBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>3.2</Scale>
+        <DirectionDeg>50</DirectionDeg>
+        <Type>NonLinkableBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1026</Id>
+        <Position>53 39</Position>
+        <Sprite>Entities\IceBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>3.5</Scale>
+        <DirectionDeg>-16.3494949</DirectionDeg>
+        <Type>NonLinkableBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1027</Id>
+        <Position>50 39.5</Position>
+        <Sprite>Entities\IceBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>3.874998</Scale>
+        <DirectionDeg>16.5859928</DirectionDeg>
+        <Type>NonLinkableBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1028</Id>
+        <Position>30.5 40</Position>
+        <Sprite>Entities\IceBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>3.25</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>NonLinkableBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1029</Id>
+        <Position>1.5 43.5</Position>
+        <Sprite>Entities\IceBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>5</Scale>
+        <DirectionDeg>-6.98863363</DirectionDeg>
+        <Type>NonLinkableBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1030</Id>
+        <Position>7.5 45.5</Position>
+        <Sprite>Entities\IceBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>5</Scale>
+        <DirectionDeg>90</DirectionDeg>
+        <Type>NonLinkableBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1031</Id>
+        <Position>4.375 45.6465149</Position>
+        <Sprite>Entities\IceBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>2.75</Scale>
+        <DirectionDeg>-45</DirectionDeg>
+        <Type>NonLinkableBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1032</Id>
+        <Position>60.23723 2.08333325</Position>
+        <Sprite>Entities\IceBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>3.874998</Scale>
+        <DirectionDeg>50.90585</DirectionDeg>
+        <Type>NonLinkableBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1033</Id>
+        <Position>58.5 35.5</Position>
+        <Sprite>Entities\IceBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>2.75</Scale>
+        <DirectionDeg>-72.9480057</DirectionDeg>
+        <Type>NonLinkableBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1034</Id>
+        <Position>56 40.5</Position>
+        <Sprite>Entities\IceBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>3.75</Scale>
+        <DirectionDeg>-159.156326</DirectionDeg>
+        <Type>NonLinkableBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1035</Id>
+        <Position>58 37.5</Position>
+        <Sprite>Entities\IceBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.5</Scale>
+        <DirectionDeg>-87.95185</DirectionDeg>
+        <Type>NonLinkableBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1036</Id>
+        <Position>33.5 17.5</Position>
+        <Sprite>Entities\FinishTile</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.5</Scale>
+        <DirectionDeg>90</DirectionDeg>
+        <Type>Tile</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1037</Id>
+        <Position>10 43</Position>
+        <Sprite>Entities\IceBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>2.29803681</Scale>
+        <DirectionDeg>72.34051</DirectionDeg>
+        <Type>NonLinkableBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1038</Id>
+        <Position>61.5 0.5</Position>
+        <Sprite>Gadget\Bomb</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Bomb</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1039</Id>
+        <Position>64 0.5</Position>
+        <Sprite>Gadget\Bomb</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Bomb</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1040</Id>
+        <Position>0.5 45.5</Position>
+        <Sprite>Gadget\Bomb</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Bomb</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1041</Id>
+        <Position>0.5 47.5</Position>
+        <Sprite>Gadget\Bomb</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Bomb</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1042</Id>
+        <Position>0.5 49.5</Position>
+        <Sprite>Gadget\Bomb</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Bomb</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1043</Id>
+        <Position>33.5 20.5</Position>
+        <Sprite>Gadget\Bomb</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Bomb</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+    </Entities>
+    <Triggers>
+      <Item>
+        <Id>1</Id>
+        <Area>0 46 9 19</Area>
+        <Amount>999</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>DamageEntity4001</Item>
+        </Actions>
+      </Item>
+      <Item>
+        <Id>2</Id>
+        <Area>62 0 21 3</Area>
+        <Amount>999</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>DamageEntity4001</Item>
+        </Actions>
+      </Item>
+      <Item>
+        <Id>3</Id>
+        <Area>32 17 3 2</Area>
+        <Amount>999</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>NextMap()</Item>
+        </Actions>
+      </Item>
+      <Item>
+        <Id>4</Id>
+        <Area>44 6 1 1</Area>
+        <Amount>1</Amount>
+        <Active>true</Active>
+        <LeaveActions>
+          <Item>CaptureScreen(0,0.2)</Item>
+        </LeaveActions>
+      </Item>
+    </Triggers>
+    <Actions>
+      <Item Type="GameLibrary.AddDoorComponent">
+        <Name>DoorComponent</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <ItemId>0</ItemId>
+        <OpenDistanceScale>1</OpenDistanceScale>
+        <IsDrawHint>true</IsDrawHint>
+        <IsDrawArrowHint>false</IsDrawArrowHint>
+        <IsFixOnOpen>false</IsFixOnOpen>
+        <ActionOnOpen Null="true" />
+        <IsStatic>true</IsStatic>
+      </Item>
+      <Item Type="GameLibrary.CreateButton">
+        <Name>Button1002</Name>
+        <Groups>
+          <Item>Button</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Id>5001</Id>
+        <Position>48 7</Position>
+        <Path>48 7.8 48 9 35.5 9 35.5 3.5 17.5 3.5 17.5 25 17.5 31 51 31 51 4.5 49.5 4.5</Path>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <ActionPress>OpenDoor(1002)</ActionPress>
+        <ActionRelease>CloseDoor(1002)</ActionRelease>
+        <Subscribers>4001 1004 1005</Subscribers>
+        <ButtonType>Button</ButtonType>
+      </Item>
+      <Item Type="GameLibrary.CreateButton">
+        <Name>Button1003</Name>
+        <Groups>
+          <Item>Button</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Id>5002</Id>
+        <Position>47.5 2</Position>
+        <Path>47.5 1.2 47.5 0.5 42.5 0.5 42.5 4.5</Path>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <ActionPress>OpenDoor(1003)</ActionPress>
+        <ActionRelease>CloseDoor(1003)</ActionRelease>
+        <Subscribers>4001 1004 1005</Subscribers>
+        <ButtonType>Button</ButtonType>
+      </Item>
+      <Item Type="GameLibrary.AttachAdditionalView">
+        <Name>AttachAdditionalView1005</Name>
+        <Groups>
+          <Item>AdditionalView</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Position>48 7</Position>
+        <Sprite>Entities\CargoQuest</Sprite>
+        <Scale>0.9</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Animated>false</Animated>
+        <Color>FFFFFFFF</Color>
+        <ItemId>1005</ItemId>
+        <Depth>0.1</Depth>
+        <RelativeDepth>false</RelativeDepth>
+      </Item>
+      <Item Type="GameLibrary.AttachAdditionalView">
+        <Name>AttachAdditionalView1018</Name>
+        <Groups>
+          <Item>AdditionalView</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Position>43.9 7.5</Position>
+        <Sprite>Cars\SimpleBuggy\Destroyed1</Sprite>
+        <Scale>1.2</Scale>
+        <DirectionDeg>45</DirectionDeg>
+        <Animated>false</Animated>
+        <Color>FFFFFFFF</Color>
+        <ItemId>1018</ItemId>
+        <Depth>0.1</Depth>
+        <RelativeDepth>false</RelativeDepth>
+      </Item>
+      <Item Type="GameLibrary.AttachAdditionalView">
+        <Name>AttachAdditionalView1004</Name>
+        <Groups>
+          <Item>AdditionalView</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Position>47.6 2</Position>
+        <Sprite>Entities\CargoQuest</Sprite>
+        <Scale>0.9</Scale>
+        <DirectionDeg>10</DirectionDeg>
+        <Animated>false</Animated>
+        <Color>FFFFFFFF</Color>
+        <ItemId>1004</ItemId>
+        <Depth>0.1</Depth>
+        <RelativeDepth>false</RelativeDepth>
+      </Item>
+      <Item Type="GameLibrary.DamageEntity">
+        <Name>DamageEntity4001</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <ItemId>4001</ItemId>
+        <Damage>30</Damage>
+        <Who>0</Who>
+        <Direction>0</Direction>
+      </Item>
+      <Item Type="GameLibrary.AttachAdditionalView">
+        <Name>AttachAdditionalView1016_1</Name>
+        <Groups>
+          <Item>AdditionalView</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Position>27.4956188 24.666666</Position>
+        <Sprite>Cars\SimpleBuggy\Destroyed1</Sprite>
+        <Scale>1.2</Scale>
+        <DirectionDeg>157.468964</DirectionDeg>
+        <Animated>false</Animated>
+        <Color>FFFFFFFF</Color>
+        <ItemId>1016</ItemId>
+        <Depth>0.1</Depth>
+        <RelativeDepth>false</RelativeDepth>
+      </Item>
+      <Item Type="GameLibrary.AttachAdditionalView">
+        <Name>AttachAdditionalView1016_2</Name>
+        <Groups>
+          <Item>AdditionalView</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Position>28.270834 25.166666</Position>
+        <Sprite>Weapons\Saw</Sprite>
+        <Scale>0.35</Scale>
+        <DirectionDeg>157.468964</DirectionDeg>
+        <Animated>false</Animated>
+        <Color>FFFFFFFF</Color>
+        <ItemId>1016</ItemId>
+        <Depth>0.1</Depth>
+        <RelativeDepth>false</RelativeDepth>
+      </Item>
+      <Item Type="GameLibrary.AttachAdditionalView">
+        <Name>AttachAdditionalView1013</Name>
+        <Groups>
+          <Item>AdditionalView</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Position>41.5 14.5</Position>
+        <Sprite>Cars\Scout\Destroyed1</Sprite>
+        <Scale>0.9</Scale>
+        <DirectionDeg>45</DirectionDeg>
+        <Animated>false</Animated>
+        <Color>FFEBE9FF</Color>
+        <ItemId>1013</ItemId>
+        <Depth>0.1</Depth>
+        <RelativeDepth>false</RelativeDepth>
+      </Item>
+      <Item Type="GameLibrary.AddEntitiesToFocus">
+        <Name>ShowFinish</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <ItemIds>1036</ItemIds>
+        <RemoveAllOthers>false</RemoveAllOthers>
+      </Item>
+      <Item Type="GameLibrary.AddEntitiesToFocus">
+        <Name>ShowPlayer</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <ItemIds>4001</ItemIds>
+        <RemoveAllOthers>true</RemoveAllOthers>
+      </Item>
+    </Actions>
+    <CameraAttachToEnemyEnable>false</CameraAttachToEnemyEnable>
+  </Asset>
+</XnaContent>

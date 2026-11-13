@@ -1,0 +1,583 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>Race</Name>
+    <GameMode>SinglePlayerRace</GameMode>
+    <Image>Maps\Singleplayer\Race</Image>
+    <PreviewImage>Maps\Preview\Race</PreviewImage>
+    <Scale>48</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>false</HaveOutlandVizualization>
+    <OutlandColorLT>FF000000</OutlandColorLT>
+    <OutlandColorRT>FF00BFFF</OutlandColorRT>
+    <OutlandColorRB>FFB0C4DE</OutlandColorRB>
+    <OutlandColorLB>FF4B0082</OutlandColorLB>
+    <TargetTimeSec>0</TargetTimeSec>
+    <Friction>1</Friction>
+    <MusicAmbient>7</MusicAmbient>
+    <MusicDynamic1>2</MusicDynamic1>
+    <AmbientLight>90AED2D4</AmbientLight>
+    <Splash>Race</Splash>
+    <LevelEffect>None</LevelEffect>
+    <CameraReadAccelerometer>true</CameraReadAccelerometer>
+    <Width>48</Width>
+    <Height>48</Height>
+    <Lights>
+      <Item>
+        <Position>12 6.5</Position>
+        <Color>FFFFFF00</Color>
+        <R>15</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>11 33.5</Position>
+        <Color>FFFFFF00</Color>
+        <R>15</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>33.5 39.5</Position>
+        <Color>FFFFFF00</Color>
+        <R>15</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0.75</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>33.5 5.5</Position>
+        <Color>C5FFFFFF</Color>
+        <R>18</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>23 26</Position>
+        <Color>8CFFFFFF</Color>
+        <R>18</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>18.5 45</Position>
+        <Color>7A00FFEA</Color>
+        <R>15</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>3.5 19.5</Position>
+        <Color>6FFFFFFF</Color>
+        <R>15</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+    </Lights>
+    <Players>
+      <Item>
+        <Id>4001</Id>
+        <Name>Player1</Name>
+        <Position>5.5 26.5</Position>
+        <DirectionDeg>90</DirectionDeg>
+        <Control>NoneFriend</Control>
+        <CarName>Scout</CarName>
+        <ActionOnCreate>DeactivateEntity(0)</ActionOnCreate>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>4002</Id>
+        <Name>Bot1</Name>
+        <Position>8.5 26.5</Position>
+        <DirectionDeg>90</DirectionDeg>
+        <Control>MoveByPath</Control>
+        <CarName>SandBuggyNoGadget</CarName>
+        <ActionOnCreate>seqBotCreate</ActionOnCreate>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>4003</Id>
+        <Name>Bot2</Name>
+        <Position>11.52083 26.5</Position>
+        <DirectionDeg>90</DirectionDeg>
+        <Control>MoveByPath</Control>
+        <CarName>HoverScoutNoGadgetSlow</CarName>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>4004</Id>
+        <Name>Player1</Name>
+        <Position>4.5 38.5</Position>
+        <DirectionDeg>90</DirectionDeg>
+        <Control>OrderExecutorFriend</Control>
+        <CarName>TruckSlow</CarName>
+        <ActionOnCreate>MoveCargoOrder4004</ActionOnCreate>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+    </Players>
+    <Entities>
+      <Item>
+        <Id>1001</Id>
+        <Position>8.5 26.5</Position>
+        <Sprite>Entities\FinishTile</Sprite>
+        <Animated>false</Animated>
+        <Scale>2</Scale>
+        <DirectionDeg>90</DirectionDeg>
+        <Type>Tile</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1018</Id>
+        <Position>37 9</Position>
+        <Sprite>Entities\GearStar</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Coin</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1019</Id>
+        <Position>37 17</Position>
+        <Sprite>Entities\GearStar</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Coin</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1020</Id>
+        <Position>27.5 20.5</Position>
+        <Sprite>Entities\GearStar</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Coin</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1022</Id>
+        <Position>34 34</Position>
+        <Sprite>Entities\GearStar</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Coin</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1023</Id>
+        <Position>39 31</Position>
+        <Sprite>Entities\GearStar</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Coin</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1028</Id>
+        <Position>13 35</Position>
+        <Sprite>Entities\GearStar</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Coin</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1029</Id>
+        <Position>10.5 14.5</Position>
+        <Sprite>Entities\GearStar</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Coin</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1030</Id>
+        <Position>12.333333 6.375</Position>
+        <Sprite>Entities\Accelerator</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Accelerator</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1031</Id>
+        <Position>33.5 39.5</Position>
+        <Sprite>Entities\Accelerator</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>180</DirectionDeg>
+        <Type>Accelerator</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1033</Id>
+        <Position>11 33.5</Position>
+        <Sprite>Entities\Accelerator</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>90</DirectionDeg>
+        <Type>Accelerator</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1034</Id>
+        <Position>4.5 44</Position>
+        <Sprite>Entities\Accelerator</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>90</DirectionDeg>
+        <Type>Accelerator</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <ActionOnCreate>DeactivateEntity(0)</ActionOnCreate>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1035</Id>
+        <Position>4.5 41.5</Position>
+        <Sprite>Cars\Scout\Body</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>90</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <ActionOnCreate>FocusOnEntity(0)</ActionOnCreate>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+    </Entities>
+    <Triggers>
+      <Item>
+        <Id>1</Id>
+        <Area>3 25 10 3</Area>
+        <Amount>999</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>LapsPlus</Item>
+          <Item>CheckLaps</Item>
+        </Actions>
+        <LeaveActions>
+          <Item>DeActivateLapPlus</Item>
+        </LeaveActions>
+        <Subscribers>0</Subscribers>
+      </Item>
+      <Item>
+        <Id>2</Id>
+        <Area>19 22 18 2</Area>
+        <Amount>999</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>ActivateLapPlus</Item>
+        </Actions>
+        <Subscribers>4001 4002 4003</Subscribers>
+      </Item>
+      <Item>
+        <Id>3</Id>
+        <Area>3 28 7 3</Area>
+        <Amount>1</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>ShowSplash</Item>
+        </Actions>
+        <Subscribers>1035</Subscribers>
+      </Item>
+    </Triggers>
+    <Actions>
+      <Item Type="GameLibrary.SetPath">
+        <Name>Path1</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Path>7.791667 19.5 9.208333 12.58333 16.375 8.166667 29.70833 6.833333 39.625 7.25 41.29167 12 37.20833 16.5 27.95833 23.5 29.20833 29 38.04167 35.08333 37.29167 40.83333 26.125 42.41667 13.79167 40.91667 7.625 30.25</Path>
+        <ItemId>0</ItemId>
+        <Closed>true</Closed>
+        <Type>Path</Type>
+      </Item>
+      <Item Type="GameLibrary.CheckIntVariable">
+        <Name>CheckLaps</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <VariableName>Laps</VariableName>
+        <Global>false</Global>
+        <ItemId>0</ItemId>
+        <Value>3</Value>
+        <ActionOnLess Null="true" />
+        <ActionOnEqual>seqCheckWinner</ActionOnEqual>
+        <ActionOnGreater Null="true" />
+      </Item>
+      <Item Type="GameLibrary.ShowText">
+        <Name>ShowWin</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Text>
+          <Item>YouWin</Item>
+        </Text>
+        <ShowTimeSec>2</ShowTimeSec>
+        <PauseGame>false</PauseGame>
+      </Item>
+      <Item Type="GameLibrary.ChangeIntVariable">
+        <Name>LapsPlus</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <VariableName>Laps</VariableName>
+        <Global>false</Global>
+        <ItemId>0</ItemId>
+        <Value>1</Value>
+        <Operation>Increase</Operation>
+      </Item>
+      <Item Type="GameLibrary.CheckIntVariable">
+        <Name>CheckWinner</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <VariableName>Id</VariableName>
+        <Global>false</Global>
+        <ItemId>0</ItemId>
+        <Value>4001</Value>
+        <ActionOnLess>LooseSeq</ActionOnLess>
+        <ActionOnEqual>WinSeq</ActionOnEqual>
+        <ActionOnGreater>LooseSeq</ActionOnGreater>
+      </Item>
+      <Item Type="GameLibrary.ChangeSubscribers">
+        <Name>ActivateLapPlus</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <TriggerId>1</TriggerId>
+        <ItemId>0</ItemId>
+        <Operation>Add</Operation>
+      </Item>
+      <Item Type="GameLibrary.ShowText">
+        <Name>ShowLoose</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Text>
+          <Item>Looser</Item>
+        </Text>
+        <ShowTimeSec>2</ShowTimeSec>
+        <PauseGame>false</PauseGame>
+      </Item>
+      <Item Type="GameLibrary.ChangeSubscribers">
+        <Name>DeActivateLapPlus</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <TriggerId>1</TriggerId>
+        <ItemId>0</ItemId>
+        <Operation>Remove</Operation>
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>WinSeq</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>seqPlayerWin</Item>
+          <Item>ShowWin</Item>
+          <Item>NA</Item>
+          <Item>NA</Item>
+          <Item>NextMap</Item>
+        </Actions>
+        <TimeBetweenInSec>1</TimeBetweenInSec>
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>LooseSeq</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>SetFocusOnWinner</Item>
+          <Item>ShowLoose</Item>
+          <Item>NA</Item>
+          <Item>RestartMap</Item>
+        </Actions>
+        <TimeBetweenInSec>2</TimeBetweenInSec>
+      </Item>
+      <Item Type="GameLibrary.MoveToNextMap">
+        <Name>NextMap</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+      </Item>
+      <Item Type="GameLibrary.ActivateTriggerActionData">
+        <Name>DeactivateTrigger</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <TriggerIds>1</TriggerIds>
+        <Deactivate>true</Deactivate>
+      </Item>
+      <Item Type="GameLibrary.RestartMap">
+        <Name>RestartMap</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+      </Item>
+      <Item Type="GameLibrary.AddEntitiesToFocus">
+        <Name>SetFocusOnWinner</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <ItemIds>0</ItemIds>
+        <RemoveAllOthers>true</RemoveAllOthers>
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>seqBotCreate</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>AiBot1Team2</Item>
+        </Actions>
+        <TimeBetweenInSec>0</TimeBetweenInSec>
+      </Item>
+      <Item Type="GameLibrary.AIAdjustment">
+        <Name>AiBot1Team2</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <ItemId>0</ItemId>
+        <Team>2</Team>
+        <ScanDistance>-1</ScanDistance>
+        <WeaponMaxAngleDeg>-1</WeaponMaxAngleDeg>
+        <FireAccuracy>1</FireAccuracy>
+        <IsVisibleForAutoAim>DoNotChange</IsVisibleForAutoAim>
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>seqCheckWinner</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>CheckWinner</Item>
+          <Item>DeactivateTrigger</Item>
+        </Actions>
+        <TimeBetweenInSec>0</TimeBetweenInSec>
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>seqAutoPilot</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>AutopilotControl</Item>
+          <Item>Path1</Item>
+        </Actions>
+        <TimeBetweenInSec>0</TimeBetweenInSec>
+      </Item>
+      <Item Type="GameLibrary.SetControl">
+        <Name>AutopilotControl</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <ItemId>0</ItemId>
+        <Control>MoveByPathFriend</Control>
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>seqPlayerWin</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>seqAutoPilot</Item>
+          <Item>CaptureScreen(0,0)</Item>
+        </Actions>
+        <TimeBetweenInSec>0</TimeBetweenInSec>
+      </Item>
+      <Item Type="GameLibrary.MoveCargoOrder">
+        <Name>MoveCargoOrder4004</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <OrderRemoveCondition>RemoveOnSuccess</OrderRemoveCondition>
+        <Position>6 26.5</Position>
+        <R>1</R>
+        <ItemId>4004</ItemId>
+        <CargoItemId>1035</CargoItemId>
+        <DropPosition>5 22.5</DropPosition>
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>seqRaceStart</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>SetPathBots</Item>
+          <Item>SetControl(4001,Local)</Item>
+        </Actions>
+        <TimeBetweenInSec>0</TimeBetweenInSec>
+      </Item>
+      <Item Type="GameLibrary.TriggerActionBy">
+        <Name>SetPathBots</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <ItemIds>
+          <Item>4002</Item>
+          <Item>4003</Item>
+        </ItemIds>
+        <Actions>
+          <Item>Path1</Item>
+        </Actions>
+      </Item>
+      <Item Type="GameLibrary.ShowSplash">
+        <Name>ShowSplash</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <SplashName>Blackout</SplashName>
+        <AutoHideTimeSec>2</AutoHideTimeSec>
+        <Clickable>false</Clickable>
+        <ActionOnHide>seqOnSplashHide</ActionOnHide>
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>seqOnSplashHide</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>DestroyEntity(1035)</Item>
+          <Item>DestroyEntity(4004)</Item>
+          <Item>ActivateEntity(4001)</Item>
+          <Item>ActivateEntity(1034)</Item>
+          <Item>PlayMusicLooped(Dynamic1)</Item>
+          <Item>Seq(NA seqRaceStart,2)</Item>
+          <Item>FocusOnEntity(4001)</Item>
+        </Actions>
+        <TimeBetweenInSec>0</TimeBetweenInSec>
+      </Item>
+      <Item Type="GameLibrary.ApplyGadgetToPosition">
+        <Name>ApplyGadgetToPosition4004</Name>
+        <RunOnMapStart>true</RunOnMapStart>
+        <GadgetOwnerId>4004</GadgetOwnerId>
+        <TargetItemId>1035</TargetItemId>
+        <RelativePosition>1 0</RelativePosition>
+      </Item>
+      <Item Type="GameLibrary.AttachAdditionalView">
+        <Name>AttachAdditionalView1035</Name>
+        <Groups>
+          <Item>AttachAdditionalView</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Position>4.5 41.5</Position>
+        <Sprite>Cars\Scout\ColorMask</Sprite>
+        <Scale>1</Scale>
+        <DirectionDeg>90</DirectionDeg>
+        <Animated>false</Animated>
+        <Color>FF4040FF</Color>
+        <ItemId>1035</ItemId>
+        <Depth>0.01</Depth>
+        <RelativeDepth>true</RelativeDepth>
+      </Item>
+    </Actions>
+    <Hints />
+  </Asset>
+</XnaContent>

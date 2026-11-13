@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>The Gate</Name>
+    <Image>Maps\Singleplayer\Map01</Image>
+    <Scale>64</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <MusicAmbient>NostalgySummer</MusicAmbient>
+    <MusicDynamic1></MusicDynamic1>
+    <MusicDynamic2></MusicDynamic2>
+    <AmbientLight>FF001010</AmbientLight>
+    <Lights>
+      <Item>
+        <Position>18 17</Position>
+        <Color>3887FFFF</Color>
+        <R>15</R>
+      </Item>
+      <Item>
+        <Position>33 22</Position>
+        <Color>FFFFFFFF</Color>
+        <R>8</R>
+      </Item>
+      <Item>
+        <Position>44 17</Position>
+        <Color>FFFFFFFF</Color>
+        <R>4</R>
+      </Item>
+      <Item>
+        <Position>32 23</Position>
+        <Color>FFFFFFFF</Color>
+        <R>6</R>
+      </Item>
+      <Item>
+        <Position>38 15</Position>
+        <Color>FFFFFFFF</Color>
+        <R>6</R>
+      </Item>
+     </Lights>
+    <Players>
+      <Item>
+        <Id>4000</Id>
+        <Name>Player1</Name>
+        <Position>5 17</Position>
+        <Control>Local</Control>
+        <CarName>SandBuggy</CarName>
+      </Item>
+
+    </Players>
+
+    <Entities>
+      <Item>
+        <Id>1</Id>
+        <Position>38.5 16</Position>
+        <Sprite>Entities\DoorBox</Sprite>
+        <Scale>1</Scale>
+        <DirectionDeg>90</DirectionDeg>
+        <Type>HeavyBox</Type>
+      </Item>
+
+      <Item>
+        <Id>1</Id>
+        <Position>10 15</Position>
+        <Sprite>CargoQuest</Sprite>
+        <Scale>1</Scale>
+        <DirectionDeg>20</DirectionDeg>
+        <Type>Box</Type>
+      </Item>
+    </Entities>
+
+    <Triggers>
+      <Item>
+        <Id>1</Id>
+        <Area>43 15 1 3</Area>
+        <Amount>1</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>NextMap</Item>
+        </Actions>
+      </Item>
+      <Item>
+        <Id>2</Id>
+        <Area>33 15 4 2</Area>
+        <Amount>1</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>ShowArrowDownHint</Item>
+        </Actions>
+      </Item>
+      <Item>
+        <Id>3</Id>
+        <Area>33 19 8 7</Area>
+        <Amount>100</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>ShowDragDoorHint</Item>
+          <Item>DeactivateTrigger2</Item>
+          <Item>HideArrowDownHint</Item>
+        </Actions>
+        <LeaveActions>
+          <Item>HideDragDoorHint</Item>
+        </LeaveActions>
+      </Item>
+    </Triggers>
+
+    <Actions>
+      <Item Type="GameLibrary.ActivateEntityActionData">
+        <Name>ShowArrowDownHint</Name>
+        <ItemId>100</ItemId>
+      </Item>
+      <Item Type="GameLibrary.ActivateEntityActionData">
+        <Name>HideArrowDownHint</Name>
+        <ItemId>100</ItemId>
+        <Deactivate>true</Deactivate>
+      </Item>
+      <Item Type="GameLibrary.ActivateEntityActionData">
+        <Name>ShowDragDoorHint</Name>
+        <ItemId>101</ItemId>
+      </Item>
+      <Item Type="GameLibrary.ActivateEntityActionData">
+        <Name>HideDragDoorHint</Name>
+        <ItemId>101</ItemId>
+        <Deactivate>true</Deactivate>
+      </Item>
+      <Item Type="GameLibrary.ActivateTriggerActionData">
+        <Name>DeactivateTrigger2</Name>
+        <TriggerIds>2</TriggerIds>
+        <Deactivate>true</Deactivate>
+      </Item>
+    </Actions>
+
+    <Hints>
+      <Item>
+        <Id>100</Id>
+        <Position>32 16</Position>
+        <Sprite>Hints\Arrow</Sprite>
+        <DirectionDeg>-90</DirectionDeg>
+        <Scale>1</Scale>
+      </Item>
+      <Item>
+        <Id>101</Id>
+        <Position>34 22</Position>
+        <Sprite>Hints\DragDoor</Sprite>
+        <DirectionDeg>0</DirectionDeg>
+        <Animated>true</Animated>
+        <Scale>2</Scale>
+      </Item>
+    </Hints>
+    
+  </Asset>
+</XnaContent>

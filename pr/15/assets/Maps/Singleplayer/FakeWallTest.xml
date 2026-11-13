@@ -1,0 +1,109 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent xmlns:GameLibrary="GameLibrary">
+  <Asset Type="GameLibrary:MapData">
+    <Name>FakeWallTest</Name>
+    <GameMode>SinglePlayer</GameMode>
+    <Image Null="true" />
+    <Scale>64</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>false</HaveOutlandVizualization>
+    <OutlandColorLT>FF000000</OutlandColorLT>
+    <OutlandColorRT>FF00BFFF</OutlandColorRT>
+    <OutlandColorRB>FFFFA500</OutlandColorRB>
+    <OutlandColorLB>FFFFFF00</OutlandColorLB>
+    <TargetTimeSec>0</TargetTimeSec>
+    <Friction>1</Friction>
+    <AmbientLight>10101010</AmbientLight>
+    <Splash>MapDefault</Splash>
+    <LevelEffect>None</LevelEffect>
+    <CameraReadAccelerometer>true</CameraReadAccelerometer>
+    <Width>0</Width>
+    <Height>0</Height>
+    <Lights>
+      <Item>
+        <Position>6 9.5</Position>
+        <Color>FFFFFFFF</Color>
+        <R>10</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>22.5 9.5</Position>
+        <Color>FFFFFFFF</Color>
+        <R>10</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>14.5 7.2</Position>
+        <Color>FFDFFFFF</Color>
+        <R>12</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+    </Lights>
+    <Players>
+      <Item>
+        <Id>4001</Id>
+        <Name>Player1</Name>
+        <Position>4.5 7</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>Local</Control>
+        <CarName>SandBuggyEditorPointer</CarName>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+    </Players>
+    <Triggers>
+      <Item>
+        <Id>1</Id>
+        <Area>8 6 14 2</Area>
+        <Amount>9999</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>RevealPassage</Item>
+        </Actions>
+        <LeaveActions>
+          <Item>HidePassage</Item>
+        </LeaveActions>
+        <Subscribers>4001</Subscribers>
+      </Item>
+    </Triggers>
+    <Actions>
+      <Item Type="GameLibrary:FakeWallRegionActionData">
+        <Name>FakeWall_Passage</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>9 6 12 2</Area>
+        <InitiallyRevealed>false</InitiallyRevealed>
+        <AnimationDuration>1</AnimationDuration>
+        <WaveDirectionDegrees>0</WaveDirectionDegrees>
+      </Item>
+      <Item Type="GameLibrary:SetFakeWallRevealedActionData">
+        <Name>RevealPassage</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <TargetName>FakeWall_Passage</TargetName>
+        <Revealed>true</Revealed>
+      </Item>
+      <Item Type="GameLibrary:SetFakeWallRevealedActionData">
+        <Name>HidePassage</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <TargetName>FakeWall_Passage</TargetName>
+        <Revealed>false</Revealed>
+      </Item>
+    </Actions>
+    <CameraAttachToEnemyEnable>false</CameraAttachToEnemyEnable>
+    <CharMapDictionary>A:#FFFF0000;B:#100000A0;</CharMapDictionary>
+    <CharMap>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+ABBBBBBBBAAAAAAAAAAAABBBBBBBBA
+ABBBBBBBBAAAAAAAAAAAABBBBBBBBA
+ABBBBBBBBAAAAAAAAAAAABBBBBBBBA
+ABBBBBBBBAAAAAAAAAAAABBBBBBBBA
+ABBBBBBBBAAAAAAAAAAAABBBBBBBBA
+ABBBBBBBBAAAAAAAAAAAABBBBBBBBA
+ABBBBBBBBAAAAAAAAAAAABBBBBBBBA
+ABBBBBBBBAAAAAAAAAAAABBBBBBBBA
+ABBBBBBBBAAAAAAAAAAAABBBBBBBBA
+ABBBBBBBBAAAAAAAAAAAABBBBBBBBA
+ABBBBBBBBAAAAAAAAAAAABBBBBBBBA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA</CharMap>
+  </Asset>
+</XnaContent>

@@ -1,0 +1,89 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>LightTest</Name>
+    <GameMode>SinglePlayer</GameMode>
+    <Image>Maps\Singleplayer\LightTest</Image>
+    <Scale>48</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>false</HaveOutlandVizualization>
+    <OutlandColorLT>FF000000</OutlandColorLT>
+    <OutlandColorRT>FF00BFFF</OutlandColorRT>
+    <OutlandColorRB>FFFFA500</OutlandColorRB>
+    <OutlandColorLB>FFFFFF00</OutlandColorLB>
+    <TargetTimeSec>0</TargetTimeSec>
+    <Friction>1</Friction>
+    <AmbientLight>0C0C0C0C</AmbientLight>
+    <Splash>MapDefault</Splash>
+    <LevelEffect>None</LevelEffect>
+    <CameraReadAccelerometer>true</CameraReadAccelerometer>
+    <Width>96</Width>
+    <Height>96</Height>
+    <Lights>
+      <Item>
+        <Position>48 47.5</Position>
+        <Color>FFFFFFFF</Color>
+        <R>16</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>27 15.5</Position>
+        <Color>FF00FA9A</Color>
+        <R>28</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+    </Lights>
+    <Players>
+      <Item>
+        <Id>4001</Id>
+        <Name>Player1</Name>
+        <Position>26 18.5</Position>
+        <DirectionDeg>30.4655457</DirectionDeg>
+        <Control>Local</Control>
+        <CarName>SandBuggyMagnet</CarName>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+    </Players>
+    <Entities>
+      <Item>
+        <Id>1001</Id>
+        <Position>14.5 9.5</Position>
+        <Sprite>Entities\Grass</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Tile</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1002</Id>
+        <Position>37.5 31.5</Position>
+        <Sprite>Entities\Grass</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Tile</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+    </Entities>
+    <Actions>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>OnStart</Name>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Actions>
+          <Item>FocusOnEntity(1001)</Item>
+          <Item>AddFocusOnEntity(1002)</Item>
+        </Actions>
+        <TimeBetweenInSec>0</TimeBetweenInSec>
+      </Item>
+    </Actions>
+  </Asset>
+</XnaContent>

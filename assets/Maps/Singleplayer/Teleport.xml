@@ -1,0 +1,895 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>Teleport</Name>
+    <GameMode>SinglePlayer</GameMode>
+    <Image>Maps\Singleplayer\Teleport</Image>
+    <Scale>48</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>false</HaveOutlandVizualization>
+    <OutlandColorLT>FF000000</OutlandColorLT>
+    <OutlandColorRT>FF00BFFF</OutlandColorRT>
+    <OutlandColorRB>FFFFA500</OutlandColorRB>
+    <OutlandColorLB>FFFFFF00</OutlandColorLB>
+    <TargetTimeSec>0</TargetTimeSec>
+    <Friction>1</Friction>
+    <MusicAmbient>1</MusicAmbient>
+    <AmbientLight>11FFFFFF</AmbientLight>
+    <Splash>Teleport</Splash>
+    <LevelEffect>None</LevelEffect>
+    <CameraReadAccelerometer>true</CameraReadAccelerometer>
+    <Width>48</Width>
+    <Height>48</Height>
+    <Lights>
+      <Item>
+        <Position>18.5 7.5</Position>
+        <Color>CEFFFFFF</Color>
+        <R>20</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>10 4</Position>
+        <Color>6CFFFFFF</Color>
+        <R>6</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>29 6.5</Position>
+        <Color>6CFFFFFF</Color>
+        <R>5</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>16 4</Position>
+        <Color>A6B6BBFF</Color>
+        <R>5</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>24 4</Position>
+        <Color>FF00FFFF</Color>
+        <R>2</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>34.5 7</Position>
+        <Color>B7FFFFFF</Color>
+        <R>15</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>18.5 14.5</Position>
+        <Color>B7FFFFFF</Color>
+        <R>15</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>20 28</Position>
+        <Color>B7FFFFFF</Color>
+        <R>15</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>15.5 22.5</Position>
+        <Color>B7FFFFFF</Color>
+        <R>15</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>35 21.5</Position>
+        <Color>B7FFFFFF</Color>
+        <R>15</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>32 15.5</Position>
+        <Color>B7FFFFFF</Color>
+        <R>15</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>37.5 27.5</Position>
+        <Color>B7FFFFFF</Color>
+        <R>15</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>7 16</Position>
+        <Color>FF00FFFF</Color>
+        <R>4</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>30.5 27.5</Position>
+        <Color>FF00FFFF</Color>
+        <R>4</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>35.5 8.5</Position>
+        <Color>FF00FFFF</Color>
+        <R>4</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>21 20</Position>
+        <Color>B7FFFFFF</Color>
+        <R>15</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>9 22</Position>
+        <Color>DFFF3433</Color>
+        <R>10</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>28 22</Position>
+        <Color>FFB4CDFF</Color>
+        <R>4</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>11.5 13.5</Position>
+        <Color>FF00FFFF</Color>
+        <R>2</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>8 27.5</Position>
+        <Color>537CFC00</Color>
+        <R>2</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>35.5 27.5</Position>
+        <Color>537CFC00</Color>
+        <R>2</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+    </Lights>
+    <Players>
+      <Item>
+        <Id>4001</Id>
+        <Name>Player1</Name>
+        <Position>9 8</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>Local</Control>
+        <CarName>SandBuggyMinigun</CarName>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>4002</Id>
+        <Name>Player1</Name>
+        <Position>20 5</Position>
+        <DirectionDeg>180</DirectionDeg>
+        <Control>OrderExecutorFriend</Control>
+        <CarName>TurretLoaderStat</CarName>
+        <ActionOnCreate>AddFocusOnEntity(4002)</ActionOnCreate>
+        <ActionOnDestroy>seqTurretDestroy</ActionOnDestroy>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>4003</Id>
+        <Name>Player1</Name>
+        <Position>35 22</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>OrderExecutorFriend</Control>
+        <CarName>TruckMagnet</CarName>
+        <ActionOnCreate>SetWeapon(Hammer)</ActionOnCreate>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+    </Players>
+    <Entities>
+      <Item>
+        <Id>1001</Id>
+        <Position>27.5 3</Position>
+        <Sprite>Entities\DoorBoxNonLinkable</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.7</Scale>
+        <DirectionDeg>270</DirectionDeg>
+        <Type>NonLinkableBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1002</Id>
+        <Position>18.5 2</Position>
+        <Sprite>Entities\CargoQuest</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>303.1785</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1003</Id>
+        <Position>29.5 5.5</Position>
+        <Sprite>Entities\DoorBoxNonLinkable</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.7</Scale>
+        <DirectionDeg>90</DirectionDeg>
+        <Type>NonLinkableBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1004</Id>
+        <Position>20 6.5</Position>
+        <Sprite>Gadget\ChainActive</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.5</Scale>
+        <DirectionDeg>335.323151</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <ActionOnCreate>DeactivateEntity(0)</ActionOnCreate>
+        <ActionOnDestroy>seqGetMagnet</ActionOnDestroy>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1005</Id>
+        <Position>11 20.5</Position>
+        <Sprite>Cars\Scout\Body</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>11.5921326</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1006</Id>
+        <Position>19.5 18.5</Position>
+        <Sprite>Entities\SmallWall</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.7</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>IgnoreWeaponBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>true</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1008</Id>
+        <Position>11.5 18.5</Position>
+        <Sprite>Entities\SmallWall</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.7</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>IgnoreWeaponBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>true</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1014</Id>
+        <Position>13.5 24.5</Position>
+        <Sprite>Entities\SmallWall</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.7</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>IgnoreWeaponBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>true</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1021</Id>
+        <Position>5.5 20</Position>
+        <Sprite>Entities\CargoQuest</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.851537049</Scale>
+        <DirectionDeg>251.551941</DirectionDeg>
+        <Type>NonLinkableBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>true</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1022</Id>
+        <Position>6.5 21.5</Position>
+        <Sprite>Entities\CargoQuest</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.856847346</Scale>
+        <DirectionDeg>138.6986</DirectionDeg>
+        <Type>NonLinkableBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>true</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1023</Id>
+        <Position>8 20</Position>
+        <Sprite>Entities\CargoQuest</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.687500954</Scale>
+        <DirectionDeg>334.950684</DirectionDeg>
+        <Type>NonLinkableBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>true</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1024</Id>
+        <Position>7.5 23</Position>
+        <Sprite>Entities\CargoQuest</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.671874762</Scale>
+        <DirectionDeg>5.8067255</DirectionDeg>
+        <Type>NonLinkableBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>true</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1025</Id>
+        <Position>4 22.5</Position>
+        <Sprite>Entities\CargoQuest</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.83501786</Scale>
+        <DirectionDeg>10.6258745</DirectionDeg>
+        <Type>NonLinkableBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>true</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1026</Id>
+        <Position>30.5 15.5</Position>
+        <Sprite>Entities\DoorBoxNonLinkable</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.7</Scale>
+        <DirectionDeg>270</DirectionDeg>
+        <Type>NonLinkableBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1029</Id>
+        <Position>38 15.5</Position>
+        <Sprite>Entities\FinishTile</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Tile</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1030</Id>
+        <Position>20 2.5</Position>
+        <Sprite>Entities\GearStar</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Coin</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1031</Id>
+        <Position>8 27.5</Position>
+        <Sprite>Entities\GearStar</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Coin</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1032</Id>
+        <Position>35.5 27.5</Position>
+        <Sprite>Entities\GearStar</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Coin</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1033</Id>
+        <Position>13.5 18.5</Position>
+        <Sprite>Entities\SmallWall</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.7</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>IgnoreWeaponBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>true</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1048</Id>
+        <Position>23 24.5</Position>
+        <Sprite>Entities\SmallWall</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.7</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>IgnoreWeaponBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>true</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1049</Id>
+        <Position>25 24.5</Position>
+        <Sprite>Entities\SmallWall</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.7</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>IgnoreWeaponBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>true</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1050</Id>
+        <Position>27 24.5</Position>
+        <Sprite>Entities\SmallWall</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.7</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>IgnoreWeaponBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>true</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1051</Id>
+        <Position>15.5 24.5</Position>
+        <Sprite>Entities\SmallWall</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.7</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>IgnoreWeaponBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>true</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1052</Id>
+        <Position>17.5 24.5</Position>
+        <Sprite>Entities\SmallWall</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.7</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>IgnoreWeaponBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>true</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1053</Id>
+        <Position>21.5 18.5</Position>
+        <Sprite>Entities\SmallWall</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.7</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>IgnoreWeaponBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>true</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1054</Id>
+        <Position>23.5 18.5</Position>
+        <Sprite>Entities\SmallWall</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.7</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>IgnoreWeaponBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>true</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+    </Entities>
+    <Triggers>
+      <Item>
+        <Id>1</Id>
+        <Area>15 3 2 2</Area>
+        <Amount>999</Amount>
+        <Active>true</Active>
+        <LeaveActions>
+          <Item>MoveCargoOrder</Item>
+        </LeaveActions>
+        <Subscribers>1002</Subscribers>
+      </Item>
+      <Item>
+        <Id>2</Id>
+        <Area>30 5 1 2</Area>
+        <Amount>1</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>CreateButton3</Item>
+        </Actions>
+      </Item>
+      <Item>
+        <Id>4</Id>
+        <Area>37 14 1 3</Area>
+        <Amount>1</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>NextMap()</Item>
+        </Actions>
+      </Item>
+      <Item>
+        <Id>5</Id>
+        <Area>39 24 7 1</Area>
+        <Amount>1</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>FocusOnEntity(4001)</Item>
+          <Item>AddFocusOnEntity(1029)</Item>
+        </Actions>
+        <Subscribers>4003</Subscribers>
+      </Item>
+      <Item>
+        <Id>6</Id>
+        <Area>10 19 2 2</Area>
+        <Amount>1</Amount>
+        <Active>true</Active>
+        <LeaveActions>
+          <Item>DestroyEntity(2002)</Item>
+        </LeaveActions>
+        <Subscribers>1005</Subscribers>
+      </Item>
+      <Item>
+        <Id>7</Id>
+        <Area>22 14 1 4</Area>
+        <Amount>1</Amount>
+        <Active>false</Active>
+        <Actions>
+          <Item>CaptureScreen(4001,0)</Item>
+        </Actions>
+        <Subscribers>4001</Subscribers>
+      </Item>
+      <Item>
+        <Id>8</Id>
+        <Area>10 3 1 8</Area>
+        <Amount>1</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>AddFocusOnEntity(4002)</Item>
+          <Item>MoveCargoOrder</Item>
+        </Actions>
+      </Item>
+      <Item>
+        <Id>9</Id>
+        <Area>31 5 1 4</Area>
+        <Amount>999</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>OpenDoor(1003)</Item>
+          <Item>CloseDoor(1001)</Item>
+        </Actions>
+      </Item>
+    </Triggers>
+    <Actions>
+      <Item Type="GameLibrary.AddDoorComponent">
+        <Name>DoorComponent1001</Name>
+        <RunOnMapStart>true</RunOnMapStart>
+        <ItemId>1001</ItemId>
+        <OpenDistanceScale>0.6</OpenDistanceScale>
+        <IsDrawHint>false</IsDrawHint>
+        <IsDrawArrowHint>false</IsDrawArrowHint>
+        <IsFixOnOpen>true</IsFixOnOpen>
+        <ActionOnOpen Null="true" />
+        <IsStatic>true</IsStatic>
+      </Item>
+      <Item Type="GameLibrary.AIAdjustment">
+        <Name>AIAdjustment4002</Name>
+        <RunOnMapStart>true</RunOnMapStart>
+        <ItemId>4002</ItemId>
+        <Team>1</Team>
+        <ScanDistance>-1</ScanDistance>
+        <WeaponMaxAngleDeg>-1</WeaponMaxAngleDeg>
+        <FireAccuracy>1</FireAccuracy>
+        <IsVisibleForAutoAim>DoNotChange</IsVisibleForAutoAim>
+      </Item>
+      <Item Type="GameLibrary.CreateButton">
+        <Name>CreateButton1</Name>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Id>5001</Id>
+        <Position>16 4</Position>
+        <Path>16 2.75 16 1.5 26 1.5</Path>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <ActionPress>OpenDoor(1001)</ActionPress>
+        <ActionRelease>seqOnButtonRelease</ActionRelease>
+        <Subscribers>1002 4001</Subscribers>
+        <ButtonType>Button</ButtonType>
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>seqOnButtonRelease</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>CloseDoor(1001)</Item>
+          <Item>MoveCargoOrder</Item>
+        </Actions>
+        <TimeBetweenInSec>0</TimeBetweenInSec>
+      </Item>
+      <Item Type="GameLibrary.MoveCargoOrder">
+        <Name>MoveCargoOrder</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <OrderRemoveCondition>RemoveOnSuccess</OrderRemoveCondition>
+        <Position>16 4</Position>
+        <R>1.25</R>
+        <ItemId>4002</ItemId>
+        <CargoItemId>1002</CargoItemId>
+        <DropPosition>0 0</DropPosition>
+      </Item>
+      <Item Type="GameLibrary.CreateButton">
+        <Name>CreateButton2</Name>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Id>5003</Id>
+        <Position>24 4</Position>
+        <Path>24 5 24 8.5 28.5 8.5</Path>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <ActionPress>seqPressButton2</ActionPress>
+        <ActionRelease>CloseDoor(1003)</ActionRelease>
+        <Subscribers>1002 4001</Subscribers>
+        <ButtonType>Button</ButtonType>
+      </Item>
+      <Item Type="GameLibrary.AddDoorComponent">
+        <Name>DoorComponent1003</Name>
+        <RunOnMapStart>true</RunOnMapStart>
+        <ItemId>1003</ItemId>
+        <OpenDistanceScale>0.6</OpenDistanceScale>
+        <IsDrawHint>false</IsDrawHint>
+        <IsDrawArrowHint>false</IsDrawArrowHint>
+        <IsFixOnOpen>true</IsFixOnOpen>
+        <ActionOnOpen Null="true" />
+        <IsStatic>true</IsStatic>
+      </Item>
+      <Item Type="GameLibrary.AttachDestroyOnContact">
+        <Name>AttachDestroyOnContact1004</Name>
+        <Groups>
+          <Item>Attach</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <ItemId>1004</ItemId>
+        <Subscribers>4001</Subscribers>
+      </Item>
+      <Item Type="GameLibrary.SetWeapon">
+        <Name>GetMagnet</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <ItemId>4001</ItemId>
+        <NewWeapon>Default</NewWeapon>
+        <NewGadget>Link</NewGadget>
+        <ChangeSilently>false</ChangeSilently>
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>seqGetMagnet</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>GetMagnet</Item>
+          <Item>seqHighlightGadgetAndOff</Item>
+        </Actions>
+        <TimeBetweenInSec>0</TimeBetweenInSec>
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>seqTurretDestroy</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>ActivateEntity(1004)</Item>
+          <Item>AddFocusOnEntity(1004)</Item>
+        </Actions>
+        <TimeBetweenInSec>0.5</TimeBetweenInSec>
+      </Item>
+      <Item Type="GameLibrary.CreateTeleport">
+        <Name>CreateTeleport1</Name>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Id>5004</Id>
+        <Position>35.5 8.5</Position>
+        <TargetPosition>11.5 13</TargetPosition>
+        <Scale>1</Scale>
+        <Action Null="true" />
+        <Subscribers Null="true" />
+        <GenerateBackTeleport>true</GenerateBackTeleport>
+      </Item>
+      <Item Type="GameLibrary.CreateTeleport">
+        <Name>CreateTeleport2</Name>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Id>5005</Id>
+        <Position>7 16</Position>
+        <TargetPosition>30.5 27.5</TargetPosition>
+        <Scale>1</Scale>
+        <Action Null="true" />
+        <Subscribers Null="true" />
+        <GenerateBackTeleport>true</GenerateBackTeleport>
+      </Item>
+      <Item Type="GameLibrary.AddDoorComponent">
+        <Name>DoorComponent1026</Name>
+        <RunOnMapStart>true</RunOnMapStart>
+        <ItemId>1026</ItemId>
+        <OpenDistanceScale>1</OpenDistanceScale>
+        <IsDrawHint>false</IsDrawHint>
+        <IsDrawArrowHint>false</IsDrawArrowHint>
+        <IsFixOnOpen>true</IsFixOnOpen>
+        <ActionOnOpen>seqFinalDoorOpen</ActionOnOpen>
+        <IsStatic>true</IsStatic>
+      </Item>
+      <Item Type="GameLibrary.CreateButton">
+        <Name>CreateButton3</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Id>5006</Id>
+        <Position>28 22</Position>
+        <Path>29.2 22 30.5 22 30.5 17.5</Path>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <ActionPress>OpenDoor(1026)</ActionPress>
+        <Subscribers>1005 1021 1022 1023 1024 1025</Subscribers>
+        <ButtonType>Button</ButtonType>
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>seqFinalDoorOpen</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>DestroyEntity(2003)</Item>
+          <Item>ShowSuccess()</Item>
+          <Item>AddFocusOnEntity(4003)</Item>
+          <Item>MoveCargoFinal</Item>
+          <Item>ActivateTrigger(7)</Item>
+        </Actions>
+        <TimeBetweenInSec>0.5</TimeBetweenInSec>
+      </Item>
+      <Item Type="GameLibrary.MoveCargoOrder">
+        <Name>MoveCargoFinal</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <OrderRemoveCondition>RemoveOnSuccess</OrderRemoveCondition>
+        <Position>42.5 43</Position>
+        <R>1</R>
+        <ItemId>4003</ItemId>
+        <CargoItemId>1005</CargoItemId>
+        <DropPosition>0 0</DropPosition>
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>seqPressButton2</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>OpenDoor(1003)</Item>
+          <Item>HighlightControllerOff()</Item>
+        </Actions>
+        <TimeBetweenInSec>0</TimeBetweenInSec>
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>seqHighlightGadgetAndOff</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>HighlightControllerGadget()</Item>
+          <Item>AddFocusOnEntity(1002)</Item>
+          <Item>NA</Item>
+          <Item>HighlightControllerOff()</Item>
+          <Item>FocusOnEntity(4001)</Item>
+        </Actions>
+        <TimeBetweenInSec>1</TimeBetweenInSec>
+      </Item>
+    </Actions>
+    <Hints>
+      <Item>
+        <Id>2001</Id>
+        <Position>27.5 15.5</Position>
+        <Sprite>Hints\ArrowAnimation</Sprite>
+        <DirectionDeg>0</DirectionDeg>
+        <Animated>true</Animated>
+        <Timer>0</Timer>
+        <Scale>1</Scale>
+        <Area>25 14 5 3</Area>
+        <DrawOnUI>false</DrawOnUI>
+        <PulseAmount>1</PulseAmount>
+      </Item>
+      <Item>
+        <Id>2002</Id>
+        <Position>11.5 20.5</Position>
+        <Sprite>Entities\BoxPlaceholder</Sprite>
+        <DirectionDeg>0</DirectionDeg>
+        <Animated>false</Animated>
+        <Timer>0</Timer>
+        <Scale>1.75</Scale>
+        <Area>8 14 7 5</Area>
+        <DrawOnUI>true</DrawOnUI>
+        <PulseAmount>1</PulseAmount>
+      </Item>
+      <Item>
+        <Id>2003</Id>
+        <Position>28 22</Position>
+        <Sprite>Cars\SimpleBuggy\Border</Sprite>
+        <DirectionDeg>0</DirectionDeg>
+        <Animated>false</Animated>
+        <Timer>0</Timer>
+        <Scale>0.8</Scale>
+        <Area>24 24 8 7</Area>
+        <DrawOnUI>true</DrawOnUI>
+        <PulseAmount>1</PulseAmount>
+      </Item>
+    </Hints>
+    <CameraAttachToEnemyEnable>false</CameraAttachToEnemyEnable>
+  </Asset>
+</XnaContent>

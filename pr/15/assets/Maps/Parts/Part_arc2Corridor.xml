@@ -1,0 +1,100 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>Part_arc2Corridor</Name>
+    <GameMode>SinglePlayer</GameMode>
+    <Image>Maps\Parts\Part_arc2Corridor</Image>
+    <Scale>48</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>false</HaveOutlandVizualization>
+    <OutlandColorLT>FF000000</OutlandColorLT>
+    <OutlandColorRT>FF00BFFF</OutlandColorRT>
+    <OutlandColorRB>FFFFA500</OutlandColorRB>
+    <OutlandColorLB>FFFFFF00</OutlandColorLB>
+    <TargetTimeSec>0</TargetTimeSec>
+    <Friction>1</Friction>
+    <AmbientLight>0C0C0C0C</AmbientLight>
+    <Splash>MapDefault</Splash>
+    <LevelEffect>None</LevelEffect>
+    <CameraReadAccelerometer>true</CameraReadAccelerometer>
+    <Width>19</Width>
+    <Height>32</Height>
+    <Lights>
+      <Item>
+        <Position>14.5 9</Position>
+        <Color>EEA5D2FF</Color>
+        <R>22</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>14 23</Position>
+        <Color>EEC8EFFF</Color>
+        <R>22</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>4 6.5</Position>
+        <Color>D34169E1</Color>
+        <R>10</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+    </Lights>
+    <Players />
+    <Actions>
+      <Item Type="GameLibrary.MapPartPortal">
+        <Name>Portal</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>0 1 1 8</Area>
+        <AllowIn>true</AllowIn>
+        <AllowOut>true</AllowOut>
+      </Item>
+      <Item Type="GameLibrary.MapPartPortal">
+        <Name>Portal</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>0 23 1 8</Area>
+        <AllowIn>true</AllowIn>
+        <AllowOut>true</AllowOut>
+      </Item>
+      <Item Type="GameLibrary.MapPartSettings">
+        <Name>MapPartSettings</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <PartType>Corridor</PartType>
+        <EstimatedGameplayLength>0</EstimatedGameplayLength>
+        <ProbabilityRank>0.25</ProbabilityRank>
+        <DifficultyLevel>0</DifficultyLevel>
+      </Item>
+      <Item Type="GameLibrary.WallWithProbability">
+        <Name>WallWithProbability</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>6 6 3 2</Area>
+        <Color>80FF6A00</Color>
+        <Probability>0.3</Probability>
+        <WallGroup Null="true" />
+      </Item>
+      <Item Type="GameLibrary.WallWithProbability">
+        <Name>WallWithProbability</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>4 25 1 1</Area>
+        <Color>80FF6A00</Color>
+        <Probability>0.2</Probability>
+        <WallGroup Null="true" />
+      </Item>
+      <Item Type="GameLibrary.WallWithProbability">
+        <Name>WallWithProbability</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>11 25 2 2</Area>
+        <Color>80FF6A00</Color>
+        <Probability>0.2</Probability>
+        <WallGroup Null="true" />
+      </Item>
+      <Item Type="GameLibrary.WallWithProbability">
+        <Name>WallWithProbability</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>7 24 1 1</Area>
+        <Color>80FF6A00</Color>
+        <Probability>0.2</Probability>
+        <WallGroup Null="true" />
+      </Item>
+    </Actions>
+  </Asset>
+</XnaContent>

@@ -1,0 +1,672 @@
+<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>Wasteland</Name>
+    <GameMode>SinglePlayer</GameMode>
+    <Image></Image>
+    <Scale>64</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>true</HaveOutlandVizualization>
+    <OutlandColorLT>FF2a2a3a</OutlandColorLT>
+    <OutlandColorRT>FF3a2a2a</OutlandColorRT>
+    <OutlandColorRB>FF2a3a2a</OutlandColorRB>
+    <OutlandColorLB>FF3a3a2a</OutlandColorLB>
+    <TargetTimeSec>0</TargetTimeSec>
+    <Friction>1</Friction>
+    <MusicAmbient>7</MusicAmbient>
+    <MusicDynamic1>2_8</MusicDynamic1>
+    <AmbientLight>FF2a2a2a</AmbientLight>
+    <Splash>MapDefault</Splash>
+    <LevelEffect>None</LevelEffect>
+    <CameraReadAccelerometer>true</CameraReadAccelerometer>
+    <Width>128</Width>
+    <Height>24</Height>
+
+    <Lights>
+      <Item>
+        <Position>6.0 6.0</Position>
+        <Color>FFFFD700</Color>
+        <R>12</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0.2</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>15.0 8.0</Position>
+        <Color>FFFFA500</Color>
+        <R>10</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0.15</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>28.0 12.0</Position>
+        <Color>FFFF4500</Color>
+        <R>14</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0.2</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>42.0 6.0</Position>
+        <Color>FFFFFFFF</Color>
+        <R>16</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0.25</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>56.0 12.0</Position>
+        <Color>FF8B0000</Color>
+        <R>18</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0.3</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>64.0 18.0</Position>
+        <Color>FFDC143C</Color>
+        <R>14</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0.2</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>78.0 8.0</Position>
+        <Color>FF8A2BE2</Color>
+        <R>12</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0.15</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>92.0 14.0</Position>
+        <Color>FF00CED1</Color>
+        <R>14</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0.2</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>106.0 6.0</Position>
+        <Color>FFFF6347</Color>
+        <R>16</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0.25</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>120.0 12.0</Position>
+        <Color>FFFFD700</Color>
+        <R>20</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0.3</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>35.0 18.0</Position>
+        <Color>FF9370DB</Color>
+        <R>10</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0.1</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>85.0 20.0</Position>
+        <Color>FF32CD32</Color>
+        <R>12</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0.15</AdditiveRate>
+      </Item>
+    </Lights>
+
+    <Players>
+      <Item>
+        <Id>4000</Id>
+        <Name>Player1</Name>
+        <Position>6.0 12.0</Position>
+        <DirectionDeg>90</DirectionDeg>
+        <Control>Local</Control>
+        <CarName>SandBuggyNoGadget</CarName>
+      </Item>
+    </Players>
+
+    <SimpleCars>
+      <Item>
+        <Id>3000</Id>
+        <Position>18.0 8.0</Position>
+        <DirectionDeg>90</DirectionDeg>
+        <Control>AiChaser</Control>
+        <CarName>SimpleBuggy</CarName>
+      </Item>
+      <Item>
+        <Id>3001</Id>
+        <Position>32.0 16.0</Position>
+        <DirectionDeg>45</DirectionDeg>
+        <Control>AiSimpleTurret</Control>
+        <CarName>SimpleBuggy</CarName>
+      </Item>
+      <Item>
+        <Id>3002</Id>
+        <Position>48.0 10.0</Position>
+        <DirectionDeg>270</DirectionDeg>
+        <Control>AiChaser</Control>
+        <CarName>SimpleBuggy</CarName>
+      </Item>
+      <Item>
+        <Id>3003</Id>
+        <Position>62.0 18.0</Position>
+        <DirectionDeg>180</DirectionDeg>
+        <Control>AiSimpleTurret</Control>
+        <CarName>SimpleBuggy</CarName>
+      </Item>
+      <Item>
+        <Id>3004</Id>
+        <Position>76.0 8.0</Position>
+        <DirectionDeg>90</DirectionDeg>
+        <Control>AiChaser</Control>
+        <CarName>SimpleBuggy</CarName>
+      </Item>
+      <Item>
+        <Id>3005</Id>
+        <Position>95.0 14.0</Position>
+        <DirectionDeg>180</DirectionDeg>
+        <Control>AiSimpleTurret</Control>
+        <CarName>SimpleBuggy</CarName>
+      </Item>
+      <Item>
+        <Id>3006</Id>
+        <Position>110.0 10.0</Position>
+        <DirectionDeg>270</DirectionDeg>
+        <Control>AiChaser</Control>
+        <CarName>SimpleBuggy</CarName>
+      </Item>
+      <Item>
+        <Id>3007</Id>
+        <Position>118.0 16.0</Position>
+        <DirectionDeg>180</DirectionDeg>
+        <Control>AiSimpleTurret</Control>
+        <CarName>SimpleBuggy</CarName>
+      </Item>
+    </SimpleCars>
+
+    <Entities>
+      <Item>
+        <Id>1000</Id>
+        <Position>10.0 18.0</Position>
+        <Sprite>Entities\Box</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.5</Scale>
+        <DirectionDeg>90</DirectionDeg>
+        <Type>Box</Type>
+      </Item>
+      <Item>
+        <Id>1001</Id>
+        <Position>22.0 14.0</Position>
+        <Sprite>Entities\HeavyBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.2</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>HeavyBox</Type>
+      </Item>
+      <Item>
+        <Id>1002</Id>
+        <Position>38.0 20.0</Position>
+        <Sprite>Entities\DamagableBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.0</Scale>
+        <DirectionDeg>45</DirectionDeg>
+        <Type>Box</Type>
+      </Item>
+      <Item>
+        <Id>1003</Id>
+        <Position>52.0 16.0</Position>
+        <Sprite>Entities\Box</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.8</Scale>
+        <DirectionDeg>90</DirectionDeg>
+        <Type>Box</Type>
+      </Item>
+      <Item>
+        <Id>1004</Id>
+        <Position>68.0 10.0</Position>
+        <Sprite>Entities\HeavyBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.5</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>HeavyBox</Type>
+      </Item>
+      <Item>
+        <Id>1005</Id>
+        <Position>82.0 18.0</Position>
+        <Sprite>Entities\DamagableBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.2</Scale>
+        <DirectionDeg>270</DirectionDeg>
+        <Type>Box</Type>
+      </Item>
+      <Item>
+        <Id>1006</Id>
+        <Position>98.0 8.0</Position>
+        <Sprite>Entities\Box</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.0</Scale>
+        <DirectionDeg>180</DirectionDeg>
+        <Type>Box</Type>
+      </Item>
+      <Item>
+        <Id>1007</Id>
+        <Position>115.0 20.0</Position>
+        <Sprite>Entities\HeavyBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>2.0</Scale>
+        <DirectionDeg>90</DirectionDeg>
+        <Type>HeavyBox</Type>
+      </Item>
+      <Item>
+        <Id>1008</Id>
+        <Position>8.0 4.0</Position>
+        <Sprite>Cars\Buggy\Destroyed1</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.0</Scale>
+        <DirectionDeg>45</DirectionDeg>
+        <Type>Box</Type>
+      </Item>
+      <Item>
+        <Id>1009</Id>
+        <Position>12.0 20.0</Position>
+        <Sprite>Cars\Buggy\Destroyed2</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.9</Scale>
+        <DirectionDeg>135</DirectionDeg>
+        <Type>Box</Type>
+      </Item>
+      <Item>
+        <Id>1010</Id>
+        <Position>25.0 6.0</Position>
+        <Sprite>Cars\Truck\Destroyed1</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.1</Scale>
+        <DirectionDeg>90</DirectionDeg>
+        <Type>Box</Type>
+      </Item>
+      <Item>
+        <Id>1011</Id>
+        <Position>28.0 18.0</Position>
+        <Sprite>Cars\Truck\Destroyed2</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.0</Scale>
+        <DirectionDeg>180</DirectionDeg>
+        <Type>Box</Type>
+      </Item>
+      <Item>
+        <Id>1012</Id>
+        <Position>42.0 4.0</Position>
+        <Sprite>Cars\HoverScout\Destroyed1</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.8</Scale>
+        <DirectionDeg>270</DirectionDeg>
+        <Type>Box</Type>
+      </Item>
+      <Item>
+        <Id>1013</Id>
+        <Position>45.0 20.0</Position>
+        <Sprite>Cars\HoverScout\Destroyed2</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.9</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Box</Type>
+      </Item>
+      <Item>
+        <Id>1014</Id>
+        <Position>58.0 8.0</Position>
+        <Sprite>Cars\Scout\Destroyed1</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.0</Scale>
+        <DirectionDeg>90</DirectionDeg>
+        <Type>Box</Type>
+      </Item>
+      <Item>
+        <Id>1015</Id>
+        <Position>60.0 20.0</Position>
+        <Sprite>Cars\Scout\Destroyed2</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.95</Scale>
+        <DirectionDeg>180</DirectionDeg>
+        <Type>Box</Type>
+      </Item>
+      <Item>
+        <Id>1016</Id>
+        <Position>72.0 6.0</Position>
+        <Sprite>Cars\Turret\Destroyed1</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.1</Scale>
+        <DirectionDeg>45</DirectionDeg>
+        <Type>Box</Type>
+      </Item>
+      <Item>
+        <Id>1017</Id>
+        <Position>75.0 18.0</Position>
+        <Sprite>Cars\Turret\Destroyed2</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.0</Scale>
+        <DirectionDeg>135</DirectionDeg>
+        <Type>Box</Type>
+      </Item>
+      <Item>
+        <Id>1018</Id>
+        <Position>88.0 10.0</Position>
+        <Sprite>Cars\Buggy\Destroyed1</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.85</Scale>
+        <DirectionDeg>270</DirectionDeg>
+        <Type>Box</Type>
+      </Item>
+      <Item>
+        <Id>1019</Id>
+        <Position>92.0 20.0</Position>
+        <Sprite>Cars\Buggy\Destroyed2</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.9</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Box</Type>
+      </Item>
+      <Item>
+        <Id>1020</Id>
+        <Position>105.0 6.0</Position>
+        <Sprite>Cars\Truck\Destroyed1</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.2</Scale>
+        <DirectionDeg>90</DirectionDeg>
+        <Type>Box</Type>
+      </Item>
+      <Item>
+        <Id>1021</Id>
+        <Position>108.0 18.0</Position>
+        <Sprite>Cars\Truck\Destroyed2</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.0</Scale>
+        <DirectionDeg>180</DirectionDeg>
+        <Type>Box</Type>
+      </Item>
+      <Item>
+        <Id>1022</Id>
+        <Position>122.0 8.0</Position>
+        <Sprite>Cars\HoverScout\Destroyed1</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.75</Scale>
+        <DirectionDeg>270</DirectionDeg>
+        <Type>Box</Type>
+      </Item>
+      <Item>
+        <Id>1023</Id>
+        <Position>125.0 16.0</Position>
+        <Sprite>Cars\HoverScout\Destroyed2</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.85</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Box</Type>
+      </Item>
+      <Item>
+        <Id>1024</Id>
+        <Position>15.0 10.0</Position>
+        <Sprite>Cars\TurretStat\Destroyed1</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.0</Scale>
+        <DirectionDeg>90</DirectionDeg>
+        <Type>Box</Type>
+      </Item>
+      <Item>
+        <Id>1025</Id>
+        <Position>35.0 14.0</Position>
+        <Sprite>Cars\TurretStat\Destroyed2</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.9</Scale>
+        <DirectionDeg>180</DirectionDeg>
+        <Type>Box</Type>
+      </Item>
+      <Item>
+        <Id>1026</Id>
+        <Position>55.0 20.0</Position>
+        <Sprite>Cars\Buggy\Destroyed1</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.1</Scale>
+        <DirectionDeg>45</DirectionDeg>
+        <Type>Box</Type>
+      </Item>
+      <Item>
+        <Id>1027</Id>
+        <Position>80.0 12.0</Position>
+        <Sprite>Cars\Buggy\Destroyed2</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.95</Scale>
+        <DirectionDeg>135</DirectionDeg>
+        <Type>Box</Type>
+      </Item>
+      <Item>
+        <Id>1028</Id>
+        <Position>100.0 16.0</Position>
+        <Sprite>Cars\Scout\Destroyed1</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.0</Scale>
+        <DirectionDeg>270</DirectionDeg>
+        <Type>Box</Type>
+      </Item>
+      <Item>
+        <Id>1029</Id>
+        <Position>4.0 10.0</Position>
+        <Sprite>Entities\Coin</Sprite>
+        <Animated>true</Animated>
+        <Scale>1.0</Scale>
+        <DirectionDeg>90</DirectionDeg>
+        <Type>Coin</Type>
+      </Item>
+      <Item>
+        <Id>1030</Id>
+        <Position>20.0 20.0</Position>
+        <Sprite>Entities\Coin</Sprite>
+        <Animated>true</Animated>
+        <Scale>1.0</Scale>
+        <DirectionDeg>90</DirectionDeg>
+        <Type>Coin</Type>
+      </Item>
+      <Item>
+        <Id>1031</Id>
+        <Position>50.0 8.0</Position>
+        <Sprite>Entities\Coin</Sprite>
+        <Animated>true</Animated>
+        <Scale>1.0</Scale>
+        <DirectionDeg>90</DirectionDeg>
+        <Type>Coin</Type>
+      </Item>
+      <Item>
+        <Id>1032</Id>
+        <Position>70.0 16.0</Position>
+        <Sprite>Entities\Coin</Sprite>
+        <Animated>true</Animated>
+        <Scale>1.0</Scale>
+        <DirectionDeg>90</DirectionDeg>
+        <Type>Coin</Type>
+      </Item>
+      <Item>
+        <Id>1033</Id>
+        <Position>90.0 10.0</Position>
+        <Sprite>Entities\Coin</Sprite>
+        <Animated>true</Animated>
+        <Scale>1.0</Scale>
+        <DirectionDeg>90</DirectionDeg>
+        <Type>Coin</Type>
+      </Item>
+      <Item>
+        <Id>1034</Id>
+        <Position>112.0 18.0</Position>
+        <Sprite>Entities\Coin</Sprite>
+        <Animated>true</Animated>
+        <Scale>1.0</Scale>
+        <DirectionDeg>90</DirectionDeg>
+        <Type>Coin</Type>
+      </Item>
+      <Item>
+        <Id>1035</Id>
+        <Position>124.0 12.0</Position>
+        <Sprite>Entities\GearStar</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.2</Scale>
+        <DirectionDeg>90</DirectionDeg>
+        <Type>Coin</Type>
+      </Item>
+      <Item>
+        <Id>1036</Id>
+        <Position>30.0 10.0</Position>
+        <Sprite>Gadget\Bomb</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.0</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Bomb</Type>
+      </Item>
+      <Item>
+        <Id>1037</Id>
+        <Position>65.0 14.0</Position>
+        <Sprite>Gadget\Bomb</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.0</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Bomb</Type>
+      </Item>
+      <Item>
+        <Id>1038</Id>
+        <Position>100.0 8.0</Position>
+        <Sprite>Gadget\Bomb</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.0</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Bomb</Type>
+      </Item>
+      <Item>
+        <Id>1039</Id>
+        <Position>18.0 16.0</Position>
+        <Sprite>Cars\HoverScout\Wheel</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.5</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Box</Type>
+      </Item>
+      <Item>
+        <Id>1040</Id>
+        <Position>48.0 18.0</Position>
+        <Sprite>Cars\HoverScout\Wheel</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.8</Scale>
+        <DirectionDeg>45</DirectionDeg>
+        <Type>Box</Type>
+      </Item>
+      <Item>
+        <Id>1041</Id>
+        <Position>78.0 14.0</Position>
+        <Sprite>Cars\HoverScout\Wheel</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.6</Scale>
+        <DirectionDeg>90</DirectionDeg>
+        <Type>Box</Type>
+      </Item>
+      <Item>
+        <Id>1042</Id>
+        <Position>108.0 14.0</Position>
+        <Sprite>Cars\HoverScout\Wheel</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.7</Scale>
+        <DirectionDeg>135</DirectionDeg>
+        <Type>Box</Type>
+      </Item>
+    </Entities>
+
+    <Triggers>
+      <Item>
+        <Id>1</Id>
+        <Area>120 10 8 14</Area>
+        <Amount>1</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>ShowSuccess()</Item>
+        </Actions>
+      </Item>
+      <Item>
+        <Id>2</Id>
+        <Area>40 0 20 24</Area>
+        <Amount>1</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>SpawnEnemy3008</Item>
+        </Actions>
+      </Item>
+      <Item>
+        <Id>3</Id>
+        <Area>80 0 20 24</Area>
+        <Amount>1</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>SpawnEnemy3009</Item>
+        </Actions>
+      </Item>
+    </Triggers>
+
+    <Actions>
+      <Item Type="GameLibrary.CloneObject">
+        <Name>SpawnEnemy3008</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>40 12 1 1</Area>
+        <ItemId>3002</ItemId>
+        <TargetIds>3008</TargetIds>
+        <Count>1</Count>
+        <IsUseRelativePosition>false</IsUseRelativePosition>
+        <RelativeByItem>0</RelativeByItem>
+      </Item>
+      <Item Type="GameLibrary.CloneObject">
+        <Name>SpawnEnemy3009</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>80 12 1 1</Area>
+        <ItemId>3004</ItemId>
+        <TargetIds>3009</TargetIds>
+        <Count>1</Count>
+        <IsUseRelativePosition>false</IsUseRelativePosition>
+        <RelativeByItem>0</RelativeByItem>
+      </Item>
+    </Actions>
+
+    <Hints>
+      <Item>
+        <Id>2000</Id>
+        <Position>6.0 10.0</Position>
+        <Sprite>Hints\ArrowAnimation</Sprite>
+        <DirectionDeg>90</DirectionDeg>
+        <Animated>true</Animated>
+        <Timer>0</Timer>
+        <Scale>1</Scale>
+        <Area>6 10 0 0</Area>
+        <DrawOnUI>false</DrawOnUI>
+        <PulseAmount>1</PulseAmount>
+      </Item>
+      <Item>
+        <Id>2001</Id>
+        <Position>124.0 10.0</Position>
+        <Sprite>Hints\ArrowAnimation2</Sprite>
+        <DirectionDeg>270</DirectionDeg>
+        <Animated>true</Animated>
+        <Timer>0</Timer>
+        <Scale>1</Scale>
+        <Area>124 10 0 0</Area>
+        <DrawOnUI>false</DrawOnUI>
+        <PulseAmount>1</PulseAmount>
+      </Item>
+    </Hints>
+
+    <CharMapDictionary>
+*:#FF3a3a3a;*:#FF4a4a4a;.:#10101010;D:#102a2a2a;W:#FF5a5a5a;C:#103a3a3a;
+    </CharMapDictionary>
+    <CharMap>
+********************************************************************************************************************************
+*..............D........D........D........D........D........D........D........D........D........D........D........D...........*
+*.............DDD.......D.......DDD.......D.......DDD.......D.......DDD.......D.......DDD.......D.......DDD.......D..........*
+*..............D........D........D........D........D........D........D........D........D........D........D........D..........*
+*............................................................................................................................*
+*............................................................................................................................*
+*....W.................................................W.................................................W...................*
+*............................................................................................................................*
+*............................................................................................................................*
+*..............D........D........D........D........D........D........D........D........D........D........D........D..........*
+*.............DDD.......D.......DDD.......D.......DDD.......D.......DDD.......D.......DDD.......D.......DDD.......D..........*
+*..............D........D........D........D........D........D........D........D........D........D........D........D..........*
+********************************************************************************************************************************
+    </CharMap>
+
+  </Asset>
+</XnaContent>

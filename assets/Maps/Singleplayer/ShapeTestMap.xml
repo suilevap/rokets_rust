@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>ShapeTestMap</Name>
+    <GameMode>SinglePlayer</GameMode>
+    <Image>Particles\Smoke</Image>
+    <Scale>48</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>false</HaveOutlandVizualization>
+    <OutlandColorLT>FF000000</OutlandColorLT>
+    <OutlandColorRT>FF00BFFF</OutlandColorRT>
+    <OutlandColorRB>FFFFA500</OutlandColorRB>
+    <OutlandColorLB>FFFFFF00</OutlandColorLB>
+    <TargetTimeSec>0</TargetTimeSec>
+    <Friction>1</Friction>
+    <AmbientLight>0C0C0C0C</AmbientLight>
+    <Splash>MapDefault</Splash>
+    <LevelEffect>None</LevelEffect>
+    <CameraReadAccelerometer>true</CameraReadAccelerometer>
+    <Width>32</Width>
+    <Height>32</Height>
+    <Players Null="true" />
+    <SimpleCars />
+    <Entities />
+    <Actions>
+      <Item Type="GameLibrary.TrinagleVertex">
+        <Name>Vertex</Name>
+        <Groups>
+          <Item>Triangle</Item>
+        </Groups>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Position>3 26</Position>
+        <Color>FFFFFFFF</Color>
+      </Item>
+      <Item Type="GameLibrary.TrinagleVertex">
+        <Name>Vertex</Name>
+        <Groups>
+          <Item>Triangle</Item>
+        </Groups>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Position>6 3</Position>
+        <Color>FFFFFFFF</Color>
+      </Item>
+      <Item Type="GameLibrary.TrinagleVertex">
+        <Name>Vertex</Name>
+        <Groups>
+          <Item>Triangle</Item>
+        </Groups>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Position>28 4.5</Position>
+        <Color>FFFFFFFF</Color>
+      </Item>
+      <Item Type="GameLibrary.TrinagleVertex">
+        <Name>Vertex</Name>
+        <Groups>
+          <Item>Triangle</Item>
+        </Groups>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Position>27.5 28.5</Position>
+        <Color>FFFFFFFF</Color>
+      </Item>
+    </Actions>
+  </Asset>
+</XnaContent>

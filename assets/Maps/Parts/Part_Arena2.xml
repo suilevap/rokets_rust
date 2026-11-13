@@ -1,0 +1,145 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>Part_Arena2</Name>
+    <GameMode>SinglePlayer</GameMode>
+    <Image>Maps\Parts\Part_Arena2</Image>
+    <Scale>48</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>false</HaveOutlandVizualization>
+    <OutlandColorLT>FF000000</OutlandColorLT>
+    <OutlandColorRT>FF00BFFF</OutlandColorRT>
+    <OutlandColorRB>FFFFA500</OutlandColorRB>
+    <OutlandColorLB>FFFFFF00</OutlandColorLB>
+    <TargetTimeSec>0</TargetTimeSec>
+    <Friction>1</Friction>
+    <AmbientLight>0C0C0C0C</AmbientLight>
+    <Splash>MapDefault</Splash>
+    <LevelEffect>None</LevelEffect>
+    <CameraReadAccelerometer>true</CameraReadAccelerometer>
+    <Width>24</Width>
+    <Height>24</Height>
+    <Lights>
+      <Item>
+        <Position>11.583333 9.833333</Position>
+        <Color>EAFFFFC4</Color>
+        <R>23</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>19 19</Position>
+        <Color>FFBDB76B</Color>
+        <R>7</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>10 21.5</Position>
+        <Color>FFBDB76B</Color>
+        <R>7</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+      </Item>
+    </Lights>
+    <Players>
+      <Item>
+        <Id>4001</Id>
+        <Name>Player1</Name>
+        <Position>3.83333325 15.875</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>Local</Control>
+        <CarName>SandBuggyMinigun</CarName>
+        <IsPrototype>true</IsPrototype>
+      </Item>
+    </Players>
+    <Actions>
+      <Item Type="GameLibrary.MapPartPortal">
+        <Name>Portal</Name>
+        <Groups>
+          <Item>Merge</Item>
+        </Groups>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>0 15 1 6</Area>
+        <AllowIn>true</AllowIn>
+        <AllowOut>true</AllowOut>
+      </Item>
+      <Item Type="GameLibrary.MapPartPortal">
+        <Name>Portal</Name>
+        <Groups>
+          <Item>Merge</Item>
+        </Groups>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>23 15 1 6</Area>
+        <AllowIn>true</AllowIn>
+        <AllowOut>true</AllowOut>
+      </Item>
+      <Item Type="GameLibrary.EnemySpawnArea">
+        <Name>EnemySpawnArea</Name>
+        <Groups>
+          <Item>Merge</Item>
+        </Groups>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>8 3 7 7</Area>
+      </Item>
+      <Item Type="GameLibrary.TriggerWithPeriodicCheck">
+        <Name>TriggerWithPeriodicCheck</Name>
+        <Groups>
+          <Item>Merge</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Actions>
+          <Item>EnemySpawnArea</Item>
+        </Actions>
+        <Area>-9 0 40 24</Area>
+      </Item>
+      <Item Type="GameLibrary.WallWithProbability">
+        <Name>WallWithProbability</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>4 4 2 2</Area>
+        <Color>91872D2F</Color>
+        <Probability>0.5</Probability>
+        <WallGroup Null="true" />
+      </Item>
+      <Item Type="GameLibrary.WallWithProbability">
+        <Name>WallWithProbability</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>18 4 2 2</Area>
+        <Color>91872D2F</Color>
+        <Probability>0.5</Probability>
+        <WallGroup Null="true" />
+      </Item>
+      <Item Type="GameLibrary.MapPartPortal">
+        <Name>Portal</Name>
+        <Groups>
+          <Item>Merge</Item>
+        </Groups>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>23 3 1 6</Area>
+        <AllowIn>true</AllowIn>
+        <AllowOut>true</AllowOut>
+      </Item>
+      <Item Type="GameLibrary.WallWithProbability">
+        <Name>WallWithProbability</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>16 14 2 2</Area>
+        <Color>91872D2F</Color>
+        <Probability>0.5</Probability>
+        <WallGroup Null="true" />
+      </Item>
+      <Item Type="GameLibrary.WallWithProbability">
+        <Name>WallWithProbability</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>6 18 2 3</Area>
+        <Color>91872D2F</Color>
+        <Probability>0.5</Probability>
+        <WallGroup Null="true" />
+      </Item>
+      <Item Type="GameLibrary.WallWithProbability">
+        <Name>WallWithProbability</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>12 13 1 10</Area>
+        <Color>91872D2F</Color>
+        <Probability>0.95</Probability>
+        <WallGroup Null="true" />
+      </Item>
+    </Actions>
+  </Asset>
+</XnaContent>
