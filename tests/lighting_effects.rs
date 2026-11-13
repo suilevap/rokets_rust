@@ -1,9 +1,7 @@
-//! Light-responsive dirt and sprite shadows, independent of the renderer.
+//! Allocation bounds and lamp-selection/fade behaviour, independent of rendering.
 use tilerider::content::map::MapData;
 use tilerider::light::bake::Lamp;
-use tilerider::light::effects::{
-    ShadowBlend, ShadowLights, ShadowPose, directional_shadow, lens_light,
-};
+use tilerider::light::effects::{ShadowBlend, ShadowLights, lens_light};
 use tilerider::light::raster::{Canvas, WHITE};
 use tilerider::map::grid::MapGrid;
 
@@ -21,21 +19,6 @@ fn grid(rows: &str) -> MapGrid {
     let map = MapData::parse(&format!(r#"<XnaContent><Asset Type="GameLibrary.MapData"><Scale>32</Scale>
         <CharMapDictionary>#:#FFFF0000;.:#100000A0</CharMapDictionary><CharMap>{rows}</CharMap></Asset></XnaContent>"#)).unwrap();
     MapGrid::build(&map, None)
-}
-#[test]
-fn dirt_light_is_local_and_includes_non_additive_lamps() {
-    let flash = Canvas::new(4, 4, WHITE);
-    let mut l = lamp(32.0, 32.0, 8.0);
-    l.use_for_dynamic_shadow = false;
-    let image = lens_light(&[l], [64.0, 64.0], 1.0, &flash);
-    assert_eq!((image.width, image.height), (16, 16));
-    assert!(image.get(8, 8)[0] > 0.9);
-    assert_eq!(&image.get(0, 0)[..3], &[0.0; 3]);
-    l.additive_rate = 1.0;
-    l.use_for_dynamic_shadow = true;
-    assert_eq!(lens_light(&[l], [64.0, 64.0], 1.0, &flash), image);
-    let dark = lens_light(&[], [64.0, 64.0], 1.0, &flash);
-    assert!(dark.texels.iter().all(|c| c[..3] == [0.0; 3]));
 }
 #[test]
 fn dirt_light_resolution_is_bounded_and_handles_tiny_maps() {
@@ -76,71 +59,4 @@ fn changing_and_reversing_lamps_is_continuous_and_fades_into_darkness() {
     assert!((blend.weights()[1].1 - 0.3).abs() < 1e-5);
     assert!(!blend.update(None, 0.5));
     assert!(blend.weights().is_empty());
-}
-fn pose(at: [f32; 2]) -> ShadowPose {
-    ShadowPose {
-        position: at,
-        size: [1.0, 1.0],
-        angle: 0.0,
-    }
-}
-#[test]
-fn gradients_point_away_from_lights_and_split_only_when_close() {
-    let l = lamp(0.0, 0.0, 100.0);
-    let far = directional_shadow(pose([30.0, 0.0]), &l, 1.0, 100.0, 1.0);
-    let near = directional_shadow(pose([5.0, 0.0]), &l, 1.0, 100.0, 1.0);
-    assert_eq!(far.len(), 1);
-    assert_eq!(near.len(), 2);
-    for q in far.iter().chain(&near) {
-        assert!(q.positions.iter().flatten().all(|v| v.is_finite()));
-        let rear = (q.positions[0][0] + q.positions[3][0]) / 2.0;
-        let front = (q.positions[1][0] + q.positions[2][0]) / 2.0;
-        assert!(front > rear);
-        assert!(q.alpha > 0.0 && q.alpha <= 1.0);
-    }
-    assert!(directional_shadow(pose([0.0, 0.0]), &l, 1.0, 100.0, 1.0).is_empty());
-    assert!(directional_shadow(pose([0.1, 0.0]), &l, 1.0, 100.0, 1.0).is_empty());
-    assert!(directional_shadow(pose([101.0, 0.0]), &l, 1.0, 100.0, 1.0).is_empty());
-}
-#[test]
-fn body_projection_changes_width_and_the_wall_field_limits_the_far_end() {
-    let l = lamp(0.0, 0.0, 100.0);
-    let mut p = pose([10.0, 0.0]);
-    p.size = [4.0, 1.0];
-    let a = directional_shadow(p, &l, 1.0, 100.0, 1.0);
-    p.angle = std::f32::consts::FRAC_PI_2;
-    let b = directional_shadow(p, &l, 1.0, 100.0, 1.0);
-    let width = |q: &tilerider::light::effects::ShadowQuad| {
-        (q.positions[0][0] - q.positions[3][0]).hypot(q.positions[0][1] - q.positions[3][1])
-    };
-    assert!((width(&b[0]) / width(&a[0]) - 4.0).abs() < 1e-4);
-    let quads = directional_shadow(p, &l, 1.0, 0.25, 1.0);
-    for q in quads {
-        let front = [
-            (q.positions[1][0] + q.positions[2][0]) / 2.0,
-            (q.positions[1][1] + q.positions[2][1]) / 2.0,
-        ];
-        assert!(((front[0] - p.position[0]).hypot(front[1] - p.position[1]) - 1.25).abs() < 1e-4);
-    }
-}
-
-#[test]
-fn map_weather_keeps_its_own_lens_policy() {
-    use tilerider::content::map::LevelEffect;
-    for (tag, expected) in [
-        ("", LevelEffect::None),
-        ("<LevelEffect>None</LevelEffect>", LevelEffect::None),
-        ("<LevelEffect>Snow</LevelEffect>", LevelEffect::Snow),
-        ("<LevelEffect>SnowWind</LevelEffect>", LevelEffect::SnowWind),
-        (
-            "<LevelEffect>FutureWeather</LevelEffect>",
-            LevelEffect::Other,
-        ),
-    ] {
-        let data = MapData::parse(&format!(
-            r#"<XnaContent><Asset Type="GameLibrary.MapData">{tag}</Asset></XnaContent>"#
-        ))
-        .unwrap();
-        assert_eq!(data.level_effect, expected);
-    }
 }

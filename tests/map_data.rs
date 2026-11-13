@@ -69,3 +69,24 @@ fn entity_types_parse_and_unknown_ones_are_kept_apart() {
     assert_eq!(kind(""), EntityType::Box, "Box when absent, as in C#");
     assert_eq!(kind("<Type>Spaceship</Type>"), EntityType::Unknown);
 }
+
+#[test]
+fn weather_styles_parse_with_default_and_unknown_values() {
+    use tilerider::content::map::LevelEffect;
+    for (tag, expected) in [
+        ("", LevelEffect::None),
+        ("<LevelEffect>None</LevelEffect>", LevelEffect::None),
+        ("<LevelEffect>Snow</LevelEffect>", LevelEffect::Snow),
+        ("<LevelEffect>SnowWind</LevelEffect>", LevelEffect::SnowWind),
+        (
+            "<LevelEffect>FutureWeather</LevelEffect>",
+            LevelEffect::Other,
+        ),
+    ] {
+        let data = MapData::parse(&format!(
+            r#"<XnaContent><Asset Type="GameLibrary.MapData">{tag}</Asset></XnaContent>"#
+        ))
+        .unwrap();
+        assert_eq!(data.level_effect, expected);
+    }
+}

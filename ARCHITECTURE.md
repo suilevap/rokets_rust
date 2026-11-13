@@ -36,6 +36,7 @@ main
 | `render/lines` | Reusable unlit 3D ribbon renderer: `LineMeshBuilder` batches arbitrary segments with per-segment world width and optional fixed quads; `LineMaterial` controls colour/opacity and camera offset. Two triangles per segment, expanded on the GPU using the segment axis and current view. Independent of maps and the world up direction; see `cargo run --example lines` | Generalised from `LinePrimitive` |
 | `render/additive_light` | The additive (HDR) light of lamps with an `AdditiveRate`, laid over the map with an additive blend and no depth test (over walls and cars, as C#); shown by `rate²` (boosted ×2 for Bevy's linear blending against XNA's sRGB sums) where `rate` eases (0.75/s) towards `1 − min(v / 0.2, 1)`, `v` the additive light where the camera looks: the eye adapting to the dark. A standard unlit material whose extension only turns off the depth test | `LightManager` (`IgnoreDepthWorldAdditive`), `HdrHelper` |
 | `light/effects` | Shadowless, bounded-resolution lamp image for dirty glass; cached visible shadow lamp per floor cell, with strong overlap suppression. Half-second reversible lamp fades and projected gradient-shadow geometry, limited by the wall distance field | `DirtyLensEffectAdvanced`, `LightManager.GetStaticLightInfo`, `DynamicShadow` |
+| `render/effect_assets` | Renderer-owned typed texture handles, loaded once and kept across maps. Effect paths and linear sampling are declared here; game loading only collects map/car sprites. Bevy prepares each material once its images are ready | content pipeline |
 | `render/lighting_effects` | Original dirty-glass and corner textures, one fullscreen pass before HUD. Current view unprojects pixels onto the baked lens light; dirt stays in screen space and is cropped without stretching. Modulate2X/additive lens plus vignette; dirty glass follows `LevelEffect=None`, with snow styles reserved for weather effects. `effects=0` disables the new effects, `lens` adjusts dirt strength | `DirtyLensEffectDualTexture`, `World.ViewDarkCorners` |
 | `render/shadows` | Objects tagged `ShadowCaster`: a soft contact blob and one/two gradients away from the selected lamp, in two shared meshes/materials for the whole map. Rebuilds only for pose/size changes, removals or light hand-over; walls occlude shadows through regular depth testing | `DynamicShadow` |
 | `render/outland` | Four vertex-coloured quads, a funnel under and around the map that shows between the tiles and past the walls: background colour at the inner edge 32 units down, the map's four `OutlandColor*` at the outer edge 32 units up | `OutlandPrimitive` |
@@ -78,6 +79,10 @@ main
 - Tests are never in the same file as the code: public behaviour is
   tested in `tests/`, private details in a separate `tests.rs` next to the
   module (see `CLAUDE.md`).
+- Unit tests cover logic such as lamp selection, fade transitions and
+  allocation bounds. Judge visual effects by screenshots and driving in
+  native/WebGL builds; mesh-layout and pixel assertions do not establish
+  that an effect looks right.
 
 ## Not ported yet
 

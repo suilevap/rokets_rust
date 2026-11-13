@@ -84,8 +84,7 @@ struct Pending {
 
 /// The sprite names a map needs: its player car's parts and its drawn entities.
 fn sprites_for(map: &MapData, cars: &CarCatalog) -> Vec<String> {
-    let mut names: Vec<String> = ["DirtyGlass", "DarkCorners", "Gradient4Pixel", "Gradient4PixelUniform"]
-        .into_iter().map(str::to_owned).collect();
+    let mut names: Vec<String> = Vec::new();
     for player in map.players.iter() {
         if let Some(car) = cars.get(&player.car_name) {
             names.extend(car.base_sprite());
@@ -196,11 +195,7 @@ fn poll_loading(
                 for name in sprites_for(&p.0, &p.1) {
                     match assets::sprite_path(&name) {
                         Some(path) => {
-                            let handle = if ["DirtyGlass", "DarkCorners", "Gradient4Pixel", "Gradient4PixelUniform"].contains(&name.as_str()) {
-                                server.load_builder().with_settings(|s: &mut ImageLoaderSettings| {
-                                    s.sampler = bevy::image::ImageSampler::linear();
-                                }).load(path)
-                            } else { server.load(path) };
+                            let handle = server.load(path);
                             pending.sprites.push((name, handle));
                         }
                         None => warn!("sprite {name:?} not found"),

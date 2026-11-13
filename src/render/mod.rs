@@ -8,6 +8,7 @@
 pub mod additive_light;
 pub mod animate;
 pub mod camera;
+mod effect_assets;
 pub mod layers;
 pub mod light_layer;
 pub mod lighting_effects;
@@ -30,7 +31,8 @@ impl Plugin for RenderPlugin {
         // `Renderer.Draw` clears to the background colour; it shows past
         // the outland's rim.
         let [r, g, b] = map_mesh::BACKGROUND;
-        app.insert_resource(ClearColor(Color::srgb(r, g, b)))
+        app.init_resource::<effect_assets::EffectTextures>()
+            .insert_resource(ClearColor(Color::srgb(r, g, b)))
             .add_plugins((
                 camera::CameraPlugin,
                 sprite::SpritePlugin,

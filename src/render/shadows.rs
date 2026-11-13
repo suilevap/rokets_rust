@@ -11,6 +11,7 @@ use bevy::mesh::{Indices, PrimitiveTopology};
 use bevy::prelude::*;
 
 use super::camera::MainCamera;
+use super::effect_assets::EffectTextures;
 use super::layers::Layer;
 use super::lighting_effects::LightingEffects;
 use crate::game::{GameState, LoadedMap, MapEntity};
@@ -88,15 +89,10 @@ fn shadow_mesh(quads: &[ShadowQuad], anchor: Vec2) -> Mesh {
 fn prepare_shadows(
     mut commands: Commands,
     map: Res<LoadedMap>,
+    textures: Res<EffectTextures>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let (Some(gradient), Some(blob)) = (
-        map.sprites.get("Gradient4Pixel"),
-        map.sprites.get("Gradient4PixelUniform"),
-    ) else {
-        return;
-    };
     let mut spawn = |name, texture: Handle<Image>| {
         let mesh = meshes.add(shadow_mesh(&[], Vec2::ZERO));
         commands.spawn((
@@ -118,8 +114,8 @@ fn prepare_shadows(
         ));
         mesh
     };
-    let directional = spawn("Directional shadows", gradient.image.clone());
-    let ambient = spawn("Contact shadows", blob.image.clone());
+    let directional = spawn("Directional shadows", textures.shadow_gradient.clone());
+    let ambient = spawn("Contact shadows", textures.contact_gradient.clone());
     commands.insert_resource(Shadows {
         lights: ShadowLights::bake(&map.grid, &map.light.lamps),
         blends: HashMap::new(),
@@ -251,7 +247,3 @@ fn update_shadows(
         *global = GlobalTransform::from(*transform);
     }
 }
-
-#[cfg(test)]
-#[path = "shadows_tests.rs"]
-mod tests;

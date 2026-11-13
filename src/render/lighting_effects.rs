@@ -14,6 +14,7 @@ use bevy::render::render_resource::{
 };
 use bevy::shader::ShaderRef;
 
+use super::effect_assets::EffectTextures;
 use super::layers::SCREEN_EFFECT_DEPTH_BIAS;
 use super::light_layer::light_texture;
 use crate::content::map::LevelEffect;
@@ -131,16 +132,11 @@ fn spawn_overlay(
     mut commands: Commands,
     map: Res<LoadedMap>,
     settings: Res<LightingEffects>,
+    textures: Res<EffectTextures>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<LensMaterial>>,
     mut images: ResMut<Assets<Image>>,
 ) {
-    let (Some(dirt), Some(corners)) = (
-        map.sprites.get("DirtyGlass"),
-        map.sprites.get("DarkCorners"),
-    ) else {
-        return;
-    };
     let lens = &map.light.lens;
     let light = light_texture((
         lens.width,
@@ -183,8 +179,8 @@ fn spawn_overlay(
                 settings.vignette,
             ),
             light: images.add(light),
-            dirt: dirt.image.clone(),
-            corners: corners.image.clone(),
+            dirt: textures.dirty_glass.clone(),
+            corners: textures.dark_corners.clone(),
         })),
         Transform::default(),
         if settings.lens > 0.0 || settings.vignette > 0.0 {
