@@ -157,6 +157,8 @@ Sprites/Cars/Zombie/Base.png
 Sprites/Cars/Zombie/Border.png
 Sprites/Cars/Zombie/Destroyed1.png
 Sprites/Cars/Zombie/Destroyed2.png
+Sprites/DarkCorners.png
+Sprites/DirtyGlass.png
 Sprites/Entities/Accelerator.png
 Sprites/Entities/BoxPlaceholder.png
 Sprites/Entities/Button.png

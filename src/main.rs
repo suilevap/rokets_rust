@@ -47,6 +47,8 @@ struct Args {
     start: Option<Vec2>,
     size: (u32, u32),
     glow: Option<f32>,
+    effects: bool,
+    lens: Option<f32>,
 }
 
 /// The command line, or the page's URL parameters in the browser.
@@ -71,7 +73,7 @@ mod web {
     }
 
     /// Options the browser build accepts, as URL parameters.
-    const WEB_OPTIONS: &[&str] = &["map", "start", "drive", "glow"];
+    const WEB_OPTIONS: &[&str] = &["map", "start", "drive", "glow", "effects", "lens"];
 
     /// `?map=Middleware&start=84,9.5` → `["--map", "Middleware", "--start", "84,9.5"]`.
     pub fn url_args() -> Vec<String> {
@@ -121,6 +123,8 @@ fn parse_args() -> Args {
     let mut start = None;
     let mut size = (1280, 720);
     let mut glow = None;
+    let mut effects = true;
+    let mut lens = None;
     let mut shot: Option<ScreenshotRequest> = None;
     let mut frames = 90;
     let mut args = raw_args().into_iter();
@@ -162,6 +166,8 @@ fn parse_args() -> Args {
                 }
             }
             "--glow" => glow = args.next().and_then(|v| v.parse().ok()),
+            "--effects" => effects = args.next().is_none_or(|v| !matches!(v.as_str(), "0" | "off" | "false")),
+            "--lens" => lens = args.next().and_then(|v| v.parse::<f32>().ok()).filter(|v| v.is_finite()),
             "--frames" => frames = args.next().and_then(|v| v.parse().ok()).unwrap_or(frames),
             _ => {}
         }
@@ -182,6 +188,8 @@ fn parse_args() -> Args {
         start,
         size,
         glow,
+        effects,
+        lens,
     }
 }
 
@@ -194,6 +202,8 @@ fn main() {
         start,
         size,
         glow,
+        effects,
+        lens,
     } = parse_args();
     let mut app = App::new();
     app.add_plugins(
@@ -217,6 +227,10 @@ fn main() {
             }),
     )
     .add_plugins(TileRiderPlugin { map });
+    let mut lighting = if effects { tilerider::render::lighting_effects::LightingEffects::default() }
+        else { tilerider::render::lighting_effects::LightingEffects::disabled() };
+    if let Some(amount) = lens { lighting.lens = amount.max(0.0); }
+    app.insert_resource(lighting);
     if let Some(start) = start {
         app.insert_resource(tilerider::car::StartOverride(start));
     }

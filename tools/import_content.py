@@ -26,6 +26,8 @@ ITEMS = [
     ("Sprites/Particles", "**/*.png", "Sprites/Particles"),
     ("Sprites", "Gradient*.png", "Sprites"),
     ("Sprites", "WhitePixel.png", "Sprites"),
+    ("Sprites", "DirtyGlass.png", "Sprites"),
+    ("Sprites", "DarkCorners.png", "Sprites"),
 ]
 
 

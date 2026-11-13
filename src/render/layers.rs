@@ -40,6 +40,8 @@ pub const LIGHT_DEPTH_BIAS: f32 = -BIAS_PER_RANK;
 /// The additive light's `depth_bias`: sorted after every sprite layer, as
 /// C# drew it last (`IgnoreDepthWorldAdditive`), over everything.
 pub const ADDITIVE_DEPTH_BIAS: f32 = 100.0 * BIAS_PER_RANK;
+/// Fullscreen lens/vignette, after world light and before the HUD.
+pub const SCREEN_EFFECT_DEPTH_BIAS: f32 = ADDITIVE_DEPTH_BIAS + BIAS_PER_RANK;
 
 /// Height between consecutive layers: tiny, only for the depth test.
 const Z_STEP: f32 = 0.002;
@@ -56,6 +58,8 @@ pub enum Layer {
     GroundDecor,
     /// Accelerator pads (`DepthConst.Accelerator`, just under the ground).
     Accelerator,
+    /// Contact and directional shadows, above floor decoration, under bodies.
+    Shadow,
     /// Boxes (`DepthConst.CustomEntity`, the car's height).
     Prop,
     /// The car's chassis (`DepthConst.CarBase`).
@@ -69,9 +73,10 @@ pub enum Layer {
 }
 
 impl Layer {
-    pub const ALL: [Layer; 7] = [
+    pub const ALL: [Layer; 8] = [
         Layer::GroundDecor,
         Layer::Accelerator,
+        Layer::Shadow,
         Layer::Prop,
         Layer::CarBase,
         Layer::CarWheel,

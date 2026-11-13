@@ -96,6 +96,7 @@ pub fn spawn_player_car(
         LocalPlayer,
         PlayerIntent::default(),
         CameraTarget { radius, max_speed: params.max_speed },
+        crate::render::shadows::ShadowCaster { size },
         Car {
             params,
             drive: DriveState::default(),

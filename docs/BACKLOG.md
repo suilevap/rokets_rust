@@ -5,15 +5,6 @@ repository's plan (`docs/plans/RUST_BEVY_MIGRATION.md`, section 9 onwards);
 this file keeps what came up along the way. Take an item into its own pull
 request; remove it here when it lands.
 
-## Deferred from MVP 0.1
-
-- **Car shadows** (`DynamicShadow`): sprite streaks from the nearest lamp
-  that casts dynamic shadows, split penumbra when the lamp is close, lamp
-  hand-over, ambient blob. Taken out of PR #1 as not close enough to the
-  original; the removed code is in commit 67be4b9. Read the author's
-  article on light and shadow first (moddb "Tile Rider: the history of
-  light and shadow…").
-
 ## Phone
 
 - **Accelerometer.** In the C# game it did not steer the car: it tilted the
@@ -34,13 +25,13 @@ request; remove it here when it lands.
 
 ## Rendering and camera
 
-- C#'s dirty lens tints the picture (green on LetItSnowDay).
 - The additive light adds in linear colour here and in sRGB numbers in
   C# (XNA has no gamma); a fixed ×2 boost (`GLOW_BOOST`) brings the look
   close. Exact only with the glow added in sRGB (a small post-process
   pass) or the whole picture drawn in sRGB numbers as XNA did.
-- Glow and dirty-lens effects (and `DarkCorners`, the vignette); dynamic lights;
-  the cabin's springy wobble; tyre marks.
+- Dynamic lights; the cabin's springy wobble; tyre marks.
+- Snow/frozen-glass weather effects (`LevelEffect`); dirt uses the original
+  default-environment policy and stays off for snow weather.
 
 ## Web
 

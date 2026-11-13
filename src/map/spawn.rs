@@ -59,6 +59,10 @@ fn spawn_map_entities(
         if let Some(body) = template.body {
             insert_body(&mut entity, body, size, friction);
         }
+        let baked_shadow = e.try_cast_static_shadow && template.body.is_some_and(|b| b.kind != BodyKind::Dynamic);
+        if template.casts_shadow && !baked_shadow {
+            entity.insert(crate::render::shadows::ShadowCaster { size });
+        }
         if let Some(boost) = &template.boost {
             entity.insert(Booster {
                 speed: boost.speed,
