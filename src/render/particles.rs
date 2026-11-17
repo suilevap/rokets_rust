@@ -16,12 +16,14 @@ use bevy::prelude::*;
 use crate::game::{GameState, LoadedMap, MapEntity};
 use crate::particles::styles::CAR_BASE;
 use crate::particles::{Particle, Pool, Style};
-use crate::render::additive_light::GlowBoost;
 use crate::render::layers::Layer;
 use crate::units::px;
 
 /// `ParticleSystemManager.MaxParticleCount × CountRate` on desktop.
 const WORLD_POOL: usize = 128;
+/// How much brighter additive particles are drawn than their XNA colours,
+/// to make up for adding in linear light (see `render/additive_light`).
+pub const GLOW_BOOST: f32 = 1.5;
 /// `MaxParticleCountAdditive × CountRate`.
 const ADDITIVE_POOL: usize = 64;
 
@@ -116,7 +118,7 @@ struct Quads {
 fn draw(
     mut commands: Commands,
     map: Res<LoadedMap>,
-    (particles, glow): (Res<Particles>, Res<GlowBoost>),
+    particles: Res<Particles>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut batches: Query<(&Batch, &Mesh3d, &mut Visibility)>,
@@ -141,9 +143,10 @@ fn draw(
         // additive blend weighed them by alpha once more (`SourceAlpha`).
         // Vertex colours are linear; XNA's were sRGB numbers. Additive
         // glows sum in linear light here, darker than XNA's sums of sRGB
-        // numbers: they get the same boost as the additive light.
+        // numbers: they get a boost, milder than the additive light's
+        // (stacked flashes clip to white quickly).
         let straight = |c: f32, l: f32| if a > 0.0 { (c / a).min(1.0) * l } else { 0.0 };
-        let (alpha, boost) = if p.style.additive { (a * a, glow.0) } else { (a, 1.0) };
+        let (alpha, boost) = if p.style.additive { (a * a, GLOW_BOOST) } else { (a, 1.0) };
         let linear = Color::srgb(straight(r, light[0]), straight(g, light[1]), straight(b, light[2])).to_linear();
         let color = [linear.red * boost, linear.green * boost, linear.blue * boost, alpha];
         q.colors.extend([color; 4]);
