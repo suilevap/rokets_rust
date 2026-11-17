@@ -31,7 +31,7 @@ request; remove it here when it lands.
   close. Exact only with the glow added in sRGB (a small post-process
   pass) or the whole picture drawn in sRGB numbers as XNA did.
 - Glow and dirty-lens effects (and `DarkCorners`, the vignette); dynamic lights;
-  the cabin's springy wobble; tyre marks.
+  tyre marks.
 
 ## Web
 
