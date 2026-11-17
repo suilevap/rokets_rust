@@ -4,7 +4,8 @@
 //! particles in the world sprite batch.
 //!
 //! Particles under the cars' height (wheel streaks) go on
-//! [`Layer::GroundParticles`], the rest (smoke) on [`Layer::AirParticles`].
+//! [`Layer::GroundParticles`], the rest (smoke) on [`Layer::AirParticles`],
+//! additive ones (flashes) on [`Layer::Glow`], after everything.
 
 use std::collections::HashMap;
 
@@ -96,7 +97,9 @@ fn step(time: Res<Time>, mut particles: ResMut<Particles>) {
 }
 
 fn layer_of(p: &Particle) -> Layer {
-    if p.state.height > CAR_BASE / 2.0 {
+    if p.style.additive {
+        Layer::Glow
+    } else if p.state.height > CAR_BASE / 2.0 {
         Layer::GroundParticles
     } else {
         Layer::AirParticles

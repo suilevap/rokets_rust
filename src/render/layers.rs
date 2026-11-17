@@ -50,7 +50,7 @@ pub const LIGHT_DEPTH_BIAS: f32 = -BIAS_PER_RANK;
 pub const ADDITIVE_DEPTH_BIAS: f32 = 100.0 * BIAS_PER_RANK;
 
 /// Height between consecutive layers: tiny, only for the depth test.
-const Z_STEP: f32 = 0.002;
+const Z_STEP: f32 = 0.0015;
 
 /// `depth_bias` between consecutive ranks, in sort-distance units (world
 /// units); larger than any camera-tilt difference across the screen.
@@ -83,10 +83,13 @@ pub enum Layer {
     /// Particles in the air (smoke, sparks; `DepthConst.Smoke*`): over
     /// everything on the map.
     AirParticles,
+    /// Additive particles (flashes, pings): after every sprite, but still
+    /// hidden by walls (`DefaultWorldAdditive`: drawn last, depth read).
+    Glow,
 }
 
 impl Layer {
-    pub const ALL: [Layer; 10] = [
+    pub const ALL: [Layer; 11] = [
         Layer::GroundDecor,
         Layer::Accelerator,
         Layer::Shadow,
@@ -97,6 +100,7 @@ impl Layer {
         Layer::CarBody,
         Layer::Coin,
         Layer::AirParticles,
+        Layer::Glow,
     ];
 
     /// Height above the ground plane, world units: all near zero (see the
