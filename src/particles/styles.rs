@@ -223,6 +223,37 @@ pub static WRECK_SPARK: Style = Style {
     additive: true,
 };
 
+/// `DepthConst.Spark`.
+const SPARK: f32 = -24.0 / 32.0 / 16.0;
+
+/// A spark off a hit (`_collisionSpark`, `_collisionSpark2`): a white
+/// streak shot out fast, slowing and thinning to nothing in 0.4 s while
+/// it curls round one way (`curl` radians a second, the two styles turn
+/// opposite ways).
+const fn spark_state(curl: f32, speed: f32, width: f32) -> State {
+    State {
+        speed,
+        scale: Vec2::new(1.0, width),
+        view_rotation: curl,
+        rotation: curl,
+        color: color(1.0, 1.0, 1.0),
+        height: SPARK,
+    }
+}
+
+const fn spark(curl: f32) -> Style {
+    Style {
+        begin: spark_state(curl, 512.0 / 32.0, 2.0),
+        end: spark_state(curl, 128.0 / 32.0, 0.0),
+        lifetime: 0.4,
+        texture: "Particles\\SmallLine",
+        additive: true,
+    }
+}
+
+/// The two ways sparks curl (C#'s ±0.75π, negated for our angles).
+pub static SPARKS: [Style; 2] = [spark(-0.75 * std::f32::consts::PI), spark(0.75 * std::f32::consts::PI)];
+
 /// `GetScaleForEnd`: the size rate that makes [`BOOM_RING`] end about
 /// `range` world units across its radius, for a `Circle` texture
 /// `texture_width` pixels wide.
@@ -232,7 +263,7 @@ pub fn ring_rate(range: f32, texture_width: f32) -> f32 {
 }
 
 /// Every texture a style here draws with, to load with the map.
-pub const TEXTURES: [&str; 7] = [
+pub const TEXTURES: [&str; 8] = [
     WHEEL_TRAIL.texture,
     EXHAUST.texture,
     BOMB_BEEP.texture,
@@ -240,4 +271,5 @@ pub const TEXTURES: [&str; 7] = [
     BOOM_FIRE.texture,
     BOOM_SMOKE.texture,
     WRECK_FIRE.texture,
+    SPARKS[0].texture,
 ];
