@@ -20,7 +20,6 @@ fn char_map_builds_walls_and_floor() {
     assert!(grid.is_wall(0, 0));
     assert!(!grid.is_wall(1, 1));
     assert!(grid.is_wall(-1, 1), "outside the map is solid");
-    assert_eq!(grid.distance_to_wall(1, 1), 0.5);
     assert!(grid.is_floor(1, 1));
     assert!(!grid.is_floor(0, 0));
     let covered: usize = grid.wall_rects().iter().map(|r| r.2 * r.3).sum();

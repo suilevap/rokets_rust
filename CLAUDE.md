@@ -12,6 +12,9 @@ the C# repository: `docs/plans/RUST_BEVY_MIGRATION.md`.
   module's doc comment.
 - The C# game is the reference: compare screenshots (`--screenshot`) and
   driving with it rather than copying its structure.
+- **C# space is not ours**: it has y down and depth away from the
+  camera. Translate positions, angles and rotations as `src/units.rs`
+  describes (`from_cs`, `from_cs_rotation`), never by copying the signs.
 - Keep `content/`, `map/grid`, `light/bake` and `car/drive` free of Bevy
   app code so they stay unit-testable.
 - Content comes from the C# repository via `tools/import_content.py`; do
