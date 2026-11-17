@@ -17,6 +17,7 @@ pub mod particles;
 pub mod pickups;
 pub mod render;
 pub mod script;
+pub mod sound;
 pub mod triggers;
 pub mod units;
 
@@ -43,7 +44,7 @@ impl Plugin for TileRiderPlugin {
                 controls::ControlsPlugin,
                 car::CarPlugin,
                 pickups::PickupsPlugin,
-                (boost::BoostPlugin, explosion::ExplosionPlugin, game_mode::GameModePlugin, feedback::FeedbackPlugin),
+                (boost::BoostPlugin, explosion::ExplosionPlugin, game_mode::GameModePlugin, feedback::FeedbackPlugin, sound::SoundPlugin),
                 map::spawn::MapEntitiesPlugin,
                 render::spin::SpinPlugin,
                 render::animate::AnimatePlugin,

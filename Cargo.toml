@@ -6,6 +6,11 @@ description = "TileRider, a 2.5D vehicle action game, ported to Rust and Bevy"
 license = "MIT"
 rust-version = "1.97.1"
 
+[features]
+# Sound effects (`src/sound/playback.rs`). Off until the WAVs are imported
+# (see `src/sound/mod.rs`).
+sound = ["bevy/bevy_audio", "bevy/wav"]
+
 [dependencies]
 bevy = { version = "0.20.1", default-features = false, features = [
     # App, windowing, input, assets, logging (incl. gamepads via gilrs,
