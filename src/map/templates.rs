@@ -11,6 +11,7 @@
 
 use crate::animation::{ColorTrack, GRAY, Pulse, WHITE, Wave, YELLOW};
 use crate::content::map::{EntityData, EntityType, MapData};
+use crate::explosion::{Blast, Explosive, Trigger};
 use crate::render::layers::Layer;
 
 /// `HeavyBox._coefficientUnlinked`.
@@ -19,6 +20,21 @@ const HEAVY_BOX_DENSITY: f32 = 64.0;
 const ACCELERATOR_BOOST: f32 = 30.0;
 /// Radians per second gears turn (`Coin`: a turn per 6.28 s).
 const GEAR_SPIN: f32 = 1.0;
+
+/// `DamageConst.Bomb`, `BombExplosionRange`, and `CreateExplosion`'s force.
+const BOMB_BLAST: Blast = Blast {
+    range: 2.0,
+    force: 0.5,
+    damage: 20,
+};
+/// `DamageConst.DamagableBox`, `DamagableBoxExplosionRange`, force 1.
+const DAMAGABLE_BOX_BLAST: Blast = Blast {
+    range: 5.0,
+    force: 1.0,
+    damage: 7,
+};
+/// `Bomb.Draw`: one and a half turns a second (counter-clockwise on screen).
+const BOMB_SPIN: f32 = 3.0 * std::f32::consts::PI;
 
 /// How a map entity is built.
 #[derive(Clone, Debug, PartialEq)]
@@ -42,6 +58,10 @@ pub struct EntityTemplate {
     /// and `Accelerator.Draw` skip their components), so their baked
     /// shadow is their only one.
     pub draws_shadow: bool,
+    /// Blows up (`Bomb`, `DamagableBox`).
+    pub explosive: Option<Explosive>,
+    /// Pings to warn now and then (bombs).
+    pub beeps: bool,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -122,6 +142,8 @@ pub fn template_for(e: &EntityData) -> Option<EntityTemplate> {
         spin: None,
         casts_shadow: false,
         draws_shadow: true,
+        explosive: None,
+        beeps: false,
     };
     let template = match e.kind {
         EntityType::Tile => plain(map_sprite(Layer::GroundDecor)),
@@ -143,10 +165,15 @@ pub fn template_for(e: &EntityData) -> Option<EntityTemplate> {
             body: Some(BodySpec::pushable(e, 1.0)),
             ..plain(map_sprite(Layer::Prop))
         },
-        // `EntitiesManager.CreateDamagableBox`: its own sprite, scale 1.
+        // `EntitiesManager.CreateDamagableBox`: its own sprite, scale 1;
+        // any hit lights it, and 0.2 s later it blows up.
         EntityType::DamagableBox => EntityTemplate {
             body: Some(BodySpec::pushable(e, 1.0)),
             casts_shadow: true,
+            explosive: Some(Explosive {
+                blast: DAMAGABLE_BOX_BLAST,
+                trigger: Trigger::Hit { fuse: 0.2 },
+            }),
             ..plain(SpriteSpec::new("Entities\\DamagableBox", 1.0, Layer::Prop))
         },
         // As heavy as while nothing tows it.
@@ -176,7 +203,28 @@ pub fn template_for(e: &EntityData) -> Option<EntityTemplate> {
             draws_shadow: false,
             ..plain(SpriteSpec::new("", 0.0, Layer::Accelerator))
         },
-        EntityType::Bomb | EntityType::CoinDynamic | EntityType::Unknown => return None,
+        // `Bomb`: a fixed sensor, spinning, that blows up when a car or a
+        // box touches it. Its `Draw` skips its components (no shadow
+        // sprite) and it takes no damage, so blasts do not set it off.
+        EntityType::Bomb => EntityTemplate {
+            body: Some(BodySpec {
+                kind: BodyKind::Sensor,
+                density: 1.0,
+                lock_x: false,
+                lock_y: false,
+                lock_rotation: false,
+            }),
+            spin: Some(BOMB_SPIN),
+            casts_shadow: true,
+            draws_shadow: false,
+            explosive: Some(Explosive {
+                blast: BOMB_BLAST,
+                trigger: Trigger::Touch,
+            }),
+            beeps: true,
+            ..plain(map_sprite(Layer::Prop))
+        },
+        EntityType::CoinDynamic | EntityType::Unknown => return None,
     };
     template
         .sprites

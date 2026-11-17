@@ -18,6 +18,7 @@ use crate::controls::{LocalPlayer, PlayerIntent};
 use crate::game::{GameState, LoadedMap, MapEntity};
 use crate::render::camera::CameraTarget;
 use crate::render::layers::Layer;
+use crate::explosion::Health;
 use crate::render::shadow::CastsShadow;
 use crate::render::sprite::{SpriteTint, UnitQuad, sprite_bundle};
 use crate::units::{map_degrees_to_world, px};
@@ -103,6 +104,7 @@ pub fn spawn_player_car(
         PlayerIntent::default(),
         CameraTarget { radius, max_speed: params.max_speed },
         CastsShadow { size },
+        Health::full(car.max_health),
         smoke::SmokePoints {
             wheel: car
                 .left_wheel_position

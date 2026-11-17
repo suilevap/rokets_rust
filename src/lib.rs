@@ -6,6 +6,7 @@ pub mod boost;
 pub mod car;
 pub mod content;
 pub mod controls;
+pub mod explosion;
 pub mod game;
 pub mod hud;
 pub mod light;
@@ -40,7 +41,7 @@ impl Plugin for TileRiderPlugin {
                 controls::ControlsPlugin,
                 car::CarPlugin,
                 pickups::PickupsPlugin,
-                boost::BoostPlugin,
+                (boost::BoostPlugin, explosion::ExplosionPlugin),
                 map::spawn::MapEntitiesPlugin,
                 render::spin::SpinPlugin,
                 render::animate::AnimatePlugin,
