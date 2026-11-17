@@ -19,11 +19,14 @@
 //!     when turning on the spot), heard while above 0.15; one of two
 //!     squeals, picked anew each time it stops.
 //!
-//! Playing them is `playback`, behind the `sound` cargo feature (off for
-//! now, to keep the download small). To hear them: copy the WAVs
-//! (`("Sounds", "*.wav", "Sounds")` in `tools/import_content.py`, about
-//! 2.6 MB), and build with `--features sound` (or make it a default).
-//! `RUST_LOG=tilerider::sound=debug` lists the cues without it.
+//! Playing them is `playback`, behind the `sound` cargo feature (on by
+//! default; `--no-default-features` builds a silent game without the
+//! audio code). The WAVs come with the content (`Sounds/*.wav`, 2.6 MB).
+//! `RUST_LOG=tilerider::sound=debug` lists the cues.
+//!
+//! In the browser, sound starts with the first touch, click or key press
+//! (`web/index.html` resumes the audio then; browsers keep it off until
+//! the page is used).
 
 #[cfg(feature = "sound")]
 mod playback;

@@ -54,7 +54,7 @@ main
 | `explosion` | `Health`, `Hit`, `Destroyed`; `Explosion` messages throw dynamic bodies away from the blast (one push each, as strong as Farseer's rays together: angle covered × force × 180/π, fading to the range's edge) and hit what can be hurt in range, walls sheltering what is behind them, with the boom particles; `Explosive` blows up on touch (bombs) or after a fuse once hit (red boxes, so chains); bombs beep | `WeaponHelper.CreateExplosion`, Farseer `Explosion`, `Bomb`, `DamagableBox`, `ControlableEntity.TakeDamage` |
 | `game_mode` | When the player's car is `Destroyed`: it turns into its wreck (`Destroyed1/2`), undriven and unbraked so a blast throws it far, bursts into smoke and fire, and 2 s later the level restarts. C#'s respawn points and lives come with the actions that set them | `GameModeSinglePlayer`, `Car.OnKilled`, `CreateDestroyedEntity` |
 | `feedback` | Force feedback, so far a camera jolt (`CameraShake` in `render/camera`, dying away at 6/s): head-on car hits over 0.4, damage to the player by the share of health lost, blasts in sight | `Control.ForceFeedback`, `Camera2D.Shake` |
-| `sound` | Sound cues worked out from game events, playing or not: `PlaySound` messages for hits (one of three bumps, louder the harder), blasts (pitch round), damage and `Accident`, gears, finish; the car's engine loop (stick → volume, speed → pitch) and tyre squeal (eased 3/s towards the slip's loudness) as `LoopCue`s on `CarSounds`. `sound/playback` plays them with Bevy audio behind the `sound` cargo feature, off until the WAVs are imported (see the module doc) | `SoundManager`, `SoundView`, `EffectManager`, `Car.EngineSoundControl` |
+| `sound` | Sound cues worked out from game events, playing or not: `PlaySound` messages for hits (one of three bumps, louder the harder), blasts (pitch round), damage and `Accident`, gears, finish; the car's engine loop (stick → volume, speed → pitch) and tyre squeal (eased 3/s towards the slip's loudness) as `LoopCue`s on `CarSounds`. `sound/playback` plays them with Bevy audio behind the `sound` cargo feature (default; `--no-default-features` for a silent build); `web/index.html` resumes the browser's audio on the first touch, click or key | `SoundManager`, `SoundView`, `EffectManager`, `Car.EngineSoundControl` |
 | `render/spin` | `Spin`: turns on the spot | `Coin` |
 | `animation` | Animation as plain data: `Wave` (sawtooth / triangle phase over game time), `ColorTrack` (colour keyframes, stepped or blended), `Pulse` (one-shot blend). Unit-tested | `PhaseHelper`, `PeriodicUpdate.RemainPart` |
 | `render/animate` | `TintLoop` (a colour track on a wave, per sprite) and `TintPulse` (a one-shot blend over an entity's sprites); game time pauses and slows with the game, and loops on the same wave stay in step | `PhaseHelper` users |
@@ -92,7 +92,7 @@ main
 
 ## Not ported yet
 
-Everything outside MVP 0.1: menus and HUD, sound files and music (the cues are in), localisation, saves;
+Everything outside MVP 0.1: menus and HUD, music, localisation, saves;
 weapons and gadgets; other cars and AI; doors, bombs, teleports, platforms,
 fake walls; towing; respawn points and lives (death always restarts the level); the other ~74 action types; most particle effects (the pool and the car's smoke are in);
 slow motion; the agent/command server; editor hot reload. Rendering gaps:
