@@ -5,9 +5,11 @@
 //! the size of the car's `Base` sprite, mass from `Cars.xml`, friction 0.8,
 //! bounce 0.5, linear damping `0.95 × map friction`, angular damping 9.
 //! Drawn from its own sprites: the chassis (`Base`), two front wheels that
-//! turn towards the stick, and the cabin (`Body`) on top. Smoke: `smoke`.
+//! turn towards the stick, and the cabin (`Body`) on top. Smoke: `smoke`;
+//! sparks when it hits something: `impact`.
 
 pub mod drive;
+pub mod impact;
 pub mod smoke;
 
 use avian2d::prelude::*;
@@ -56,9 +58,18 @@ impl Plugin for CarPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(smoke::SmokeRng(rand::SeedableRng::seed_from_u64(7)))
             .add_systems(OnEnter(GameState::Playing), spawn_player_car)
+            .add_message::<impact::CarImpact>()
             .add_systems(
                 FixedUpdate,
-                (drive_cars, smoke::car_smoke).chain().run_if(in_state(GameState::Playing)),
+                (drive_cars, smoke::car_smoke, impact::remember_velocity)
+                    .chain()
+                    .run_if(in_state(GameState::Playing)),
+            )
+            .add_systems(
+                Update,
+                (impact::detect_impacts, impact::impact_sparks)
+                    .chain()
+                    .run_if(in_state(GameState::Playing)),
             )
             .add_systems(Update, turn_front_wheels.run_if(in_state(GameState::Playing)));
     }
@@ -127,6 +138,8 @@ pub fn spawn_player_car(
     entity.insert((
         RigidBody::Dynamic,
         Collider::rectangle(size.x, size.y),
+        CollisionEventsEnabled,
+        impact::LastVelocity::default(),
         LinearDamping(0.95 * friction),
         AngularDamping(9.0),
         Friction::new(0.8).with_combine_rule(CoefficientCombine::GeometricMean),
