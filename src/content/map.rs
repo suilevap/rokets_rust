@@ -8,7 +8,8 @@
 
 use serde::Deserialize;
 
-use super::xna::{Items, XColor, XRect, XVec2, boolean, int_list, lenient_int};
+use super::xna::{Items, XColor, XRect, XVec2, boolean, int_list};
+use super::actions::MapActions;
 use super::{ContentError, parse_asset};
 
 #[derive(Clone, Debug, Deserialize)]
@@ -52,8 +53,10 @@ pub struct MapData {
     pub entities: Items<EntityData>,
     #[serde(default)]
     pub triggers: Items<TriggerData>,
-    #[serde(default)]
-    pub actions: Items<ActionData>,
+    /// The map's `<Actions>`, each kept with its XML (read apart, see
+    /// [`MapActions`]).
+    #[serde(skip)]
+    pub actions: MapActions,
     #[serde(default)]
     pub char_map_dictionary: Option<String>,
     #[serde(default)]
@@ -223,56 +226,11 @@ pub struct TriggerData {
     pub subscribers: Vec<i64>,
 }
 
-/// One entry of the map's `<Actions>`: an `ActionData` subclass. Only the
-/// common fields are read for now; the type says what it is.
-#[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct ActionData {
-    /// `GameLibrary.ShowSuccess`, …
-    #[serde(rename = "@Type")]
-    pub kind: String,
-    #[serde(default)]
-    pub name: Option<String>,
-    #[serde(default, deserialize_with = "boolean")]
-    pub run_on_map_start: bool,
-    /// For `ActionSequence`: the names of the actions it runs.
-    #[serde(default)]
-    pub actions: Option<Items<String>>,
-    /// Run after this one (`ActionData.NextAction`).
-    #[serde(default)]
-    pub next_action: Option<String>,
-    /// `ActionSequence`: seconds between its actions.
-    #[serde(default)]
-    pub time_between_in_sec: f32,
-    /// The entity acted on; 0 or less: the one that set the action off.
-    #[serde(default, deserialize_with = "lenient_int")]
-    pub item_id: i64,
-    #[serde(default, deserialize_with = "boolean")]
-    pub deactivate: bool,
-    #[serde(default, deserialize_with = "int_list")]
-    pub trigger_ids: Vec<i64>,
-    /// `ApplyImpulseActionData`: speed change, C# units (y down).
-    #[serde(default)]
-    pub impulse: Option<XVec2>,
-    #[serde(default)]
-    pub random_impulse: Option<XVec2>,
-    /// `DamageEntity`: points (negative heals) and the direction of the
-    /// blow, C# degrees.
-    #[serde(default, deserialize_with = "lenient_int")]
-    pub damage: i64,
-    #[serde(default)]
-    pub direction: f32,
-}
-
-impl ActionData {
-    /// The type name without the `GameLibrary.` namespace.
-    pub fn short_kind(&self) -> &str {
-        self.kind.rsplit('.').next().unwrap_or(&self.kind)
-    }
-}
 
 impl MapData {
     pub fn parse(xml: &str) -> Result<Self, ContentError> {
-        parse_asset(xml)
+        let mut map: MapData = parse_asset(xml)?;
+        map.actions = MapActions::parse(xml)?;
+        Ok(map)
     }
 }

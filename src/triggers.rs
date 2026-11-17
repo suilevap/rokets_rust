@@ -10,12 +10,16 @@
 //! runs its `LeaveActions`. A trigger used up is wiped from the map (then
 //! nothing is there, not the trigger it covered).
 //!
-//! The actions themselves are `actions`. `LevelComplete` shows "Level
+//! The actions themselves are `actions`. [`LevelEnd`] shows "Level
 //! complete" and goes to the next map in `MapList.xml` after a moment.
+//! `ActivateTriggerActionData` (arm or disarm triggers) is registered here.
 
 use bevy::prelude::*;
 
-use crate::actions::{Inactive, LevelComplete, RunAction, SetTriggersActive};
+use serde::Deserialize;
+
+use crate::actions::{AddMapAction, Inactive, MapAction, Run, RunAction, Templates};
+use crate::content::xna::{boolean, int_list};
 use crate::controls::LocalPlayer;
 use crate::game::{ChangeMap, GameState, LoadedMap, MapId};
 
@@ -71,16 +75,27 @@ pub struct LevelEnd {
     pub timer: Option<Timer>,
 }
 
+impl LevelEnd {
+    /// The level is won: "Level complete", then the next map.
+    pub fn complete(&mut self) {
+        if self.timer.is_none() {
+            info!("level complete");
+            self.timer = Some(Timer::from_seconds(LEVEL_END_DELAY, TimerMode::Once));
+        }
+    }
+}
+
 pub struct TriggersPlugin;
 
 impl Plugin for TriggersPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<LevelEnd>()
             .init_resource::<Triggers>()
+            .add_map_action::<ArmTriggers, _>(arm_triggers)
             .add_systems(OnEnter(GameState::Playing), build_triggers)
             .add_systems(
                 Update,
-                (watch_subscribers, check_triggers, arm_triggers, level_complete, finish_level)
+                (watch_subscribers, check_triggers, finish_level)
                     .chain()
                     .before(crate::actions::ActionSystems)
                     .run_if(in_state(GameState::Playing)),
@@ -173,20 +188,32 @@ fn check_triggers(
     }
 }
 
-/// `ActivateTriggerActionData`.
-fn arm_triggers(mut changes: MessageReader<SetTriggersActive>, mut triggers: ResMut<Triggers>) {
-    for change in changes.read() {
-        for t in triggers.list.iter_mut().filter(|t| change.ids.contains(&t.id)) {
-            t.active = change.active;
-        }
+/// `ActivateTriggerActionData`, `ActivateTrigger(id)`, `DeactivateTrigger(id)`.
+#[derive(Deserialize)]
+#[serde(rename_all = "PascalCase")]
+struct ArmTriggers {
+    #[serde(default, deserialize_with = "int_list")]
+    trigger_ids: Vec<i64>,
+    #[serde(default, deserialize_with = "boolean")]
+    deactivate: bool,
+}
+
+impl MapAction for ArmTriggers {
+    const TYPE: &'static str = "ActivateTriggerActionData";
+
+    fn templates() -> Templates<Self> {
+        vec![
+            ("ActivateTrigger", |a| Some(ArmTriggers { trigger_ids: vec![a.int(0)?], deactivate: false })),
+            ("DeactivateTrigger", |a| Some(ArmTriggers { trigger_ids: vec![a.int(0)?], deactivate: true })),
+        ]
     }
 }
 
-fn level_complete(mut wins: MessageReader<LevelComplete>, mut end: ResMut<LevelEnd>) {
-    if wins.read().count() > 0 && end.timer.is_none() {
-        info!("level complete");
-        end.timer = Some(Timer::from_seconds(LEVEL_END_DELAY, TimerMode::Once));
+fn arm_triggers(In(run): In<Run<ArmTriggers>>, mut triggers: ResMut<Triggers>) -> bool {
+    for t in triggers.list.iter_mut().filter(|t| run.data.trigger_ids.contains(&t.id)) {
+        t.active = !run.data.deactivate;
     }
+    true
 }
 
 fn finish_level(time: Res<Time>, mut end: ResMut<LevelEnd>, mut change: MessageWriter<ChangeMap>) {

@@ -1,74 +1,128 @@
-//! Map actions: references resolve to what they do.
+//! Map actions: the runner, and how little a new action type takes.
 
-use tilerider::content::actions::{Act, resolve};
+use bevy::prelude::*;
+use serde::Deserialize;
+use tilerider::actions::{ActionsPlugin, AddMapAction, CurrentActions, MapAction, Run, Templates, run};
 use tilerider::content::map::MapData;
 
-fn map() -> MapData {
-    MapData::parse(
-        r#"<XnaContent><Asset Type="GameLibrary.MapData"><Name>T</Name>
-        <Triggers><Item><Id>1</Id><Area>0 0 2 2</Area><Actions><Item>Open</Item></Actions></Item></Triggers>
-        <Actions>
-          <Item Type="GameLibrary.ShowSuccess"><Name>Win</Name></Item>
-          <Item Type="GameLibrary.ActionSequence"><Name>Open</Name><Actions><Item>Act2</Item><Item>DestroyEntity(7)</Item></Actions><TimeBetweenInSec>0.5</TimeBetweenInSec></Item>
-          <Item Type="GameLibrary.ActivateEntityActionData"><Name>Act2</Name><NextAction>Win</NextAction><ItemId>2</ItemId><Deactivate>true</Deactivate></Item>
-          <Item Type="GameLibrary.ApplyImpulseActionData"><Name>Push</Name><ItemId>0</ItemId><Impulse>-7 3</Impulse></Item>
-          <Item Type="GameLibrary.ActivateTriggerActionData"><Name>Off</Name><TriggerIds>1 3</TriggerIds><Deactivate>true</Deactivate></Item>
-          <Item Type="GameLibrary.CloneObject"><Name>Clone</Name></Item>
-        </Actions></Asset></XnaContent>"#,
-    )
-    .unwrap()
+/// A new action type, as a map or a template would use it: this struct,
+/// its `MapAction` impl and one `add_map_action` line are all it takes.
+#[derive(Deserialize)]
+#[serde(rename_all = "PascalCase")]
+struct Note {
+    #[serde(default)]
+    text: String,
+}
+
+impl MapAction for Note {
+    const TYPE: &'static str = "Note";
+
+    fn templates() -> Templates<Self> {
+        vec![("Note", |args| Some(Note { text: args.text(0)?.to_string() }))]
+    }
+}
+
+#[derive(Resource, Default)]
+struct Notes(Vec<(String, Option<i64>)>);
+
+fn note(In(run): In<Run<Note>>, mut notes: ResMut<Notes>) -> bool {
+    let failed = run.data.text == "fail";
+    notes.0.push((run.data.text, run.actor));
+    !failed
+}
+
+fn app(actions: &str) -> App {
+    let map = MapData::parse(&format!(
+        r#"<XnaContent><Asset Type="GameLibrary.MapData"><Name>T</Name><Actions>{actions}</Actions></Asset></XnaContent>"#
+    ))
+    .unwrap();
+    let mut app = App::new();
+    app.add_plugins(ActionsPlugin)
+        .init_resource::<Notes>()
+        .add_map_action::<Note, _>(note)
+        .insert_resource(CurrentActions(map.actions));
+    app
+}
+
+fn notes(app: &App) -> Vec<String> {
+    app.world().resource::<Notes>().0.iter().map(|(t, _)| t.clone()).collect()
 }
 
 #[test]
-fn named_actions_resolve_with_what_follows_them() {
-    let m = map();
-    let act2 = resolve(&m, "Act2");
-    assert_eq!(act2[0].act, Act::SetActive { item: 2, active: false });
-    assert_eq!(act2[0].next.as_deref(), Some("Win"));
-    assert_eq!(resolve(&m, "Win")[0].act, Act::LevelComplete);
-    assert_eq!(
-        resolve(&m, "Open")[0].act,
-        Act::Sequence {
-            actions: vec!["Act2".into(), "DestroyEntity(7)".into()],
-            step: 0.5
-        }
-    );
-    assert_eq!(
-        resolve(&m, "Push")[0].act,
-        Act::Impulse {
-            item: 0,
-            impulse: [-7.0, 3.0],
-            random: [0.0, 0.0]
-        }
-    );
-    assert_eq!(resolve(&m, "Off")[0].act, Act::SetTriggers { ids: vec![1, 3], active: false });
-    assert_eq!(resolve(&m, "Clone")[0].act, Act::Unsupported("CloneObject".into()));
-    assert!(resolve(&m, "Nobody").is_empty());
+fn a_new_action_runs_from_the_map_and_from_its_template() {
+    let mut app = app(r#"<Item Type="GameLibrary.Note"><Name>Hello</Name><Text>hi</Text></Item>"#);
+    assert!(run(app.world_mut(), "Hello", Some(7), 0));
+    assert!(run(app.world_mut(), "Note(there)", None, 0));
+    assert_eq!(app.world().resource::<Notes>().0, vec![("hi".into(), Some(7)), ("there".into(), None)]);
 }
 
 #[test]
-fn templates_resolve_from_their_arguments() {
-    let m = map();
-    let one = |r: &str| resolve(&m, r).remove(0).act;
-    assert_eq!(one("ActivateEntity(1001)"), Act::SetActive { item: 1001, active: true });
-    assert_eq!(one("DeactivateTrigger(4)"), Act::SetTriggers { ids: vec![4], active: false });
-    assert_eq!(one("Damage(4001, 5)"), Act::Damage { item: 4001, amount: 5, direction: 0.0 });
-    assert_eq!(
-        one("Seq(A B na, 1.5)"),
-        Act::Sequence {
-            actions: vec!["A".into(), "B".into(), "na".into()],
-            step: 1.5
-        }
+fn next_actions_follow_success_only() {
+    let mut app = app(
+        r#"<Item Type="GameLibrary.Note"><Name>A</Name><NextAction>B</NextAction><Text>a</Text></Item>
+           <Item Type="GameLibrary.Note"><Name>B</Name><Text>b</Text></Item>
+           <Item Type="GameLibrary.Note"><Name>F</Name><NextAction>B</NextAction><Text>fail</Text></Item>"#,
     );
-    assert_eq!(one("NextMap()"), Act::LevelComplete);
-    assert_eq!(one("Save()"), Act::Nothing);
-    assert_eq!(one("OpenDoor(3)"), Act::Unsupported("OpenDoor".into()));
+    run(app.world_mut(), "A", None, 0);
+    run(app.world_mut(), "F", None, 0);
+    assert_eq!(notes(&app), ["a", "b", "fail"]);
+}
+
+#[test]
+fn sequences_run_in_order_and_skip_na() {
+    let mut app = app(
+        r#"<Item Type="GameLibrary.ActionSequence"><Name>Seq</Name>
+             <Actions><Item>Note(1)</Item><Item>na</Item><Item>Inner</Item></Actions></Item>
+           <Item Type="GameLibrary.ActionSequence"><Name>Inner</Name>
+             <Actions><Item>Note(2)</Item><Item>Note(3)</Item></Actions></Item>"#,
+    );
+    run(app.world_mut(), "Seq", None, 0);
+    run(app.world_mut(), "Seq(Note(4) Note(5), 0)", None, 0);
+    assert_eq!(notes(&app), ["1", "2", "3", "4", "5"]);
+}
+
+#[test]
+fn unknown_actions_fail_and_loops_stop() {
+    let mut app = app(
+        r#"<Item Type="GameLibrary.CloneObject"><Name>Clone</Name></Item>
+           <Item Type="GameLibrary.ActionSequence"><Name>Loop</Name><Actions><Item>Loop</Item></Actions></Item>"#,
+    );
+    assert!(!run(app.world_mut(), "Clone", None, 0));
+    assert!(!run(app.world_mut(), "Nobody", None, 0));
+    assert!(!run(app.world_mut(), "OpenDoor(3)", None, 0));
+    assert!(run(app.world_mut(), "Loop", None, 0), "the guard ends it");
 }
 
 #[test]
 fn triggers_default_to_armed_and_many_uses() {
-    let m = map();
-    let t = &m.triggers.items[0];
+    let map = MapData::parse(
+        r#"<XnaContent><Asset Type="GameLibrary.MapData"><Name>T</Name>
+        <Triggers><Item><Id>1</Id><Area>0 0 2 2</Area></Item></Triggers></Asset></XnaContent>"#,
+    )
+    .unwrap();
+    let t = &map.triggers.items[0];
     assert!(t.active);
     assert_eq!(t.amount, 999);
+}
+
+#[test]
+fn every_map_action_of_a_ported_type_reads() {
+    let mut app = App::new();
+    app.add_plugins((ActionsPlugin, tilerider::triggers::TriggersPlugin));
+    let registry = app.world().resource::<tilerider::actions::ActionRegistry>();
+    let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("assets/Maps/Singleplayer");
+    let (mut read, mut failed) = (0, Vec::new());
+    for entry in std::fs::read_dir(dir).unwrap() {
+        let path = entry.unwrap().path();
+        let map = MapData::parse(&std::fs::read_to_string(&path).unwrap()).unwrap();
+        for a in &map.actions.0 {
+            match registry.read(&a.kind, &a.xml) {
+                Some(Ok(())) => read += 1,
+                Some(Err(e)) => failed.push(format!("{}: {} {}: {e}", path.display(), a.kind, a.name)),
+                None => {}
+            }
+        }
+    }
+    assert!(failed.is_empty(), "{failed:#?}");
+    assert!(read > 100, "{read}");
 }
