@@ -11,8 +11,38 @@
 //! right and 90° is up. The C# game used `-DirectionDeg` as its angle in
 //! y-down coordinates everywhere (`MapManager`, `ActionRunner`), which is
 //! `+DirectionDeg` with y up.
+//!
+//! # Reading C# coordinates
+//!
+//! The C# game's axes are not ours. Two of the three point the other way,
+//! so any position, angle or rotation copied from C# without translating
+//! it comes out flipped:
+//!
+//! | | x | y | z |
+//! |---|---|---|---|
+//! | C# (`Vector2`/`Vector3`, `DepthConst`) | right | **down** | depth: **away** from the camera (floor > 0, sprites < 0) |
+//! | here (Bevy) | right | up | **towards** the camera (walls > 0, floor < 0) |
+//!
+//! Ours is C#'s turned half a turn about x: `(x, y, z) → (x, −y, −z)`. It
+//! is a rotation, not a mirror, so handedness and triangle winding keep,
+//! but every sign that involves y or z flips:
+//!
+//! - **Points and vectors** (positions, speeds, distance field gradients,
+//!   `v.GetAngle()` inputs): negate y (and z). [`CellSize::to_world`],
+//!   [`from_cs`].
+//! - **Angles in the plane** (`Direction`, `GetAngle()`, sprite rotation):
+//!   a turn about z, so negated.
+//! - **3D turns** (`Matrix.CreateRotationX/Y/Z`, `Primitive.Rotate`): about
+//!   x keeps its sign, about y and z negate. [`from_cs_rotation`].
+//! - **Matrix order**: XNA multiplies row vectors, so `A * B` applies `A`
+//!   first; Bevy's `B * A` applies `A` first.
+//! - **Depth order** (`DepthConst`, `SpriteSortMode.BackToFront`): larger
+//!   is further back, drawn first. Only `render/layers.rs` maps it.
+//!
+//! Formulas symmetric in a sign (`|sin|`, random ± jitter) survive either
+//! way, which is how such a slip can hide; check against the C# game.
 
-use bevy::math::Vec2;
+use bevy::math::{Quat, Vec2, Vec3};
 
 /// The C# game's pixels per world unit.
 pub const PX_PER_UNIT: f32 = 32.0;
@@ -45,4 +75,15 @@ pub fn map_degrees_to_world(deg: f32) -> f32 {
 /// A length in the C# game's pixels to world units.
 pub fn px(v: f32) -> f32 {
     v / PX_PER_UNIT
+}
+
+/// A C# point or vector (y down, z away from the camera) in ours.
+pub fn from_cs(v: Vec3) -> Vec3 {
+    Vec3::new(v.x, -v.y, -v.z)
+}
+
+/// The turn C# built as `CreateRotationX(x) * CreateRotationY(y) *
+/// CreateRotationZ(z)` (x first: XNA's row vectors), in ours.
+pub fn from_cs_rotation(x: f32, y: f32, z: f32) -> Quat {
+    Quat::from_rotation_z(-z) * Quat::from_rotation_y(-y) * Quat::from_rotation_x(x)
 }
