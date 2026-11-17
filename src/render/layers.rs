@@ -57,7 +57,7 @@ const Z_STEP: f32 = 0.002;
 const BIAS_PER_RANK: f32 = 100.0;
 
 /// World sprite layers, bottom to top.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Layer {
     /// `Tile` entities on the floor: finish markings, signs, grass
     /// (`DepthConst.Tile`).
@@ -67,6 +67,9 @@ pub enum Layer {
     /// Shadows of cars and loose objects (`DepthConst.DynamicShadow`):
     /// over the ground decor and pads, under everything that casts them.
     Shadow,
+    /// Particles on the ground (wheel streaks): under everything that
+    /// stands on it.
+    GroundParticles,
     /// Boxes (`DepthConst.CustomEntity`, the car's height).
     Prop,
     /// The car's chassis (`DepthConst.CarBase`).
@@ -77,18 +80,23 @@ pub enum Layer {
     CarBody,
     /// Gears (`DepthConst.Coin`): drawn over the cars.
     Coin,
+    /// Particles in the air (smoke, sparks; `DepthConst.Smoke*`): over
+    /// everything on the map.
+    AirParticles,
 }
 
 impl Layer {
-    pub const ALL: [Layer; 8] = [
+    pub const ALL: [Layer; 10] = [
         Layer::GroundDecor,
         Layer::Accelerator,
         Layer::Shadow,
+        Layer::GroundParticles,
         Layer::Prop,
         Layer::CarBase,
         Layer::CarWheel,
         Layer::CarBody,
         Layer::Coin,
+        Layer::AirParticles,
     ];
 
     /// Height above the ground plane, world units: all near zero (see the

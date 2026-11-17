@@ -10,6 +10,7 @@ pub mod game;
 pub mod hud;
 pub mod light;
 pub mod map;
+pub mod particles;
 pub mod pickups;
 pub mod render;
 pub mod script;
