@@ -157,6 +157,51 @@ impl MapGrid {
         self.distance[y as usize * self.width + x as usize]
     }
 
+    /// `MapManager.CreateDistanceField`, in cells: how far each cell is
+    /// from the nearest wall cell (positive, at least 1) or from open
+    /// ground (negative, at most -1), by a two-pass chamfer (1 straight,
+    /// √2 diagonal). The outer ring is just ±1. Row-major, y down.
+    pub fn chamfer_distance(&self) -> Vec<f32> {
+        let (w, h) = (self.width, self.height);
+        let mut d = vec![0.0f32; w * h];
+        let free = |x: usize, y: usize| !self.cells[y * w + x].is_wall();
+        let inner = |x: usize, y: usize| x > 0 && y > 0 && x + 1 < w && y + 1 < h;
+        let s2 = std::f32::consts::SQRT_2;
+        for y in 0..h {
+            for x in 0..w {
+                let i = y * w + x;
+                d[i] = if !inner(x, y) {
+                    if free(x, y) { 1.0 } else { -1.0 }
+                } else if free(x, y) {
+                    let a = d[i - 1].min(d[i - w]) + 1.0;
+                    let b = d[i - w - 1].min(d[i - w + 1]) + s2;
+                    a.min(b).max(1.0)
+                } else {
+                    let a = d[i - 1].max(d[i - w]) - 1.0;
+                    let b = d[i - w - 1].max(d[i - w + 1]) - s2;
+                    a.max(b).min(-1.0)
+                };
+            }
+        }
+        for y in (0..h).rev() {
+            for x in (0..w).rev() {
+                let i = y * w + x;
+                d[i] = if !inner(x, y) {
+                    if free(x, y) { 1.0 } else { -1.0 }
+                } else if free(x, y) {
+                    let a = d[i + 1].min(d[i + w]) + 1.0;
+                    let b = d[i + w - 1].min(d[i + w + 1]) + s2;
+                    a.min(b).min(d[i]).max(1.0)
+                } else {
+                    let a = d[i + 1].max(d[i + w]) - 1.0;
+                    let b = d[i + w - 1].max(d[i + w + 1]) - s2;
+                    a.max(b).max(d[i]).min(-1.0)
+                };
+            }
+        }
+        d
+    }
+
     /// The corner wedge in a cell, if any.
     pub fn edge(&self, x: i32, y: i32) -> Option<Edge> {
         if x < 0 || y < 0 || x as usize >= self.width || y as usize >= self.height {
