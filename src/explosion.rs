@@ -110,6 +110,10 @@ const LIT: [f32; 3] = [1.0, 69.0 / 255.0, 0.0];
 #[derive(Resource)]
 struct BoomRng(SmallRng);
 
+/// The explosion systems, for others to run after.
+#[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ExplosionSystems;
+
 pub struct ExplosionPlugin;
 
 impl Plugin for ExplosionPlugin {
@@ -122,6 +126,7 @@ impl Plugin for ExplosionPlugin {
                 Update,
                 (blow_up_on_touch, burn_fuses, explode, take_hits, beep)
                     .chain()
+                    .in_set(ExplosionSystems)
                     .run_if(in_state(GameState::Playing)),
             );
     }

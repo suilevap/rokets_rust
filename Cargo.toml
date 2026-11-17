@@ -27,6 +27,9 @@ bevy = { version = "0.20.1", default-features = false, features = [
     "ui_api",
     "bevy_ui_render",
     "png",
+    # Sound effects (the C# game's 22 kHz mono WAVs).
+    "bevy_audio",
+    "wav",
 ] }
 avian2d = { version = "0.8.0", default-features = false, features = ["2d", "parry-f32", "default-collider", "parallel"] }
 serde = { version = "1", features = ["derive"] }

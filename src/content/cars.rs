@@ -55,6 +55,16 @@ pub struct CarData {
     pub gadget_position: Option<XVec2>,
     #[serde(default = "yes", deserialize_with = "boolean")]
     pub load_wheel_body_color_views: bool,
+    /// The engine's loop (`Sounds/<name>.wav`); empty for none.
+    #[serde(default = "engine")]
+    pub engine_sound: String,
+    /// Octaves added to the tyres' squeal.
+    #[serde(default)]
+    pub wheels_sound_pitch: f32,
+}
+
+fn engine() -> String {
+    "Engine".to_string()
 }
 
 fn minus_one() -> f32 {
