@@ -30,8 +30,6 @@ pub struct MapGrid {
     pub width: usize,
     pub height: usize,
     cells: Vec<Cell>,
-    /// Distance from each cell's centre to the nearest wall cell, in cells.
-    distance: Vec<f32>,
     /// Corner wedges (`MapManager.Edges`): per cell, the corner left open.
     edges: Vec<Option<Edge>>,
 }
@@ -102,10 +100,8 @@ impl MapGrid {
             width,
             height,
             cells,
-            distance: Vec::new(),
             edges: Vec::new(),
         };
-        grid.distance = grid.distance_field();
         grid.edges = (0..grid.height as i32)
             .flat_map(|y| (0..grid.width as i32).map(move |x| (x, y)))
             .map(|(x, y)| grid.find_edge(x, y, threshold))
@@ -147,14 +143,6 @@ impl MapGrid {
 
     pub fn height_at(&self, x: i32, y: i32) -> f32 {
         self.cell(x, y).map_or(0.0, |c| c.height)
-    }
-
-    /// Distance from the centre of cell (x, y) to the nearest wall, in cells.
-    pub fn distance_to_wall(&self, x: i32, y: i32) -> f32 {
-        if x < 0 || y < 0 || x as usize >= self.width || y as usize >= self.height {
-            return 0.0;
-        }
-        self.distance[y as usize * self.width + x as usize]
     }
 
     /// `MapManager.CreateDistanceField`, in cells: how far each cell is
@@ -280,49 +268,6 @@ impl MapGrid {
             self.is_wall(x.floor() as i32, y.floor() as i32)
         })
     }
-
-    /// Brute-force distance transform; maps are at most a few hundred cells a side.
-    fn distance_field(&self) -> Vec<f32> {
-        let walls: Vec<(i32, i32)> = (0..self.height)
-            .flat_map(|y| (0..self.width).map(move |x| (x, y)))
-            .filter(|&(x, y)| self.cells[y * self.width + x].is_wall())
-            .map(|(x, y)| (x as i32, y as i32))
-            .collect();
-        let mut out = vec![0.0; self.width * self.height];
-        const LIMIT: i32 = 8;
-        for y in 0..self.height as i32 {
-            for x in 0..self.width as i32 {
-                if self.is_wall(x, y) {
-                    continue;
-                }
-                // Search a window first; most cells have a wall nearby.
-                let mut best = f32::MAX;
-                for wy in (y - LIMIT).max(-1)..=(y + LIMIT).min(self.height as i32) {
-                    for wx in (x - LIMIT).max(-1)..=(x + LIMIT).min(self.width as i32) {
-                        if self.is_wall(wx, wy) {
-                            best = best.min(cell_distance(x, y, wx, wy));
-                        }
-                    }
-                }
-                if best == f32::MAX {
-                    best = walls
-                        .iter()
-                        .map(|&(wx, wy)| cell_distance(x, y, wx, wy))
-                        .fold(f32::MAX, f32::min)
-                        .min(LIMIT as f32 * 4.0);
-                }
-                out[y as usize * self.width + x as usize] = best;
-            }
-        }
-        out
-    }
-}
-
-/// Distance from the centre of cell a to the nearest point of cell b.
-fn cell_distance(ax: i32, ay: i32, bx: i32, by: i32) -> f32 {
-    let dx = ((ax - bx).abs() as f32 - 0.5).max(0.0);
-    let dy = ((ay - by).abs() as f32 - 0.5).max(0.0);
-    (dx * dx + dy * dy).sqrt()
 }
 
 /// `TilesMap.GetH`: heights come in steps of 32 pixels.
