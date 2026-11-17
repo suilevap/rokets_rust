@@ -73,6 +73,11 @@ main
   blink or flash systems.
 - **Draw order lives in `render/layers.rs`.** A new kind of sprite gets a
   `Layer` there; nothing picks a z height or sort order of its own.
+- **C# axes differ from ours in y and z**: C# has y down and z (depth)
+  away from the camera; ours has y up and z towards it. Translate points, angles and 3D
+  turns through `units` (`from_cs`, `from_cs_rotation`); its doc lists
+  which signs flip. Sign-symmetric formulas hide such slips: compare with
+  the C# game.
 - The car only reads `PlayerIntent`; new control schemes and AI write it.
 - Physics and driving run in `FixedUpdate` at 60 Hz (the C# frame).
 - Tests are never in the same file as the code: public behaviour is
