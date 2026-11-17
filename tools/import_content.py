@@ -27,6 +27,7 @@ ITEMS = [
     ("Sprites/Gadget", "**/*.png", "Sprites/Gadget"),
     ("Sprites", "Gradient*.png", "Sprites"),
     ("Sprites", "WhitePixel.png", "Sprites"),
+    ("Sounds", "*.wav", "Sounds"),
 ]
 
 

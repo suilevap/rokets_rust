@@ -7,8 +7,9 @@ license = "MIT"
 rust-version = "1.97.1"
 
 [features]
-# Sound effects (`src/sound/playback.rs`). Off until the WAVs are imported
-# (see `src/sound/mod.rs`).
+default = ["sound"]
+# Sound effects (`src/sound/playback.rs`, the WAVs in `assets/Sounds`).
+# `--no-default-features` builds without them.
 sound = ["bevy/bevy_audio", "bevy/wav"]
 
 [dependencies]

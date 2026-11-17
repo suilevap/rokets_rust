@@ -16,6 +16,29 @@
   <div id="status">Loading…</div>
   <!-- CI fills in the commit and build time; a local build shows "dev". -->
   <div id="build" data-sha="__BUILD_SHA__" data-time="__BUILD_TIME__"></div>
+  <script>
+    // Sound: browsers start Web Audio suspended until the page is used, and
+    // the game creates its audio context before that. Keep every context and
+    // resume them on the first touches, clicks and keys. On iOS, "playback"
+    // lets the game be heard with the ring/silent switch set to silent.
+    (function () {
+      const contexts = [];
+      for (const name of ["AudioContext", "webkitAudioContext"]) {
+        const Base = window[name];
+        if (!Base) continue;
+        window[name] = class extends Base {
+          constructor(...args) { super(...args); contexts.push(this); }
+        };
+      }
+      try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) {}
+      const resume = () => {
+        for (const c of contexts) if (c.state !== "running") c.resume().catch(() => {});
+      };
+      for (const ev of ["pointerdown", "touchend", "click", "keydown"]) {
+        window.addEventListener(ev, resume, { capture: true, passive: true });
+      }
+    })();
+  </script>
   <script type="module">
     import init from "./tilerider.js";
     const status = document.getElementById("status");
