@@ -8,7 +8,7 @@
 
 use serde::Deserialize;
 
-use super::xna::{Items, XColor, XRect, XVec2, boolean, int_list};
+use super::xna::{Items, XColor, XRect, XVec2, boolean, int_list, lenient_int};
 use super::{ContentError, parse_asset};
 
 #[derive(Clone, Debug, Deserialize)]
@@ -163,6 +163,14 @@ pub struct EntityData {
     pub restrict_rotation: bool,
 }
 
+fn yes() -> bool {
+    true
+}
+
+fn many() -> i64 {
+    999
+}
+
 fn one() -> f32 {
     1.0
 }
@@ -199,10 +207,11 @@ pub struct TriggerData {
     pub id: i64,
     /// Area in cells.
     pub area: XRect,
-    /// How many times it fires.
-    #[serde(default)]
+    /// How many times it fires (`TriggerData`: 999 unless set).
+    #[serde(default = "many")]
     pub amount: i64,
-    #[serde(default, deserialize_with = "boolean")]
+    /// Whether it starts armed (yes unless set).
+    #[serde(default = "yes", deserialize_with = "boolean")]
     pub active: bool,
     /// Action references run on enter: a name, or a template like `NextMap()`.
     #[serde(default)]
@@ -229,6 +238,30 @@ pub struct ActionData {
     /// For `ActionSequence`: the names of the actions it runs.
     #[serde(default)]
     pub actions: Option<Items<String>>,
+    /// Run after this one (`ActionData.NextAction`).
+    #[serde(default)]
+    pub next_action: Option<String>,
+    /// `ActionSequence`: seconds between its actions.
+    #[serde(default)]
+    pub time_between_in_sec: f32,
+    /// The entity acted on; 0 or less: the one that set the action off.
+    #[serde(default, deserialize_with = "lenient_int")]
+    pub item_id: i64,
+    #[serde(default, deserialize_with = "boolean")]
+    pub deactivate: bool,
+    #[serde(default, deserialize_with = "int_list")]
+    pub trigger_ids: Vec<i64>,
+    /// `ApplyImpulseActionData`: speed change, C# units (y down).
+    #[serde(default)]
+    pub impulse: Option<XVec2>,
+    #[serde(default)]
+    pub random_impulse: Option<XVec2>,
+    /// `DamageEntity`: points (negative heals) and the direction of the
+    /// blow, C# degrees.
+    #[serde(default, deserialize_with = "lenient_int")]
+    pub damage: i64,
+    #[serde(default)]
+    pub direction: f32,
 }
 
 impl ActionData {
