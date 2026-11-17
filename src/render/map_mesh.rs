@@ -31,6 +31,7 @@ use crate::game::LoadedMap;
 use crate::light::bake::LightMap;
 use crate::map::grid::MapGrid;
 use crate::render::layers::FLOOR_TOP;
+use crate::units::from_cs_rotation;
 
 /// `MapManager.BackgroundColor` (CornflowerBlue): the clear colour, the
 /// bottom of the outland, and what pale tiles are mixed from.
@@ -191,12 +192,11 @@ fn build_floor(grid: &MapGrid, cell: f32, rng: &mut SmallRng) -> Mesh {
                 color = lerp3(BACKGROUND, color, alpha);
             }
             let half = (size - amount * size / 4.0) / 2.0;
-            let tilt = Vec3::new(
+            let mut rot = from_cs_rotation(
                 PI / 16.0 * (0.5 - rng.random::<f32>()),
                 PI / 16.0 * (0.5 - rng.random::<f32>()),
                 PI / 32.0 * (0.5 - rng.random::<f32>()),
             );
-            let mut rot = Quat::from_euler(EulerRot::XYZ, tilt.x, tilt.y, tilt.z);
             // `GetGradientDistancefieldValue` is zero on the outer rings too.
             if !big && d < 2.0 && d > 0.0 {
                 rot = wall_lean(&chamfer, grid.width, xi, yi) * rot;
@@ -224,9 +224,7 @@ fn build_floor(grid: &MapGrid, cell: f32, rng: &mut SmallRng) -> Mesh {
 /// `TilesMap`: a tile next to a wall is turned by the distance field's
 /// gradient (cells per cell, not normalised) × π/8, so its edge by the
 /// wall rises and it slopes down away from it, like a plate leaning on
-/// the wall. C# turned it by `Rotate(g.y, −g.x, 0)` in its y-down,
-/// depth-down space; that space is ours turned half a turn about x, so
-/// the same turn here is `g.y` about x, then `g.x` about y.
+/// the wall: C#'s `Rotate(g.y, −g.x, 0)`, `g` in map cells (y down).
 ///
 /// `chamfer` is `MapGrid::chamfer_distance` of a `width`-cell map; the
 /// caller keeps (x, y) off the outer rings, where the field reads 0.
@@ -234,7 +232,7 @@ pub fn wall_lean(chamfer: &[f32], width: usize, x: i32, y: i32) -> Quat {
     let at = |x: i32, y: i32| chamfer[y as usize * width + x as usize];
     let gx = (at(x + 1, y) - at(x - 1, y)) / 2.0;
     let gy = (at(x, y + 1) - at(x, y - 1)) / 2.0;
-    Quat::from_rotation_y(gx * PI / 8.0) * Quat::from_rotation_x(gy * PI / 8.0)
+    from_cs_rotation(gy * PI / 8.0, -gx * PI / 8.0, 0.0)
 }
 
 fn build_walls(grid: &MapGrid, light: &LightMap, cell: f32) -> Mesh {
