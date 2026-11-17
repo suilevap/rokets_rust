@@ -90,8 +90,8 @@ appear yet.
 `docs/media/` holds recorded clips (driving through Middleware, picking up
 a gear, crossing the finish to the next map). `docs/comparison/` holds side-by-side screenshots: the C# game on the left
 (taken through its debug command server, `GET /screenshot`), this port on
-the right. Not yet in the port: car shadows, the glow and dirty-lens
-effects, and the other entities.
+the right. Not yet in the port: the dirty-lens effect and the other
+entities.
 
 Headless screenshots on Linux without a GPU:
 

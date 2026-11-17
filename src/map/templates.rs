@@ -37,6 +37,11 @@ pub struct EntityTemplate {
     /// bullet-proof walls. Fixed ones marked `TryCastStaticShadow` cast it
     /// into the baked light instead ([`static_shadow_outline`]).
     pub casts_shadow: bool,
+    /// Its shadow is drawn while it moves (`render/shadow`), when not
+    /// baked. Gears and accelerators draw only their sprites (`Coin.Draw`
+    /// and `Accelerator.Draw` skip their components), so their baked
+    /// shadow is their only one.
+    pub draws_shadow: bool,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -116,6 +121,7 @@ pub fn template_for(e: &EntityData) -> Option<EntityTemplate> {
         pickup: false,
         spin: None,
         casts_shadow: false,
+        draws_shadow: true,
     };
     let template = match e.kind {
         EntityType::Tile => plain(map_sprite(Layer::GroundDecor)),
@@ -123,6 +129,7 @@ pub fn template_for(e: &EntityData) -> Option<EntityTemplate> {
             pickup: true,
             spin: Some(GEAR_SPIN),
             casts_shadow: true,
+            draws_shadow: false,
             ..plain(map_sprite(Layer::Coin))
         },
         // Towing (NonLinkable), bullets passing (IgnoreWeapon) and blowing
@@ -166,6 +173,7 @@ pub fn template_for(e: &EntityData) -> Option<EntityTemplate> {
             }),
             sprites: accelerator_arrows(e.scale),
             casts_shadow: true,
+            draws_shadow: false,
             ..plain(SpriteSpec::new("", 0.0, Layer::Accelerator))
         },
         EntityType::Bomb | EntityType::CoinDynamic | EntityType::Unknown => return None,
@@ -177,13 +185,25 @@ pub fn template_for(e: &EntityData) -> Option<EntityTemplate> {
         .then_some(template)
 }
 
+/// Its shadow is baked into the light: it never moves and is marked
+/// `TryCastStaticShadow` (`MapManager` then removed its `DynamicShadow`).
+fn bakes_shadow(e: &EntityData, template: &EntityTemplate) -> bool {
+    let fixed = template.body.is_some_and(|b| b.kind != BodyKind::Dynamic);
+    e.try_cast_static_shadow && template.casts_shadow && fixed
+}
+
+/// It casts a shadow sprite from the lamps (`render/shadow`): it has a
+/// shadow, draws it, and does not bake it.
+pub fn casts_sprite_shadow(e: &EntityData, template: &EntityTemplate) -> bool {
+    template.casts_shadow && template.draws_shadow && !bakes_shadow(e, template)
+}
+
 /// The outline a fixed entity's shadow is baked from, in map cells (y
 /// down), or `None` if it casts none into the light: a body that never
 /// moves, a shadow, and `TryCastStaticShadow` (`MapManager`, static
 /// shadows for static objects). `size` is its body's size in cells.
 pub fn static_shadow_outline(e: &EntityData, template: &EntityTemplate, size: [f32; 2]) -> Option<[[f32; 2]; 4]> {
-    let fixed = template.body.is_some_and(|b| b.kind != BodyKind::Dynamic);
-    if !(e.try_cast_static_shadow && template.casts_shadow && fixed) {
+    if !bakes_shadow(e, template) {
         return None;
     }
     // C# turned the body by `-DirectionDeg` in its y-down world.

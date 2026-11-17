@@ -5,15 +5,6 @@ repository's plan (`docs/plans/RUST_BEVY_MIGRATION.md`, section 9 onwards);
 this file keeps what came up along the way. Take an item into its own pull
 request; remove it here when it lands.
 
-## Deferred from MVP 0.1
-
-- **Car shadows** (`DynamicShadow`): sprite streaks from the nearest lamp
-  that casts dynamic shadows, split penumbra when the lamp is close, lamp
-  hand-over, ambient blob. Taken out of PR #1 as not close enough to the
-  original; the removed code is in commit 67be4b9. Read the author's
-  article on light and shadow first (moddb "Tile Rider: the history of
-  light and shadow…").
-
 ## Phone
 
 - **Accelerometer.** In the C# game it did not steer the car: it tilted the

@@ -13,6 +13,7 @@ pub mod light_layer;
 pub mod lines;
 pub mod map_mesh;
 pub mod outland;
+pub mod shadow;
 pub mod spin;
 pub mod sprite;
 pub mod wall_ao;
@@ -36,6 +37,7 @@ impl Plugin for RenderPlugin {
                 lines::LinePlugin,
                 additive_light::AdditiveLightPlugin,
                 wall_ao::WallAoPlugin,
+                shadow::ShadowPlugin,
             ))
             .add_systems(OnEnter(GameState::Playing), spawn_map_meshes);
     }

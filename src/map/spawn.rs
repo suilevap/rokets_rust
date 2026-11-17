@@ -12,9 +12,10 @@ use bevy::prelude::*;
 
 use crate::boost::Booster;
 use crate::game::{GameState, LoadedMap, MapEntity};
-use crate::map::templates::{BodyKind, BodySpec, EntityTemplate, template_for};
+use crate::map::templates::{BodyKind, BodySpec, EntityTemplate, casts_sprite_shadow, template_for};
 use crate::pickups::Pickup;
 use crate::render::animate::TintLoop;
+use crate::render::shadow::CastsShadow;
 use crate::render::spin::Spin;
 use crate::render::sprite::{SpriteTint, UnitQuad, sprite_bundle};
 use crate::units::{map_degrees_to_world, px};
@@ -69,6 +70,9 @@ fn spawn_map_entities(
             entity.insert(Pickup {
                 radius: size.max_element() / 2.0,
             });
+        }
+        if casts_sprite_shadow(e, &template) {
+            entity.insert(CastsShadow { size });
         }
         if let Some(rate) = template.spin {
             entity.insert(Spin(rate));
