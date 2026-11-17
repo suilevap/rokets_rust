@@ -2,7 +2,7 @@
 
 use tilerider::animation::{GRAY, WHITE, YELLOW};
 use tilerider::content::map::{EntityData, EntityType, MapData};
-use tilerider::map::templates::{BodyKind, static_shadow_outline, template_for};
+use tilerider::map::templates::{BodyKind, casts_sprite_shadow, static_shadow_outline, template_for};
 use tilerider::render::layers::Layer;
 
 fn entity(kind: &str, extra: &str) -> EntityData {
@@ -114,4 +114,20 @@ fn shadow_outlines_turn_with_the_entity() {
     let ys = o.map(|p| p[1]);
     let span = |v: [f32; 4]| v.iter().cloned().fold(f32::MIN, f32::max) - v.iter().cloned().fold(f32::MAX, f32::min);
     assert!((span(xs) - 1.0).abs() < 1e-5 && (span(ys) - 2.0).abs() < 1e-5, "{o:?}");
+}
+
+#[test]
+fn moving_objects_draw_their_shadow_unless_it_is_baked() {
+    let sprite_shadow = |kind: &str, extra: &str| {
+        let e = entity(kind, extra);
+        casts_sprite_shadow(&e, &template_for(&e).unwrap())
+    };
+    assert!(sprite_shadow("Box", ""));
+    assert!(sprite_shadow("Box", CASTS), "a loose box moves: its shadow cannot be baked");
+    assert!(!sprite_shadow("Box", &format!("{FIXED}{CASTS}")), "baked");
+    assert!(sprite_shadow("Box", FIXED), "fixed but not marked: drawn");
+    // Their `Draw` skips the shadow component.
+    assert!(!sprite_shadow("Coin", ""));
+    assert!(!sprite_shadow("Accelerator", ""));
+    assert!(!sprite_shadow("IgnoreWeaponBox", ""));
 }
