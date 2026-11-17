@@ -46,6 +46,9 @@ pub struct Style {
     pub lifetime: f32,
     /// Content name of the sprite under `Sprites/`.
     pub texture: &'static str,
+    /// Added to the picture (flashes, glows) rather than blended over it;
+    /// such particles have their own pool (`_poolAdditive`).
+    pub additive: bool,
 }
 
 impl Style {
@@ -83,6 +86,9 @@ pub struct Particle {
     pub age: f32,
     pub style: &'static Style,
     pub state: State,
+    /// Added to the style's scale all its life (`AddParticle` with a
+    /// `scaleRate`: the begin scale times the rate, then the same growth).
+    scale_offset: Vec2,
     /// May be replaced by a newer particle while alive.
     optional: bool,
 }
@@ -114,8 +120,17 @@ impl Pool {
 
     /// Adds a particle that lives out its life, if there is a slot.
     pub fn add(&mut self, style: &'static Style, position: Vec2, direction: f32, view_direction: f32) {
+        self.add_scaled(style, position, direction, view_direction, 1.0);
+    }
+
+    /// [`Pool::add`] starting `rate` times the style's begin size, then
+    /// growing as it does.
+    pub fn add_scaled(&mut self, style: &'static Style, position: Vec2, direction: f32, view_direction: f32, rate: f32) {
         if let Some(i) = self.free.pop_front() {
-            self.slots[i] = Some(new_particle(style, position, direction, view_direction, false));
+            let mut p = new_particle(style, position, direction, view_direction, false);
+            p.scale_offset = style.begin.scale * (rate - 1.0);
+            p.state.scale += p.scale_offset;
+            self.slots[i] = Some(p);
         }
     }
 
@@ -134,6 +149,7 @@ impl Pool {
                 continue;
             }
             p.state = p.style.state_at(p.age);
+            p.state.scale += p.scale_offset;
             p.view_direction += p.state.view_rotation * dt;
             p.direction += p.state.rotation * dt;
             p.position += Vec2::from_angle(p.direction) * p.state.speed * dt;
@@ -157,6 +173,7 @@ fn new_particle(style: &'static Style, position: Vec2, direction: f32, view_dire
         age: 0.0,
         style,
         state: style.begin,
+        scale_offset: Vec2::ZERO,
         optional,
     }
 }

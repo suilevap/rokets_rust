@@ -14,20 +14,49 @@ use bevy::prelude::*;
 
 use crate::game::{GameState, LoadedMap, MapEntity};
 use crate::particles::styles::CAR_BASE;
-use crate::particles::{Particle, Pool};
+use crate::particles::{Particle, Pool, Style};
 use crate::render::layers::Layer;
 use crate::units::px;
 
 /// `ParticleSystemManager.MaxParticleCount × CountRate` on desktop.
 const WORLD_POOL: usize = 128;
+/// `MaxParticleCountAdditive × CountRate`.
+const ADDITIVE_POOL: usize = 64;
 
-/// The world's particles. Effects add to it; it is cleared with the map.
+/// The world's particles, blended and additive. Effects add to them;
+/// they are cleared with the map.
 #[derive(Resource)]
-pub struct Particles(pub Pool);
+pub struct Particles {
+    blended: Pool,
+    additive: Pool,
+}
 
 impl Default for Particles {
     fn default() -> Self {
-        Particles(Pool::new(WORLD_POOL))
+        Particles {
+            blended: Pool::new(WORLD_POOL),
+            additive: Pool::new(ADDITIVE_POOL),
+        }
+    }
+}
+
+impl Particles {
+    fn pool(&mut self, style: &Style) -> &mut Pool {
+        if style.additive { &mut self.additive } else { &mut self.blended }
+    }
+
+    /// An effect that may give way to newer ones ([`Pool::try_add`]).
+    pub fn try_add(&mut self, style: &'static Style, at: Vec2, direction: f32, view_direction: f32) {
+        self.pool(style).try_add(style, at, direction, view_direction);
+    }
+
+    /// An effect that lives out its life ([`Pool::add_scaled`]).
+    pub fn add_scaled(&mut self, style: &'static Style, at: Vec2, direction: f32, view_direction: f32, rate: f32) {
+        self.pool(style).add_scaled(style, at, direction, view_direction, rate);
+    }
+
+    fn iter(&self) -> impl Iterator<Item = &Particle> {
+        self.blended.iter().chain(self.additive.iter())
     }
 }
 
@@ -36,7 +65,10 @@ impl Default for Particles {
 struct Batch {
     texture: &'static str,
     layer: Layer,
+    additive: bool,
 }
+
+type Key = (&'static str, Layer, bool);
 
 pub struct ParticlesPlugin;
 
@@ -54,11 +86,12 @@ impl Plugin for ParticlesPlugin {
 }
 
 fn clear(mut particles: ResMut<Particles>) {
-    particles.0.clear();
+    *particles = Particles::default();
 }
 
 fn step(time: Res<Time>, mut particles: ResMut<Particles>) {
-    particles.0.step(time.delta_secs());
+    particles.blended.step(time.delta_secs());
+    particles.additive.step(time.delta_secs());
 }
 
 fn layer_of(p: &Particle) -> Layer {
@@ -82,14 +115,14 @@ fn draw(
     particles: Res<Particles>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut batches: Query<(&Batch, &Mesh3d)>,
+    mut batches: Query<(&Batch, &Mesh3d, &mut Visibility)>,
 ) {
-    let mut quads: HashMap<(&'static str, Layer), Quads> = HashMap::new();
-    for p in particles.0.iter() {
+    let mut quads: HashMap<Key, Quads> = HashMap::new();
+    for p in particles.iter() {
         let Some(sprite) = map.sprites.get(p.style.texture) else {
             continue;
         };
-        let q = quads.entry((p.style.texture, layer_of(p))).or_default();
+        let q = quads.entry((p.style.texture, layer_of(p), p.style.additive)).or_default();
         let half = sprite.size * p.state.scale * px(1.0) / 2.0;
         let (x, y) = (Vec2::from_angle(p.view_direction) * half.x, Vec2::from_angle(p.view_direction).perp() * half.y);
         let z = layer_of(p).z();
@@ -97,24 +130,23 @@ fn draw(
             q.positions.push((p.position + corner).extend(z).to_array());
             q.uvs.push(uv);
         }
-        let light = map.light_at(p.position);
+        // Additive glows are light themselves, not lit (`DefaultWorldAdditive`).
+        let light = if p.style.additive { [1.0; 3] } else { map.light_at(p.position) };
         let [r, g, b, a] = p.state.color;
-        // XNA blended premultiplied colours; ours are straight.
+        // XNA blended premultiplied colours; ours are straight. Its
+        // additive blend weighed them by alpha once more (`SourceAlpha`).
         let straight = |c: f32, l: f32| if a > 0.0 { (c / a).min(1.0) * l } else { 0.0 };
-        let color = [straight(r, light[0]), straight(g, light[1]), straight(b, light[2]), a];
+        let alpha = if p.style.additive { a * a } else { a };
+        let color = [straight(r, light[0]), straight(g, light[1]), straight(b, light[2]), alpha];
         q.colors.extend([color; 4]);
     }
 
-    let mut existing: HashMap<(&'static str, Layer), Handle<Mesh>> = HashMap::new();
-    for (batch, mesh) in &mut batches {
-        existing.insert((batch.texture, batch.layer), mesh.0.clone());
-    }
-    for (key, mesh) in &existing {
-        if !quads.contains_key(key)
-            && let Some(mut m) = meshes.get_mut(mesh)
-        {
-            *m = build(Quads::default());
-        }
+    // An empty batch is hidden rather than given an empty mesh.
+    let mut existing: HashMap<Key, Handle<Mesh>> = HashMap::new();
+    for (batch, mesh, mut visibility) in &mut batches {
+        let key = (batch.texture, batch.layer, batch.additive);
+        *visibility = if quads.contains_key(&key) { Visibility::Inherited } else { Visibility::Hidden };
+        existing.insert(key, mesh.0.clone());
     }
     for (key, q) in quads {
         match existing.get(&key) {
@@ -128,16 +160,17 @@ fn draw(
                     continue;
                 };
                 commands.spawn((
-                    Name::new(format!("Particles {} {:?}", key.0, key.1)),
+                    Name::new(format!("Particles {} {:?}{}", key.0, key.1, if key.2 { " additive" } else { "" })),
                     MapEntity,
                     Batch {
                         texture: key.0,
                         layer: key.1,
+                        additive: key.2,
                     },
                     Mesh3d(meshes.add(build(q))),
                     MeshMaterial3d(materials.add(StandardMaterial {
                         base_color_texture: Some(sprite.image.clone()),
-                        alpha_mode: AlphaMode::Blend,
+                        alpha_mode: if key.2 { AlphaMode::Add } else { AlphaMode::Blend },
                         unlit: true,
                         double_sided: true,
                         cull_mode: None,
@@ -145,6 +178,7 @@ fn draw(
                         ..default()
                     })),
                     Transform::default(),
+                    Visibility::default(),
                     // Rebuilt every frame: never culled by stale bounds.
                     bevy::camera::visibility::NoFrustumCulling,
                 ));

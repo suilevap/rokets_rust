@@ -23,6 +23,7 @@ static FADE: Style = Style {
     },
     lifetime: 1.0,
     texture: "T",
+    additive: false,
 };
 
 #[test]

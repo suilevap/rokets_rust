@@ -54,16 +54,16 @@ pub fn car_smoke(
                 let slide = v + spin.0 * (rear[0] - pos).perp();
                 let dir = slide.to_angle();
                 for at in rear {
-                    particles.0.try_add(&WHEEL_TRAIL, at, dir, dir + PI);
+                    particles.try_add(&WHEEL_TRAIL, at, dir, dir + PI);
                 }
             }
             if rng.random::<f32>() < 0.2 - 0.5 * speed_amount {
                 let dir = behind + spread(rng);
-                particles.0.try_add(&EXHAUST, world(points.tail), dir, rng.random::<f32>() * 2.0 * PI);
+                particles.try_add(&EXHAUST, world(points.tail), dir, rng.random::<f32>() * 2.0 * PI);
             }
         } else if points.idle && v == Vec2::ZERO && rng.random_bool(0.02) {
             let dir = behind + spread(rng);
-            particles.0.try_add(&EXHAUST, world(points.tail), dir, rng.random::<f32>() * 2.0 * PI);
+            particles.try_add(&EXHAUST, world(points.tail), dir, rng.random::<f32>() * 2.0 * PI);
         }
     }
 }
