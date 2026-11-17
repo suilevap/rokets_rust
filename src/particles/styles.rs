@@ -153,6 +153,76 @@ pub static BOOM_SMOKE: Style = Style {
     additive: false,
 };
 
+/// `_smokeCrashedStyle`: thick black smoke over a wreck, shrinking as it
+/// thins over six seconds.
+pub static CRASH_SMOKE: Style = Style {
+    begin: State {
+        speed: 4.0 / 32.0,
+        scale: Vec2::splat(3.0),
+        view_rotation: -0.3,
+        rotation: 0.0,
+        color: color(0.0, 0.0, 0.0),
+        height: SMOKE_START,
+    },
+    end: State {
+        speed: 4.0 / 32.0,
+        scale: Vec2::splat(1.0),
+        view_rotation: -0.05,
+        rotation: 0.0,
+        color: TRANSPARENT,
+        height: SMOKE_END,
+    },
+    lifetime: 6.0,
+    texture: "Particles\\Smoke",
+    additive: false,
+};
+
+/// `_boomStyle`: a fiery streak flying out of a wreck.
+pub static WRECK_FIRE: Style = Style {
+    begin: State {
+        speed: 64.0 * 1.5 / 32.0,
+        scale: Vec2::new(1.0, 0.5),
+        view_rotation: 0.0,
+        rotation: 0.0,
+        color: color(1.0, 1.0, 0.0),
+        height: SMOKE_START,
+    },
+    end: State {
+        speed: 16.0 * 1.5 / 32.0,
+        scale: Vec2::new(2.0, 0.25),
+        view_rotation: 0.0,
+        rotation: 0.0,
+        color: TRANSPARENT,
+        height: SMOKE_START - 2.0 / 32.0,
+    },
+    lifetime: 0.75,
+    texture: "Particles\\firetrail",
+    additive: true,
+};
+
+/// `_boomStyle2`: a thinner, faster streak.
+pub static WRECK_SPARK: Style = Style {
+    begin: State {
+        speed: 32.0 * 1.5 / 32.0,
+        scale: Vec2::new(0.25, 0.05),
+        view_rotation: 0.0,
+        rotation: 0.0,
+        color: color(1.0, 1.0, 0.0),
+        height: SMOKE_START + 1.0 / 32.0,
+    },
+    end: State {
+        speed: 64.0 * 1.5 / 32.0,
+        scale: Vec2::new(1.0, 0.25),
+        view_rotation: 0.0,
+        rotation: 0.0,
+        color: TRANSPARENT,
+        height: SMOKE_START + 1.0 / 32.0,
+    },
+    lifetime: 0.8,
+    texture: "Particles\\firetrail",
+    additive: true,
+};
+
 /// `GetScaleForEnd`: the size rate that makes [`BOOM_RING`] end about
 /// `range` world units across its radius, for a `Circle` texture
 /// `texture_width` pixels wide.
@@ -162,11 +232,12 @@ pub fn ring_rate(range: f32, texture_width: f32) -> f32 {
 }
 
 /// Every texture a style here draws with, to load with the map.
-pub const TEXTURES: [&str; 6] = [
+pub const TEXTURES: [&str; 7] = [
     WHEEL_TRAIL.texture,
     EXHAUST.texture,
     BOMB_BEEP.texture,
     BOOM_FLASH.texture,
     BOOM_FIRE.texture,
     BOOM_SMOKE.texture,
+    WRECK_FIRE.texture,
 ];

@@ -19,6 +19,7 @@ use crate::game::{GameState, LoadedMap, MapEntity};
 use crate::render::camera::CameraTarget;
 use crate::render::layers::Layer;
 use crate::explosion::Health;
+use crate::game_mode::Wreckable;
 use crate::render::shadow::CastsShadow;
 use crate::render::sprite::{SpriteTint, UnitQuad, sprite_bundle};
 use crate::units::{map_degrees_to_world, px};
@@ -105,6 +106,10 @@ pub fn spawn_player_car(
         CameraTarget { radius, max_speed: params.max_speed },
         CastsShadow { size },
         Health::full(car.max_health),
+        Wreckable {
+            sprites: ["Destroyed1", "Destroyed2"].map(|d| car.part_sprite(d).unwrap_or_default()),
+            scale: car.scale,
+        },
         smoke::SmokePoints {
             wheel: car
                 .left_wheel_position

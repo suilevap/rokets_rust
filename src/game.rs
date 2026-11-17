@@ -88,7 +88,7 @@ fn sprites_for(map: &MapData, cars: &CarCatalog) -> Vec<String> {
     for player in map.players.iter() {
         if let Some(car) = cars.get(&player.car_name) {
             names.extend(car.base_sprite());
-            for part in ["Body", "Wheel"] {
+            for part in ["Body", "Wheel", "Destroyed1", "Destroyed2"] {
                 names.extend(car.part_sprite(part));
             }
         }
