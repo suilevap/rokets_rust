@@ -15,6 +15,8 @@ use avian2d::prelude::LinearVelocity;
 use bevy::core_pipeline::tonemapping::Tonemapping;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
+use rand::rngs::SmallRng;
+use rand::{Rng, SeedableRng};
 
 use crate::game::{GameState, LoadedMap};
 
@@ -204,6 +206,7 @@ pub struct CameraPlugin;
 impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<ViewRotation>()
+            .init_resource::<CameraShake>()
             .add_systems(Startup, spawn_camera)
             .add_systems(PreUpdate, fit_view_to_window)
             .add_systems(
@@ -262,6 +265,45 @@ fn snap_to_target(
     }
 }
 
+/// `Camera2D.Shake`: a jolt that dies away in a fraction of a second, the
+/// view thrown about by up to `amount` world units each frame.
+#[derive(Resource)]
+pub struct CameraShake {
+    amount: f32,
+    /// 1 at a jolt, easing to 0 at 6 per second (`Hardastic(0, 6)`).
+    left: f32,
+    rng: SmallRng,
+}
+
+impl Default for CameraShake {
+    fn default() -> Self {
+        CameraShake {
+            amount: 0.0,
+            left: 0.0,
+            rng: SmallRng::seed_from_u64(3),
+        }
+    }
+}
+
+impl CameraShake {
+    /// Adds a jolt of `amount` (0..1, as C# called `Shake`) to what is left
+    /// of the last one; at most 2 units.
+    pub fn add(&mut self, amount: f32) {
+        self.amount = (self.amount * self.left + amount * 2.0).min(2.0);
+        self.left = 1.0;
+    }
+
+    /// This frame's offset of the view.
+    fn step(&mut self, dt: f32) -> Vec2 {
+        if self.left <= 0.1 {
+            return Vec2::ZERO;
+        }
+        self.left -= self.left * (6.0 * dt).min(1.0);
+        let r = |rng: &mut SmallRng| rng.random::<f32>() * 2.0 - 1.0;
+        Vec2::new(r(&mut self.rng), r(&mut self.rng)) * self.amount * self.left
+    }
+}
+
 /// Sets the field of view for the window's shape and eases the view's turn
 /// between landscape and portrait.
 fn fit_view_to_window(
@@ -303,8 +345,10 @@ fn follow_target(
     time: Res<Time>,
     view: Res<ViewRotation>,
     targets: CameraTargets,
+    mut shake: ResMut<CameraShake>,
     mut cameras: Query<(&mut MainCamera, &mut Transform, &Projection)>,
 ) {
+    let jolt = shake.step(time.delta_secs());
     let dt = time.delta_secs();
     for (mut cam, mut transform, projection) in &mut cameras {
         let Projection::Perspective(projection) = projection else {
@@ -317,6 +361,7 @@ fn follow_target(
         cam.ground = cam.ground.lerp(cam.focus, ease(FOLLOW_RATE, dt));
         cam.scale += (frame.scale - cam.scale) * ease(SCALE_RATE, dt);
         *transform = cam.transform(view.up());
+        transform.translation += jolt.extend(0.0);
     }
 }
 

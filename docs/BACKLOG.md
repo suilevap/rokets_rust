@@ -18,8 +18,8 @@ request; remove it here when it lands.
   on a real phone through a pull request preview.
 - **Force feedback.** One event in C# (`ForceFeedback`): hard head-on hits
   on walls (`Car.cs`, impact over 0.4), damage, the accelerator gadget. It
-  vibrated the phone or gamepad and shook the camera. Port both: camera
-  shake works everywhere; vibration via `navigator.vibrate` on Android
+  vibrated the phone or gamepad and shook the camera. The shake is in
+  (`feedback`); still to port: vibration via `navigator.vibrate` on Android
   browsers (none on iOS), the gamepad's `vibrationActuator` in Chrome, Bevy
   gamepad rumble natively. About half a day.
 
