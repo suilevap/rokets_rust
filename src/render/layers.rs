@@ -64,6 +64,9 @@ pub enum Layer {
     GroundDecor,
     /// Accelerator pads (`DepthConst.Accelerator`, just under the ground).
     Accelerator,
+    /// Shadows of cars and loose objects (`DepthConst.DynamicShadow`):
+    /// over the ground decor and pads, under everything that casts them.
+    Shadow,
     /// Boxes (`DepthConst.CustomEntity`, the car's height).
     Prop,
     /// The car's chassis (`DepthConst.CarBase`).
@@ -77,9 +80,10 @@ pub enum Layer {
 }
 
 impl Layer {
-    pub const ALL: [Layer; 7] = [
+    pub const ALL: [Layer; 8] = [
         Layer::GroundDecor,
         Layer::Accelerator,
+        Layer::Shadow,
         Layer::Prop,
         Layer::CarBase,
         Layer::CarWheel,
