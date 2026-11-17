@@ -48,7 +48,8 @@ main
 | `controls` | `PlayerIntent` (where to go, aim, fire) written by keyboard, gamepad and touch schemes; the last one used is active; screen directions are turned into the world by `ViewRotation` | `IControl`, `CompositePlayerControl` |
 | `car/drive` | The driving model as a pure function, run at 60 Hz | `Car.MovementControl`, `Brake`, `AdditionalFriction` |
 | `car` | Spawns the player's car on Avian; sprites; front wheels; the cabin swaying on two springs pushed by the front and back points' acceleration, idling at rest (`car/cabin`); smoke (`car/smoke`: streaks behind slipping rear wheels, exhaust puffs when slow, idle puffs); impacts (`car/impact`: on a contact's start, the speed relative to what it hit over twice the top speed; above 0.2, a `CarImpact` message and sparks off the contact point) | `Car`, `ControlableEntity`, `Car.CreateTrail`, `Car.OnCollide`, `EffectManager.CollideEffect` |
-| `triggers` | Trigger areas; only level-end actions run so far | `TriggerManager`, `ActionTemplates` |
+| `triggers` | Trigger areas painted into a cell map in the map's order (later over earlier); the player and the triggers' subscribers set them off, one trigger at a time; enter and leave actions, `Amount` uses, armed or not; level end | `TriggerManager` |
+| `actions` | `RunAction` messages: a map action or a template (`ActivateEntity(1001)`), resolved in `content::actions` (`Act`); sequences (now or `TimeBetweenInSec` apart), `NextAction`, `RunOnMapStart`; carried out by messages: entities (de)activated (hidden, out of the physics) or destroyed (explosives blow up, the player's car wrecks), triggers armed, impulses, damage and healing, level end, restart. Actions not ported yet are logged once per map | `ActionRunner`, `ActionTemplates`, `TriggerManager.RunAction` |
 | `pickups` | `Pickup`: collected by driving into it; the count | `Coin` |
 | `boost` | `Booster`: throws touching bodies along its facing and plays its flash | `Accelerator` |
 | `explosion` | `Health`, `Hit`, `Destroyed`; `Explosion` messages throw dynamic bodies away from the blast (one push each, as strong as Farseer's rays together: angle covered × force × 180/π, fading to the range's edge) and hit what can be hurt in range, walls sheltering what is behind them, with the boom particles; `Explosive` blows up on touch (bombs) or after a fuse once hit (red boxes, so chains); bombs beep | `WeaponHelper.CreateExplosion`, Farseer `Explosion`, `Bomb`, `DamagableBox`, `ControlableEntity.TakeDamage` |
@@ -94,7 +95,7 @@ main
 
 Everything outside MVP 0.1: menus and HUD, music, localisation, saves;
 weapons and gadgets; other cars and AI; doors, bombs, teleports, platforms,
-fake walls; towing; respawn points and lives (death always restarts the level); the other ~74 action types; most particle effects (the pool and the car's smoke are in);
+fake walls; towing; respawn points and lives (death always restarts the level); the other ~60 action types (doors, buttons, teleports, variables, camera focus, clones, …); most particle effects (the pool and the car's smoke are in);
 slow motion; the agent/command server; editor hot reload. Rendering gaps:
 tyre marks,
 dynamic lights, the dirty-lens effect, per-map camera zoom.

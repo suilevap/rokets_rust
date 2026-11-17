@@ -19,7 +19,7 @@ use bevy::prelude::*;
 
 use crate::content::cars::CarData;
 use crate::controls::{LocalPlayer, PlayerIntent};
-use crate::game::{GameState, LoadedMap, MapEntity};
+use crate::game::{GameState, LoadedMap, MapEntity, MapId};
 use crate::render::camera::CameraTarget;
 use crate::render::layers::Layer;
 use crate::explosion::Health;
@@ -115,6 +115,7 @@ pub fn spawn_player_car(
     let mut entity = commands.spawn((
         Name::new(format!("Player car {}", car.name)),
         MapEntity,
+        MapId(player.id),
         LocalPlayer,
         PlayerIntent::default(),
         CameraTarget { radius, max_speed: params.max_speed },
