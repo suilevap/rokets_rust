@@ -33,6 +33,14 @@ pub const FLOOR_TOP: f32 = -0.15;
 /// outland under it and nothing else.
 pub const LIGHT_Z: f32 = FLOOR_TOP / 2.0;
 
+/// Height of the darkening at the foot of walls (`DepthConst.AmbientOcclusion`,
+/// the ground): over the floor tiles, under the light layer.
+pub const AO_Z: f32 = FLOOR_TOP * 0.75;
+
+/// Its `depth_bias`: before the light layer and every sprite, so ground
+/// decor (finish markings, signs) lies on top of it, as in C#.
+pub const AO_DEPTH_BIAS: f32 = -2.0 * BIAS_PER_RANK;
+
 /// The light layer's `depth_bias`: sorted before every sprite layer, so it
 /// never multiplies a sprite drawn before it.
 pub const LIGHT_DEPTH_BIAS: f32 = -BIAS_PER_RANK;

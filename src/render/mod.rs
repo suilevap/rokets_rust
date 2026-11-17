@@ -15,6 +15,7 @@ pub mod map_mesh;
 pub mod outland;
 pub mod spin;
 pub mod sprite;
+pub mod wall_ao;
 pub mod wall_outline;
 
 use bevy::prelude::*;
@@ -34,6 +35,7 @@ impl Plugin for RenderPlugin {
                 sprite::SpritePlugin,
                 lines::LinePlugin,
                 additive_light::AdditiveLightPlugin,
+                wall_ao::WallAoPlugin,
             ))
             .add_systems(OnEnter(GameState::Playing), spawn_map_meshes);
     }
