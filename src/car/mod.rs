@@ -5,9 +5,10 @@
 //! the size of the car's `Base` sprite, mass from `Cars.xml`, friction 0.8,
 //! bounce 0.5, linear damping `0.95 × map friction`, angular damping 9.
 //! Drawn from its own sprites: the chassis (`Base`), two front wheels that
-//! turn towards the stick, and the cabin (`Body`) on top.
+//! turn towards the stick, and the cabin (`Body`) on top. Smoke: `smoke`.
 
 pub mod drive;
+pub mod smoke;
 
 use avian2d::prelude::*;
 use bevy::prelude::*;
@@ -51,8 +52,12 @@ pub struct CarPlugin;
 
 impl Plugin for CarPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::Playing), spawn_player_car)
-            .add_systems(FixedUpdate, drive_cars.run_if(in_state(GameState::Playing)))
+        app.insert_resource(smoke::SmokeRng(rand::SeedableRng::seed_from_u64(7)))
+            .add_systems(OnEnter(GameState::Playing), spawn_player_car)
+            .add_systems(
+                FixedUpdate,
+                (drive_cars, smoke::car_smoke).chain().run_if(in_state(GameState::Playing)),
+            )
             .add_systems(Update, turn_front_wheels.run_if(in_state(GameState::Playing)));
     }
 }
@@ -98,6 +103,13 @@ pub fn spawn_player_car(
         PlayerIntent::default(),
         CameraTarget { radius, max_speed: params.max_speed },
         CastsShadow { size },
+        smoke::SmokePoints {
+            wheel: car
+                .left_wheel_position
+                .map_or(Vec2::ZERO, |w| Vec2::new(w.x, -w.y) * px(1.0) * car.scale),
+            tail: Vec2::new(-radius, 0.0),
+            idle: car.load_wheel_body_color_views,
+        },
         Car {
             params,
             drive: DriveState::default(),
