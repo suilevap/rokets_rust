@@ -188,6 +188,9 @@ Sprites/Entities/SmallWall.png
 Sprites/Entities/TeslaGenInner.png
 Sprites/Entities/TeslaGenOuter.png
 Sprites/Entities/box.png
+Sprites/Gadget/ChainActive.png
+Sprites/Gadget/ChainInactive.png
+Sprites/Gadget/bomb.png
 Sprites/Gradient2Pixel.png
 Sprites/Gradient2PixelMegaReplace.png
 Sprites/Gradient4Pixel.png

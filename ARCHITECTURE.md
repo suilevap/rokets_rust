@@ -29,7 +29,7 @@ main
 | `map/spawn` | Builds entities from templates: sprite quads, Avian bodies (box, friction 0.8, bounce 0.5, C# damping) and behaviour components | `Entity`, `PhysicEntity` |
 | `light/bake` | The static light, baked on the CPU as `LightManager` drew it: a target ~512 texels long over the map and 4 cells around it, ambient with a white border, per lamp the `flash2` spot with black shadow quads behind wall edges facing it, and fading ones behind fixed objects' far edges (`TryCastStaticShadow`), added twice turned ±0.02 rad (penumbra); the light layer is that blurred (½ ¼ ⅛ copies) plus full light over the void; the walls' light is it at ¼ size, blurred, read per texel; additive lamps also fill the additive light and a coarse map of where it reaches. Matched light targets saved from the C# game when ported (PRs #7, #11); `examples/light_dump` writes ours to compare. Kept on the CPU for gameplay and shadows | `LightManager`, `MapManager.AddOutSideLight` |
 | `light/shadow_lamps` | Which lamp throws a moving object's shadow, per spot (4 light texels): each lamp for dynamic shadows claims the spots in its box it can see (a walk a unit at a time against wall cells) unless a lamp seen from there is nearer. Plain data, unit-tested | `LightManager.FillStaticLightPos`, `GetStaticLightInfo`, `MapManager.LineCollide` |
-| `particles` | Particles as plain data: a `Style` is a begin and an end state (speed, scale, spin, turn, premultiplied colour, height) and a lifetime, values moving linearly; a fixed `Pool` (128) where optional effects give way to newer ones when full and the others live out their life. `particles/styles` holds the C# styles in our units (only those something spawns). Unit-tested | `Particles/`, `ParticleSystemManager` |
+| `particles` | Particles as plain data, blended or additive (own pools): a `Style` is a begin and an end state (speed, scale, spin, turn, premultiplied colour, height) and a lifetime, values moving linearly; a fixed `Pool` (128) where optional effects give way to newer ones when full and the others live out their life. `particles/styles` holds the C# styles in our units (only those something spawns). Unit-tested | `Particles/`, `ParticleSystemManager` |
 | `light/raster` | A software stand-in for the render-target drawing the C# light used: linear-sampled sprites, vertex-coloured triangles, premultiplied alpha and additive blending into a saturating target, `BlurSurface` | `LightManager.DrawOnLightMap`, XNA blend states |
 | `game` | States `Loading → Playing` (`Failed`), `LoadedMap`, `MapEntity` (despawned on leaving a map), `ChangeMap` (restart / next) | `MapManager.SetMap` |
 | `render/map_mesh` | Floor of loose, tilted tiles, always below the ground plane, those next to a wall leaning on it (edge by the wall up, turned by the distance field's gradient × π/8); walls as blocks with fading faces and their light in the vertex colours; tiles are lit by the light layer | `TilesMap.AddTiles2`, `Primitive3d`, `RenderSettings` "Mul_Add05" |
@@ -51,6 +51,7 @@ main
 | `triggers` | Trigger areas; only level-end actions run so far | `TriggerManager`, `ActionTemplates` |
 | `pickups` | `Pickup`: collected by driving into it; the count | `Coin` |
 | `boost` | `Booster`: throws touching bodies along its facing and plays its flash | `Accelerator` |
+| `explosion` | `Health`, `Hit`, `Destroyed`; `Explosion` messages throw dynamic bodies away from the blast (one push each, as strong as Farseer's rays together: angle covered × force × 180/π, fading to the range's edge) and hit what can be hurt in range, walls sheltering what is behind them, with the boom particles; `Explosive` blows up on touch (bombs) or after a fuse once hit (red boxes, so chains); bombs beep | `WeaponHelper.CreateExplosion`, Farseer `Explosion`, `Bomb`, `DamagableBox`, `ControlableEntity.TakeDamage` |
 | `render/spin` | `Spin`: turns on the spot | `Coin` |
 | `animation` | Animation as plain data: `Wave` (sawtooth / triangle phase over game time), `ColorTrack` (colour keyframes, stepped or blended), `Pulse` (one-shot blend). Unit-tested | `PhaseHelper`, `PeriodicUpdate.RemainPart` |
 | `render/animate` | `TintLoop` (a colour track on a wave, per sprite) and `TintPulse` (a one-shot blend over an entity's sprites); game time pauses and slows with the game, and loops on the same wave stay in step | `PhaseHelper` users |
@@ -90,7 +91,7 @@ main
 
 Everything outside MVP 0.1: menus and HUD, sound, localisation, saves;
 weapons and gadgets; other cars and AI; doors, bombs, teleports, platforms,
-fake walls; towing, box damage and explosions; the other ~74 action types; most particle effects (the pool and the car's smoke are in);
+fake walls; towing; what happens when a car's health runs out (`Destroyed` is sent); the other ~74 action types; most particle effects (the pool and the car's smoke are in);
 slow motion; the agent/command server; editor hot reload. Rendering gaps:
 the cabin's springy wobble, tyre marks,
 dynamic lights, the dirty-lens effect, per-map camera zoom.

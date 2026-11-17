@@ -44,6 +44,7 @@ pub static WHEEL_TRAIL: Style = Style {
     },
     lifetime: 1.0,
     texture: "Gradient4Pixel",
+    additive: false,
 };
 
 /// `_smokeCarTrailStyle`: an exhaust puff shot backwards from the car,
@@ -67,7 +68,105 @@ pub static EXHAUST: Style = Style {
     },
     lifetime: 0.5,
     texture: "Particles\\Smoke",
+    additive: false,
 };
 
+/// `DepthConst.SmokeStart`.
+const SMOKE_START: f32 = -19.1 / 32.0 / 16.0;
+/// `DepthConst.SmokeEnd`.
+const SMOKE_END: f32 = -24.0 / 32.0 / 16.0;
+/// `DepthConst.Bomb - 0.01`: just over a bomb.
+const OVER_BOMB: f32 = -0.01;
+
+const fn color(r: f32, g: f32, b: f32) -> [f32; 4] {
+    [r, g, b, 1.0]
+}
+
+const fn still(scale: f32, view_rotation: f32, color: [f32; 4], height: f32) -> State {
+    State {
+        speed: 0.0,
+        scale: Vec2::splat(scale),
+        view_rotation,
+        rotation: 0.0,
+        color,
+        height,
+    }
+}
+
+/// `_bip2Style`: a bomb's red ping, once a second or so.
+pub static BOMB_BEEP: Style = Style {
+    begin: still(0.5, 0.0, color(1.0, 0.0, 0.0), OVER_BOMB),
+    end: still(2.0, 0.0, TRANSPARENT, OVER_BOMB),
+    lifetime: 0.5,
+    texture: "Particles\\Circle",
+    additive: true,
+};
+
+/// `_boomCircleEffect`: the blast's ring, sized to its range
+/// ([`ring_rate`]).
+pub static BOOM_RING: Style = Style {
+    begin: still(0.5, 0.0, color(1.0, 1.0, 1.0), OVER_BOMB),
+    end: still(4.0, 0.0, TRANSPARENT, OVER_BOMB),
+    lifetime: 0.5,
+    texture: "Particles\\Circle",
+    additive: true,
+};
+
+/// `_boomStyleCircle`: a big yellow flash shrinking as it turns.
+pub static BOOM_FLASH: Style = Style {
+    begin: still(12.5, -1.0, color(1.0, 1.0, 0.0), SMOKE_START + 2.0 / 32.0),
+    end: still(1.0, 1.0, TRANSPARENT, SMOKE_START),
+    lifetime: 0.75,
+    texture: "Particles\\flash2",
+    additive: true,
+};
+
+/// `_boomStyleCircle2`: the fireball.
+pub static BOOM_FIRE: Style = Style {
+    begin: still(0.5, 0.0, color(1.0, 1.0, 1.0), SMOKE_START + 2.0 / 32.0),
+    end: still(2.0, 0.0, TRANSPARENT, SMOKE_START),
+    lifetime: 0.8,
+    texture: "Particles\\Explosion",
+    additive: true,
+};
+
+/// `_smokeFastStyle`: black smoke left by a blast.
+pub static BOOM_SMOKE: Style = Style {
+    begin: State {
+        speed: 4.0 / 32.0,
+        scale: Vec2::splat(2.25),
+        view_rotation: -0.5,
+        rotation: 0.0,
+        color: color(0.0, 0.0, 0.0),
+        height: SMOKE_START,
+    },
+    end: State {
+        speed: 0.0,
+        scale: Vec2::splat(4.5),
+        view_rotation: -0.05,
+        rotation: 0.0,
+        color: TRANSPARENT,
+        height: SMOKE_END,
+    },
+    lifetime: 1.0,
+    texture: "Particles\\Smoke",
+    additive: false,
+};
+
+/// `GetScaleForEnd`: the size rate that makes [`BOOM_RING`] end about
+/// `range` world units across its radius, for a `Circle` texture
+/// `texture_width` pixels wide.
+pub fn ring_rate(range: f32, texture_width: f32) -> f32 {
+    let growth = BOOM_RING.end.scale.x - BOOM_RING.begin.scale.x;
+    range / (texture_width / 2.0 / 32.0) - growth
+}
+
 /// Every texture a style here draws with, to load with the map.
-pub const TEXTURES: [&str; 2] = [WHEEL_TRAIL.texture, EXHAUST.texture];
+pub const TEXTURES: [&str; 6] = [
+    WHEEL_TRAIL.texture,
+    EXHAUST.texture,
+    BOMB_BEEP.texture,
+    BOOM_FLASH.texture,
+    BOOM_FIRE.texture,
+    BOOM_SMOKE.texture,
+];

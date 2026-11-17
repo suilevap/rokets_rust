@@ -1,6 +1,6 @@
 //! Builds the map's entities from their templates (`templates.rs`): a
 //! sprite, a physics body, and the components that give them behaviour
-//! (`Pickup`, `Booster`, `Spin`, `TintLoop`). Nothing here or later looks
+//! (`Pickup`, `Booster`, `Spin`, `TintLoop`, `Explosive`, `Beeps`). Nothing here or later looks
 //! at the map's entity type.
 //!
 //! Bodies follow the C# entities (`Entity`, `PhysicEntity`): a box the
@@ -11,6 +11,7 @@ use avian2d::prelude::*;
 use bevy::prelude::*;
 
 use crate::boost::Booster;
+use crate::explosion::Beeps;
 use crate::game::{GameState, LoadedMap, MapEntity};
 use crate::map::templates::{BodyKind, BodySpec, EntityTemplate, casts_sprite_shadow, template_for};
 use crate::pickups::Pickup;
@@ -73,6 +74,13 @@ fn spawn_map_entities(
         }
         if casts_sprite_shadow(e, &template) {
             entity.insert(CastsShadow { size });
+        }
+        if let Some(explosive) = template.explosive {
+            entity.insert(explosive);
+        }
+        if template.beeps {
+            // Each bomb its own period, 1–2 s (`1 + NextFloatFake()`).
+            entity.insert(Beeps::every(1.0 + (e.id as f32 * 0.618_034).fract()));
         }
         if let Some(rate) = template.spin {
             entity.insert(Spin(rate));

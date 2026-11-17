@@ -74,7 +74,7 @@ fn accelerators_are_boosting_sensors_with_arrows() {
 
 #[test]
 fn types_not_ported_have_no_template() {
-    for kind in ["Bomb", "CoinDynamic", "Spaceship"] {
+    for kind in ["CoinDynamic", "Spaceship"] {
         assert!(template_for(&entity(kind, "")).is_none(), "{kind}");
     }
     assert_eq!(entity("Spaceship", "").kind, EntityType::Unknown);
@@ -130,4 +130,20 @@ fn moving_objects_draw_their_shadow_unless_it_is_baked() {
     assert!(!sprite_shadow("Coin", ""));
     assert!(!sprite_shadow("Accelerator", ""));
     assert!(!sprite_shadow("IgnoreWeaponBox", ""));
+}
+
+#[test]
+fn bombs_blow_up_on_touch_and_red_boxes_when_hit() {
+    use tilerider::explosion::Trigger;
+    let bomb = template_for(&entity("Bomb", "")).unwrap();
+    let ex = bomb.explosive.expect("a bomb explodes");
+    assert_eq!(ex.trigger, Trigger::Touch);
+    assert_eq!((ex.blast.range, ex.blast.damage), (2.0, 20));
+    assert_eq!(bomb.body.unwrap().kind, BodyKind::Sensor);
+    assert!(bomb.beeps && bomb.spin.is_some());
+
+    let red = template_for(&entity("DamagableBox", "")).unwrap();
+    let ex = red.explosive.expect("a red box explodes");
+    assert!(matches!(ex.trigger, Trigger::Hit { .. }));
+    assert!(template_for(&entity("Box", "")).unwrap().explosive.is_none());
 }
