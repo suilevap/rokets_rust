@@ -38,6 +38,8 @@ pub struct CarImpact {
     pub at: Vec2,
     pub away: Vec2,
     pub strength: f32,
+    /// The car's velocity going into the hit.
+    pub velocity: Vec2,
 }
 
 /// Runs in `FixedUpdate`, before the physics step.
@@ -97,6 +99,7 @@ pub fn detect_impacts(
                 at,
                 away,
                 strength,
+                velocity: speed,
             });
         }
     }

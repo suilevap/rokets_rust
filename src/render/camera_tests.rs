@@ -138,6 +138,7 @@ fn camera_world() -> (World, Entity, Entity) {
     let mut world = World::new();
     world.insert_resource(Time::<()>::default());
     world.insert_resource(ViewRotation::default());
+    world.insert_resource(CameraShake::default());
     let camera = world
         .spawn((
             MainCamera::default(),
@@ -246,4 +247,17 @@ fn map_entry_resets_previous_focus_and_zoom_and_handles_fixed_targets() {
     assert_eq!(cam.ground, Vec2::new(1.0, -1.0));
     assert_eq!(cam.focus, cam.ground);
     assert_eq!(cam.scale, 1.0);
+}
+
+#[test]
+fn a_jolt_shakes_the_view_then_dies_away() {
+    let mut shake = CameraShake::default();
+    assert_eq!(shake.step(1.0 / 60.0), Vec2::ZERO, "still until jolted");
+    shake.add(0.5);
+    let first: f32 = (0..5).map(|_| shake.step(1.0 / 60.0).length()).sum();
+    assert!(first > 0.0 && first < 5.0 * 1.0, "{first}");
+    for _ in 0..60 {
+        shake.step(1.0 / 60.0);
+    }
+    assert_eq!(shake.step(1.0 / 60.0), Vec2::ZERO, "settled within a second");
 }
