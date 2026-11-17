@@ -47,7 +47,7 @@ main
 | `render/camera` | Perspective camera with a 0.7 s velocity lead and separate eased focus/position/zoom. Solo targets zoom out with speed (height 16–40); groups fit six-radius margins within those zoom limits. Map entry snaps after car spawning. Portrait rotates the view and controls a quarter turn while keeping short-side coverage (`ViewRotation`) | `Camera2D` |
 | `controls` | `PlayerIntent` (where to go, aim, fire) written by keyboard, gamepad and touch schemes; the last one used is active; screen directions are turned into the world by `ViewRotation` | `IControl`, `CompositePlayerControl` |
 | `car/drive` | The driving model as a pure function, run at 60 Hz | `Car.MovementControl`, `Brake`, `AdditionalFriction` |
-| `car` | Spawns the player's car on Avian; sprites; front wheels; smoke (`car/smoke`: streaks behind slipping rear wheels, exhaust puffs when slow, idle puffs); impacts (`car/impact`: on a contact's start, the speed relative to what it hit over twice the top speed; above 0.2, a `CarImpact` message and sparks off the contact point) | `Car`, `ControlableEntity`, `Car.CreateTrail`, `Car.OnCollide`, `EffectManager.CollideEffect` |
+| `car` | Spawns the player's car on Avian; sprites; front wheels; the cabin swaying on two springs pushed by the front and back points' acceleration, idling at rest (`car/cabin`); smoke (`car/smoke`: streaks behind slipping rear wheels, exhaust puffs when slow, idle puffs); impacts (`car/impact`: on a contact's start, the speed relative to what it hit over twice the top speed; above 0.2, a `CarImpact` message and sparks off the contact point) | `Car`, `ControlableEntity`, `Car.CreateTrail`, `Car.OnCollide`, `EffectManager.CollideEffect` |
 | `triggers` | Trigger areas; only level-end actions run so far | `TriggerManager`, `ActionTemplates` |
 | `pickups` | `Pickup`: collected by driving into it; the count | `Coin` |
 | `boost` | `Booster`: throws touching bodies along its facing and plays its flash | `Accelerator` |
@@ -94,5 +94,5 @@ Everything outside MVP 0.1: menus and HUD, sound, localisation, saves;
 weapons and gadgets; other cars and AI; doors, bombs, teleports, platforms,
 fake walls; towing; respawn points and lives (death always restarts the level); the other ~74 action types; most particle effects (the pool and the car's smoke are in);
 slow motion; the agent/command server; editor hot reload. Rendering gaps:
-the cabin's springy wobble, tyre marks,
+tyre marks,
 dynamic lights, the dirty-lens effect, per-map camera zoom.

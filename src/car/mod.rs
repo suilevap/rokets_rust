@@ -5,9 +5,11 @@
 //! the size of the car's `Base` sprite, mass from `Cars.xml`, friction 0.8,
 //! bounce 0.5, linear damping `0.95 × map friction`, angular damping 9.
 //! Drawn from its own sprites: the chassis (`Base`), two front wheels that
-//! turn towards the stick, and the cabin (`Body`) on top. Smoke: `smoke`;
+//! turn towards the stick, and the cabin (`Body`) on top, swaying on springs
+//! (`cabin`). Smoke: `smoke`;
 //! sparks when it hits something: `impact`.
 
+pub mod cabin;
 pub mod drive;
 pub mod impact;
 pub mod smoke;
@@ -61,7 +63,7 @@ impl Plugin for CarPlugin {
             .add_message::<impact::CarImpact>()
             .add_systems(
                 FixedUpdate,
-                (drive_cars, smoke::car_smoke, impact::remember_velocity)
+                (drive_cars, smoke::car_smoke, impact::remember_velocity, cabin::sway_cabins)
                     .chain()
                     .run_if(in_state(GameState::Playing)),
             )
@@ -116,6 +118,7 @@ pub fn spawn_player_car(
         PlayerIntent::default(),
         CameraTarget { radius, max_speed: params.max_speed },
         CastsShadow { size },
+        cabin::CabinSway::new(car.body_elastic, radius),
         Health::full(car.max_health),
         Wreckable {
             sprites: ["Destroyed1", "Destroyed2"].map(|d| car.part_sprite(d).unwrap_or_default()),
@@ -181,7 +184,7 @@ fn spawn_car_sprites(
             }
         }
         if let Some(info) = sprite(car.part_sprite("Body")) {
-            parent.spawn(sprite_bundle(&info, car.scale, Layer::CarBody, lit, quad, materials));
+            parent.spawn((sprite_bundle(&info, car.scale, Layer::CarBody, lit, quad, materials), cabin::Cabin));
         }
     }
 }
