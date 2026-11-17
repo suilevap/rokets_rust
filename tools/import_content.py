@@ -24,6 +24,7 @@ ITEMS = [
     ("Sprites/Cars", "**/*.png", "Sprites/Cars"),
     ("Sprites/Entities", "**/*.png", "Sprites/Entities"),
     ("Sprites/Particles", "**/*.png", "Sprites/Particles"),
+    ("Sprites/Gadget", "**/*.png", "Sprites/Gadget"),
     ("Sprites", "Gradient*.png", "Sprites"),
     ("Sprites", "WhitePixel.png", "Sprites"),
 ]
