@@ -95,6 +95,7 @@ fn sprites_for(map: &MapData, cars: &CarCatalog) -> Vec<String> {
     }
     // Shadows of cars and loose objects (`render/shadow`).
     names.extend(["Gradient4Pixel", "Gradient4PixelUniform"].map(String::from));
+    names.extend(crate::particles::styles::TEXTURES.map(String::from));
     let mut skipped: std::collections::BTreeMap<_, usize> = Default::default();
     for e in map.entities.iter() {
         match crate::map::templates::template_for(e) {
