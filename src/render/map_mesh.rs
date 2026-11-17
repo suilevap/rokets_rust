@@ -136,6 +136,17 @@ fn build_floor(grid: &MapGrid, cell: f32, rng: &mut SmallRng) -> Mesh {
     let mut mb = MeshBuilder::default();
     let mut done = vec![false; (grid.width + 1) * (grid.height + 1)];
     let idx = |x: usize, y: usize| y * (grid.width + 1) + x;
+    // `MapManager.GetDistanceFieldValue` in cells: the chamfer distance of
+    // the cell, 0 on the map's outer two rings.
+    let chamfer = grid.chamfer_distance();
+    let (w, h) = (grid.width as i32, grid.height as i32);
+    let field = |x: i32, y: i32| {
+        if x <= 0 || y <= 0 || x >= w - 2 || y >= h - 2 {
+            0.0
+        } else {
+            chamfer[(y * w + x) as usize]
+        }
+    };
     for y in 0..grid.height {
         for x in 0..grid.width {
             let (xi, yi) = (x as i32, y as i32);
@@ -143,18 +154,17 @@ fn build_floor(grid: &MapGrid, cell: f32, rng: &mut SmallRng) -> Mesh {
                 continue;
             }
             done[idx(x, y)] = true;
-            // `MapManager.CreateDistanceField` measures from the cell's corner
-            // in cells × cell size, at least one cell for open ground: about
-            // our centre distance + ½. `amount = clamp(d / (512·cell/96))`, the
-            // cell size cancels: tiles far from walls shrink and sink most.
-            let d = grid.distance_to_wall(xi, yi) + 0.5;
+            // `amount = clamp(d / (512·cell/96))` with `d` in cells × cell
+            // size; the cell size cancels: tiles far from walls shrink and
+            // sink most.
+            let d = field(xi, yi);
             let amount = (d * 96.0 / 512.0).clamp(0.2, 1.0);
             let mut center = Vec2::new(x as f32 + 0.5, y as f32 + 0.5);
             let mut size = 1.0;
             let big = grid.is_floor(xi + 1, yi + 1)
                 && grid.is_floor(xi + 1, yi)
                 && grid.is_floor(xi, yi + 1)
-                && grid.distance_to_wall(xi + 1, yi + 1) > 0.0
+                && field(xi + 1, yi + 1) > 0.0
                 && !done[idx(x + 1, y)]
                 && !done[idx(x, y + 1)]
                 && !done[idx(x + 1, y + 1)]
@@ -181,20 +191,16 @@ fn build_floor(grid: &MapGrid, cell: f32, rng: &mut SmallRng) -> Mesh {
                 color = lerp3(BACKGROUND, color, alpha);
             }
             let half = (size - amount * size / 4.0) / 2.0;
-            let mut tilt = Vec3::new(
+            let tilt = Vec3::new(
                 PI / 16.0 * (0.5 - rng.random::<f32>()),
                 PI / 16.0 * (0.5 - rng.random::<f32>()),
                 PI / 32.0 * (0.5 - rng.random::<f32>()),
             );
-            if !big && d < 2.0 {
-                // Lean towards the nearest wall.
-                let gx = grid.distance_to_wall(xi + 1, yi) - grid.distance_to_wall(xi - 1, yi);
-                let gy = grid.distance_to_wall(xi, yi + 1) - grid.distance_to_wall(xi, yi - 1);
-                let g = Vec2::new(gx, -gy).normalize_or_zero() * PI / 8.0;
-                tilt.x += g.y;
-                tilt.y -= g.x;
+            let mut rot = Quat::from_euler(EulerRot::XYZ, tilt.x, tilt.y, tilt.z);
+            // `GetGradientDistancefieldValue` is zero on the outer rings too.
+            if !big && d < 2.0 && d > 0.0 {
+                rot = wall_lean(&chamfer, grid.width, xi, yi) * rot;
             }
-            let rot = Quat::from_euler(EulerRot::XYZ, tilt.x, tilt.y, tilt.z);
             let world_center = Vec3::new(center.x * cell, -center.y * cell, -depth);
             let corners_local = [
                 Vec3::new(-half, -half, 0.0),
@@ -213,6 +219,22 @@ fn build_floor(grid: &MapGrid, cell: f32, rng: &mut SmallRng) -> Mesh {
         }
     }
     mb.build()
+}
+
+/// `TilesMap`: a tile next to a wall is turned by the distance field's
+/// gradient (cells per cell, not normalised) × π/8, so its edge by the
+/// wall rises and it slopes down away from it, like a plate leaning on
+/// the wall. C# turned it by `Rotate(g.y, −g.x, 0)` in its y-down,
+/// depth-down space; that space is ours turned half a turn about x, so
+/// the same turn here is `g.y` about x, then `g.x` about y.
+///
+/// `chamfer` is `MapGrid::chamfer_distance` of a `width`-cell map; the
+/// caller keeps (x, y) off the outer rings, where the field reads 0.
+pub fn wall_lean(chamfer: &[f32], width: usize, x: i32, y: i32) -> Quat {
+    let at = |x: i32, y: i32| chamfer[y as usize * width + x as usize];
+    let gx = (at(x + 1, y) - at(x - 1, y)) / 2.0;
+    let gy = (at(x, y + 1) - at(x, y - 1)) / 2.0;
+    Quat::from_rotation_y(gx * PI / 8.0) * Quat::from_rotation_x(gy * PI / 8.0)
 }
 
 fn build_walls(grid: &MapGrid, light: &LightMap, cell: f32) -> Mesh {
