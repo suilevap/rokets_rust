@@ -60,6 +60,11 @@ pub trait MapAction: DeserializeOwned + Send + Sync + 'static {
     fn templates() -> Templates<Self> {
         Vec::new()
     }
+
+    /// Sprites it draws, loaded with any map that has it.
+    fn sprites() -> &'static [&'static str] {
+        &[]
+    }
 }
 
 /// The templates an action type answers to, each with how it reads its
@@ -110,10 +115,16 @@ type Reader = fn(&str) -> Result<(), String>;
 pub struct ActionRegistry {
     by_type: HashMap<&'static str, Handler<String>>,
     readers: HashMap<&'static str, Reader>,
+    sprites: HashMap<&'static str, &'static [&'static str]>,
     by_template: HashMap<&'static str, Handler<TemplateArgs>>,
 }
 
 impl ActionRegistry {
+    /// The sprites an action of type `kind` draws.
+    pub fn sprites(&self, kind: &str) -> &'static [&'static str] {
+        self.sprites.get(kind).copied().unwrap_or(&[])
+    }
+
     /// Whether an action of type `kind` reads from `xml`: `None` if the
     /// type is not ported.
     pub fn read(&self, kind: &str, xml: &str) -> Option<Result<(), String>> {
@@ -161,6 +172,7 @@ fn register<T: MapAction>(
             }
         }),
     );
+    registry.sprites.insert(T::TYPE, T::sprites());
     registry
         .readers
         .insert(T::TYPE, |xml| quick_xml::de::from_str::<T>(xml).map(|_| ()).map_err(|e| e.to_string()));
@@ -270,6 +282,7 @@ fn run_actions(world: &mut World) {
 /// Runs an action reference now; whether it succeeded
 /// (`TriggerManager.RunAction`).
 pub fn run(world: &mut World, reference: &str, actor: Option<i64>, depth: usize) -> bool {
+    debug!("run {reference} for {actor:?}");
     if depth > MAX_DEPTH || reference.trim().is_empty() {
         return false;
     }

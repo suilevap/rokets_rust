@@ -87,7 +87,7 @@ struct Pending {
 
 
 /// The sprite names a map needs: its player car's parts and its drawn entities.
-fn sprites_for(map: &MapData, cars: &CarCatalog) -> Vec<String> {
+fn sprites_for(map: &MapData, cars: &CarCatalog, registry: &crate::actions::ActionRegistry) -> Vec<String> {
     let mut names: Vec<String> = Vec::new();
     for player in map.players.iter() {
         if let Some(car) = cars.get(&player.car_name) {
@@ -96,6 +96,10 @@ fn sprites_for(map: &MapData, cars: &CarCatalog) -> Vec<String> {
                 names.extend(car.part_sprite(part));
             }
         }
+    }
+    // What the map's actions draw (door hints, …).
+    for a in &map.actions.0 {
+        names.extend(registry.sprites(&a.kind).iter().map(|s| s.to_string()));
     }
     // Shadows of cars and loose objects (`render/shadow`).
     names.extend(["Gradient4Pixel", "Gradient4PixelUniform"].map(String::from));
@@ -163,7 +167,7 @@ fn poll_loading(
     server: Res<AssetServer>,
     texts: Res<Assets<XmlText>>,
     images: Res<Assets<Image>>,
-    pending: Option<ResMut<Pending>>,
+    (pending, registry): (Option<ResMut<Pending>>, Res<crate::actions::ActionRegistry>),
     mut next: ResMut<NextState<GameState>>,
 ) {
     let Some(mut pending) = pending else {
@@ -199,7 +203,7 @@ fn poll_loading(
                         None => warn!("map image {image:?} not found; using the CharMap only"),
                     }
                 }
-                for name in sprites_for(&p.0, &p.1) {
+                for name in sprites_for(&p.0, &p.1, &registry) {
                     match assets::sprite_path(&name) {
                         Some(path) => {
                             let handle = server.load(path);
