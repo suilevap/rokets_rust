@@ -43,6 +43,8 @@ pub const CHARGE: f32 = 0.2;
 const HEAD_RATE: f32 = 10.0;
 /// `MoveCargo`: the pull towards the aim per unit, `8 × 2.56` (a box's mass).
 const DRAG: f32 = 8.0 * 2.56;
+/// `MoveCargo`: nearer the car than this, the cargo is not pressed into it.
+const NEAR: f32 = 0.25;
 /// The head's length (`ChainActive` is 24 px): the rope ends at its back.
 const HEAD_LENGTH: f32 = 24.0 / 32.0;
 const ACTIVE_SPRITE: &str = "Gadget\\ChainActive";
@@ -179,6 +181,7 @@ fn use_magnets(
     linkable: Query<(), With<Linkable>>,
     skipped: Query<(), Or<(With<Sensor>, With<Explosive>)>>,
     mut cargo: Query<(&Position, &Rotation, Forces), Without<Magnet>>,
+    sizes: Query<(&ComputedMass, &Collider, Option<&LockedAxes>), Without<Magnet>>,
     mut heavy: Query<(&Heavy, &mut ColliderDensity)>,
     mut play: MessageWriter<PlaySound>,
 ) {
@@ -217,8 +220,32 @@ fn use_magnets(
                     };
                     if let Ok((cpos, crot, mut forces)) = cargo.get_mut(c) {
                         let point = cpos.0 + crot * link.local;
-                        let force = (target - point) * DRAG - m.last_force * 0.5;
-                        forces.apply_force(force);
+                        let mut force = (target - point) * DRAG - m.last_force * 0.5;
+                        let (mass, shape, locks) = sizes.get(c).map_or((1.0, None, None), |(m, s, l)| (m.value(), Some(s), l));
+                        let slides = locks.is_some_and(|l| !l.is_rotation_locked() && (l.is_translation_x_locked() || l.is_translation_y_locked()));
+                        if slides {
+                            // On a rail: pulled at the rope's point.
+                            forces.apply_force_at_point(force, point);
+                        } else {
+                            // Against the car it may not be pressed into it,
+                            // nor the car pushed with it.
+                            let gap = shape.map_or(f32::INFINITY, |shape| {
+                                let d = cpos.0 - at;
+                                d.length() - radius_along(collider, rot, d) - radius_along(shape, crot, -d)
+                            });
+                            if gap < NEAR {
+                                let away = (cpos.0 - at).normalize_or_zero();
+                                let closing = forces.linear_velocity().dot(away);
+                                if closing < 0.0 {
+                                    forces.apply_linear_impulse(away * -closing * mass * 1.1);
+                                }
+                                let push = force.dot(away);
+                                if push < 0.0 {
+                                    force -= away * push;
+                                }
+                            }
+                            forces.apply_force(force);
+                        }
                     }
                 }
                 None => {
@@ -294,6 +321,19 @@ fn use_magnets(
             m.dragging = None;
             m.candidate = None;
         }
+    }
+}
+
+/// `GetEstimatedRadius`: how far a body reaches from its middle along
+/// `dir` (a box's half size seen that way).
+fn radius_along(collider: &Collider, rot: &Rotation, dir: Vec2) -> f32 {
+    let dir = dir.normalize_or_zero();
+    match collider.shape_scaled().as_cuboid() {
+        Some(c) => {
+            let (x, y) = (*rot * Vec2::X, *rot * Vec2::Y);
+            dir.dot(x).abs() * c.half_extents.x + dir.dot(y).abs() * c.half_extents.y
+        }
+        None => 0.5,
     }
 }
 
