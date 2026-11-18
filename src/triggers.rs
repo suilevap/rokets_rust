@@ -16,10 +16,8 @@
 
 use bevy::prelude::*;
 
-use serde::Deserialize;
-
-use crate::actions::{AddMapAction, Inactive, MapAction, Run, RunAction, Templates};
-use crate::content::xna::{boolean, int_list};
+use crate::actions::{AddMapAction, Inactive, Run, RunAction};
+use crate::content::actions::defs::ActivateTrigger;
 use crate::controls::LocalPlayer;
 use crate::game::{ChangeMap, GameState, LoadedMap, MapId};
 
@@ -91,7 +89,7 @@ impl Plugin for TriggersPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<LevelEnd>()
             .init_resource::<Triggers>()
-            .add_map_action::<ArmTriggers, _>(arm_triggers)
+            .add_map_action::<ActivateTrigger, _>(arm_triggers)
             .add_systems(OnEnter(GameState::Playing), build_triggers)
             .add_systems(
                 Update,
@@ -189,28 +187,12 @@ fn check_triggers(
 }
 
 /// `ActivateTriggerActionData`, `ActivateTrigger(id)`, `DeactivateTrigger(id)`.
-#[derive(Deserialize)]
-#[serde(rename_all = "PascalCase")]
-struct ArmTriggers {
-    #[serde(default, deserialize_with = "int_list")]
-    trigger_ids: Vec<i64>,
-    #[serde(default, deserialize_with = "boolean")]
-    deactivate: bool,
-}
-
-impl MapAction for ArmTriggers {
-    const TYPE: &'static str = "ActivateTriggerActionData";
-
-    fn templates() -> Templates<Self> {
-        vec![
-            ("ActivateTrigger", |a| Some(ArmTriggers { trigger_ids: vec![a.int(0)?], deactivate: false })),
-            ("DeactivateTrigger", |a| Some(ArmTriggers { trigger_ids: vec![a.int(0)?], deactivate: true })),
-        ]
-    }
-}
-
-fn arm_triggers(In(run): In<Run<ArmTriggers>>, mut triggers: ResMut<Triggers>) -> bool {
-    for t in triggers.list.iter_mut().filter(|t| run.data.trigger_ids.contains(&t.id)) {
+fn arm_triggers(In(run): In<Run<ActivateTrigger>>, mut triggers: ResMut<Triggers>) -> bool {
+    for t in triggers
+        .list
+        .iter_mut()
+        .filter(|t| run.data.trigger_ids.contains(&t.id))
+    {
         t.active = !run.data.deactivate;
     }
     true

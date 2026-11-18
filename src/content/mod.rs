@@ -5,6 +5,7 @@ pub mod actions;
 pub mod cars;
 pub mod map;
 pub mod map_list;
+pub mod node;
 pub mod xna;
 
 use serde::Deserialize;
@@ -14,6 +15,8 @@ use serde::de::DeserializeOwned;
 pub enum ContentError {
     #[error("XML: {0}")]
     Xml(#[from] quick_xml::DeError),
+    #[error("action: {0}")]
+    Action(String),
 }
 
 #[derive(Deserialize)]

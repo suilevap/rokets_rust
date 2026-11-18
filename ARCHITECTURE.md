@@ -21,6 +21,7 @@ main
 | Module | What it does | C# origin |
 |---|---|---|
 | `content/` | Parses the C# content: map XML (`MapData`), `Cars.xml` (base cars resolved), `MapList.xml`, action references (`NextMap()`, `CloseDoor(1001)`). Unknown elements are ignored; nothing here knows Bevy | `GameLibrary/` |
+| `content/actions/` | Action types as data, for the game and a level editor: `def.rs` (the `actions!` macro: one declaration per type makes the struct, reading and writing its XML, and a `Field` table with what C#'s attributes said: optional, key, references to actions / triggers / entities, value lookups, description from the doc comment, default; `Base` for `ActionData`'s own fields; templates with their signatures), `defs.rs` (the types, in C#'s field order), `node.rs` beside it (the XML tree they read and write) | `ActionData.cs`, `ActionTemplates.cs`, `FieldReferenceAttribute.cs` |
 | `units` | World units = the C# "sim units" (32 px), so forces and speeds keep their values. Map y points down, world y up: convert only here | `ConvertUnits` |
 | `assets` | Resolves C# content names case-insensitively through `assets/manifest.txt`; loads XML as text assets (works on the web) | content pipeline |
 | `map/grid` | The map as cells from the image (alpha: floor below `ImageWallTreshold`, wall above, height in 32 px steps) and `CharMap`; `IsFloor`; the chamfer distance field (`CreateDistanceField`); corner wedges; walls merged into rectangles | `MapManager`, `TilesMap.GetH`, `MapInfo.BuildTextureFromCharMap`, `MapManager.GetEdgeIndex` |
@@ -49,7 +50,7 @@ main
 | `car/drive` | The driving model as a pure function, run at 60 Hz | `Car.MovementControl`, `Brake`, `AdditionalFriction` |
 | `car` | Spawns the player's car on Avian; sprites; front wheels; the cabin swaying on two springs pushed by the front and back points' acceleration, idling at rest (`car/cabin`); smoke (`car/smoke`: streaks behind slipping rear wheels, exhaust puffs when slow, idle puffs); impacts (`car/impact`: on a contact's start, the speed relative to what it hit over twice the top speed; above 0.2, a `CarImpact` message and sparks off the contact point) | `Car`, `ControlableEntity`, `Car.CreateTrail`, `Car.OnCollide`, `EffectManager.CollideEffect` |
 | `triggers` | Trigger areas painted into a cell map in the map's order (later over earlier); the player and the triggers' subscribers set them off, one trigger at a time; enter and leave actions, `Amount` uses, armed or not; level end | `TriggerManager` |
-| `actions` | Map actions by registry, as `ActionRunner`: each action type is a struct read from its own XML (`MapAction`: C# type name, optional templates such as `ActivateEntity(id)`) and a system `In<Run<T>> → bool` registered with `app.add_map_action`; the core (`actions/mod.rs`) knows none of them. `RunAction` messages run every map action of a name in order (or a template), `NextAction` after success, sequences now or `TimeBetweenInSec` apart, `RunOnMapStart`; handlers run one at a time with the world to themselves. Types not ported are logged once per map | `ActionRunner`, `ActionTemplates`, `TriggerManager.RunAction` |
+| `actions` | Map actions by registry, as `ActionRunner`: each type defined in `content/actions/defs.rs` is carried out by a system `In<Run<T>> → bool` registered with `app.add_map_action` (templates such as `ActivateEntity(id)` come with the definition, picked by name and number of arguments); the core (`actions/mod.rs`) knows none of them. `RunAction` messages run every map action of a name in order (or a template), `NextAction` after success, sequences now or `TimeBetweenInSec` apart, `RunOnMapStart`; handlers run one at a time with the world to themselves. Types not ported are logged once per map | `ActionRunner`, `ActionTemplates`, `TriggerManager.RunAction` |
 | `door` | Doors: `AddDoorComponent` makes a box slide along its facing by its length × `OpenDistanceScale`; `OpenDoor(id)` / `CloseDoor(id)` free and push it; at either end it snaps, stops, runs `ActionOnOpen` / `ActionOnClose`, fixes itself if static or fixed on open; a placeholder shows where it opens to. Its actions are registered here | `Door`, `AddDoorComponent`, `OpenCloseDoor` |
 | `pickups` | `Pickup`: collected by driving into it; the count | `Coin` |
 | `boost` | `Booster`: throws touching bodies along its facing and plays its flash | `Accelerator` |
@@ -72,9 +73,13 @@ main
   walls, soft baked light) before trying engine-standard replacements.
 - Map data is parsed in full even when unused; unsupported entities and
   actions are logged per map, so coverage is visible.
-- **A map action is one file**: a `MapAction` struct, its system and an
-  `add_map_action` line in its plugin (`src/actions/body.rs` is a small
-  example); the runner and triggers do not change.
+- **Action definitions are apart from running them.** A type's fields,
+  metadata and templates are declared once in `content/actions/defs.rs`
+  (no Bevy, so a level editor can use them); the game adds one file with
+  its system and an `add_map_action` line (`src/actions/body.rs` is a
+  small example); the runner and triggers do not change. Every action in
+  the maps of a defined type must read, write back and read again the
+  same (`tests/action_defs.rs`).
 - **Map entity types stop at loading.** `map/templates.rs` turns each into
   a set of components; systems act on components (`Pickup`, `Booster`,
   bodies), never on the type. A new kind is a new template arm composed of
