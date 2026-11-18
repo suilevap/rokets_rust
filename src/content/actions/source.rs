@@ -17,7 +17,8 @@ use crate::content::node::Node;
 pub enum Source {
     /// The text of the elements at `path` in the map, or in `file` (from
     /// the content root). The path is a simplified XPath from the root:
-    /// element names joined by `/`, `*` for any name, `A|B` for either.
+    /// element names joined by `/`, `*` for any name, `A|B` for either,
+    /// `[@Type='GameLibrary.CreateButton']` for those with that attribute.
     Xml {
         file: Option<&'static str>,
         path: &'static str,
@@ -58,8 +59,16 @@ pub const SPLASHES: Source = Source::Xml {
     file: Some("Splashes/Splashes.xml"),
     path: "XnaContent/Asset/Splashes/Item/Name",
 };
+/// Map parts of the campaign list (`MapData.MapPartsPath`).
+pub const MAP_PARTS: Source = Source::Xml {
+    file: Some("Maps/MapList.xml"),
+    path: "XnaContent/Asset/Parts/Item",
+};
 /// Sounds (`MapData.SoundPath`).
 pub const SOUNDS: Source = Source::Files { dir: "Sounds", ext: "wav" };
+
+/// Music (`MapData.MusicPath`).
+pub const MUSIC: Source = Source::Files { dir: "Sounds/Music", ext: "ogg" };
 
 /// An action: one of the map's, or a template.
 pub const ACTION: &[Source] = &[ACTIONS, Source::Templates];
@@ -97,17 +106,33 @@ impl Source {
     }
 }
 
+/// Whether an element fits a step: `Name`, `*`, `A|B`, each optionally
+/// with `[@Attribute='value']`.
+fn matches(step: &str, node: &Node) -> bool {
+    let (names, filter) = match step.split_once('[') {
+        Some((names, rest)) => (names, Some(rest.trim_end_matches(']'))),
+        None => (step, None),
+    };
+    let name_fits = names == "*" || names.split('|').any(|n| n == node.name);
+    let filter_fits = filter.is_none_or(|f| {
+        let Some((attr, value)) = f.trim_start_matches('@').split_once('=') else {
+            return false;
+        };
+        node.attr(attr.trim()) == Some(value.trim().trim_matches('\''))
+    });
+    name_fits && filter_fits
+}
+
 /// The text of the elements at `path` under `root` (whose own name is the
 /// path's first step), in document order, each value once.
 pub fn select(root: &Node, path: &str) -> Vec<String> {
     let mut steps = path.split('/').filter(|s| !s.is_empty());
-    let matches = |step: &str, name: &str| step == "*" || step.split('|').any(|s| s == name);
     let mut found = match steps.next() {
-        Some(first) if matches(first, &root.name) => vec![root],
+        Some(first) if matches(first, root) => vec![root],
         _ => return Vec::new(),
     };
     for step in steps {
-        found = found.iter().flat_map(|n| n.children.iter().filter(|c| matches(step, &c.name))).collect();
+        found = found.iter().flat_map(|n| n.children.iter().filter(|c| matches(step, c))).collect();
     }
     let mut out: Vec<String> = Vec::new();
     for n in found {

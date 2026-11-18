@@ -4,13 +4,92 @@
 //! See [`actions!`](crate::actions!) for the syntax.
 
 use super::source::*;
-use crate::content::xna::XVec2;
-use crate::{actions, xna_enum};
+use crate::content::xna::{XColor, XRect, XVec2};
+use crate::{actions, record, xna_enum};
 
 xna_enum! {
     /// How "Level complete" looks (`ShowSuccessInternal.SuccessIndicator`).
     SuccessIndicator { Standard, DoorOpen, AntiSuccess }
 }
+
+xna_enum! {
+    /// `MapDataInternal.ControlType`.
+    ControlType { NoneLocal, NoneEnemy, NoneFriend, Local, Ai, AiFriend, AiSimpleTurret, AiSimpleTurretFriend, AiSimpleTurretFriendFireAvailableTarget, AiChaser, MoveByPath, MoveByPathFriend, MoveByPathSafelyFriend, SimpleFlocking, ZombieFlocking, ZombieFlockingFriend, SimpleAttackNearestEnemy, SimpleFollowByEnemyAi, MoveAndFireInInitDirection, AlwaysShoot, GuardAi, SupportAi, SupportAiFriend, OrderExecutorFriend, OrderExecutorAi, CaptureTheBox, CaptureTheBoxFriend, AttackAi, AttackAiVer2, AttackAiFriend, HammerAi, HammerAiFriend, ChickenAi, GoToEnemySimplePredictionPosition, ChaserTargetFromLocalVariable, LocalHotSeat1, LocalHotSeat2, ShootPattern }
+}
+
+xna_enum! {
+    /// `MapDataInternal.LevelMusicType`.
+    LevelMusicType { None, Ambient, Dynamic1, Dynamic2 }
+}
+
+xna_enum! {
+    /// `GameLibrary.PathType`.
+    PathType { Path, Patrol }
+}
+
+xna_enum! {
+    /// `ChangeIntVariableInternal.OperationType`.
+    ChangeIntVariableOperationType { Set, Increase, Mul, Div, Mod }
+}
+
+xna_enum! {
+    /// `ChangeSubscribersInternal.OperationType`.
+    ChangeSubscribersOperationType { Add, Remove }
+}
+
+xna_enum! {
+    /// `GameLibrary.BoolSetterType`.
+    BoolSetterType { DoNotChange, Yes, No }
+}
+
+xna_enum! {
+    /// `CreateButtonInternal.ButtonTypeType`.
+    ButtonTypeType { Button, LaserCollector }
+}
+
+xna_enum! {
+    /// `OrderActionInternal.OrderType`.
+    OrderType { RemoveOnSuccess, RemoveOnTry, Infinite }
+}
+
+xna_enum! {
+    /// `CarsDataInternal.WeaponType`.
+    WeaponType { None, Default, RocketlauncherDirect, RocketlauncherChasing, RocketlauncherChasing360, Minigun, Minigun180, Minigun360, MinigunSlowInacurate, MinigunLowConsumption, Railgun, RailgunAngle5, Hammer, Tesla, ZombieWeapon, Shotgun, Laser, PlasmaGun, PlasmaGunSlow, RailgunNoReflection, LaserNoReflection, LaserWithDelay }
+}
+
+xna_enum! {
+    /// `CarsDataInternal.GadgetType`.
+    GadgetType { None, Default, Link, Bomb, Accelerator, EditorPointer }
+}
+
+xna_enum! {
+    /// `SplashSetBindVariableInternal.BindVariableNum`.
+    BindVariableNum { First, Second, Third, Fourth, Fifth }
+}
+
+xna_enum! {
+    /// `CreateParticleEffectInternal.EffectType`.
+    EffectType { NewZombieFriend }
+}
+
+xna_enum! {
+    /// `MapPartSettingsInternal.PartTypeEnum`.
+    PartTypeEnum { Corridor, Battle, Quest, Max }
+}
+
+record! {
+    /// Partial override for a particle state. Null fields keep their current value.
+    ParticleStateData {
+        speed "Speed": Option<f32> = None, optional;
+        scale "Scale": Option<XVec2> = None, optional;
+        view_rotation "ViewRotation": Option<f32> = None, optional;
+        rotation "Rotation": Option<f32> = None, optional;
+        color "Color": Option<XColor> = None, optional;
+        height "Height": Option<f32> = None, optional;
+    }
+}
+
+// New enums and records go above this line (tools/gen_action_defs.py).
 
 actions! {
     /// Arms or disarms triggers.
@@ -178,6 +257,483 @@ actions! {
     } => templates {
         "SetStat(name,value)" => |a| Some(SetAchievementStat { stat_name: Some(a.text(0)?.to_string()), value: a.int(1)? }),
     }
+
+
+    RemoveMarker("RemoveMarkerActionData", name = "RemoveMarker") {
+        marker_id "MarkerId": i64 = 0, from(&[TRIGGERS]);
+    }
+
+    AddMarker("AddMarkerActionData", name = "AddMarker") {
+        marker_id "MarkerId": i64 = 0, from(&[TRIGGERS]);
+        item_id "ItemId": i64 = 0, from(&[TRIGGERS, PLAYERS, SIMPLE_CARS, ENTITIES]);
+    }
+
+    AddEntitiesToFocus("AddEntitiesToFocus") {
+        item_ids "ItemIds": Vec<i64> = Vec::new(), from(&[PLAYERS, SIMPLE_CARS, ENTITIES, HINTS]);
+        remove_all_others "RemoveAllOthers": bool = false, optional;
+    }
+
+    RemoveEntitiesFromFocus("RemoveEntitiesFromFocus") {
+        item_ids "ItemIds": Vec<i64> = Vec::new(), from(&[PLAYERS, SIMPLE_CARS, ENTITIES, HINTS]);
+    }
+
+    SetRespawnPoint("SetRespawnPoint") {
+        position "Position": XVec2 = XVec2::ZERO;
+        direction_deg "DirectionDeg": f32 = 0.0, optional;
+    }
+
+    SetControl("SetControl", name = "SetControl") {
+        item_id "ItemId": i64 = 0, from(&[PLAYERS, SIMPLE_CARS]);
+        control "Control": ControlType = ControlType::NoneLocal;
+    }
+
+    SuccessSequence("SuccessSequence", name = "seqSuccessSequence") {
+        actions "Actions": Vec<String> = Vec::new(), from(ACTION);
+    }
+
+    TriggerActionBy("TriggerActionBy") {
+        item_ids "ItemIds": Vec<String> = Vec::new(), from(&[VARIABLES, PLAYERS, SIMPLE_CARS, ENTITIES, HINTS]);
+        actions "Actions": Vec<String> = Vec::new(), from(ACTION);
+    }
+
+    TriggerActionByFirstSuccess("TriggerActionByFirstSuccess") {
+        item_ids "ItemIds": Vec<String> = Vec::new(), from(&[VARIABLES, PLAYERS, SIMPLE_CARS, ENTITIES, HINTS]);
+        action "Action": Option<String> = None, from(ACTION);
+        else_action "ElseAction": Option<String> = None, optional, from(ACTION);
+    }
+
+    PlaySound("PlaySound", name = "PlaySound") {
+        /// Only file name without extension
+        sound "Sound": Option<String> = None, from(&[SOUNDS]);
+        emmiter_entity_id "EmmiterEntityId": i64 = 0;
+        use_listener_position "UseListenerPosition": bool = false;
+        volume "Volume": f32 = 1.0;
+        pitch "Pitch": f32 = 0.0;
+        /// Rotated list of pitches will be used
+        play_with_next_pitch "PlayWithNextPitch": bool = false, optional;
+    }
+
+    ShowText("ShowText", name = "ShowText") {
+        text "Text": Vec<String> = Vec::new();
+        /// Default 8 sec
+        show_time_sec "ShowTimeSec": f32 = -1.0;
+        pause_game "PauseGame": bool = false;
+    }
+
+    ApplyGadgetToPosition("ApplyGadgetToPosition", name = "ApplyGadgetToPosition") {
+        gadget_owner_id "GadgetOwnerId": i64 = 0, from(&[PLAYERS]);
+        target_item_id "TargetItemId": i64 = 0, from(ITEM);
+        relative_position "RelativePosition": XVec2 = XVec2::ZERO;
+    }
+
+    PlayLevelMusic("PlayLevelMusic", name = "PlayLevelMusic") {
+        level_music_type "LevelMusicType": LevelMusicType = LevelMusicType::None;
+        looped "Looped": bool = true, optional;
+    }
+
+    SetPath("SetPath", name = "SetPath") {
+        path "Path": Vec<XVec2> = Vec::new();
+        item_id "ItemId": i64 = 0, from(ITEM);
+        closed "Closed": bool = false, optional;
+        kind "Type": PathType = PathType::Path, optional;
+    }
+
+    CheckIntVariable("CheckIntVariable", name = "CheckIntVariable") {
+        variable_name "VariableName": Option<String> = Some("Var".into()), from(&[VARIABLES]);
+        global "Global": bool = true;
+        item_id "ItemId": i64 = 0, optional, from(ITEM);
+        /// Can be int value or name of variable to compare
+        value "Value": Option<String> = None, from(&[VARIABLES]);
+        action_on_less "ActionOnLess": Option<String> = None, from(ACTION);
+        action_on_equal "ActionOnEqual": Option<String> = None, from(ACTION);
+        action_on_greater "ActionOnGreater": Option<String> = None, from(ACTION);
+    }
+
+    ChangeIntVariable("ChangeIntVariable", name = "ChangeIntVariable") {
+        variable_name "VariableName": Option<String> = Some("Var".into()), from(&[VARIABLES]);
+        global "Global": bool = true;
+        item_id "ItemId": i64 = 0, optional, from(ITEM);
+        value "Value": i64 = 0;
+        operation "Operation": ChangeIntVariableOperationType = ChangeIntVariableOperationType::Set;
+    }
+
+    ChangeSubscribers("ChangeSubscribers", name = "ChangeSubscribers") {
+        trigger_id "TriggerId": i64 = 0, from(&[TRIGGERS]);
+        item_id "ItemId": i64 = 0, from(ITEM);
+        operation "Operation": ChangeSubscribersOperationType = ChangeSubscribersOperationType::Add;
+    }
+
+    AIAdjustment("AIAdjustment", name = "AIAdjustment") {
+        item_id "ItemId": i64 = 0, from(&[PLAYERS, SIMPLE_CARS]);
+        team "Team": i64 = 255;
+        scan_distance "ScanDistance": f32 = -1.0;
+        weapon_max_angle_deg "WeaponMaxAngleDeg": f32 = -1.0;
+        action_on_bt_trigger "ActionOnBTTrigger": Option<String> = None, optional, from(ACTION);
+        /// 1-precise (Default), >1 - less
+        fire_accuracy "FireAccuracy": f32 = 1.0, optional;
+        /// Switch on or switch off visibility for auto aim helper. No = no autoaim
+        is_visible_for_auto_aim "IsVisibleForAutoAim": BoolSetterType = BoolSetterType::DoNotChange, optional;
+    }
+
+    CloneObject("CloneObject", name = "CloneObjByArea") {
+        area "Area": XRect = XRect::default();
+        item_id "ItemId": i64 = 0, from(ITEM);
+        target_ids "TargetIds": Vec<i64> = Vec::new();
+        count "Count": i64 = 1, optional;
+        /// if True, objects are created relative Item with Id==RelativeByItem
+        is_use_relative_position "IsUseRelativePosition": bool = false, optional;
+        /// if IsUseRelativePosition is True, objects are created relative by this Item
+        relative_by_item "RelativeByItem": i64 = 0, optional, from(ITEM);
+    }
+
+    CloneObjectByPath("CloneObjectByPath", name = "CloneObjByPath") {
+        area "Area": XRect = XRect::default();
+        item_id "ItemId": i64 = 0, from(ITEM);
+        target_ids "TargetIds": Vec<i64> = Vec::new();
+        count "Count": i64 = 1, optional;
+        /// if True, objects are created relative Item with Id==RelativeByItem
+        is_use_relative_position "IsUseRelativePosition": bool = false, optional;
+        /// if IsUseRelativePosition is True, objects are created relative by this Item
+        relative_by_item "RelativeByItem": i64 = 0, optional, from(ITEM);
+        path "Path": Vec<XVec2> = Vec::new();
+        delta_angle "DeltaAngle": f32 = 90.0;
+    }
+
+    CreateButton("CreateButton", name = "CreateButton", on_map_start = true) {
+        id "Id": i64 = 5000, key;
+        position "Position": XVec2 = XVec2::ZERO;
+        path "Path": Vec<XVec2> = Vec::new();
+        scale "Scale": f32 = 1.0;
+        direction_deg "DirectionDeg": f32 = 0.0;
+        action_press "ActionPress": Option<String> = None, from(ACTION);
+        action_release "ActionRelease": Option<String> = None, optional, from(ACTION);
+        /// Only for ButtonType.Button
+        subscribers "Subscribers": Vec<i64> = Vec::new(), from(ITEM);
+        button_type "ButtonType": ButtonTypeType = ButtonTypeType::Button, optional;
+    }
+
+    ShowSplash("ShowSplash", name = "ShowSplash") {
+        splash_name "SplashName": Option<String> = None, from(&[SPLASHES]);
+        auto_hide_time_sec "AutoHideTimeSec": f32 = 2.0;
+        clickable "Clickable": bool = false;
+        action_on_hide "ActionOnHide": Option<String> = None, from(ACTION);
+    }
+
+    AddMovingPlatformComponent("AddMovingPlatformComponent", name = "MovingPlatformComponent", on_map_start = true) {
+        /// If specified then OpenDistanceScale is ignored
+        position "Position": XVec2 = XVec2::ZERO, optional;
+        /// Target Entity Id
+        item_id "ItemId": i64 = 0, from(&[PLAYERS, SIMPLE_CARS, ENTITIES, HINTS]);
+        /// Max offset distance = TargetEntity.Raidus * value
+        open_distance_scale "OpenDistanceScale": f32 = 1.0;
+        /// Time needed for 2 changes of direction
+        period_sec "PeriodSec": f32 = 7.0;
+    }
+
+    CheckEntityAlive("CheckEntityAlive", name = "CheckEntityAlive") {
+        /// Entity id or variable which contains entity id
+        item_id "ItemId": Option<String> = None, from(&[VARIABLES, PLAYERS, SIMPLE_CARS, ENTITIES]);
+        action_on_alive "ActionOnAlive": Option<String> = None, from(ACTION);
+        action_on_not_alive "ActionOnNotAlive": Option<String> = None, from(ACTION);
+    }
+
+    HighlightController("HighlightController", name = "HighlightController") {
+        gadget_control "GadgetControl": bool = false;
+        weapon_control "WeaponControl": bool = false;
+        movement_control "MovementControl": bool = false;
+    }
+
+    MoveOrder("MoveOrder", name = "MoveOrder") {
+        order_remove_condition "OrderRemoveCondition": OrderType = OrderType::RemoveOnSuccess, optional;
+        position "Position": XVec2 = XVec2::ZERO;
+        item_id "ItemId": i64 = 0, from(&[PLAYERS, SIMPLE_CARS]);
+    }
+
+    PressButtonOrder("PressButtonOrder", name = "PressButtonOrder") {
+        order_remove_condition "OrderRemoveCondition": OrderType = OrderType::RemoveOnSuccess, optional;
+        button_id "ButtonId": i64 = 0, from(&[Source::Xml { file: None, path: "XnaContent/Asset/Actions/Item[@Type='GameLibrary.CreateButton']/Id" }]);
+        item_id "ItemId": i64 = 0, from(&[PLAYERS, SIMPLE_CARS]);
+    }
+
+    AIClearOrders("AIClearOrders", name = "AIClearOrders") {
+        item_id "ItemId": i64 = 0, from(&[PLAYERS, SIMPLE_CARS]);
+    }
+
+    MoveCargoOrder("MoveCargoOrder", name = "MoveCargoOrder") {
+        order_remove_condition "OrderRemoveCondition": OrderType = OrderType::RemoveOnSuccess, optional;
+        position "Position": XVec2 = XVec2::ZERO;
+        r "R": f32 = 1.0, optional;
+        item_id "ItemId": i64 = 0, from(&[PLAYERS, SIMPLE_CARS]);
+        cargo_item_id "CargoItemId": i64 = 0, from(ITEM);
+        /// Use 0 0 for auto finding drop position by Ai
+        drop_position "DropPosition": XVec2 = XVec2::ZERO, optional;
+    }
+
+    GrabCargoOrder("GrabCargoOrder", name = "GrabCargoOrder") {
+        order_remove_condition "OrderRemoveCondition": OrderType = OrderType::RemoveOnSuccess, optional;
+        item_id "ItemId": i64 = 0, from(&[PLAYERS, SIMPLE_CARS]);
+        cargo_item_id "CargoItemId": i64 = 0, from(ITEM);
+        /// ActionOnBTTrigger
+        action_on_grab "ActionOnGrab": Option<String> = None, optional, from(ACTION);
+    }
+
+    AttackTargetOrder("AttackTargetOrder", name = "AttackTargetOrder") {
+        order_remove_condition "OrderRemoveCondition": OrderType = OrderType::RemoveOnSuccess, optional;
+        item_id "ItemId": i64 = 0, from(&[PLAYERS, SIMPLE_CARS]);
+        target_id "TargetId": i64 = 0, from(&[PLAYERS, SIMPLE_CARS]);
+    }
+
+    ChangeMapEffectAmount("ChangeMapEffectAmount", name = "ChangeMapEffectAmount") {
+        /// 0 - disable, 1- full
+        amount "Amount": f32 = 0.0;
+    }
+
+    AttachAdditionalView("AttachAdditionalView", name = "AttachAdditionalView") {
+        position "Position": XVec2 = XVec2::ZERO;
+        sprite "Sprite": Option<String> = None;
+        scale "Scale": f32 = 1.0;
+        direction_deg "DirectionDeg": f32 = 0.0;
+        animated "Animated": bool = false;
+        color "Color": XColor = XColor::rgba(255, 255, 255, 255);
+        item_id "ItemId": i64 = 0, from(ITEM);
+        /// In Meters. 0 - floor (or entity depth for relative), <0 - down, >0 - up
+        depth "Depth": f32 = 0.0;
+        /// If depth is relative to entity depth
+        relative_depth "RelativeDepth": bool = false, optional;
+    }
+
+    AttachTags("AttachTags", name = "AttachTag") {
+        item_id "ItemId": i64 = 0, from(ITEM);
+        tags "Tags": Vec<String> = Vec::new();
+    }
+
+    MoveEntity("MoveEntity", name = "MoveEntity") {
+        position "Position": XVec2 = XVec2::ZERO;
+        direction_deg "DirectionDeg": f32 = 0.0;
+        item_id "ItemId": i64 = 0, from(ITEM);
+    }
+
+    ResetEntityPosition("ResetEntityPosition", name = "ResetEntityPosition") {
+        item_id "ItemId": i64 = 0, from(ITEM);
+    }
+
+    SetWeapon("SetWeapon", name = "SetWepon") {
+        item_id "ItemId": i64 = 0, from(&[PLAYERS, SIMPLE_CARS]);
+        /// Default = do not change weapon
+        new_weapon "NewWeapon": WeaponType = WeaponType::Default;
+        new_gadget "NewGadget": GadgetType = GadgetType::Default, optional;
+        /// Show&play effect
+        change_silently "ChangeSilently": bool = false, optional;
+    }
+
+    TriggerActionByEntitiesInArea("TriggerActionByEntitiesInArea", name = "TriggerActionByEntitiesInArea") {
+        area "Area": XRect = XRect::default();
+        actions "Actions": Vec<String> = Vec::new(), from(ACTION);
+    }
+
+    AddPathComponent("AddPathComponent", name = "PathComponent", on_map_start = true) {
+        path "Path": Vec<XVec2> = Vec::new();
+        /// Target Entity Id
+        item_id "ItemId": i64 = 0, from(&[ENTITIES, PLAYERS, SIMPLE_CARS]);
+        color "Color": XColor = XColor::rgba(255, 255, 255, 255);
+        /// In Meters. 0 - floor, <0 - down, >0 - up
+        depth "Depth": f32 = 0.0;
+        /// Width in pixels
+        width "Width": f32 = 5.0;
+    }
+
+    AddConserveMaxReachedSpeedComponent("AddConserveMaxReachedSpeedComponent", name = "ConserveMaxReachedSpeedComponent", on_map_start = true) {
+        /// Target Entity Id
+        item_id "ItemId": i64 = 0, from(&[ENTITIES, SIMPLE_CARS, PLAYERS]);
+    }
+
+    SplashSetBindVariable("SplashSetBindVariable", name = "SplashSetBindVariable") {
+        bind_variable_number "BindVariableNumber": BindVariableNum = BindVariableNum::First;
+        value "Value": Option<String> = None, from(&[VARIABLES]);
+    }
+
+    CreateParticleEffect("CreateParticleEffect", name = "CreateParticleEffect") {
+        /// Target Entity Id
+        item_id "ItemId": i64 = 0, from(&[ENTITIES, SIMPLE_CARS, PLAYERS]);
+        effect "Effect": EffectType = EffectType::NewZombieFriend;
+    }
+
+    CameraShowPath("CameraShowPath", name = "CameraShowPath") {
+        path "Path": Vec<XVec2> = Vec::new();
+        /// m/s
+        speed "Speed": f32 = 0.0;
+        action_on_end "ActionOnEnd": Option<String> = None, from(ACTION);
+        action_on_reverse_end "ActionOnReverseEnd": Option<String> = None, optional, from(ACTION);
+        is_reverse_at_the_end "IsReverseAtTheEnd": bool = false, optional;
+        /// Wait sec in the end, until start reverse move
+        wait_in_sec "WaitInSec": f32 = 3.0, optional;
+        pause_while_move "PauseWhileMove": bool = true, optional;
+        /// 0-1; 0 - close to object, 1 - further
+        scale_amount "ScaleAmount": f32 = 0.0, optional;
+    }
+
+    ChangeAreaWeight("ChangeAreaWeight", name = "ChangeAreaWeight", on_map_start = true) {
+        area "Area": XRect = XRect::default();
+        /// Weight of navigation node in this area. Default is 1.0. Used as multiplayer for distance
+        weight "Weight": f32 = 1.0;
+    }
+
+    CreateTeleport("CreateTeleport", name = "CreateTeleport", on_map_start = true) {
+        id "Id": i64 = 5000;
+        position "Position": XVec2 = XVec2::ZERO;
+        target_position "TargetPosition": XVec2 = XVec2::ZERO;
+        scale "Scale": f32 = 1.0;
+        action "Action": Option<String> = None, from(ACTION);
+        subscribers "Subscribers": Vec<i64> = Vec::new(), from(ITEM);
+        generate_back_teleport "GenerateBackTeleport": bool = false, optional;
+    }
+
+    AttachDestroyOnContact("AttachDestroyOnContact", name = "AttachDestroyOnContact") {
+        item_id "ItemId": i64 = 0, from(ITEM);
+        subscribers "Subscribers": Vec<i64> = Vec::new(), from(ITEM);
+    }
+
+    InstantCameraMove("InstantCameraMove", name = "InstantCameraMove") {
+        position "Position": XVec2 = XVec2::ZERO;
+    }
+
+    MapPart("MapPart") {
+        part_name "PartName": Option<String> = None, from(&[MAP_PARTS]);
+        position "Position": XVec2 = XVec2::ZERO;
+        direction_deg "DirectionDeg": f32 = 0.0, optional;
+    }
+
+    MapPartPortal("MapPartPortal", name = "Portal") {
+        area "Area": XRect = XRect::default();
+        allow_in "AllowIn": bool = true;
+        allow_out "AllowOut": bool = true;
+    }
+
+    MapPartSettings("MapPartSettings", name = "MapPartSettings") {
+        part_type "PartType": PartTypeEnum = PartTypeEnum::Corridor;
+        /// Estimate length for gameplay in cells. 0-default value(computes as (Width+Height)/2)
+        estimated_gameplay_length "EstimatedGameplayLength": f32 = 0.0;
+        /// Final porbability for part will be * on this rate
+        probability_rank "ProbabilityRank": f32 = 1.0, optional;
+        difficulty_level "DifficultyLevel": f32 = 0.0, optional;
+        free_point "FreePoint": XVec2 = XVec2::ZERO, optional;
+        /// if not empty: this part can be used only once per game.
+        /// Else it should replaced by FallbackPart
+        /// Fallback part should be with exact size and portals
+        fallbackpart_name_for_completed "FallbackpartNameForCompleted": Option<String> = None, optional, from(&[MAP_PARTS]);
+    }
+
+    TriggerWithPeriodicCheck("TriggerWithPeriodicCheck", name = "TriggerWithPeriodicCheck", on_map_start = true) {
+        actions "Actions": Vec<String> = Vec::new(), from(ACTION);
+        area "Area": XRect = XRect::default();
+    }
+
+    EnemySpawnArea("EnemySpawnArea", name = "EnemySpawnArea") {
+        area "Area": XRect = XRect::default();
+    }
+
+    WallWithProbability("WallWithProbability", name = "WallWithProbability") {
+        area "Area": XRect = XRect::default();
+        color "Color": XColor = XColor::rgba(255, 255, 255, 128);
+        /// (0,1]
+        probability "Probability": f32 = 0.5;
+        /// Walls with same non empty WallGroup place together and use shared probability
+        wall_group "WallGroup": Option<String> = None;
+    }
+
+    CreateEnemyGenerator("CreateEnemyGenerator", name = "CreateEnemyGenerator") {
+        position "Position": XVec2 = XVec2::ZERO;
+        direction_deg "DirectionDeg": f32 = 0.0;
+    }
+
+    MarkPartAsCompleted("MarkPartAsCompleted", name = "MarkAsCompleted") {
+        part_name "PartName": Option<String> = None, from(&[MAP_PARTS]);
+    }
+
+    GenerateCorridorByPath("GenerateCorridorByPath", name = "GenerateCorridorByPath") {
+        path "Path": Vec<XVec2> = Vec::new();
+        width "Width": i64 = 0;
+        random_rate "RandomRate": f32 = 0.0;
+        inner_color "InnerColor": XColor = XColor::rgba(0, 0, 255, 64);
+        outer_color "OuterColor": XColor = XColor::rgba(255, 128, 128, 128);
+        /// Split path part on smaller parts if it is longer than define. if <=0 - do not split
+        split_if_longer_than "SplitIfLongerThan": f32 = 0.0;
+    }
+
+    SetImmortal("SetImmortal", name = "SetImmortal") {
+        item_id "ItemId": i64 = 0, from(&[PLAYERS, SIMPLE_CARS]);
+        is_immortal "IsImmortal": bool = false;
+    }
+
+    AdjustWepaonMaxAngle("AdjustWepaonMaxAngle") {
+        item_id "ItemId": i64 = 0, from(&[PLAYERS, SIMPLE_CARS]);
+        min_distance "MinDistance": f32 = 2.0;
+    }
+
+    SetParticleStyle("SetParticleStyleActionData") {
+        /// Name of the registered particle style to modify (e.g. 'smokeStyle', 'boomStyle')
+        style_name "StyleName": Option<String> = None;
+        /// Override lifetime in seconds
+        life_time "LifeTime": Option<f32> = None, optional;
+        /// Override begin state fields (null fields keep current value)
+        begin_state "BeginState": Option<ParticleStateData> = None, optional;
+        /// Override end state fields (null fields keep current value)
+        end_state "EndState": Option<ParticleStateData> = None, optional;
+    }
+
+    AiMaskArea("AiMaskArea", name = "AiMask1") {
+        area "Area": XRect = XRect { x: 0, y: 0, w: 4, h: 4 }, optional;
+        color "Color": XColor = XColor::rgba(160, 80, 255, 255), optional;
+    }
+
+    FakeWallRegion("FakeWallRegionActionData") {
+        area "Area": XRect = XRect::default();
+        initially_revealed "InitiallyRevealed": bool = false, optional;
+        animation_duration "AnimationDuration": f32 = 0.3, optional;
+        wave_direction_degrees "WaveDirectionDegrees": f32 = 0.0, optional;
+    }
+
+    SetFakeWallRevealed("SetFakeWallRevealedActionData") {
+        target_name "TargetName": Option<String> = None, optional, from(&[Source::Xml { file: None, path: "XnaContent/Asset/Actions/Item[@Type='GameLibrary.FakeWallRegionActionData']/Name" }]);
+        revealed "Revealed": bool = false;
+    }
+
+    TrinagleVertex("TrinagleVertex", name = "Vertex") {
+        position "Position": XVec2 = XVec2::ZERO;
+        color "Color": XColor = XColor::rgba(255, 255, 255, 255);
+    }
+
+
+    SplashFakeData("SplashFakeData", name = "SplashMainInfo") {
+        draw_background "DrawBackground": bool = true, optional;
+        appear_fade_to_black "AppearFadeToBlack": bool = true, optional;
+        translation_time "TranslationTime": f32 = 2.5, optional;
+        auto_hide "AutoHide": bool = false, optional;
+        ignore_pause "IgnorePause": bool = true, optional;
+        parallax_amount "ParallaxAmount": f32 = 1.0, optional;
+        show_clickable_indicator_after_sec "ShowClickableIndicatorAfterSec": f32 = 3.0, optional;
+        scale_up_when_needed "ScaleUpWhenNeeded": bool = false, optional;
+        scale_up_only_offset_when_needed "ScaleUpOnlyOffsetWhenNeeded": bool = false, optional;
+    }
+
+    LayerFakeMapData("LayerFakeMapData", name = "Layer") {
+        layer_name "LayerName": Option<String> = None, optional;
+        text "Text": Option<String> = None, optional;
+        bind_text_id "BindTextId": i64 = -1, optional;
+        stretch_to_screen "StretchToScreen": bool = false, optional;
+        color "Color": XColor = XColor::rgba(255, 255, 255, 255), optional;
+        is_static "Static": bool = false, optional;
+        on_foreground "OnForeground": bool = false, optional;
+        delay_sec "DelaySec": f32 = 0.0, optional;
+        sound "Sound": Option<String> = None, optional;
+        height "Height": f32 = -1.0, optional;
+        sprite "Sprite": Option<String> = None;
+        scale "Scale": f32 = 0.0;
+        position "Position": XVec2 = XVec2::ZERO;
+        direction_deg "DirectionDeg": f32 = 0.0;
+    }
+
+    // New types go above this line (tools/gen_action_defs.py).
 }
 
 /// The definition of an action type, by its C# class.

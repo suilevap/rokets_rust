@@ -33,12 +33,16 @@ pub enum Kind {
     Ints,
     /// `<Item>a</Item><Item>b</Item>`.
     Texts,
+    /// `"x1 y1 x2 y2 …"`: points (a path).
+    Vec2s,
     /// One of these names.
     Enum(&'static [&'static str]),
+    /// Fields of their own (a [`record!`](crate::record!)).
+    Record(&'static [Field]),
 }
 
 /// One field of an action type.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Eq)]
 pub struct Field {
     /// The XML element (the C# name).
     pub name: &'static str,
@@ -55,6 +59,14 @@ pub struct Field {
     pub sources: &'static [Source],
     /// The default, as the element written for it.
     pub default: fn() -> Node,
+}
+
+/// Fields are the same when they are written the same.
+impl PartialEq for Field {
+    fn eq(&self, other: &Self) -> bool {
+        (self.name, self.kind, self.optional, self.key, self.sources)
+            == (other.name, other.kind, other.optional, other.key, other.sources)
+    }
 }
 
 impl Field {
@@ -438,6 +450,30 @@ impl Value for XVec2 {
     }
 }
 
+impl Value for Vec<XVec2> {
+    const KIND: Kind = Kind::Vec2s;
+
+    fn read(node: &Node) -> Result<Self, String> {
+        let v: Vec<f32> = node.text.split_whitespace().map(|v| parse(v, "number")).collect::<Result<_, _>>()?;
+        if !v.len().is_multiple_of(2) {
+            return Err(format!("odd number of coordinates {:?}", node.text));
+        }
+        Ok(v.chunks(2).map(|p| XVec2 { x: p[0], y: p[1] }).collect())
+    }
+
+    fn write(&self, node: &mut Node) {
+        node.text = self.iter().map(|p| format!("{} {}", p.x, p.y)).collect::<Vec<_>>().join(" ");
+    }
+
+    fn null() -> Option<Self> {
+        Some(Vec::new())
+    }
+
+    fn is_null(&self) -> bool {
+        self.is_empty()
+    }
+}
+
 impl Value for XColor {
     const KIND: Kind = Kind::Color;
 
@@ -509,6 +545,76 @@ macro_rules! xna_enum {
     };
 }
 
+/// A record: data with fields of its own, kept in a field of an action
+/// (C# classes such as `ParticleStateData`). Fields are declared as in
+/// [`actions!`](crate::actions!).
+#[macro_export]
+macro_rules! record {
+    ($(#[doc = $doc:literal])* $name:ident {
+        $(
+            $(#[doc = $fdoc:literal])*
+            $field:ident $xml:literal : $ty:ty = $default:expr $(, $flag:ident $(($($arg:tt)*))?)* ;
+        )*
+    }) => {
+        $(#[doc = $doc])*
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct $name {
+            $($(#[doc = $fdoc])* pub $field: $ty,)*
+        }
+
+        impl Default for $name {
+            fn default() -> Self {
+                $name { $($field: $default,)* }
+            }
+        }
+
+        impl $name {
+            pub const FIELDS: &'static [$crate::content::actions::def::Field] = &[$(
+                $crate::content::actions::def::Field::new(
+                    $xml,
+                    <$ty as $crate::content::actions::def::Value>::KIND,
+                    concat!($($fdoc, "\n",)* ""),
+                    || {
+                        let mut n = $crate::content::node::Node::new($xml);
+                        let v: $ty = $default;
+                        $crate::content::actions::def::Value::write(&v, &mut n);
+                        n
+                    },
+                )
+                $(.$flag($($($arg)*)?))*
+            ),*];
+
+            /// Its fields from an element; what is left out keeps its default.
+            #[allow(unused_variables)]
+            pub fn read_fields(node: &$crate::content::node::Node) -> Result<Self, String> {
+                #[allow(unused_mut)]
+                let mut v = $name::default();
+                $($crate::content::actions::def::read_field(node, $xml, &mut v.$field)?;)*
+                Ok(v)
+            }
+
+            /// Appends its fields, in order, to an element.
+            #[allow(unused_variables, unused_mut)]
+            pub fn write_fields(&self, node: &mut $crate::content::node::Node) {
+                let mut fields = Self::FIELDS.iter();
+                $($crate::content::actions::def::write_field(node, fields.next().unwrap(), &self.$field);)*
+            }
+        }
+
+        impl $crate::content::actions::def::Value for $name {
+            const KIND: $crate::content::actions::def::Kind = $crate::content::actions::def::Kind::Record(Self::FIELDS);
+
+            fn read(node: &$crate::content::node::Node) -> Result<Self, String> {
+                Self::read_fields(node)
+            }
+
+            fn write(&self, node: &mut $crate::content::node::Node) {
+                self.write_fields(node)
+            }
+        }
+    };
+}
+
 /// Action types, one declaration each:
 ///
 /// ```ignore
@@ -549,15 +655,13 @@ macro_rules! actions {
         $(=> templates { $($tname:literal => $tf:expr),* $(,)? })?
     )*) => {
         $(
-            $(#[doc = $doc])*
-            #[derive(Clone, Debug, PartialEq)]
-            pub struct $name {
-                $($(#[doc = $fdoc])* pub $field: $ty,)*
-            }
-
-            impl Default for $name {
-                fn default() -> Self {
-                    $name { $($field: $default,)* }
+            $crate::record! {
+                $(#[doc = $doc])*
+                $name {
+                    $(
+                        $(#[doc = $fdoc])*
+                        $field $xml : $ty = $default $(, $flag $(($($arg)*))?)* ;
+                    )*
                 }
             }
 
@@ -567,20 +671,7 @@ macro_rules! actions {
                     doc: concat!($($doc, "\n",)* ""),
                     name: [$($dname,)? ""][0],
                     run_on_map_start: [$($start,)? false][0],
-                    fields: &[$(
-                        $crate::content::actions::def::Field::new(
-                            $xml,
-                            <$ty as $crate::content::actions::def::Value>::KIND,
-                            concat!($($fdoc, "\n",)* ""),
-                            || {
-                                let mut n = $crate::content::node::Node::new($xml);
-                                let v: $ty = $default;
-                                $crate::content::actions::def::Value::write(&v, &mut n);
-                                n
-                            },
-                        )
-                        $(.$flag($($($arg)*)?))*
-                    ),*],
+                    fields: Self::FIELDS,
                     check: $crate::content::actions::def::check::<$name>,
                     templates: || {
                         <$name as $crate::content::actions::def::ActionDef>::templates()
@@ -590,18 +681,12 @@ macro_rules! actions {
                     },
                 };
 
-                #[allow(unused_variables)]
                 fn read(node: &$crate::content::node::Node) -> Result<Self, String> {
-                    #[allow(unused_mut)]
-                    let mut v = $name::default();
-                    $($crate::content::actions::def::read_field(node, $xml, &mut v.$field)?;)*
-                    Ok(v)
+                    Self::read_fields(node)
                 }
 
-                #[allow(unused_variables, unused_mut)]
                 fn write(&self, node: &mut $crate::content::node::Node) {
-                    let mut fields = Self::INFO.fields.iter();
-                    $($crate::content::actions::def::write_field(node, fields.next().unwrap(), &self.$field);)*
+                    self.write_fields(node)
                 }
 
                 $(
