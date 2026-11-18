@@ -3,17 +3,17 @@
 //! C# origin: `ActionRunner` (a registry of handlers by action type),
 //! `ActionTemplates` and `TriggerManager.RunAction` (2012 on).
 //!
-//! **The core knows no action.** Each action type is a struct that reads
-//! its own fields from the map's XML ([`MapAction`]), optionally made by
-//! templates too, and a Bevy system that carries it out, returning
-//! whether it succeeded. A plugin registers both in one line:
+//! **The core knows no action.** Action types are data, defined apart
+//! from the game (`content::actions::defs`: fields, what an editor needs
+//! of them, templates). The game gives a type a Bevy system that carries
+//! it out, returning whether it succeeded, in one line:
 //!
 //! ```ignore
-//! app.add_map_action::<ApplyImpulse, _>(apply_impulse);
+//! app.add_map_action::<defs::ApplyImpulse, _>(apply_impulse);
 //! ```
 //!
-//! A new action is a new file and that line (see `entity.rs` for small
-//! examples); nothing here changes.
+//! A new action is its definition, a new file with its system and that
+//! line (see `entity.rs` for small examples); nothing here changes.
 //!
 //! The runner: a [`RunAction`] message names an action (a map action, or
 //! a template such as `ActivateEntity(1001)`) and the map id of the entity
@@ -37,39 +37,16 @@ use std::sync::Arc;
 
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::*;
-use serde::Deserialize;
-use serde::de::DeserializeOwned;
 
-use crate::content::actions::{ActionRef, MapActions, RawAction, TemplateArgs};
-use crate::content::xna::Items;
+use crate::content::actions::defs::ActionSequence;
+use crate::content::actions::{ActionDef, ActionRef, MapActions, RawAction, TemplateArgs};
+use crate::content::node::Node;
 use crate::game::{GameState, LoadedMap, MapId};
 
 pub use entity::Inactive;
 
 /// How deep sequences and `NextAction` chains may nest (a loop guard).
 const MAX_DEPTH: usize = 16;
-
-/// An action type: its data, read from the map's XML (serde, field names
-/// as in C#), and how templates make it.
-pub trait MapAction: DeserializeOwned + Send + Sync + 'static {
-    /// The C# class, without `GameLibrary.` (`ApplyImpulseActionData`).
-    const TYPE: &'static str;
-
-    /// Templates that make it: `("Impulse", |args| …)` for
-    /// `Impulse(itemId,impulseX,impulseY)`.
-    fn templates() -> Templates<Self> {
-        Vec::new()
-    }
-
-    /// Sprites it draws, loaded with any map that has it.
-    fn sprites() -> &'static [&'static str] {
-        &[]
-    }
-}
-
-/// The templates an action type answers to, each with how it reads its
-/// arguments.
-pub type Templates<T> = Vec<(&'static str, fn(&TemplateArgs) -> Option<T>)>;
 
 /// What a handler gets: the action's data and who set it off.
 pub struct Run<T> {
@@ -108,15 +85,15 @@ impl MapIds<'_, '_> {
 }
 
 type Handler<A> = Arc<dyn Fn(&mut World, A, Option<i64>, usize) -> bool + Send + Sync>;
-type Reader = fn(&str) -> Result<(), String>;
 
-/// The action types and templates the port has.
+/// The action types and templates the game carries out.
 #[derive(Resource, Default)]
 pub struct ActionRegistry {
-    by_type: HashMap<&'static str, Handler<String>>,
-    readers: HashMap<&'static str, Reader>,
+    by_type: HashMap<&'static str, Handler<Node>>,
     sprites: HashMap<&'static str, &'static [&'static str]>,
-    by_template: HashMap<&'static str, Handler<TemplateArgs>>,
+    /// By name, with how many arguments each takes (`NextMap()` and
+    /// `NextMap(stars)` are two).
+    by_template: HashMap<&'static str, Vec<(usize, Handler<TemplateArgs>)>>,
 }
 
 impl ActionRegistry {
@@ -125,65 +102,104 @@ impl ActionRegistry {
         self.sprites.get(kind).copied().unwrap_or(&[])
     }
 
-    /// Whether an action of type `kind` reads from `xml`: `None` if the
-    /// type is not ported.
-    pub fn read(&self, kind: &str, xml: &str) -> Option<Result<(), String>> {
-        self.readers.get(kind).map(|read| read(xml))
+    /// Whether the game carries out actions of type `kind`.
+    pub fn has(&self, kind: &str) -> bool {
+        self.by_type.contains_key(kind)
+    }
+
+    /// The template of a name for `args`: the one taking that many, or
+    /// else the first.
+    fn template(&self, name: &str, args: usize) -> Option<Handler<TemplateArgs>> {
+        let all = self.by_template.get(name)?;
+        all.iter()
+            .find(|(n, _)| *n == args)
+            .or(all.first())
+            .map(|(_, h)| h.clone())
     }
 }
 
 pub trait AddMapAction {
-    /// Registers an action type and its templates, carried out by `system`
+    /// Has actions of type `T` and its templates carried out by `system`
     /// (`In<Run<T>>` → whether it succeeded).
-    fn add_map_action<T: MapAction, M>(&mut self, system: impl IntoSystem<In<Run<T>>, bool, M> + 'static) -> &mut Self;
+    fn add_map_action<T: ActionDef, M>(
+        &mut self,
+        system: impl IntoSystem<In<Run<T>>, bool, M> + 'static,
+    ) -> &mut Self;
 
     /// The same with a function that has the world to itself, for actions
     /// that run other actions.
-    fn add_map_action_fn<T: MapAction>(&mut self, run: fn(&mut World, Run<T>) -> bool) -> &mut Self;
+    fn add_map_action_fn<T: ActionDef>(&mut self, run: fn(&mut World, Run<T>) -> bool)
+    -> &mut Self;
+
+    /// Sprites actions of type `T` draw, loaded with any map that has one.
+    fn add_action_sprites<T: ActionDef>(&mut self, sprites: &'static [&'static str]) -> &mut Self;
 }
 
 impl AddMapAction for App {
-    fn add_map_action<T: MapAction, M>(&mut self, system: impl IntoSystem<In<Run<T>>, bool, M> + 'static) -> &mut Self {
+    fn add_map_action<T: ActionDef, M>(
+        &mut self,
+        system: impl IntoSystem<In<Run<T>>, bool, M> + 'static,
+    ) -> &mut Self {
         let id = self.world_mut().register_system(system);
         register::<T>(self, move |world, data, actor, depth| {
-            world.run_system_with(id, Run { data, actor, depth }).unwrap_or(false)
+            world
+                .run_system_with(id, Run { data, actor, depth })
+                .unwrap_or(false)
         })
     }
 
-    fn add_map_action_fn<T: MapAction>(&mut self, run: fn(&mut World, Run<T>) -> bool) -> &mut Self {
-        register::<T>(self, move |world, data, actor, depth| run(world, Run { data, actor, depth }))
+    fn add_map_action_fn<T: ActionDef>(
+        &mut self,
+        run: fn(&mut World, Run<T>) -> bool,
+    ) -> &mut Self {
+        register::<T>(self, move |world, data, actor, depth| {
+            run(world, Run { data, actor, depth })
+        })
+    }
+
+    fn add_action_sprites<T: ActionDef>(&mut self, sprites: &'static [&'static str]) -> &mut Self {
+        let mut registry = self.world_mut().get_resource_or_init::<ActionRegistry>();
+        registry.sprites.insert(T::INFO.kind, sprites);
+        self
     }
 }
 
-fn register<T: MapAction>(
+fn register<T: ActionDef>(
     app: &mut App,
     call: impl Fn(&mut World, T, Option<i64>, usize) -> bool + Send + Sync + 'static,
 ) -> &mut App {
     let call = Arc::new(call);
     let mut registry = app.world_mut().get_resource_or_init::<ActionRegistry>();
-    let from_xml = call.clone();
+    let from_node = call.clone();
     registry.by_type.insert(
-        T::TYPE,
-        Arc::new(move |world, xml: String, actor, depth| match quick_xml::de::from_str::<T>(&xml) {
-            Ok(data) => from_xml(world, data, actor, depth),
-            Err(e) => {
-                warn!("{}: {e}", T::TYPE);
-                false
-            }
-        }),
+        T::INFO.kind,
+        Arc::new(
+            move |world, node: Node, actor, depth| match T::read(&node) {
+                Ok(data) => from_node(world, data, actor, depth),
+                Err(e) => {
+                    warn!("{}: {e}", T::INFO.kind);
+                    false
+                }
+            },
+        ),
     );
-    registry.sprites.insert(T::TYPE, T::sprites());
-    registry
-        .readers
-        .insert(T::TYPE, |xml| quick_xml::de::from_str::<T>(xml).map(|_| ()).map_err(|e| e.to_string()));
-    for (name, build) in T::templates() {
+    for (signature, build) in T::templates() {
+        let (name, params) = signature.split_once('(').unwrap_or((signature, ")"));
+        let arity = params
+            .trim_end_matches(')')
+            .split(',')
+            .filter(|p| !p.trim().is_empty())
+            .count();
         let call = call.clone();
-        registry.by_template.insert(
-            name,
+        let handler: Handler<TemplateArgs> =
             Arc::new(move |world, args: TemplateArgs, actor, depth| {
                 build(&args).is_some_and(|data| call(world, data, actor, depth))
-            }),
-        );
+            });
+        registry
+            .by_template
+            .entry(name)
+            .or_default()
+            .push((arity, handler));
     }
     app
 }
@@ -219,7 +235,7 @@ impl Plugin for ActionsPlugin {
             .init_resource::<Reported>()
             .init_resource::<CurrentActions>()
             .init_resource::<StartQueue>()
-            .add_map_action_fn::<Sequence>(run_sequence)
+            .add_map_action_fn::<ActionSequence>(run_sequence)
             .add_plugins((
                 entity::EntityActionsPlugin,
                 body::BodyActionsPlugin,
@@ -250,7 +266,9 @@ fn run_on_map_start(
     reported.0.clear();
     // Each runs itself, not by name: several may share one (eight
     // `CreateTeleport`s on Unboxing).
-    start.0 = (0..current.0.0.len()).filter(|&i| current.0.0[i].run_on_map_start).collect();
+    start.0 = (0..current.0.0.len())
+        .filter(|&i| current.0.0[i].base.run_on_map_start)
+        .collect();
 }
 
 fn tick_delayed(time: Res<Time>, mut delayed: ResMut<Delayed>, mut run: MessageWriter<RunAction>) {
@@ -273,7 +291,10 @@ fn run_actions(world: &mut World) {
         let action = world.resource::<CurrentActions>().0.0[i].clone();
         run_one(world, action, None, 0);
     }
-    let requests: Vec<RunAction> = world.resource_mut::<Messages<RunAction>>().drain().collect();
+    let requests: Vec<RunAction> = world
+        .resource_mut::<Messages<RunAction>>()
+        .drain()
+        .collect();
     for r in requests {
         run(world, &r.name, r.actor, 0);
     }
@@ -288,7 +309,9 @@ pub fn run(world: &mut World, reference: &str, actor: Option<i64>, depth: usize)
     }
     let r = ActionRef::parse(reference);
     if let Some(args) = r.args {
-        let handler = world.resource::<ActionRegistry>().by_template.get(r.name.as_str()).cloned();
+        let handler = world
+            .resource::<ActionRegistry>()
+            .template(&r.name, args.len());
         return match handler {
             Some(h) => h(world, TemplateArgs(args), actor, depth),
             None => {
@@ -297,7 +320,12 @@ pub fn run(world: &mut World, reference: &str, actor: Option<i64>, depth: usize)
             }
         };
     }
-    let actions: Vec<_> = world.resource::<CurrentActions>().0.named(&r.name).cloned().collect();
+    let actions: Vec<_> = world
+        .resource::<CurrentActions>()
+        .0
+        .named(&r.name)
+        .cloned()
+        .collect();
     // `RunActions`: `result = result || action.Run(itemId)`, so once one
     // succeeds the others of the name are skipped. The maps rely on it
     // (JunkYard's two `CloneObj3007_3` made one clone).
@@ -311,15 +339,19 @@ pub fn run(world: &mut World, reference: &str, actor: Option<i64>, depth: usize)
 
 /// Runs one map action, then its `NextAction` if it succeeded.
 fn run_one(world: &mut World, a: RawAction, actor: Option<i64>, depth: usize) -> bool {
-    let handler = world.resource::<ActionRegistry>().by_type.get(a.kind.as_str()).cloned();
+    let handler = world
+        .resource::<ActionRegistry>()
+        .by_type
+        .get(a.kind.as_str())
+        .cloned();
     let ok = match handler {
-        Some(h) => h(world, a.xml, actor, depth),
+        Some(h) => h(world, a.node, actor, depth),
         None => {
             report(world, &a.kind);
             false
         }
     };
-    match (&a.next, ok) {
+    match (a.base.next(), ok) {
         (Some(next), true) => run(world, next, actor, depth + 1),
         _ => ok,
     }
@@ -332,31 +364,9 @@ fn report(world: &mut World, kind: &str) {
 }
 
 /// `ActionSequence`, `Seq(a b c, seconds)`.
-#[derive(Deserialize)]
-#[serde(rename_all = "PascalCase")]
-struct Sequence {
-    #[serde(default)]
-    actions: Items<String>,
-    #[serde(default)]
-    time_between_in_sec: f32,
-}
-
-impl MapAction for Sequence {
-    const TYPE: &'static str = "ActionSequence";
-
-    fn templates() -> Templates<Self> {
-        vec![("Seq", |args| {
-            Some(Sequence {
-                actions: Items { items: args.words(0) },
-                time_between_in_sec: args.num(1).unwrap_or(0.0),
-            })
-        })]
-    }
-}
-
-fn run_sequence(world: &mut World, run_: Run<Sequence>) -> bool {
+fn run_sequence(world: &mut World, run_: Run<ActionSequence>) -> bool {
     let step = run_.data.time_between_in_sec;
-    for (i, name) in run_.data.actions.items.iter().enumerate() {
+    for (i, name) in run_.data.actions.iter().enumerate() {
         if name.eq_ignore_ascii_case("na") {
             continue;
         }
@@ -365,7 +375,10 @@ fn run_sequence(world: &mut World, run_: Run<Sequence>) -> bool {
                 name: name.clone(),
                 actor: run_.actor,
             };
-            world.resource_mut::<Delayed>().0.push((step * i as f32, later));
+            world
+                .resource_mut::<Delayed>()
+                .0
+                .push((step * i as f32, later));
         } else {
             run(world, name, run_.actor, run_.depth + 1);
         }

@@ -2,9 +2,9 @@
 //! start it again (`RestartMap`).
 
 use bevy::prelude::*;
-use serde::Deserialize;
 
-use super::{AddMapAction, MapAction, Run, Templates};
+use super::{AddMapAction, Run};
+use crate::content::actions::defs::{MoveToNextMap, RestartMap, ShowSuccess};
 use crate::game::ChangeMap;
 use crate::triggers::LevelEnd;
 
@@ -12,33 +12,9 @@ pub struct LevelActionsPlugin;
 
 impl Plugin for LevelActionsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_map_action::<NextMap, _>(win)
-            .add_map_action::<Success, _>(win)
-            .add_map_action::<Restart, _>(restart);
-    }
-}
-
-/// `MoveToNextMap`, `NextMap()`, `NextMap(stars)`.
-#[derive(Deserialize, Default)]
-struct NextMap {}
-
-impl MapAction for NextMap {
-    const TYPE: &'static str = "MoveToNextMap";
-
-    fn templates() -> Templates<Self> {
-        vec![("NextMap", |_| Some(NextMap {}))]
-    }
-}
-
-/// `ShowSuccess`, `ShowSuccess()`.
-#[derive(Deserialize, Default)]
-struct Success {}
-
-impl MapAction for Success {
-    const TYPE: &'static str = "ShowSuccess";
-
-    fn templates() -> Templates<Self> {
-        vec![("ShowSuccess", |_| Some(Success {}))]
+        app.add_map_action::<MoveToNextMap, _>(win)
+            .add_map_action::<ShowSuccess, _>(win)
+            .add_map_action::<RestartMap, _>(restart);
     }
 }
 
@@ -48,19 +24,7 @@ fn win<T>(In(_): In<Run<T>>, mut end: ResMut<LevelEnd>) -> bool {
     true
 }
 
-/// `RestartMap`, `RestartMap()`.
-#[derive(Deserialize, Default)]
-struct Restart {}
-
-impl MapAction for Restart {
-    const TYPE: &'static str = "RestartMap";
-
-    fn templates() -> Templates<Self> {
-        vec![("RestartMap", |_| Some(Restart {}))]
-    }
-}
-
-fn restart(In(_): In<Run<Restart>>, mut change: MessageWriter<ChangeMap>) -> bool {
+fn restart(In(_): In<Run<RestartMap>>, mut change: MessageWriter<ChangeMap>) -> bool {
     change.write(ChangeMap::Restart);
     true
 }

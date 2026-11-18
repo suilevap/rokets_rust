@@ -17,15 +17,13 @@
 //! Not ported: the animated arrow hint, the opening splash, navigation
 //! links (no AI yet).
 
-use avian2d::prelude::*;
-use bevy::prelude::*;
-use serde::Deserialize;
-
-use crate::actions::{AddMapAction, MapAction, MapIds, Run, RunAction, Templates};
-use crate::content::xna::{boolean, lenient_int};
+use crate::actions::{AddMapAction, MapIds, Run, RunAction};
+use crate::content::actions::defs::{AddDoorComponent, OpenCloseDoor};
 use crate::game::{GameState, LoadedMap, MapEntity, MapId};
 use crate::render::layers::Layer;
 use crate::render::sprite::{SpriteTint, UnitQuad, sprite_bundle};
+use avian2d::prelude::*;
+use bevy::prelude::*;
 
 /// `Entities\DoorBoxPlaceholder`: where a door opens to.
 const HINT: &str = "Entities\\DoorBoxPlaceholder";
@@ -51,50 +49,19 @@ pub struct DoorPlugin;
 
 impl Plugin for DoorPlugin {
     fn build(&self, app: &mut App) {
-        app.add_map_action::<AddDoor, _>(add_door)
-            .add_map_action::<OpenClose, _>(open_close)
-            .add_systems(FixedUpdate, slide_doors.run_if(in_state(GameState::Playing)));
-    }
-}
-
-#[derive(Deserialize)]
-#[serde(rename_all = "PascalCase")]
-struct AddDoor {
-    #[serde(default, deserialize_with = "lenient_int")]
-    item_id: i64,
-    #[serde(default = "one")]
-    open_distance_scale: f32,
-    #[serde(default = "yes", deserialize_with = "boolean")]
-    is_draw_hint: bool,
-    #[serde(default = "yes", deserialize_with = "boolean")]
-    is_fix_on_open: bool,
-    #[serde(default, deserialize_with = "boolean")]
-    is_static: bool,
-    #[serde(default)]
-    action_on_open: Option<String>,
-    #[serde(default)]
-    action_on_close: Option<String>,
-}
-
-fn one() -> f32 {
-    1.0
-}
-
-fn yes() -> bool {
-    true
-}
-
-impl MapAction for AddDoor {
-    const TYPE: &'static str = "AddDoorComponent";
-
-    fn sprites() -> &'static [&'static str] {
-        &[HINT]
+        app.add_map_action::<AddDoorComponent, _>(add_door)
+            .add_action_sprites::<AddDoorComponent>(&[HINT])
+            .add_map_action::<OpenCloseDoor, _>(open_close)
+            .add_systems(
+                FixedUpdate,
+                slide_doors.run_if(in_state(GameState::Playing)),
+            );
     }
 }
 
 #[allow(clippy::too_many_arguments)]
 fn add_door(
-    In(run): In<Run<AddDoor>>,
+    In(run): In<Run<AddDoorComponent>>,
     ids: MapIds,
     bodies: Query<(&Position, &Rotation, &Collider, &MapId)>,
     map: Res<LoadedMap>,
@@ -121,10 +88,13 @@ fn add_door(
                 color: [1.0; 4],
                 lit: true,
             };
-            let mut sprite = sprite_bundle(info, 1.0, Layer::GroundDecor, tint, &quad, &mut materials);
+            let mut sprite =
+                sprite_bundle(info, 1.0, Layer::GroundDecor, tint, &quad, &mut materials);
             sprite.2.translation = open_at.extend(Layer::GroundDecor.z());
             sprite.2.rotation = Quat::from_rotation_z(rot.as_radians());
-            commands.spawn((Name::new("Door hint"), MapEntity, sprite)).id()
+            commands
+                .spawn((Name::new("Door hint"), MapEntity, sprite))
+                .id()
         });
     let name = |s: &Option<String>| s.clone().filter(|s| !s.trim().is_empty());
     commands.entity(e).insert((
@@ -150,28 +120,8 @@ fn add_door(
 }
 
 /// `OpenCloseDoor`, `OpenDoor(id)`, `CloseDoor(id)`.
-#[derive(Deserialize)]
-#[serde(rename_all = "PascalCase")]
-struct OpenClose {
-    #[serde(default, deserialize_with = "lenient_int")]
-    item_id: i64,
-    #[serde(default = "yes", deserialize_with = "boolean")]
-    open: bool,
-}
-
-impl MapAction for OpenClose {
-    const TYPE: &'static str = "OpenCloseDoor";
-
-    fn templates() -> Templates<Self> {
-        vec![
-            ("OpenDoor", |a| Some(OpenClose { item_id: a.int(0)?, open: true })),
-            ("CloseDoor", |a| Some(OpenClose { item_id: a.int(0)?, open: false })),
-        ]
-    }
-}
-
 fn open_close(
-    In(run): In<Run<OpenClose>>,
+    In(run): In<Run<OpenCloseDoor>>,
     ids: MapIds,
     mut bodies: Query<(&Rotation, &mut LinearVelocity, &Collider, Option<&Door>)>,
     mut commands: Commands,
@@ -191,7 +141,9 @@ fn open_close(
             // the physics clears a static body's speed.
             let push = facing * door.push * 2.0 * sign;
             if door.fix_on_open || door.fixed {
-                commands.entity(e).insert((RigidBody::Dynamic, LinearVelocity(push)));
+                commands
+                    .entity(e)
+                    .insert((RigidBody::Dynamic, LinearVelocity(push)));
             } else {
                 v.0 = push;
             }
@@ -207,16 +159,22 @@ fn open_close(
 
 /// A box body's size (length along its facing, width).
 fn box_size(collider: &Collider) -> Vec2 {
-    collider
-        .shape_scaled()
-        .as_cuboid()
-        .map_or(Vec2::ONE, |c| Vec2::new(c.half_extents.x, c.half_extents.y) * 2.0)
+    collider.shape_scaled().as_cuboid().map_or(Vec2::ONE, |c| {
+        Vec2::new(c.half_extents.x, c.half_extents.y) * 2.0
+    })
 }
 
 /// `Door.Update`: snap to an end when it gets there moving outwards.
 fn slide_doors(
     mut commands: Commands,
-    mut doors: Query<(Entity, &mut Door, &mut Position, &mut LinearVelocity, &Rotation, &MapId)>,
+    mut doors: Query<(
+        Entity,
+        &mut Door,
+        &mut Position,
+        &mut LinearVelocity,
+        &Rotation,
+        &MapId,
+    )>,
     mut run: MessageWriter<RunAction>,
 ) {
     for (e, mut door, mut pos, mut v, rot, id) in &mut doors {

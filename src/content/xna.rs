@@ -92,6 +92,8 @@ fn floats<const N: usize>(s: &str) -> Option<[f32; N]> {
 }
 
 impl XVec2 {
+    pub const ZERO: XVec2 = XVec2 { x: 0.0, y: 0.0 };
+
     pub fn parse(s: &str) -> Option<Self> {
         floats::<2>(s).map(|[x, y]| XVec2 { x, y })
     }
@@ -165,16 +167,6 @@ pub fn boolean<'de, D: Deserializer<'de>>(d: D) -> Result<bool, D::Error> {
         "false" | "0" | "" => Ok(false),
         other => Err(D::Error::custom(format!("bad bool {other:?}"))),
     }
-}
-
-/// An integer that may be written empty (`<ItemId Null="true" />`): 0.
-pub fn lenient_int<'de, D: Deserializer<'de>>(d: D) -> Result<i64, D::Error> {
-    let s = String::deserialize(d)?;
-    let s = s.trim();
-    if s.is_empty() {
-        return Ok(0);
-    }
-    s.parse().map_err(|_| D::Error::custom(format!("bad integer {s:?}")))
 }
 
 /// Converts an XNA content path (`Entities\CargoQuest`) to a relative asset
