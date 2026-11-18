@@ -85,6 +85,22 @@ pub fn spawn_player_car(
     mut materials: ResMut<Assets<StandardMaterial>>,
     start: Option<Res<StartOverride>>,
 ) {
+    // Only the first map: later maps start where they say.
+    let at = start.map(|s| s.0);
+    commands.remove_resource::<StartOverride>();
+    let at = at.map(|c| (map.world(c.x, c.y), None));
+    spawn_local_car(&mut commands, &map, &quad, &mut materials, at);
+}
+
+/// The player's car: at its place on the map, or at `at` (world) with its
+/// own heading or the one given (world radians).
+pub fn spawn_local_car(
+    commands: &mut Commands,
+    map: &LoadedMap,
+    quad: &UnitQuad,
+    materials: &mut Assets<StandardMaterial>,
+    at: Option<(Vec2, Option<f32>)>,
+) -> Option<Entity> {
     let players = &map.data.players.items;
     let Some(player) = players
         .iter()
@@ -92,24 +108,21 @@ pub fn spawn_player_car(
         .or_else(|| players.iter().find(|p| !p.is_prototype))
     else {
         warn!("map {} has no player", map.data.name);
-        return;
+        return None;
     };
     let Some(car) = map.cars.get(&player.car_name) else {
         warn!("car {:?} is not in Cars.xml", player.car_name);
-        return;
+        return None;
     };
     let Some(base) = car.base_sprite().and_then(|s| map.sprites.get(&s).cloned()) else {
         warn!("car {} has no Base sprite", car.name);
-        return;
+        return None;
     };
     let size = base.size * px(1.0) * car.scale;
     let radius = size.max_element() / 2.0;
     let friction = map.data.friction.unwrap_or(1.0);
-    let at = start.map_or(Vec2::new(player.position.x, player.position.y), |s| s.0);
-    // Only the first map: later maps start where they say.
-    commands.remove_resource::<StartOverride>();
-    let position = map.world(at.x, at.y);
-    let angle = map_degrees_to_world(player.direction_deg);
+    let (position, heading) = at.unwrap_or((map.world(player.position.x, player.position.y), None));
+    let angle = heading.unwrap_or_else(|| map_degrees_to_world(player.direction_deg));
 
     let params = DriveParams::new(car, radius, friction);
     let mut entity = commands.spawn((
@@ -156,8 +169,9 @@ pub fn spawn_player_car(
         entity.insert(Mass(car.mass));
     }
     entity.with_children(|parent| {
-        spawn_car_sprites(parent, &map, car, &quad, &mut materials);
+        spawn_car_sprites(parent, map, car, quad, materials);
     });
+    Some(entity.id())
 }
 
 fn spawn_car_sprites(
