@@ -17,6 +17,7 @@ pub mod hud;
 pub mod info;
 pub mod light;
 pub mod map;
+pub mod markers;
 pub mod particles;
 pub mod pickups;
 pub mod platform;
@@ -54,7 +55,7 @@ impl Plugin for TileRiderPlugin {
                 map::spawn::MapEntitiesPlugin,
                 render::spin::SpinPlugin,
                 render::animate::AnimatePlugin,
-                (triggers::TriggersPlugin, actions::ActionsPlugin, door::DoorPlugin, button::ButtonPlugin, teleport::TeleportPlugin, platform::PlatformPlugin, info::InfoPlugin),
+                (triggers::TriggersPlugin, actions::ActionsPlugin, door::DoorPlugin, button::ButtonPlugin, teleport::TeleportPlugin, platform::PlatformPlugin, info::InfoPlugin, markers::MarkersPlugin),
                 hud::HudPlugin,
                 script::ScriptPlugin,
             ));

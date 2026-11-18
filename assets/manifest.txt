@@ -349,6 +349,9 @@ Sprites/Maps/Singleplayer/mapSingle1.png
 Sprites/Maps/Singleplayer/pixelMapTest.png
 Sprites/Maps/Singleplayer/pixelMapTest2.png
 Sprites/Maps/Singleplayer/pixelMapTest3.png
+Sprites/Minimap/minimap_Hot.png
+Sprites/Minimap/minimap_arrow.png
+Sprites/Minimap/minimap_goal.png
 Sprites/Particles/3Pixel.png
 Sprites/Particles/AttackBip.png
 Sprites/Particles/Battery.png
