@@ -117,6 +117,9 @@ pub struct PlayerData {
     pub car_name: String,
     #[serde(default, deserialize_with = "boolean")]
     pub is_prototype: bool,
+    /// Run when the car appears at map start, for it.
+    #[serde(default)]
+    pub action_on_create: Option<String>,
 }
 
 fn default_player_car() -> String {
@@ -164,6 +167,12 @@ pub struct EntityData {
     pub restrict_y: bool,
     #[serde(default, deserialize_with = "boolean")]
     pub restrict_rotation: bool,
+    /// Run when it appears (at map start, or as a clone), for it.
+    #[serde(default)]
+    pub action_on_create: Option<String>,
+    /// Run when it is destroyed, for it.
+    #[serde(default)]
+    pub action_on_destroy: Option<String>,
 }
 
 fn yes() -> bool {

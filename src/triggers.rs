@@ -16,7 +16,7 @@
 
 use bevy::prelude::*;
 
-use crate::actions::{AddMapAction, Inactive, Run, RunAction};
+use crate::actions::{AddMapAction, CloneOf, Inactive, Run, RunAction, source_id};
 use crate::content::actions::defs::ActivateTrigger;
 use crate::controls::LocalPlayer;
 use crate::game::{ChangeMap, GameState, LoadedMap, MapId};
@@ -31,6 +31,19 @@ struct TriggerState {
     active: bool,
     enter: Vec<String>,
     leave: Vec<String>,
+    /// Who sets it off (map ids, a clone by its source's); none listed:
+    /// the player's car only (`GetTriggerByEntity`).
+    subscribers: Vec<i64>,
+}
+
+impl TriggerState {
+    fn set_off_by(&self, id: Option<i64>, player: bool) -> bool {
+        if self.subscribers.is_empty() {
+            player
+        } else {
+            id.is_some_and(|id| self.subscribers.contains(&id))
+        }
+    }
 }
 
 /// The map's triggers and the cells they cover.
@@ -119,6 +132,7 @@ fn build_triggers(mut commands: Commands, map: Res<LoadedMap>, mut end: ResMut<L
             active: data.active,
             enter: data.actions.items.clone(),
             leave: data.leave_actions.items.clone(),
+            subscribers: data.subscribers.clone(),
         });
         let i = t.list.len() - 1;
         t.paint(i, i + 1);
@@ -132,25 +146,28 @@ fn build_triggers(mut commands: Commands, map: Res<LoadedMap>, mut end: ResMut<L
 fn watch_subscribers(
     mut commands: Commands,
     triggers: Res<Triggers>,
-    new: Query<(Entity, Option<&MapId>, Has<LocalPlayer>), Without<InTrigger>>,
+    new: Query<(Entity, Option<&MapId>, Option<&CloneOf>, Has<LocalPlayer>), Without<InTrigger>>,
 ) {
-    for (e, id, player) in &new {
-        if player || id.is_some_and(|id| triggers.subscribers.contains(&id.0)) {
+    for (e, id, clone, player) in &new {
+        if player || id.is_some_and(|id| triggers.subscribers.contains(&source_id(id, clone))) {
             commands.entity(e).insert(InTrigger::default());
         }
     }
 }
 
+#[allow(clippy::type_complexity)]
 fn check_triggers(
     map: Res<LoadedMap>,
     mut triggers: ResMut<Triggers>,
-    mut watched: Query<(&Transform, Option<&MapId>, &mut InTrigger), Without<Inactive>>,
+    mut watched: Query<(&Transform, Option<&MapId>, Option<&CloneOf>, Has<LocalPlayer>, &mut InTrigger), Without<Inactive>>,
     mut run: MessageWriter<RunAction>,
 ) {
-    for (t, id, mut last) in &mut watched {
+    for (t, id, clone, player, mut last) in &mut watched {
         let actor = id.map(|i| i.0);
+        let source = id.map(|i| source_id(i, clone));
         let (x, y) = map.cell.to_cells(t.translation.truncate());
-        let now = triggers.at(x, y);
+        // A trigger this one may not set off is as good as none.
+        let now = triggers.at(x, y).filter(|&i| triggers.list[i].set_off_by(source, player));
         if let Some(left) = last.0
             && last.0 != now
         {

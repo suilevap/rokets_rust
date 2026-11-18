@@ -23,7 +23,8 @@ use crate::game::{GameState, LoadedMap};
 /// Closest camera height: XNA's `MinHeight` (512 / 32), at scale 1.
 pub const CAMERA_HEIGHT: f32 = 16.0;
 /// XNA's `Settings.CameraMinScaleBase`: furthest height is 16 / 0.4 = 40.
-const MIN_SCALE: f32 = 0.4;
+/// The furthest the camera zooms out (`Camera2D.MinScale`).
+pub const MIN_SCALE: f32 = 0.4;
 const FOCUS_RATE: f32 = 1.9;
 const FOLLOW_RATE: f32 = 4.0;
 const SCALE_RATE: f32 = 0.9;
@@ -84,6 +85,11 @@ pub struct CameraTarget {
     pub radius: f32,
     pub max_speed: f32,
 }
+
+/// Where the camera looks instead of framing its targets, and how close
+/// (a camera path, `Camera2DOperatorFollowPath`); `None`: its targets.
+#[derive(Resource, Debug, Default, Clone, Copy, PartialEq)]
+pub struct CameraOverride(pub Option<(Vec2, f32)>);
 
 /// Left out of the camera's framing for now (`RemoveEntitiesFromFocus`),
 /// keeping its [`CameraTarget`] for when it is back.
@@ -212,6 +218,8 @@ impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<ViewRotation>()
             .init_resource::<CameraShake>()
+            .init_resource::<CameraOverride>()
+            .add_systems(OnEnter(GameState::Playing), |mut o: ResMut<CameraOverride>| o.0 = None)
             .add_systems(Startup, spawn_camera)
             .add_systems(PreUpdate, fit_view_to_window)
             .add_systems(
@@ -351,6 +359,7 @@ fn follow_target(
     view: Res<ViewRotation>,
     targets: CameraTargets,
     mut shake: ResMut<CameraShake>,
+    over: Option<Res<CameraOverride>>,
     mut cameras: Query<(&mut MainCamera, &mut Transform, &Projection)>,
 ) {
     let jolt = shake.step(time.delta_secs());
@@ -359,8 +368,12 @@ fn follow_target(
         let Projection::Perspective(projection) = projection else {
             continue;
         };
-        let Some(frame) = framing(targets.iter().map(target_snapshot), &view, projection) else {
-            continue;
+        let frame = match over.as_ref().and_then(|o| o.0) {
+            Some((focus, scale)) => Framing { focus, scale },
+            None => match framing(targets.iter().map(target_snapshot), &view, projection) {
+                Some(frame) => frame,
+                None => continue,
+            },
         };
         cam.focus = cam.focus.lerp(frame.focus, ease(FOCUS_RATE, dt));
         cam.ground = cam.ground.lerp(cam.focus, ease(FOLLOW_RATE, dt));

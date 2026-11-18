@@ -265,6 +265,16 @@ const fn spark(curl: f32) -> Style {
 /// The two ways sparks curl (C#'s ±0.75π, negated for our angles).
 pub static SPARKS: [Style; 2] = [spark(-0.75 * std::f32::consts::PI), spark(0.75 * std::f32::consts::PI)];
 
+/// `_cloneStyle`: a soft white flash where a clone appears.
+pub static CLONE_FLASH: Style = Style {
+    begin: still(6.0, 0.0, [1.0; 4], SMOKE_END),
+    end: still(5.0, 0.0, TRANSPARENT, SMOKE_END),
+    lifetime: 0.5,
+    texture: "Particles\\SoftBrush",
+    additive: true,
+    random_frame: false,
+};
+
 /// `DepthConst.Teleport + 0.01`: on the floor.
 const TELEPORT: f32 = (0.2 + 0.01) / 16.0;
 
@@ -312,7 +322,7 @@ pub fn ring_rate(range: f32, texture_width: f32) -> f32 {
 }
 
 /// Every texture a style here draws with, to load with the map.
-pub const TEXTURES: [&str; 9] = [
+pub const TEXTURES: [&str; 10] = [
     WHEEL_TRAIL.texture,
     EXHAUST.texture,
     BOMB_BEEP.texture,
@@ -322,4 +332,5 @@ pub const TEXTURES: [&str; 9] = [
     WRECK_FIRE.texture,
     SPARKS[0].texture,
     TELEPORT_STREAK.texture,
+    CLONE_FLASH.texture,
 ];

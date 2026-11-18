@@ -27,7 +27,7 @@ use bevy::prelude::*;
 use rand::Rng;
 use rand::rngs::SmallRng;
 
-use crate::actions::{AddMapAction, MapIds, Run, RunAction};
+use crate::actions::{AddMapAction, MapIds, Respawned, Run, RunAction};
 use crate::car::smoke::SmokePoints;
 use crate::car::spawn_local_car;
 use crate::content::actions::defs::{SaveAction, SetRespawnPoint};
@@ -225,7 +225,9 @@ fn restart_after_wreck(
                 for t in targets.iter().filter(|&t| t != e) {
                     commands.entity(t).try_insert(Unfocused);
                 }
-                spawn_local_car(&mut commands, &map, &quad, &mut materials, Some((at, Some(heading))));
+                if let Some(car) = spawn_local_car(&mut commands, &map, &quad, &mut materials, Some((at, Some(heading)))) {
+                    commands.entity(car).insert(Respawned);
+                }
             }
             continue;
         }

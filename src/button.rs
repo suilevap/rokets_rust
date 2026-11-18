@@ -19,7 +19,7 @@
 use avian2d::prelude::*;
 use bevy::prelude::*;
 
-use crate::actions::{AddMapAction, Run, RunAction};
+use crate::actions::{AddMapAction, CloneOf, Run, RunAction, source_id};
 use crate::content::actions::defs::{ButtonTypeType, CreateButton};
 use crate::controls::LocalPlayer;
 use crate::game::{GameState, LoadedMap, MapEntity, MapId};
@@ -232,7 +232,7 @@ fn create_button(
 fn look(
     time: Res<Time>,
     mut buttons: Query<(&mut Button, &CollidingEntities, &Transform)>,
-    who: Query<(Option<&MapId>, Has<LocalPlayer>, &RigidBody)>,
+    who: Query<(Option<&MapId>, Has<LocalPlayer>, &RigidBody, Option<&CloneOf>)>,
     mut run: MessageWriter<RunAction>,
     mut sound: MessageWriter<PlaySound>,
 ) {
@@ -245,13 +245,13 @@ fn look(
         b.phase += 1;
         let at = Some(transform.translation.truncate());
         let standing = touching.iter().copied().find(|&e| {
-            who.get(e).is_ok_and(|(id, player, _)| match &b.subscribers {
-                Some(ids) => id.is_some_and(|id| ids.contains(&id.0)),
+            who.get(e).is_ok_and(|(id, player, _, clone)| match &b.subscribers {
+                Some(ids) => id.is_some_and(|id| ids.contains(&source_id(id, clone))),
                 None => player,
             })
         });
-        b.holding = standing.filter(|&e| who.get(e).is_ok_and(|(_, player, body)| !player && body.is_dynamic()));
-        let id = standing.map(|e| who.get(e).ok().and_then(|(id, _, _)| id.map(|id| id.0)));
+        b.holding = standing.filter(|&e| who.get(e).is_ok_and(|(_, player, body, _)| !player && body.is_dynamic()));
+        let id = standing.map(|e| who.get(e).ok().and_then(|(id, _, _, _)| id.map(|id| id.0)));
         match b.state.look(id) {
             Some(Pressing::Light(n)) => {
                 sound.write(PlaySound { name: "GButtonLight", at, pitch: -0.5 + n as f32 / 4.0, volume: 0.6 });
