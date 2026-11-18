@@ -347,6 +347,11 @@ actions! {
         action_on_less "ActionOnLess": Option<String> = None, from(ACTION);
         action_on_equal "ActionOnEqual": Option<String> = None, from(ACTION);
         action_on_greater "ActionOnGreater": Option<String> = None, from(ACTION);
+    } => templates {
+        "if(variable,check,value)" => |a| compare(0, a.text(0)?, a.text(1)?, a.text(2)?, "NA"),
+        "IfEx(itemId,variable,check,value,action)" => |a| {
+            compare(a.int(0)?, a.text(1)?, a.text(2)?, a.text(3)?, a.text(4)?)
+        },
     }
 
     ChangeIntVariable("ChangeIntVariable", name = "ChangeIntVariable") {
@@ -355,6 +360,41 @@ actions! {
         item_id "ItemId": i64 = 0, optional, from(ITEM);
         value "Value": i64 = 0;
         operation "Operation": ChangeIntVariableOperationType = ChangeIntVariableOperationType::Set;
+    } => templates {
+        "SetGlobalVar(Var,Value)" => |a| Some(ChangeIntVariable {
+            variable_name: Some(a.text(0)?.to_string()),
+            global: true,
+            item_id: 0,
+            value: a.int(1)?,
+            operation: ChangeIntVariableOperationType::Set,
+        }),
+        "SetVar(Var,Value)" => |a| Some(ChangeIntVariable {
+            variable_name: Some(a.text(0)?.to_string()),
+            global: false,
+            item_id: 0,
+            value: a.int(1)?,
+            operation: ChangeIntVariableOperationType::Set,
+        }),
+        "SetVarEx(itemId,variable,operation,value)" => |a| {
+            use ChangeIntVariableOperationType::*;
+            let (item_id, value) = (a.int(0)?, a.int(3)?);
+            let (operation, value) = match a.text(2)? {
+                "=" => (Set, value),
+                "+" => (Increase, value),
+                "-" => (Increase, -value),
+                "*" => (Mul, value),
+                "/" => (Div, value),
+                "%" => (Mod, value),
+                _ => return None,
+            };
+            Some(ChangeIntVariable {
+                variable_name: Some(a.text(1)?.to_string()),
+                global: item_id < 0,
+                item_id,
+                value,
+                operation,
+            })
+        },
     }
 
     ChangeSubscribers("ChangeSubscribers", name = "ChangeSubscribers") {
@@ -734,6 +774,21 @@ actions! {
     }
 
     // New types go above this line (tools/gen_action_defs.py).
+}
+
+/// `if` and `IfEx`: a check that runs `action` on the outcomes `check`
+/// names (`<`, `>`, `==`, `<=`, `>=`); an item id below 0 is global.
+fn compare(item_id: i64, variable: &str, check: &str, value: &str, action: &str) -> Option<CheckIntVariable> {
+    let on = |yes: bool| yes.then(|| action.to_string());
+    Some(CheckIntVariable {
+        variable_name: Some(variable.to_string()),
+        global: item_id < 0,
+        item_id,
+        value: Some(value.to_string()),
+        action_on_less: on(check.starts_with('<')),
+        action_on_equal: on(check.ends_with('=')),
+        action_on_greater: on(check.starts_with('>')),
+    })
 }
 
 /// The definition of an action type, by its C# class.

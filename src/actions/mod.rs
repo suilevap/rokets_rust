@@ -31,6 +31,7 @@ mod body;
 mod entity;
 mod level;
 mod silent;
+mod variables;
 
 use std::collections::{BTreeSet, HashMap};
 use std::sync::Arc;
@@ -44,6 +45,7 @@ use crate::content::node::Node;
 use crate::game::{GameState, LoadedMap, MapId};
 
 pub use entity::Inactive;
+pub use variables::{Owner, Variables};
 
 /// How deep sequences and `NextAction` chains may nest (a loop guard).
 const MAX_DEPTH: usize = 16;
@@ -241,6 +243,7 @@ impl Plugin for ActionsPlugin {
                 body::BodyActionsPlugin,
                 level::LevelActionsPlugin,
                 silent::SilentActionsPlugin,
+                variables::VariablesPlugin,
             ))
             .add_systems(OnEnter(GameState::Playing), run_on_map_start)
             .add_systems(
