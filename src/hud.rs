@@ -70,7 +70,7 @@ fn update_text(
     name: Res<CurrentMapName>,
     coins: Res<CoinCount>,
     scheme: Res<ActiveScheme>,
-    end: Res<LevelEnd>,
+    (end, respawn): (Res<LevelEnd>, Res<crate::game_mode::Respawn>),
     mut text: Query<&mut Text, With<DebugText>>,
 ) {
     let done = if end.timer.is_some() { "\nLEVEL COMPLETE" } else { "" };
@@ -79,8 +79,10 @@ fn update_text(
         .filter(|m| m.light.additive.is_some())
         .map_or(String::new(), |_| format!("  glow {:.2}", boost.0));
     let fps = frame_rate(&diagnostics).map_or(String::new(), |(fps, ms)| format!("  {fps:.0} fps {ms:.1} ms"));
+    // Lives count once there is somewhere to come back to.
+    let lives = respawn.point.map_or(String::new(), |_| format!("  lives {}", respawn.lives.max(0)));
     let s = format!(
-        "{}  gears {}/{}  [{:?}]  R restart, N next{fps}{glow}{}",
+        "{}  gears {}/{}{lives}  [{:?}]  R restart, N next{fps}{glow}{}",
         name.0, coins.collected, coins.total, *scheme, done
     );
     for mut t in &mut text {
