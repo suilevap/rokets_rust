@@ -66,6 +66,11 @@ request; remove it here when it lands.
 
 - Move the remaining inline `#[cfg(test)] mod tests { … }` blocks out of
   source files (see `CLAUDE.md`).
+- `tools/compare.py` on a map with `SimpleCars` (Targets, every Minigun
+  map but Teleport): take them out of the C# game quietly first.
+  `DestroyEntity` blows them up (the blasts move boxes nearby) and, sent
+  before their first update, crashes the game (their weapon is made
+  then and reads their place). Then compare bullets pushing a box.
 - `tools/compare.py` on a map with a scripted intro: start the C#
   script with the map (e.g. `/drive` reporting the map's game time, or
   a `-drive` command-line option), so intros line up.
