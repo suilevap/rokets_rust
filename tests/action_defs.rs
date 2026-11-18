@@ -5,7 +5,8 @@ use std::path::Path;
 
 use bevy::prelude::*;
 use tilerider::actions::{ActionRegistry, ActionsPlugin, run};
-use tilerider::content::actions::def::{Kind, Ref};
+use tilerider::content::actions::def::Kind;
+use tilerider::content::actions::source::{self, Source};
 use tilerider::content::actions::defs;
 use tilerider::content::map::MapData;
 use tilerider::content::node::Node;
@@ -65,8 +66,8 @@ fn fields_carry_what_an_editor_needs() {
         .find(|f| f.name == "ActionOnOpen")
         .unwrap();
     assert_eq!(
-        (on_open.kind, on_open.refs, on_open.optional),
-        (Kind::Text, &[Ref::Action][..], false)
+        (on_open.kind, on_open.sources, on_open.optional),
+        (Kind::Text, source::ACTION, false)
     );
     assert_eq!(on_open.description(), "Run when the door opens.");
     let scale = door
@@ -100,4 +101,23 @@ fn the_game_carries_out_only_defined_types() {
     // Templates are picked by name and number of arguments.
     assert!(run(app.world_mut(), "NextMap()", None, 0));
     assert!(run(app.world_mut(), "NextMap(3)", None, 0));
+}
+
+#[test]
+fn an_editor_finds_what_a_field_may_take_without_knowing_the_game() {
+    let content = Path::new(env!("CARGO_MANIFEST_DIR")).join("assets");
+    let xml = std::fs::read_to_string(content.join("Maps/Singleplayer/Garage.xml")).unwrap();
+    let map = Node::parse(&xml).unwrap();
+    let door = defs::find("AddDoorComponent").unwrap();
+    let values = |name: &str| -> Vec<String> {
+        let field = door.all_fields().find(|f| f.name == name).unwrap();
+        field.sources.iter().flat_map(|s| s.values(&map, &content)).collect()
+    };
+    assert!(values("ItemId").contains(&"1029".to_string()));
+    let actions = values("ActionOnOpen");
+    assert!(actions.iter().any(|a| a == "DoorComponent1029"), "the map's actions");
+    assert!(actions.iter().any(|a| a == "OpenDoor(itemId)"), "and the templates");
+    assert!(source::SOUNDS.values(&map, &content).len() > 10);
+    let custom = Source::Xml { file: None, path: "XnaContent/Asset/Players|Entities/Item/Id" };
+    assert!(custom.values(&map, &content).len() > 1);
 }

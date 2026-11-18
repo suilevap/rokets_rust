@@ -12,6 +12,7 @@
 //! a type (`crate::actions`), a level editor needs only these.
 
 use super::TemplateArgs;
+use super::source::{self, Source};
 use crate::content::node::Node;
 use crate::content::xna::{XColor, XRect, XVec2};
 
@@ -36,38 +37,6 @@ pub enum Kind {
     Enum(&'static [&'static str]),
 }
 
-/// What a field's value names (`[ReferenceTo(typeof(…))]`): an editor
-/// offers the map's items of that kind.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Ref {
-    /// A map action, or a template (`ActionData`).
-    Action,
-    /// `TriggerData`, by `Id`.
-    Trigger,
-    /// `PlayerData`, by `Id`.
-    Player,
-    /// `SimpleCarData`, by `Id`.
-    SimpleCar,
-    /// `EntityData`, by `Id`.
-    Entity,
-    /// `HintData`, by `Id`.
-    Hint,
-}
-
-/// Values found elsewhere that a field may take
-/// (`[FieldReference(File, Path)]`): an editor offers them.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Lookup {
-    /// Groups used anywhere in the map (`MapData.GroupPath`).
-    Groups,
-    /// The map's variable names (`MapData.VariablePath`).
-    Variables,
-    /// Splash names in `Splashes/Splashes.xml`.
-    Splashes,
-    /// Songs of the content project (`MapData.MusicPath`).
-    Music,
-}
-
 /// One field of an action type.
 #[derive(Clone, Copy, Debug)]
 pub struct Field {
@@ -81,8 +50,9 @@ pub struct Field {
     pub optional: bool,
     /// `[Key]`: names the item.
     pub key: bool,
-    pub refs: &'static [Ref],
-    pub lookup: Option<Lookup>,
+    /// Where the values it may take come from (`[ReferenceTo]`,
+    /// `[FieldReference]`): an editor offers them.
+    pub sources: &'static [Source],
     /// The default, as the element written for it.
     pub default: fn() -> Node,
 }
@@ -100,8 +70,7 @@ impl Field {
             doc,
             optional: false,
             key: false,
-            refs: &[],
-            lookup: None,
+            sources: &[],
             default,
         }
     }
@@ -116,13 +85,8 @@ impl Field {
         self
     }
 
-    pub const fn refs(mut self, refs: &'static [Ref]) -> Self {
-        self.refs = refs;
-        self
-    }
-
-    pub const fn lookup(mut self, lookup: Lookup) -> Self {
-        self.lookup = Some(lookup);
+    pub const fn from(mut self, sources: &'static [Source]) -> Self {
+        self.sources = sources;
         self
     }
 
@@ -146,7 +110,7 @@ impl Base {
         Field::new("Name", Kind::Text, "Action name", || Node::new("Name")).key(),
         Field::new("Groups", Kind::Texts, "Group by", || Node::new("Groups"))
             .optional()
-            .lookup(Lookup::Groups),
+            .from(&[source::GROUPS]),
         Field::new(
             "RunOnMapStart",
             Kind::Bool,
@@ -161,7 +125,7 @@ impl Base {
             || Node::new("NextAction"),
         )
         .optional()
-        .refs(&[Ref::Action]),
+        .from(source::ACTION),
     ];
 
     /// Reads the common fields of an action of type `def` (whose defaults
@@ -234,6 +198,8 @@ pub struct DefInfo {
     /// an error if anything differs or the element has fields the type
     /// does not.
     pub check: fn(&Node) -> Result<(), String>,
+    /// The signatures of its templates (`OpenDoor(itemId)`).
+    pub templates: fn() -> Vec<&'static str>,
 }
 
 impl DefInfo {
@@ -550,7 +516,7 @@ macro_rules! xna_enum {
 ///     /// Pushes an entity.
 ///     Impulse("ApplyImpulseActionData") {
 ///         /// The entity pushed; 0: the one that set the action off.
-///         item_id "ItemId": i64 = 0, refs(&[Player, SimpleCar, Entity]);
+///         item_id "ItemId": i64 = 0, from(ITEM);
 ///         impulse "Impulse": XVec2 = XVec2::ZERO;
 ///         /// Times a random 0..1, added to `Impulse`.
 ///         random_impulse "RandomImpulse": XVec2 = XVec2::ZERO, optional;
@@ -563,7 +529,7 @@ macro_rules! xna_enum {
 /// - after the C# class: `name = "…"` (a new one's name, from its C#
 ///   constructor) and `on_map_start = true`;
 /// - a field is its Rust name, its XML name, type, default, then
-///   [`Field`]'s flags: `optional`, `key`, `refs(…)`, `lookup(…)`;
+///   [`Field`]'s flags: `optional`, `key`, `from(…)` (a field's [`Source`]s);
 /// - its doc comment is its description;
 /// - `=> templates` (optional) are the type's `ActionTemplates`, each
 ///   with its C# signature (an editor shows it; the game picks by name
@@ -616,6 +582,12 @@ macro_rules! actions {
                         $(.$flag($($($arg)*)?))*
                     ),*],
                     check: $crate::content::actions::def::check::<$name>,
+                    templates: || {
+                        <$name as $crate::content::actions::def::ActionDef>::templates()
+                            .into_iter()
+                            .map(|(signature, _)| signature)
+                            .collect()
+                    },
                 };
 
                 #[allow(unused_variables)]

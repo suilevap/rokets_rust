@@ -9,10 +9,12 @@
 //!   runner only needs the common ones ([`def::Base`]).
 //! - [`TemplateArgs`]: a template's arguments.
 //! - [`def`]: how an action type is defined, with what an editor needs of
-//!   its fields; [`defs`]: the types.
+//!   its fields; [`defs`]: the types; [`source`]: where a field's values
+//!   come from.
 
 pub mod def;
 pub mod defs;
+pub mod source;
 
 use super::ContentError;
 use super::node::Node;
