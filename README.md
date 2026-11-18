@@ -124,7 +124,9 @@ tools/compare.py AiTest --start 3.5,14.5 --ids 4001,1007 \
 It needs the C# game built in Debug next to this checkout (`../rokets`,
 or `--rokets PATH`); headless it starts Xvfb and PulseAudio itself, and
 the C# game runs about twenty times slower than real time, so a few
-seconds of driving take a few minutes.
+seconds of driving take a few minutes. Use a map without a scripted
+intro (AiTest, not Middleware): the C# game starts the script some
+seconds after the map does.
 
 ## Content
 

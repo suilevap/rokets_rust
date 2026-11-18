@@ -18,6 +18,11 @@ Needs the C# game built in Debug (`dotnet build` in the rokets checkout)
 and, headless, Xvfb and PulseAudio (rokets `docs/RUNNING_ON_LINUX.md`);
 the C# game runs about twenty times slower than real time there, so a
 few seconds of driving take a couple of minutes.
+
+The port runs the script from the map's start, the C# game from when it
+answers `/drive`, some seconds later: pick a map without a scripted intro
+(a `SetControl` or a paused `ShowText` at the start, as on Middleware), or
+the two intros fall at different script times.
 """
 import argparse
 import math
@@ -109,9 +114,20 @@ def run_cs(args, ids, seconds, heading):
             except OSError:
                 time.sleep(1)
         get("/pause?paused=false")
-        if args.start:
-            x, y = args.start.split(",")
-            get(f"/run/move_entity?item_id={ids[0]}&position={x}%2C{y}&direction_deg={heading}")
+        # The server answers before the map's entities are there; move
+        # the car until it is in the asked cell.
+        for _ in range(60):
+            if args.start:
+                x, y = args.start.split(",")
+                get(f"/run/move_entity?item_id={ids[0]}&position={x}%2C{y}&direction_deg={heading}")
+                cell = f'"tile_x":{int(float(x))},"tile_y":{int(float(y))},'
+            else:
+                cell = f'"id":{ids[0]},'
+            if cell in get(f"/entities?id={ids[0]}"):
+                break
+            time.sleep(2)
+        else:
+            sys.exit("c#: the player's car did not appear (or would not move to --start)")
         # The car may not be there yet when the server first answers.
         for _ in range(60):
             answer = get("/drive?script=" + urllib.request.quote(args.drive, safe=",:") + "&ids=" + ",".join(map(str, ids)))

@@ -34,6 +34,19 @@ request; remove it here when it lands.
   screen, aim by where it is dragged) and try it on a phone through a
   pull request preview.
 
+## Physics
+
+- Pushing a box while turning (`tools/compare.py AiTest --start 3.5,14.5
+  --ids 4001,1007 --drive "1,0:1;1,1:1;0,1:0.5"`): in C# the box slides
+  off the bumper and turns (−111° at t=1.5) and the car, free, turns to
+  −32° and speeds up to 12.9; here the box stays in front (−96°) and the
+  car stays near 0° at 8.2, 1.7 units apart by t=2. Straight driving,
+  turning and the magnet tow match within 0.2–1.3 units. Sizes, masses,
+  inertia, friction (0.8, geometric mean), restitution (0.5, max) and
+  damping are the same, so it is the contact solver (Farseer 3.3.1, 8
+  velocity / 3 position iterations, against Avian's substeps); try
+  Avian's contact settings (softness, substeps, speculative margin).
+
 ## Rendering and camera
 
 - C#'s dirty lens tints the picture (green on LetItSnowDay).
@@ -53,5 +66,6 @@ request; remove it here when it lands.
 
 - Move the remaining inline `#[cfg(test)] mod tests { … }` blocks out of
   source files (see `CLAUDE.md`).
-- Compare driving with the C# game by recorded paths (`--drive` here; the
-  C# command server can apply the same input).
+- `tools/compare.py` on a map with a scripted intro: start the C#
+  script with the map (e.g. `/drive` reporting the map's game time, or
+  a `-drive` command-line option), so intros line up.
