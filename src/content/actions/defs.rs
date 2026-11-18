@@ -625,7 +625,8 @@ actions! {
         target_position "TargetPosition": XVec2 = XVec2::ZERO;
         scale "Scale": f32 = 1.0;
         action "Action": Option<String> = None, from(ACTION);
-        subscribers "Subscribers": Vec<i64> = Vec::new(), from(ITEM);
+        /// Who it takes; null: anything, empty: nothing.
+        subscribers "Subscribers": Option<Vec<i64>> = None, from(ITEM);
         generate_back_teleport "GenerateBackTeleport": bool = false, optional;
     }
 

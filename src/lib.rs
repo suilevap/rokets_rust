@@ -21,6 +21,7 @@ pub mod pickups;
 pub mod render;
 pub mod script;
 pub mod sound;
+pub mod teleport;
 pub mod triggers;
 pub mod units;
 
@@ -51,7 +52,7 @@ impl Plugin for TileRiderPlugin {
                 map::spawn::MapEntitiesPlugin,
                 render::spin::SpinPlugin,
                 render::animate::AnimatePlugin,
-                (triggers::TriggersPlugin, actions::ActionsPlugin, door::DoorPlugin, button::ButtonPlugin),
+                (triggers::TriggersPlugin, actions::ActionsPlugin, door::DoorPlugin, button::ButtonPlugin, teleport::TeleportPlugin),
                 hud::HudPlugin,
                 script::ScriptPlugin,
             ));
