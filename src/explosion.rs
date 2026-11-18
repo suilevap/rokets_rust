@@ -25,7 +25,8 @@ use bevy::prelude::*;
 use rand::Rng;
 use rand::rngs::SmallRng;
 
-use crate::game::{GameState, LoadedMap};
+use crate::actions::{OnDestroy, RunAction, destroy_action};
+use crate::game::{GameState, LoadedMap, MapId};
 use crate::particles::styles::{BOMB_BEEP, BOOM_FIRE, BOOM_FLASH, BOOM_RING, BOOM_SMOKE, ring_rate};
 use crate::render::particles::Particles;
 use crate::render::sprite::SpriteTint;
@@ -151,13 +152,14 @@ pub fn blast_impulse(at: Vec2, blast: &Blast, center: Vec2, radius: f32) -> Vec2
 fn blow_up_on_touch(
     mut commands: Commands,
     mut started: MessageReader<CollisionStart>,
-    explosives: Query<(&Explosive, &Transform)>,
+    explosives: Query<(&Explosive, &Transform, Option<&OnDestroy>, Option<&MapId>)>,
     bodies: Query<&RigidBody, Without<Sensor>>,
     mut explosions: MessageWriter<Explosion>,
+    mut run: MessageWriter<RunAction>,
 ) {
     for event in started.read() {
         for (this, other) in [(event.collider1, event.body2), (event.collider2, event.body1)] {
-            let (Ok((explosive, t)), Some(other)) = (explosives.get(this), other) else {
+            let (Ok((explosive, t, on_destroy, id)), Some(other)) = (explosives.get(this), other) else {
                 continue;
             };
             if explosive.trigger == Trigger::Touch
@@ -165,6 +167,7 @@ fn blow_up_on_touch(
                 && let Ok(mut e) = commands.get_entity(this)
             {
                 e.despawn();
+                run.write_batch(destroy_action(on_destroy, id));
                 explosions.write(Explosion {
                     at: t.translation.truncate(),
                     blast: explosive.blast,
@@ -174,16 +177,19 @@ fn blow_up_on_touch(
     }
 }
 
+#[allow(clippy::type_complexity)]
 fn burn_fuses(
     mut commands: Commands,
     time: Res<Time>,
-    mut fuses: Query<(Entity, &mut Fuse, &Explosive, &Transform)>,
+    mut fuses: Query<(Entity, &mut Fuse, &Explosive, &Transform, Option<&OnDestroy>, Option<&MapId>)>,
     mut explosions: MessageWriter<Explosion>,
+    mut run: MessageWriter<RunAction>,
 ) {
-    for (entity, mut fuse, explosive, t) in &mut fuses {
+    for (entity, mut fuse, explosive, t, on_destroy, id) in &mut fuses {
         fuse.0 -= time.delta_secs();
         if fuse.0 <= 0.0 {
             commands.entity(entity).despawn();
+            run.write_batch(destroy_action(on_destroy, id));
             explosions.write(Explosion {
                 at: t.translation.truncate(),
                 blast: explosive.blast,

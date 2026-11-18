@@ -21,7 +21,7 @@ use bevy::prelude::*;
 use rand::rngs::SmallRng;
 use rand::{Rng, SeedableRng};
 
-use crate::actions::{AddMapAction, Run, RunAction};
+use crate::actions::{AddMapAction, CloneOf, Run, RunAction, source_id};
 use crate::content::actions::defs::CreateTeleport;
 use crate::controls::LocalPlayer;
 use crate::game::{GameState, LoadedMap, MapEntity, MapId};
@@ -128,7 +128,7 @@ fn take(
     mut commands: Commands,
     mut started: MessageReader<CollisionStart>,
     teleports: Query<&Teleport>,
-    mut bodies: Query<(&RigidBody, &mut Position, Option<&MapId>, Has<LocalPlayer>), Without<Arriving>>,
+    mut bodies: Query<(&RigidBody, &mut Position, Option<&MapId>, Has<LocalPlayer>, Option<&CloneOf>), Without<Arriving>>,
     mut camera: Query<&mut MainCamera>,
     mut run: MessageWriter<RunAction>,
     mut sound: MessageWriter<PlaySound>,
@@ -138,12 +138,12 @@ fn take(
             let (Ok(t), Some(other)) = (teleports.get(sensor), other) else {
                 continue;
             };
-            let Ok((RigidBody::Dynamic, mut pos, id, player)) = bodies.get_mut(other) else {
+            let Ok((RigidBody::Dynamic, mut pos, map_id, player, clone)) = bodies.get_mut(other) else {
                 continue;
             };
-            let id = id.map(|id| id.0);
+            let id = map_id.map(|id| id.0);
             if let Some(subs) = &t.subscribers
-                && !id.is_some_and(|id| subs.contains(&id))
+                && !map_id.is_some_and(|i| subs.contains(&source_id(i, clone)))
             {
                 continue;
             }

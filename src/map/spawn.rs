@@ -11,6 +11,7 @@ use avian2d::prelude::*;
 use bevy::prelude::*;
 
 use crate::boost::Booster;
+use crate::content::map::EntityData;
 use crate::explosion::Beeps;
 use crate::game::{GameState, LoadedMap, MapEntity, MapId};
 use crate::map::templates::{BodyKind, BodySpec, EntityTemplate, casts_sprite_shadow, template_for};
@@ -38,56 +39,66 @@ fn spawn_map_entities(
     quad: Res<UnitQuad>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let friction = map.data.friction.unwrap_or(1.0);
     for e in map.data.entities.iter() {
-        let Some(template) = template_for(e) else {
-            continue;
-        };
-        let Some(first) = template.sprites.first() else {
-            continue;
-        };
-        let Some(info) = map.sprites.get(&first.name).cloned() else {
-            continue;
-        };
-        let size = info.size * px(1.0) * first.scale;
-        let angle = map_degrees_to_world(e.direction_deg);
-        let mut entity = commands.spawn((
-            Name::new(format!("Map entity {}", e.id)),
-            MapEntity,
-            MapId(e.id),
-            Transform::from_translation(map.world(e.position.x, e.position.y).extend(0.0))
-                .with_rotation(Quat::from_rotation_z(angle)),
-            Visibility::default(),
-        ));
-        if let Some(body) = template.body {
-            insert_body(&mut entity, body, size, friction);
-        }
-        if let Some(boost) = &template.boost {
-            entity.insert(Booster {
-                speed: boost.speed,
-                flash: boost.flash,
-            });
-        }
-        if template.pickup {
-            entity.insert(Pickup {
-                radius: size.max_element() / 2.0,
-            });
-        }
-        if casts_sprite_shadow(e, &template) {
-            entity.insert(CastsShadow { size });
-        }
-        if let Some(explosive) = template.explosive {
-            entity.insert(explosive);
-        }
-        if template.beeps {
-            // Each bomb its own period, 1–2 s (`1 + NextFloatFake()`).
-            entity.insert(Beeps::every(1.0 + (e.id as f32 * 0.618_034).fract()));
-        }
-        if let Some(rate) = template.spin {
-            entity.insert(Spin(rate));
-        }
-        spawn_sprites(&mut entity, &template, &map, &quad, &mut materials);
+        let at = map.world(e.position.x, e.position.y);
+        spawn_entity(&mut commands, &map, &quad, &mut materials, e, e.id, at, map_degrees_to_world(e.direction_deg));
     }
+}
+
+/// One map entity as `e` describes it, with map id `id`, at a world point
+/// and angle (its own place, or a clone's).
+#[allow(clippy::too_many_arguments)]
+pub fn spawn_entity(
+    commands: &mut Commands,
+    map: &LoadedMap,
+    quad: &UnitQuad,
+    materials: &mut Assets<StandardMaterial>,
+    e: &EntityData,
+    id: i64,
+    at: Vec2,
+    angle: f32,
+) -> Option<Entity> {
+    let friction = map.data.friction.unwrap_or(1.0);
+    let template = template_for(e)?;
+    let first = template.sprites.first()?;
+    let info = map.sprites.get(&first.name).cloned()?;
+    let size = info.size * px(1.0) * first.scale;
+    let mut entity = commands.spawn((
+        Name::new(format!("Map entity {id}")),
+        MapEntity,
+        MapId(id),
+        Transform::from_translation(at.extend(0.0)).with_rotation(Quat::from_rotation_z(angle)),
+        Visibility::default(),
+    ));
+    if let Some(body) = template.body {
+        insert_body(&mut entity, body, size, friction);
+    }
+    if let Some(boost) = &template.boost {
+        entity.insert(Booster {
+            speed: boost.speed,
+            flash: boost.flash,
+        });
+    }
+    if template.pickup {
+        entity.insert(Pickup {
+            radius: size.max_element() / 2.0,
+        });
+    }
+    if casts_sprite_shadow(e, &template) {
+        entity.insert(CastsShadow { size });
+    }
+    if let Some(explosive) = template.explosive {
+        entity.insert(explosive);
+    }
+    if template.beeps {
+        // Each bomb its own period, 1–2 s (`1 + NextFloatFake()`).
+        entity.insert(Beeps::every(1.0 + (e.id as f32 * 0.618_034).fract()));
+    }
+    if let Some(rate) = template.spin {
+        entity.insert(Spin(rate));
+    }
+    spawn_sprites(&mut entity, &template, map, quad, materials);
+    Some(entity.id())
 }
 
 fn insert_body(entity: &mut EntityCommands, body: BodySpec, size: Vec2, friction: f32) {

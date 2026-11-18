@@ -427,6 +427,23 @@ actions! {
         is_use_relative_position "IsUseRelativePosition": bool = false, optional;
         /// if IsUseRelativePosition is True, objects are created relative by this Item
         relative_by_item "RelativeByItem": i64 = 0, optional, from(ITEM);
+    } => templates {
+        "Clone(id)" => |a| {
+            // C#'s template counted its uses: ids `id × 10 + n` for the
+            // first ten, then from 6000.
+            static USES: std::sync::atomic::AtomicI64 = std::sync::atomic::AtomicI64::new(0);
+            let id = a.int(0)?;
+            let n = USES.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+            let target = if id > 0 && n < 10 { id * 10 + n } else { 6000 + n };
+            Some(CloneObject {
+                item_id: id,
+                count: 1,
+                target_ids: vec![target],
+                area: XRect { x: -1, y: -1, w: 2, h: 2 },
+                is_use_relative_position: true,
+                ..CloneObject::default()
+            })
+        },
     }
 
     CloneObjectByPath("CloneObjectByPath", name = "CloneObjByPath") {

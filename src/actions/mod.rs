@@ -29,9 +29,11 @@
 //! C#'s `InitAllVariables`, then the rest in map order).
 
 mod body;
+mod clone;
 mod entity;
 mod focus;
 mod level;
+mod lifecycle;
 mod silent;
 mod variables;
 
@@ -46,7 +48,9 @@ use crate::content::actions::{ActionDef, ActionRef, MapActions, RawAction, Templ
 use crate::content::node::Node;
 use crate::game::{GameState, LoadedMap, MapId};
 
+pub use clone::{CloneOf, along, source_id};
 pub use entity::Inactive;
+pub use lifecycle::{OnDestroy, Respawned, destroy_action};
 pub use variables::{Owner, Variables};
 
 /// How deep sequences and `NextAction` chains may nest (a loop guard).
@@ -64,8 +68,13 @@ pub struct Run<T> {
 impl<T> Run<T> {
     /// `GetId`: an action's `ItemId` of 0 or less means the actor.
     pub fn target(&self, item: i64) -> Option<i64> {
-        if item > 0 { Some(item) } else { self.actor }
+        target_id(item, self.actor)
     }
+}
+
+/// `GetId`: an item id of 0 or less means the actor.
+pub fn target_id(item: i64, actor: Option<i64>) -> Option<i64> {
+    if item > 0 { Some(item) } else { actor }
 }
 
 /// Run an action (a map action's name or a template) for `actor`.
@@ -243,8 +252,10 @@ impl Plugin for ActionsPlugin {
             .add_plugins((
                 entity::EntityActionsPlugin,
                 body::BodyActionsPlugin,
+                clone::CloneActionsPlugin,
                 focus::FocusActionsPlugin,
                 level::LevelActionsPlugin,
+                lifecycle::LifecyclePlugin,
                 silent::SilentActionsPlugin,
                 variables::VariablesPlugin,
             ))

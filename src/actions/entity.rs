@@ -1,6 +1,7 @@
 //! Actions on one entity (`ActionRunner`): activate, destroy, push, hurt.
 
-use super::{AddMapAction, MapIds, Run};
+use super::{AddMapAction, MapIds, OnDestroy, Run, RunAction, destroy_action};
+use crate::game::MapId;
 use crate::content::actions::defs::{ActivateEntity, ApplyImpulse, DamageEntity, DestroyEntity};
 use crate::explosion::{Destroyed, Explosion, Explosive, Health, Hit};
 use avian2d::prelude::*;
@@ -46,18 +47,20 @@ fn set_active(In(run): In<Run<ActivateEntity>>, ids: MapIds, mut commands: Comma
 
 /// `DestroyEntityActionData`, `DestroyEntity(id)`: `Entity.Destroy`;
 /// bombs and red boxes blow up, the player's car wrecks.
+#[allow(clippy::type_complexity)]
 fn destroy(
     In(run): In<Run<DestroyEntity>>,
     ids: MapIds,
-    things: Query<(&Transform, Option<&Explosive>, Has<Health>)>,
+    things: Query<(&Transform, Option<&Explosive>, Has<Health>, Option<&OnDestroy>, Option<&MapId>)>,
     mut commands: Commands,
     mut explosions: MessageWriter<Explosion>,
     mut destroyed: MessageWriter<Destroyed>,
+    mut run_after: MessageWriter<RunAction>,
 ) -> bool {
     let Some(e) = ids.entity(run.target(run.data.item_id)) else {
         return false;
     };
-    let Ok((t, explosive, alive)) = things.get(e) else {
+    let Ok((t, explosive, alive, on_destroy, id)) = things.get(e) else {
         return false;
     };
     if alive {
@@ -69,6 +72,9 @@ fn destroy(
             at: t.translation.truncate(),
             blast: explosive.blast,
         });
+    }
+    if let Some(action) = destroy_action(on_destroy, id) {
+        run_after.write(action);
     }
     commands.entity(e).despawn();
     true
