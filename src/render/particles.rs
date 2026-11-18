@@ -138,9 +138,12 @@ fn draw(
         let size = Vec2::new(sprite.size.x / frames, sprite.size.y);
         let half = size * p.state.scale * px(1.0) / 2.0;
         let (x, y) = (Vec2::from_angle(p.view_direction) * half.x, Vec2::from_angle(p.view_direction).perp() * half.y);
+        // The texture's origin on the point (texture y runs down, ours up).
+        let o = p.style.origin;
+        let centre = p.position - x * (2.0 * o.x - 1.0) + y * (2.0 * o.y - 1.0);
         let z = layer_of(p).z();
         for (corner, uv) in [(-x - y, [u0, 1.0]), (x - y, [u1, 1.0]), (x + y, [u1, 0.0]), (-x + y, [u0, 0.0])] {
-            q.positions.push((p.position + corner).extend(z).to_array());
+            q.positions.push((centre + corner).extend(z).to_array());
             q.uvs.push(uv);
         }
         // Additive glows are light themselves, not lit (`DefaultWorldAdditive`).

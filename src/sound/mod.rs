@@ -51,7 +51,7 @@ use crate::pickups::CoinCollected;
 pub const HEARING: f32 = 32.0;
 
 /// Every sound a cue names (`Sounds/<name>.wav` in the C# content).
-pub const NAMES: [&str; 29] = [
+pub const NAMES: [&str; 32] = [
     "Engine",
     "EngineHover",
     "EngineTruck",
@@ -72,6 +72,10 @@ pub const NAMES: [&str; 29] = [
     "GButtonActivate",
     "GButtonRelease",
     "Teleport",
+    // The Minigun.
+    "Minigun",
+    "Missfire",
+    "Ricochet1",
     // The magnet.
     "ChainStart",
     "ChainConnect",
@@ -121,6 +125,8 @@ pub struct CarSounds {
     squeal_name: usize,
     pub engine: Option<LoopCue>,
     pub squeal: Option<LoopCue>,
+    /// The gun while it fires (`weapon`).
+    pub gun: Option<LoopCue>,
 }
 
 impl CarSounds {
@@ -132,6 +138,7 @@ impl CarSounds {
             squeal_name: 0,
             engine: None,
             squeal: None,
+            gun: None,
         }
     }
 }

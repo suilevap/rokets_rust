@@ -27,7 +27,7 @@ cargo run --release -- -m LetItSnowDay
 | `--start x,y` | Put the car at that map cell instead of the map's start (first map only) |
 | `--glow X` | How strongly the additive (HDR) light of lamps with an `AdditiveRate` is added (default 3; `[` and `]` turn it by 0.25 while playing, shown as `glow` in the top line) |
 | `--lang LANG` | The maps' texts in another language: `ru`, `de`, `es`, `it`, `be` (default English) |
-| `--drive SCRIPT` | Drive by script, `x,y:seconds;...` (stick in world directions, y up; `x,y,g:seconds` also holds the gadget, aimed ahead), logging the car's path every 0.1 s |
+| `--drive SCRIPT` | Drive by script, `x,y:seconds;...` (stick in world directions, y up; `x,y,g:seconds` also holds the gadget, aimed ahead, `x,y,f:seconds` the trigger, the gun firing where it points), logging the car's path every 0.1 s |
 | `--trace a,b` | With `--drive`: also log these entities (map ids) every 0.1 s, as `trace t id x y angle speed` in the C# game's axes, for `tools/compare.py` |
 
 Portrait screens (a phone held upright) show the landscape view turned a
@@ -38,15 +38,24 @@ the C# camera did; the long side shows more.
 The camera looks ahead of the car and smoothly zooms out as it gains speed,
 then returns closer when it slows down. Multiple camera targets share the frame.
 
-Keys: arrows / WASD drive (point where you want to go), `R` restarts,
+Keys: WASD (and the arrows, on a car without a gun) drive (point where
+you want to go), `R` restarts,
 `N` skips to the next map. A gamepad's left stick or d-pad and touch (a
 floating stick where your finger lands) work too; the last one used wins.
 Cars with a magnet: hold the right mouse button (or Shift + left) to shoot
 it at the cursor and let go over a box to tow it; hold it again to drag
 what you tow, let go to drop it. Right Shift / `E` / the gamepad's right
-shoulder aim it ahead of the car. On touch, hold a finger on the circle at
+shoulder aim it ahead of the car (or where the arrows point, on a car
+with a gun). On touch, hold a finger on the circle at
 the top right and drag from there to aim (the scheme is the landscape one
 for now).
+Cars with a gun (the Minigun so far): hold the left mouse button to fire
+at the cursor, or the arrows to aim and fire that way, or right Ctrl to
+fire where it points; the gamepad's right trigger fires and its right
+stick aims; on touch, hold a finger on the lower right (the whole right
+half without a gadget) and drag to aim. A green line shows the aim; the
+bar at the top is the energy shots draw on: empty, the gun stops until
+it is half full again.
 
 On Linux, Bevy needs `pkg-config libwayland-dev libxkbcommon-dev libudev-dev
 libasound2-dev libx11-dev`.

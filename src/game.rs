@@ -95,6 +95,10 @@ fn sprites_for(map: &MapData, cars: &CarCatalog, registry: &crate::actions::Acti
             for part in ["Body", "Wheel", "Destroyed1", "Destroyed2"] {
                 names.extend(car.part_sprite(part));
             }
+            if car.weapon.as_deref().and_then(|w| crate::weapon::model::for_type(w, true)).is_some() {
+                names.push(crate::weapon::MINIGUN_SPRITE.to_string());
+                names.extend(crate::weapon::AIM_LINE_TEXTURES.map(String::from));
+            }
             if car.gadget.as_deref() == Some("Link") {
                 names.extend(["Gadget\\ChainActive", "Gadget\\ChainInactive", "WhitePixel", "Gradient2Pixel"].map(String::from));
             }

@@ -385,6 +385,8 @@ Sprites/Particles/flash2.png
 Sprites/Particles/flash3.png
 Sprites/Particles/flashTransparent.png
 Sprites/Particles/minigunTrail.png
+Sprites/Special/LaserLine.png
+Sprites/Special/LaserLine2.png
 Sprites/UI/AddealsButton.png
 Sprites/UI/BigCircleAccelerator.png
 Sprites/UI/DottedCircle.png
@@ -398,10 +400,15 @@ Sprites/UI/Plus.png
 Sprites/UI/SimpleArrow.png
 Sprites/UI/Sock.png
 Sprites/UI/Splash/Controls/ZonesDelimiter.png
+Sprites/Weapons/Laser.png
 Sprites/Weapons/Minigun.png
+Sprites/Weapons/Plasmagun.png
 Sprites/Weapons/Railgun.png
 Sprites/Weapons/RocketLauncher.png
+Sprites/Weapons/RocketLauncherOld.png
 Sprites/Weapons/Saw.png
+Sprites/Weapons/Shotgun.png
+Sprites/Weapons/roket.png
 Sprites/WhitePixel.png
 Strings/Strings.be.resx
 Strings/Strings.de.resx

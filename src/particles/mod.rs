@@ -52,6 +52,10 @@ pub struct Style {
     /// The texture is a row of square frames and each particle shows one
     /// at random (`UseRandomFrame`).
     pub random_frame: bool,
+    /// The point of the texture on the particle's position, as parts of
+    /// its width and height from the left and the top (C#'s view origin;
+    /// (0.5, 0.5) for most).
+    pub origin: Vec2,
 }
 
 impl Style {

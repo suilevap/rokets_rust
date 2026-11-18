@@ -17,6 +17,9 @@ const SMOKE_FLY_TRAIL_END: f32 = -24.0 / 32.0 / 16.0;
 
 const TRANSPARENT: [f32; 4] = [0.0; 4];
 
+/// The texture's middle on the particle's point.
+const CENTRE: Vec2 = Vec2::splat(0.5);
+
 /// `Color.Lerp(Color.White, Color.Black, k)`: an opaque grey.
 const fn grey(k: f32) -> [f32; 4] {
     let v = 1.0 - k;
@@ -46,6 +49,7 @@ pub static WHEEL_TRAIL: Style = Style {
     texture: "Gradient4Pixel",
     additive: false,
     random_frame: false,
+    origin: CENTRE,
 };
 
 /// `_smokeCarTrailStyle`: an exhaust puff shot backwards from the car,
@@ -71,6 +75,7 @@ pub static EXHAUST: Style = Style {
     texture: "Particles\\Smoke",
     additive: false,
     random_frame: false,
+    origin: CENTRE,
 };
 
 /// `DepthConst.SmokeStart`.
@@ -103,6 +108,7 @@ pub static BOMB_BEEP: Style = Style {
     texture: "Particles\\Circle",
     additive: true,
     random_frame: false,
+    origin: CENTRE,
 };
 
 /// `_boomCircleEffect`: the blast's ring, sized to its range
@@ -114,6 +120,7 @@ pub static BOOM_RING: Style = Style {
     texture: "Particles\\Circle",
     additive: true,
     random_frame: false,
+    origin: CENTRE,
 };
 
 /// `_boomStyleCircle`: a big yellow flash shrinking as it turns.
@@ -124,6 +131,7 @@ pub static BOOM_FLASH: Style = Style {
     texture: "Particles\\flash2",
     additive: true,
     random_frame: false,
+    origin: CENTRE,
 };
 
 /// `_boomStyleCircle2`: the fireball.
@@ -134,6 +142,7 @@ pub static BOOM_FIRE: Style = Style {
     texture: "Particles\\Explosion",
     additive: true,
     random_frame: false,
+    origin: CENTRE,
 };
 
 /// `_smokeFastStyle`: black smoke left by a blast.
@@ -158,6 +167,7 @@ pub static BOOM_SMOKE: Style = Style {
     texture: "Particles\\Smoke",
     additive: false,
     random_frame: false,
+    origin: CENTRE,
 };
 
 /// `_smokeCrashedStyle`: thick black smoke over a wreck, shrinking as it
@@ -183,6 +193,7 @@ pub static CRASH_SMOKE: Style = Style {
     texture: "Particles\\Smoke",
     additive: false,
     random_frame: false,
+    origin: CENTRE,
 };
 
 /// `_boomStyle`: a fiery streak flying out of a wreck.
@@ -207,6 +218,7 @@ pub static WRECK_FIRE: Style = Style {
     texture: "Particles\\firetrail",
     additive: true,
     random_frame: false,
+    origin: CENTRE,
 };
 
 /// `_boomStyle2`: a thinner, faster streak.
@@ -231,6 +243,7 @@ pub static WRECK_SPARK: Style = Style {
     texture: "Particles\\firetrail",
     additive: true,
     random_frame: false,
+    origin: CENTRE,
 };
 
 /// `DepthConst.Spark`.
@@ -259,6 +272,7 @@ const fn spark(curl: f32) -> Style {
         texture: "Particles\\SmallLine",
         additive: true,
         random_frame: false,
+        origin: CENTRE,
     }
 }
 
@@ -273,6 +287,7 @@ pub static CLONE_FLASH: Style = Style {
     texture: "Particles\\SoftBrush",
     additive: true,
     random_frame: false,
+    origin: CENTRE,
 };
 
 /// `DepthConst.Teleport + 0.01`: on the floor.
@@ -301,6 +316,7 @@ pub static TELEPORT_STREAK: Style = Style {
     texture: "Particles\\SnowEffect",
     additive: true,
     random_frame: true,
+    origin: CENTRE,
 };
 
 /// `_teleportStyle2`: a glow at the middle, turning as it shrinks into it.
@@ -311,6 +327,7 @@ pub static TELEPORT_SWIRL: Style = Style {
     texture: "Particles\\Explosion",
     additive: true,
     random_frame: true,
+    origin: CENTRE,
 };
 
 /// `GetScaleForEnd`: the size rate that makes [`BOOM_RING`] end about
@@ -321,8 +338,105 @@ pub fn ring_rate(range: f32, texture_width: f32) -> f32 {
     range / (texture_width / 2.0 / 32.0) - growth
 }
 
+/// `Color.Yellow`.
+const YELLOW: [f32; 4] = color(1.0, 1.0, 0.0);
+
+/// `_bulletSplashStyle`: the Minigun's muzzle flash, a yellow streak out
+/// of the barrel, its texture held at 80% of its length.
+pub static BULLET_SPLASH: Style = Style {
+    begin: State {
+        speed: 512.0 / 32.0,
+        scale: Vec2::new(0.25 * 2.5, 2.5),
+        view_rotation: 0.0,
+        rotation: 0.0,
+        color: YELLOW,
+        height: SPARK,
+    },
+    end: State {
+        speed: 512.0 / 32.0,
+        scale: Vec2::new(0.5 * 2.5, 0.25 * 2.5),
+        view_rotation: 0.0,
+        rotation: 0.0,
+        color: TRANSPARENT,
+        height: SPARK,
+    },
+    lifetime: 0.1,
+    texture: "Particles\\minigunTrail",
+    additive: true,
+    random_frame: false,
+    origin: Vec2::new(0.8, 0.5),
+};
+
+/// `_bulletTrailStyle`: a bullet in flight, a yellow streak racing along
+/// its path and shrinking in 0.2 s.
+pub static BULLET_TRAIL: Style = Style {
+    begin: State {
+        speed: 1512.0 / 32.0,
+        scale: Vec2::new(2.0, 1.5),
+        view_rotation: 0.0,
+        rotation: 0.0,
+        color: YELLOW,
+        height: SPARK,
+    },
+    end: State {
+        speed: 512.0 / 32.0,
+        scale: Vec2::new(0.25, 0.25),
+        view_rotation: 0.0,
+        rotation: 0.0,
+        color: TRANSPARENT,
+        height: SPARK,
+    },
+    lifetime: 0.2,
+    texture: "Particles\\minigunTrail",
+    additive: true,
+    random_frame: false,
+    origin: CENTRE,
+};
+
+/// `BulletTrailMaxLength`: the trail's longest, world units (the
+/// texture's 127 pixels at its largest width, 2).
+pub const BULLET_TRAIL_LENGTH: f32 = 127.0 * 2.0 / 32.0;
+
+/// `_sparkConstStyle`: a yellow flash where a bullet strikes, widening
+/// as it fades in a quarter of a second.
+pub static BULLET_SPARK: Style = Style {
+    begin: State {
+        speed: 0.0,
+        scale: Vec2::new(3.0, 3.0),
+        view_rotation: 0.0,
+        rotation: 0.0,
+        color: YELLOW,
+        height: SPARK,
+    },
+    end: State {
+        speed: 0.0,
+        scale: Vec2::new(6.0, 3.0),
+        view_rotation: 0.0,
+        rotation: 0.0,
+        color: TRANSPARENT,
+        height: SPARK,
+    },
+    lifetime: 0.25,
+    texture: "Particles\\Spark",
+    additive: true,
+    random_frame: false,
+    origin: CENTRE,
+};
+
+/// `_damageObjStyle2`: a yellow glow on something a bullet hurts,
+/// shrinking to nothing as it turns white.
+pub static DAMAGE_GLOW: Style = Style {
+    begin: still(16.0, 0.0, YELLOW, SMOKE_START),
+    end: still(0.0, 0.0, [1.0; 4], SMOKE_END),
+    lifetime: 0.5,
+    texture: "Gradient4PixelUniform",
+    additive: true,
+    random_frame: false,
+    origin: CENTRE,
+};
+
 /// Every texture a style here draws with, to load with the map.
-pub const TEXTURES: [&str; 10] = [
+pub const TEXTURES: [&str; 13] = [
     WHEEL_TRAIL.texture,
     EXHAUST.texture,
     BOMB_BEEP.texture,
@@ -333,4 +447,7 @@ pub const TEXTURES: [&str; 10] = [
     SPARKS[0].texture,
     TELEPORT_STREAK.texture,
     CLONE_FLASH.texture,
+    BULLET_TRAIL.texture,
+    BULLET_SPARK.texture,
+    DAMAGE_GLOW.texture,
 ];

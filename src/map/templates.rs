@@ -154,8 +154,7 @@ pub fn template_for(e: &EntityData) -> Option<EntityTemplate> {
             draws_shadow: false,
             ..plain(map_sprite(Layer::Coin))
         },
-        // Towing (NonLinkable), bullets passing (IgnoreWeapon) and blowing
-        // up (Damagable) come with gadgets and weapons.
+        // The magnet tows a Box, not a NonLinkableBox (`map/spawn`).
         EntityType::Box | EntityType::NonLinkableBox => EntityTemplate {
             body: Some(BodySpec::pushable(e, 1.0)),
             casts_shadow: true,

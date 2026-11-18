@@ -20,6 +20,7 @@ struct Clips(HashMap<&'static str, Handle<AudioSource>>);
 struct LoopPlayers {
     engine: Option<(&'static str, Entity)>,
     squeal: Option<(&'static str, Entity)>,
+    gun: Option<(&'static str, Entity)>,
 }
 
 pub struct PlaybackPlugin;
@@ -88,7 +89,11 @@ fn play_loops(
         };
         let at = Some(t.translation.truncate());
         let players = &mut *players;
-        for (slot, cue) in [(&mut players.engine, sounds.engine), (&mut players.squeal, sounds.squeal)] {
+        for (slot, cue) in [
+            (&mut players.engine, sounds.engine),
+            (&mut players.squeal, sounds.squeal),
+            (&mut players.gun, sounds.gun),
+        ] {
             steer(&mut commands, &clips, &mut sinks, slot, cue, |v| heard(v, at, ear));
         }
     }

@@ -133,7 +133,7 @@ fn wreck_cars(
         };
         let mut car = commands.entity(*entity);
         // The wreck keeps no map id: a new car takes it.
-        car.remove::<(LocalPlayer, PlayerIntent, SmokePoints, MapId)>()
+        car.remove::<(LocalPlayer, PlayerIntent, SmokePoints, MapId, crate::weapon::Weapon, crate::weapon::PlayerEnergy)>()
             .insert(Wreck {
                 restart_in: RESTART_AFTER,
                 id: id.map(|id| id.0),
