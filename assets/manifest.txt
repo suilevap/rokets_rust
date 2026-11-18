@@ -375,3 +375,9 @@ Sprites/Particles/flash3.png
 Sprites/Particles/flashTransparent.png
 Sprites/Particles/minigunTrail.png
 Sprites/WhitePixel.png
+Strings/Strings.be.resx
+Strings/Strings.de.resx
+Strings/Strings.es.resx
+Strings/Strings.it.resx
+Strings/Strings.resx
+Strings/Strings.ru.resx

@@ -323,6 +323,13 @@ actions! {
         /// Default 8 sec
         show_time_sec "ShowTimeSec": f32 = -1.0;
         pause_game "PauseGame": bool = false;
+    } => templates {
+        // Time and pause may be left out.
+        "ShowText(text,time,isPause)" => |a| Some(ShowText {
+            text: vec![a.text(0)?.to_string()],
+            show_time_sec: a.num(1).unwrap_or(-1.0),
+            pause_game: a.text(2).is_some_and(|p| p.trim().eq_ignore_ascii_case("true")),
+        }),
     }
 
     ApplyGadgetToPosition("ApplyGadgetToPosition", name = "ApplyGadgetToPosition") {

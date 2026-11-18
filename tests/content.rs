@@ -48,3 +48,11 @@ fn car_catalogue_resolves_base_cars() {
     assert_eq!(car.gadget.as_deref(), Some("EditorPointer"));
     assert!((car.mass - 2.97).abs() < 1e-6);
 }
+
+#[test]
+fn texts_read_by_key_and_missing_ones_show_their_key() {
+    let xml = fs::read_to_string(assets().join("Strings/Strings.resx")).unwrap();
+    let strings = tilerider::content::strings::Strings::parse(&xml).unwrap();
+    assert_eq!(strings.get("Be_careful"), "Be Careful");
+    assert_eq!(strings.get("No_such_key"), "#No_such_key");
+}
