@@ -31,6 +31,7 @@
 mod body;
 mod camera_path;
 mod clone;
+mod control;
 mod entity;
 mod focus;
 mod level;
@@ -257,6 +258,7 @@ impl Plugin for ActionsPlugin {
                 body::BodyActionsPlugin,
                 camera_path::CameraPathPlugin,
                 clone::CloneActionsPlugin,
+                control::ControlActionsPlugin,
                 focus::FocusActionsPlugin,
                 level::LevelActionsPlugin,
                 lifecycle::LifecyclePlugin,

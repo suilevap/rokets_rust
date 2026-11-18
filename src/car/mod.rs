@@ -168,6 +168,10 @@ pub fn spawn_local_car(
     if car.mass > 0.0 {
         entity.insert(Mass(car.mass));
     }
+    // Waiting for `SetControl(id,Local)`, as on LetItSnow's intro.
+    if !crate::controls::is_players(&player.control) {
+        entity.insert(crate::controls::NoInput);
+    }
     entity.with_children(|parent| {
         spawn_car_sprites(parent, map, car, quad, materials);
     });

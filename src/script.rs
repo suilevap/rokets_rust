@@ -8,7 +8,7 @@
 use bevy::prelude::*;
 
 use crate::car::{Car, drive_cars};
-use crate::controls::{LocalPlayer, PlayerIntent};
+use crate::controls::{LocalPlayer, NoInput, PlayerIntent};
 use crate::game::GameState;
 
 #[derive(Resource, Debug, Clone, Default)]
@@ -60,14 +60,15 @@ impl Plugin for ScriptPlugin {
     }
 }
 
-type ScriptedCar<'a> = (&'a mut PlayerIntent, &'a Transform, &'a avian2d::prelude::LinearVelocity);
+type ScriptedCar<'a> = (&'a mut PlayerIntent, &'a Transform, &'a avian2d::prelude::LinearVelocity, Has<NoInput>);
 
 fn run_script(mut script: ResMut<DriveScript>, mut cars: Query<ScriptedCar, (With<LocalPlayer>, With<Car>)>) {
     let Some(stick) = script.current() else {
         return;
     };
-    for (mut intent, t, v) in &mut cars {
-        intent.move_dir = stick;
+    for (mut intent, t, v, off) in &mut cars {
+        // The script is the player: not while the car is not theirs.
+        intent.move_dir = if off { Vec2::ZERO } else { stick };
         if script.tick.is_multiple_of(6) {
             let angle = t.rotation.to_euler(EulerRot::XYZ).2.to_degrees();
             info!(

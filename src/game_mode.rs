@@ -31,7 +31,7 @@ use crate::actions::{AddMapAction, MapIds, Respawned, Run, RunAction};
 use crate::car::smoke::SmokePoints;
 use crate::car::spawn_local_car;
 use crate::content::actions::defs::{SaveAction, SetRespawnPoint};
-use crate::controls::{LocalPlayer, PlayerIntent};
+use crate::controls::{LocalPlayer, NoInput, PlayerIntent};
 use crate::explosion::Destroyed;
 use crate::game::{ChangeMap, GameState, LoadedMap, MapId};
 use crate::render::camera::{CameraTarget, Unfocused};
@@ -199,7 +199,7 @@ fn save(
 fn restart_after_wreck(
     mut commands: Commands,
     time: Res<Time>,
-    mut wrecks: Query<(Entity, &mut Wreck, &Transform)>,
+    mut wrecks: Query<(Entity, &mut Wreck, &Transform, Has<NoInput>)>,
     mut respawn: ResMut<Respawn>,
     (map, quad): (Res<LoadedMap>, Res<UnitQuad>),
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -210,7 +210,7 @@ fn restart_after_wreck(
     mut run: MessageWriter<RunAction>,
 ) {
     let dt = time.delta_secs();
-    for (e, mut wreck, transform) in &mut wrecks {
+    for (e, mut wreck, transform, no_input) in &mut wrecks {
         if let Some(back_in) = wreck.back_in.as_mut() {
             *back_in -= dt;
             if *back_in <= 0.0 {
@@ -226,7 +226,11 @@ fn restart_after_wreck(
                     commands.entity(t).try_insert(Unfocused);
                 }
                 if let Some(car) = spawn_local_car(&mut commands, &map, &quad, &mut materials, Some((at, Some(heading)))) {
+                    // It comes back driven as it was (C# kept its control).
                     commands.entity(car).insert(Respawned);
+                    if !no_input {
+                        commands.entity(car).remove::<NoInput>();
+                    }
                 }
             }
             continue;
