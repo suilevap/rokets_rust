@@ -149,6 +149,7 @@ fn triangle(seconds: f32) -> f32 {
 fn draw_aim_lines(
     mut commands: Commands,
     time: Res<Time>,
+    flash: Res<crate::render::particles::FlashBoost>,
     spatial: SpatialQuery,
     map: Res<LoadedMap>,
     quad: Res<UnitQuad>,
@@ -238,7 +239,9 @@ fn draw_aim_lines(
         if m.base_color_texture != image {
             m.base_color_texture = image;
         }
-        m.base_color = color;
+        // Additive, as the flashes: the same boost for linear light.
+        let c = color.to_linear();
+        m.base_color = Color::linear_rgba(c.red * flash.0, c.green * flash.0, c.blue * flash.0, c.alpha);
         m.uv_transform = uv;
         let mid = (start + end) / 2.0;
         *transform = Transform::from_translation(mid.extend(Layer::Glow.z()))
