@@ -45,6 +45,13 @@ def main() -> int:
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(path, target)
             copied += 1
+    # The texts maps name by key (`ShowText`): the game's resources.
+    strings = SRC / "PavXnaGame1" / "PavXnaGame1" / "Globalization"
+    for path in sorted(strings.glob("Strings*.resx")):
+        target = DEST / "Strings" / path.name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(path, target)
+        copied += 1
     # The C# content paths ignore case; Linux and the web do not. The game
     # resolves names through this list (see src/assets.rs).
     files = sorted(

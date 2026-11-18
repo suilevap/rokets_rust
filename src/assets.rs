@@ -66,7 +66,7 @@ impl AssetLoader for XmlTextLoader {
     }
 
     fn extensions(&self) -> &[&str] {
-        &["xml"]
+        &["xml", "resx"]
     }
 }
 

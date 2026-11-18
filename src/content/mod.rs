@@ -6,6 +6,7 @@ pub mod cars;
 pub mod map;
 pub mod map_list;
 pub mod node;
+pub mod strings;
 pub mod xna;
 
 use serde::Deserialize;
