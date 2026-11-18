@@ -12,7 +12,7 @@ use bevy::prelude::*;
 
 use crate::boost::Booster;
 use crate::explosion::Beeps;
-use crate::game::{GameState, LoadedMap, MapEntity};
+use crate::game::{GameState, LoadedMap, MapEntity, MapId};
 use crate::map::templates::{BodyKind, BodySpec, EntityTemplate, casts_sprite_shadow, template_for};
 use crate::pickups::Pickup;
 use crate::render::animate::TintLoop;
@@ -54,6 +54,7 @@ fn spawn_map_entities(
         let mut entity = commands.spawn((
             Name::new(format!("Map entity {}", e.id)),
             MapEntity,
+            MapId(e.id),
             Transform::from_translation(map.world(e.position.x, e.position.y).extend(0.0))
                 .with_rotation(Quat::from_rotation_z(angle)),
             Visibility::default(),

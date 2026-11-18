@@ -1,43 +1,88 @@
-//! Triggers: areas of the map that run actions when the player enters.
+//! Triggers: areas of the map that run actions when something enters or
+//! leaves them (`TriggerManager`).
 //!
-//! All of a map's triggers are read; for now only the level-end actions
-//! run — `NextMap()` (the built-in template, `MoveToNextMap`) and named
-//! actions of type `MoveToNextMap`, `ShowSuccess` or an `ActionSequence`
-//! containing one. They show "Level complete" and go to the next map in
-//! `MapList.xml` after a moment. Every other action is reported once.
-
-use std::collections::BTreeSet;
+//! As in C#, the triggers are painted into a map of cells in the order the
+//! map lists them (a later one covers an earlier one where they overlap),
+//! and each watched entity is in at most one trigger at a time. Watched
+//! are the player's car and every entity some trigger lists as a
+//! subscriber; any of them sets off any trigger. Entering an armed trigger
+//! runs its actions for that entity and counts down its `Amount`; leaving
+//! runs its `LeaveActions`. A trigger used up is wiped from the map (then
+//! nothing is there, not the trigger it covered).
+//!
+//! The actions themselves are `actions`. [`LevelEnd`] shows "Level
+//! complete" and goes to the next map in `MapList.xml` after a moment.
+//! `ActivateTriggerActionData` (arm or disarm triggers) is registered here.
 
 use bevy::prelude::*;
 
-use crate::content::actions::ActionRef;
-use crate::content::map::MapData;
+use serde::Deserialize;
+
+use crate::actions::{AddMapAction, Inactive, MapAction, Run, RunAction, Templates};
+use crate::content::xna::{boolean, int_list};
 use crate::controls::LocalPlayer;
-use crate::game::{ChangeMap, GameState, LoadedMap, MapEntity};
+use crate::game::{ChangeMap, GameState, LoadedMap, MapId};
 
 /// Seconds between "Level complete" and the next map.
 const LEVEL_END_DELAY: f32 = 2.0;
 
-/// What a trigger's actions add up to, as far as the game supports them.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Effect {
-    LevelComplete,
-    Unsupported,
+struct TriggerState {
+    id: i64,
+    area: crate::content::xna::XRect,
+    remaining: i64,
+    active: bool,
+    enter: Vec<String>,
+    leave: Vec<String>,
 }
 
-#[derive(Component, Debug)]
-pub struct Trigger {
-    pub id: i64,
-    /// Area in map cells.
-    pub area: crate::content::xna::XRect,
-    pub remaining: i64,
-    pub effects: Vec<Effect>,
-    inside: bool,
+/// The map's triggers and the cells they cover.
+#[derive(Resource, Default)]
+pub struct Triggers {
+    width: usize,
+    height: usize,
+    /// Per cell, the trigger there (an index into `list` + 1), 0 for none.
+    cells: Vec<usize>,
+    list: Vec<TriggerState>,
+    /// Map ids of the entities the triggers watch, besides the player.
+    subscribers: Vec<i64>,
 }
+
+impl Triggers {
+    fn paint(&mut self, index: usize, value: usize) {
+        let a = self.list[index].area;
+        for y in a.y.max(0)..(a.y + a.h).min(self.height as i32) {
+            for x in a.x.max(0)..(a.x + a.w).min(self.width as i32) {
+                self.cells[y as usize * self.width + x as usize] = value;
+            }
+        }
+    }
+
+    /// The trigger at a point in map cells, if any.
+    fn at(&self, x: f32, y: f32) -> Option<usize> {
+        if x < 0.0 || y < 0.0 || x as usize >= self.width || y as usize >= self.height {
+            return None;
+        }
+        self.cells[y as usize * self.width + x as usize].checked_sub(1)
+    }
+}
+
+/// The trigger a watched entity was in last frame.
+#[derive(Component, Debug, Default)]
+pub struct InTrigger(Option<usize>);
 
 #[derive(Resource, Debug, Default)]
 pub struct LevelEnd {
     pub timer: Option<Timer>,
+}
+
+impl LevelEnd {
+    /// The level is won: "Level complete", then the next map.
+    pub fn complete(&mut self) {
+        if self.timer.is_none() {
+            info!("level complete");
+            self.timer = Some(Timer::from_seconds(LEVEL_END_DELAY, TimerMode::Once));
+        }
+    }
 }
 
 pub struct TriggersPlugin;
@@ -45,93 +90,130 @@ pub struct TriggersPlugin;
 impl Plugin for TriggersPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<LevelEnd>()
-            .add_systems(OnEnter(GameState::Playing), spawn_triggers)
-            .add_systems(Update, (check_triggers, finish_level).chain().run_if(in_state(GameState::Playing)));
+            .init_resource::<Triggers>()
+            .add_map_action::<ArmTriggers, _>(arm_triggers)
+            .add_systems(OnEnter(GameState::Playing), build_triggers)
+            .add_systems(
+                Update,
+                (watch_subscribers, check_triggers, finish_level)
+                    .chain()
+                    .before(crate::actions::ActionSystems)
+                    .run_if(in_state(GameState::Playing)),
+            );
     }
 }
 
-/// Resolves an action reference to what it does.
-pub fn resolve(map: &MapData, reference: &str, depth: usize) -> Effect {
-    let r = ActionRef::parse(reference);
-    if r.name == "NextMap" && r.args.is_some() {
-        return Effect::LevelComplete;
-    }
-    let Some(action) = map
-        .actions
-        .iter()
-        .find(|a| a.name.as_deref() == Some(r.name.as_str()))
-    else {
-        return Effect::Unsupported;
-    };
-    match action.short_kind() {
-        "MoveToNextMap" | "ShowSuccess" => Effect::LevelComplete,
-        "ActionSequence" if depth < 8 => {
-            let inner = action.actions.as_ref().map(|a| a.items.as_slice()).unwrap_or(&[]);
-            if inner.iter().any(|i| resolve(map, i, depth + 1) == Effect::LevelComplete) {
-                Effect::LevelComplete
-            } else {
-                Effect::Unsupported
-            }
-        }
-        _ => Effect::Unsupported,
-    }
-}
-
-fn spawn_triggers(mut commands: Commands, map: Res<LoadedMap>, mut end: ResMut<LevelEnd>) {
+fn build_triggers(mut commands: Commands, map: Res<LoadedMap>, mut end: ResMut<LevelEnd>) {
     end.timer = None;
-    let mut unsupported = BTreeSet::new();
-    for t in map.data.triggers.iter() {
-        let effects: Vec<Effect> = t
-            .actions
-            .iter()
-            .map(|a| {
-                let e = resolve(&map.data, a, 0);
-                if e == Effect::Unsupported {
-                    unsupported.insert(ActionRef::parse(a).name);
-                }
-                e
-            })
-            .collect();
-        commands.spawn((
-            Name::new(format!("Trigger {}", t.id)),
-            MapEntity,
-            Trigger {
-                id: t.id,
-                area: t.area,
-                remaining: t.amount.max(1),
-                effects,
-                inside: false,
-            },
-        ));
+    let (w, h) = (map.grid.width, map.grid.height);
+    let mut t = Triggers {
+        width: w,
+        height: h,
+        cells: vec![0; w * h],
+        list: Vec::new(),
+        subscribers: Vec::new(),
+    };
+    for data in map.data.triggers.iter() {
+        t.list.push(TriggerState {
+            id: data.id,
+            area: data.area,
+            remaining: data.amount,
+            active: data.active,
+            enter: data.actions.items.clone(),
+            leave: data.leave_actions.items.clone(),
+        });
+        let i = t.list.len() - 1;
+        t.paint(i, i + 1);
+        t.subscribers.extend(&data.subscribers);
     }
-    if !unsupported.is_empty() {
-        info!("trigger actions not supported yet: {unsupported:?}");
+    commands.insert_resource(t);
+}
+
+/// Subscribers and the player get an [`InTrigger`] once they exist.
+#[allow(clippy::type_complexity)]
+fn watch_subscribers(
+    mut commands: Commands,
+    triggers: Res<Triggers>,
+    new: Query<(Entity, Option<&MapId>, Has<LocalPlayer>), Without<InTrigger>>,
+) {
+    for (e, id, player) in &new {
+        if player || id.is_some_and(|id| triggers.subscribers.contains(&id.0)) {
+            commands.entity(e).insert(InTrigger::default());
+        }
     }
 }
 
 fn check_triggers(
     map: Res<LoadedMap>,
-    players: Query<&Transform, With<LocalPlayer>>,
-    mut triggers: Query<&mut Trigger>,
-    mut end: ResMut<LevelEnd>,
+    mut triggers: ResMut<Triggers>,
+    mut watched: Query<(&Transform, Option<&MapId>, &mut InTrigger), Without<Inactive>>,
+    mut run: MessageWriter<RunAction>,
 ) {
-    let Some(player) = players.iter().next() else {
-        return;
-    };
-    let (x, y) = map.cell.to_cells(player.translation.truncate());
-    for mut t in &mut triggers {
-        let inside = t.area.contains(x, y);
-        let entered = inside && !t.inside;
-        t.inside = inside;
-        if !entered || t.remaining <= 0 {
-            continue;
+    for (t, id, mut last) in &mut watched {
+        let actor = id.map(|i| i.0);
+        let (x, y) = map.cell.to_cells(t.translation.truncate());
+        let now = triggers.at(x, y);
+        if let Some(left) = last.0
+            && last.0 != now
+        {
+            for name in &triggers.list[left].leave {
+                run.write(RunAction {
+                    name: name.clone(),
+                    actor,
+                });
+            }
+            if triggers.list[left].remaining <= 0 {
+                triggers.paint(left, 0);
+            }
         }
-        t.remaining -= 1;
-        if t.effects.contains(&Effect::LevelComplete) && end.timer.is_none() {
-            info!("trigger {}: level complete", t.id);
-            end.timer = Some(Timer::from_seconds(LEVEL_END_DELAY, TimerMode::Once));
+        match now {
+            Some(i) if triggers.list[i].active => {
+                if last.0 != Some(i) {
+                    for name in &triggers.list[i].enter {
+                        run.write(RunAction {
+                            name: name.clone(),
+                            actor,
+                        });
+                    }
+                    last.0 = Some(i);
+                    triggers.list[i].remaining -= 1;
+                    if triggers.list[i].remaining <= 0 && triggers.list[i].leave.is_empty() {
+                        triggers.paint(i, 0);
+                        last.0 = None;
+                    }
+                }
+            }
+            _ => last.0 = None,
         }
     }
+}
+
+/// `ActivateTriggerActionData`, `ActivateTrigger(id)`, `DeactivateTrigger(id)`.
+#[derive(Deserialize)]
+#[serde(rename_all = "PascalCase")]
+struct ArmTriggers {
+    #[serde(default, deserialize_with = "int_list")]
+    trigger_ids: Vec<i64>,
+    #[serde(default, deserialize_with = "boolean")]
+    deactivate: bool,
+}
+
+impl MapAction for ArmTriggers {
+    const TYPE: &'static str = "ActivateTriggerActionData";
+
+    fn templates() -> Templates<Self> {
+        vec![
+            ("ActivateTrigger", |a| Some(ArmTriggers { trigger_ids: vec![a.int(0)?], deactivate: false })),
+            ("DeactivateTrigger", |a| Some(ArmTriggers { trigger_ids: vec![a.int(0)?], deactivate: true })),
+        ]
+    }
+}
+
+fn arm_triggers(In(run): In<Run<ArmTriggers>>, mut triggers: ResMut<Triggers>) -> bool {
+    for t in triggers.list.iter_mut().filter(|t| run.data.trigger_ids.contains(&t.id)) {
+        t.active = !run.data.deactivate;
+    }
+    true
 }
 
 fn finish_level(time: Res<Time>, mut end: ResMut<LevelEnd>, mut change: MessageWriter<ChangeMap>) {
@@ -139,28 +221,5 @@ fn finish_level(time: Res<Time>, mut end: ResMut<LevelEnd>, mut change: MessageW
         && timer.tick(time.delta()).just_finished()
     {
         change.write(ChangeMap::Next);
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn resolves_level_end() {
-        let map = MapData::parse(
-            r#"<XnaContent><Asset Type="GameLibrary.MapData"><Name>T</Name>
-            <Actions>
-              <Item Type="GameLibrary.ShowSuccess"><Name>Win</Name></Item>
-              <Item Type="GameLibrary.ActionSequence"><Name>Seq</Name><Actions><Item>Win</Item></Actions></Item>
-              <Item Type="GameLibrary.PlaySound"><Name>Beep</Name></Item>
-            </Actions></Asset></XnaContent>"#,
-        )
-        .unwrap();
-        assert_eq!(resolve(&map, "NextMap()", 0), Effect::LevelComplete);
-        assert_eq!(resolve(&map, "Win", 0), Effect::LevelComplete);
-        assert_eq!(resolve(&map, "Seq", 0), Effect::LevelComplete);
-        assert_eq!(resolve(&map, "Beep", 0), Effect::Unsupported);
-        assert_eq!(resolve(&map, "CloseDoor(1001)", 0), Effect::Unsupported);
     }
 }

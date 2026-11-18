@@ -48,7 +48,8 @@ main
 | `controls` | `PlayerIntent` (where to go, aim, fire) written by keyboard, gamepad and touch schemes; the last one used is active; screen directions are turned into the world by `ViewRotation` | `IControl`, `CompositePlayerControl` |
 | `car/drive` | The driving model as a pure function, run at 60 Hz | `Car.MovementControl`, `Brake`, `AdditionalFriction` |
 | `car` | Spawns the player's car on Avian; sprites; front wheels; the cabin swaying on two springs pushed by the front and back points' acceleration, idling at rest (`car/cabin`); smoke (`car/smoke`: streaks behind slipping rear wheels, exhaust puffs when slow, idle puffs); impacts (`car/impact`: on a contact's start, the speed relative to what it hit over twice the top speed; above 0.2, a `CarImpact` message and sparks off the contact point) | `Car`, `ControlableEntity`, `Car.CreateTrail`, `Car.OnCollide`, `EffectManager.CollideEffect` |
-| `triggers` | Trigger areas; only level-end actions run so far | `TriggerManager`, `ActionTemplates` |
+| `triggers` | Trigger areas painted into a cell map in the map's order (later over earlier); the player and the triggers' subscribers set them off, one trigger at a time; enter and leave actions, `Amount` uses, armed or not; level end | `TriggerManager` |
+| `actions` | Map actions by registry, as `ActionRunner`: each action type is a struct read from its own XML (`MapAction`: C# type name, optional templates such as `ActivateEntity(id)`) and a system `In<Run<T>> → bool` registered with `app.add_map_action`; the core (`actions/mod.rs`) knows none of them. `RunAction` messages run every map action of a name in order (or a template), `NextAction` after success, sequences now or `TimeBetweenInSec` apart, `RunOnMapStart`; handlers run one at a time with the world to themselves. Types not ported are logged once per map | `ActionRunner`, `ActionTemplates`, `TriggerManager.RunAction` |
 | `pickups` | `Pickup`: collected by driving into it; the count | `Coin` |
 | `boost` | `Booster`: throws touching bodies along its facing and plays its flash | `Accelerator` |
 | `explosion` | `Health`, `Hit`, `Destroyed`; `Explosion` messages throw dynamic bodies away from the blast (one push each, as strong as Farseer's rays together: angle covered × force × 180/π, fading to the range's edge) and hit what can be hurt in range, walls sheltering what is behind them, with the boom particles; `Explosive` blows up on touch (bombs) or after a fuse once hit (red boxes, so chains); bombs beep | `WeaponHelper.CreateExplosion`, Farseer `Explosion`, `Bomb`, `DamagableBox`, `ControlableEntity.TakeDamage` |
@@ -70,6 +71,9 @@ main
   walls, soft baked light) before trying engine-standard replacements.
 - Map data is parsed in full even when unused; unsupported entities and
   actions are logged per map, so coverage is visible.
+- **A map action is one file**: a `MapAction` struct, its system and an
+  `add_map_action` line in its plugin (`src/actions/body.rs` is a small
+  example); the runner and triggers do not change.
 - **Map entity types stop at loading.** `map/templates.rs` turns each into
   a set of components; systems act on components (`Pickup`, `Booster`,
   bodies), never on the type. A new kind is a new template arm composed of
@@ -94,7 +98,7 @@ main
 
 Everything outside MVP 0.1: menus and HUD, music, localisation, saves;
 weapons and gadgets; other cars and AI; doors, bombs, teleports, platforms,
-fake walls; towing; respawn points and lives (death always restarts the level); the other ~74 action types; most particle effects (the pool and the car's smoke are in);
+fake walls; towing; respawn points and lives (death always restarts the level); the other ~60 action types (doors, buttons, teleports, variables, camera focus, clones, …); most particle effects (the pool and the car's smoke are in);
 slow motion; the agent/command server; editor hot reload. Rendering gaps:
 tyre marks,
 dynamic lights, the dirty-lens effect, per-map camera zoom.

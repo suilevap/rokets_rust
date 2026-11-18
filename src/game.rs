@@ -62,6 +62,10 @@ impl LoadedMap {
 #[derive(Component, Default)]
 pub struct MapEntity;
 
+/// The id the map gives an entity (`CustomId`), by which actions name it.
+#[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct MapId(pub i64);
+
 /// Sent to leave the map: restart it, or go to another.
 #[derive(Message, Debug, Clone)]
 pub enum ChangeMap {

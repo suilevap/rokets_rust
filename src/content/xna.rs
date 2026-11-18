@@ -167,6 +167,16 @@ pub fn boolean<'de, D: Deserializer<'de>>(d: D) -> Result<bool, D::Error> {
     }
 }
 
+/// An integer that may be written empty (`<ItemId Null="true" />`): 0.
+pub fn lenient_int<'de, D: Deserializer<'de>>(d: D) -> Result<i64, D::Error> {
+    let s = String::deserialize(d)?;
+    let s = s.trim();
+    if s.is_empty() {
+        return Ok(0);
+    }
+    s.parse().map_err(|_| D::Error::custom(format!("bad integer {s:?}")))
+}
+
 /// Converts an XNA content path (`Entities\CargoQuest`) to a relative asset
 /// path with forward slashes and no extension.
 pub fn content_path(path: &str) -> String {

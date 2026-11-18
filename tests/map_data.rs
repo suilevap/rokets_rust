@@ -52,7 +52,7 @@ fn parses_sample() {
     let trigger = &map.triggers.items[0];
     assert_eq!(trigger.actions.items, vec!["NextMap()".to_string()]);
     assert_eq!(trigger.subscribers, vec![4001, 1004]);
-    assert_eq!(map.actions.items[0].short_kind(), "ShowSuccess");
+    assert_eq!(map.actions.0[0].kind, "ShowSuccess");
 }
 
 #[test]
