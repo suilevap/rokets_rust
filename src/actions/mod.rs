@@ -39,6 +39,7 @@ mod lifecycle;
 mod silent;
 mod splash;
 mod variables;
+mod view;
 
 use std::collections::{BTreeSet, HashMap};
 use std::sync::Arc;
@@ -108,6 +109,8 @@ type Handler<A> = Arc<dyn Fn(&mut World, A, Option<i64>, usize) -> bool + Send +
 pub struct ActionRegistry {
     by_type: HashMap<&'static str, Handler<Node>>,
     sprites: HashMap<&'static str, &'static [&'static str]>,
+    /// Fields whose value names a sprite to load (`Sprite`).
+    sprite_fields: HashMap<&'static str, &'static str>,
     /// By name, with how many arguments each takes (`NextMap()` and
     /// `NextMap(stars)` are two).
     by_template: HashMap<&'static str, Vec<(usize, Handler<TemplateArgs>)>>,
@@ -117,6 +120,19 @@ impl ActionRegistry {
     /// The sprites an action of type `kind` draws.
     pub fn sprites(&self, kind: &str) -> &'static [&'static str] {
         self.sprites.get(kind).copied().unwrap_or(&[])
+    }
+
+    /// The sprites one map action draws: its type's, and the one its
+    /// sprite field names.
+    pub fn sprites_of(&self, action: &RawAction) -> Vec<String> {
+        let mut out: Vec<String> = self.sprites(&action.kind).iter().map(|s| s.to_string()).collect();
+        if let Some(field) = self.sprite_fields.get(action.kind.as_str())
+            && let Some(n) = action.node.child(field)
+            && !n.text.trim().is_empty()
+        {
+            out.push(n.text.trim().to_string());
+        }
+        out
     }
 
     /// Whether the game carries out actions of type `kind`.
@@ -150,6 +166,9 @@ pub trait AddMapAction {
 
     /// Sprites actions of type `T` draw, loaded with any map that has one.
     fn add_action_sprites<T: ActionDef>(&mut self, sprites: &'static [&'static str]) -> &mut Self;
+
+    /// The field of `T` that names a sprite each action draws.
+    fn add_action_sprite_field<T: ActionDef>(&mut self, field: &'static str) -> &mut Self;
 }
 
 impl AddMapAction for App {
@@ -177,6 +196,12 @@ impl AddMapAction for App {
     fn add_action_sprites<T: ActionDef>(&mut self, sprites: &'static [&'static str]) -> &mut Self {
         let mut registry = self.world_mut().get_resource_or_init::<ActionRegistry>();
         registry.sprites.insert(T::INFO.kind, sprites);
+        self
+    }
+
+    fn add_action_sprite_field<T: ActionDef>(&mut self, field: &'static str) -> &mut Self {
+        let mut registry = self.world_mut().get_resource_or_init::<ActionRegistry>();
+        registry.sprite_fields.insert(T::INFO.kind, field);
         self
     }
 }
@@ -265,6 +290,7 @@ impl Plugin for ActionsPlugin {
                 silent::SilentActionsPlugin,
                 splash::SplashActionsPlugin,
                 variables::VariablesPlugin,
+                view::ViewActionsPlugin,
             ))
             .add_systems(OnEnter(GameState::Playing), run_on_map_start)
             .add_systems(
