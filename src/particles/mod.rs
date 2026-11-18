@@ -49,6 +49,9 @@ pub struct Style {
     /// Added to the picture (flashes, glows) rather than blended over it;
     /// such particles have their own pool (`_poolAdditive`).
     pub additive: bool,
+    /// The texture is a row of square frames and each particle shows one
+    /// at random (`UseRandomFrame`).
+    pub random_frame: bool,
 }
 
 impl Style {
@@ -91,6 +94,8 @@ pub struct Particle {
     scale_offset: Vec2,
     /// May be replaced by a newer particle while alive.
     optional: bool,
+    /// A random number picking its frame, for [`Style::random_frame`].
+    pub frame: u32,
 }
 
 /// A fixed number of particles (`ParticlesPool`).
@@ -175,5 +180,9 @@ fn new_particle(style: &'static Style, position: Vec2, direction: f32, view_dire
         state: style.begin,
         scale_offset: Vec2::ZERO,
         optional,
+        // Varied enough to pick a frame, and the same for the same start.
+        frame: (position.x.to_bits() ^ position.y.to_bits().rotate_left(13) ^ direction.to_bits().rotate_left(7))
+            .wrapping_mul(0x9E37_79B1)
+            >> 16,
     }
 }

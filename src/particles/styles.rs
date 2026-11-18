@@ -45,6 +45,7 @@ pub static WHEEL_TRAIL: Style = Style {
     lifetime: 1.0,
     texture: "Gradient4Pixel",
     additive: false,
+    random_frame: false,
 };
 
 /// `_smokeCarTrailStyle`: an exhaust puff shot backwards from the car,
@@ -69,6 +70,7 @@ pub static EXHAUST: Style = Style {
     lifetime: 0.5,
     texture: "Particles\\Smoke",
     additive: false,
+    random_frame: false,
 };
 
 /// `DepthConst.SmokeStart`.
@@ -100,6 +102,7 @@ pub static BOMB_BEEP: Style = Style {
     lifetime: 0.5,
     texture: "Particles\\Circle",
     additive: true,
+    random_frame: false,
 };
 
 /// `_boomCircleEffect`: the blast's ring, sized to its range
@@ -110,6 +113,7 @@ pub static BOOM_RING: Style = Style {
     lifetime: 0.5,
     texture: "Particles\\Circle",
     additive: true,
+    random_frame: false,
 };
 
 /// `_boomStyleCircle`: a big yellow flash shrinking as it turns.
@@ -119,6 +123,7 @@ pub static BOOM_FLASH: Style = Style {
     lifetime: 0.75,
     texture: "Particles\\flash2",
     additive: true,
+    random_frame: false,
 };
 
 /// `_boomStyleCircle2`: the fireball.
@@ -128,6 +133,7 @@ pub static BOOM_FIRE: Style = Style {
     lifetime: 0.8,
     texture: "Particles\\Explosion",
     additive: true,
+    random_frame: false,
 };
 
 /// `_smokeFastStyle`: black smoke left by a blast.
@@ -151,6 +157,7 @@ pub static BOOM_SMOKE: Style = Style {
     lifetime: 1.0,
     texture: "Particles\\Smoke",
     additive: false,
+    random_frame: false,
 };
 
 /// `_smokeCrashedStyle`: thick black smoke over a wreck, shrinking as it
@@ -175,6 +182,7 @@ pub static CRASH_SMOKE: Style = Style {
     lifetime: 6.0,
     texture: "Particles\\Smoke",
     additive: false,
+    random_frame: false,
 };
 
 /// `_boomStyle`: a fiery streak flying out of a wreck.
@@ -198,6 +206,7 @@ pub static WRECK_FIRE: Style = Style {
     lifetime: 0.75,
     texture: "Particles\\firetrail",
     additive: true,
+    random_frame: false,
 };
 
 /// `_boomStyle2`: a thinner, faster streak.
@@ -221,6 +230,7 @@ pub static WRECK_SPARK: Style = Style {
     lifetime: 0.8,
     texture: "Particles\\firetrail",
     additive: true,
+    random_frame: false,
 };
 
 /// `DepthConst.Spark`.
@@ -248,11 +258,50 @@ const fn spark(curl: f32) -> Style {
         lifetime: 0.4,
         texture: "Particles\\SmallLine",
         additive: true,
+        random_frame: false,
     }
 }
 
 /// The two ways sparks curl (C#'s ±0.75π, negated for our angles).
 pub static SPARKS: [Style; 2] = [spark(-0.75 * std::f32::consts::PI), spark(0.75 * std::f32::consts::PI)];
+
+/// `DepthConst.Teleport + 0.01`: on the floor.
+const TELEPORT: f32 = (0.2 + 0.01) / 16.0;
+
+/// `_teleportStyle`: a streak drawn into a teleport, off towards where it
+/// leads.
+pub static TELEPORT_STREAK: Style = Style {
+    begin: State {
+        speed: 4.0 / 32.0,
+        scale: Vec2::new(1.5, 4.5),
+        view_rotation: 0.0,
+        rotation: 0.0,
+        color: [1.0; 4],
+        height: TELEPORT,
+    },
+    end: State {
+        speed: 16.0 / 32.0,
+        scale: Vec2::new(3.0, 3.0),
+        view_rotation: 0.0,
+        rotation: 0.0,
+        color: TRANSPARENT,
+        height: TELEPORT,
+    },
+    lifetime: 0.5,
+    texture: "Particles\\SnowEffect",
+    additive: true,
+    random_frame: true,
+};
+
+/// `_teleportStyle2`: a glow at the middle, turning as it shrinks into it.
+pub static TELEPORT_SWIRL: Style = Style {
+    begin: still(1.5, 0.0, TRANSPARENT, TELEPORT),
+    end: still(0.0, -3.0, [1.0; 4], TELEPORT),
+    lifetime: 0.5,
+    texture: "Particles\\Explosion",
+    additive: true,
+    random_frame: true,
+};
 
 /// `GetScaleForEnd`: the size rate that makes [`BOOM_RING`] end about
 /// `range` world units across its radius, for a `Circle` texture
@@ -263,7 +312,7 @@ pub fn ring_rate(range: f32, texture_width: f32) -> f32 {
 }
 
 /// Every texture a style here draws with, to load with the map.
-pub const TEXTURES: [&str; 8] = [
+pub const TEXTURES: [&str; 9] = [
     WHEEL_TRAIL.texture,
     EXHAUST.texture,
     BOMB_BEEP.texture,
@@ -272,4 +321,5 @@ pub const TEXTURES: [&str; 8] = [
     BOOM_SMOKE.texture,
     WRECK_FIRE.texture,
     SPARKS[0].texture,
+    TELEPORT_STREAK.texture,
 ];

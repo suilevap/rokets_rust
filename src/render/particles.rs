@@ -129,10 +129,17 @@ fn draw(
             continue;
         };
         let q = quads.entry((p.style.texture, layer_of(p), p.style.additive)).or_default();
-        let half = sprite.size * p.state.scale * px(1.0) / 2.0;
+        // A row of square frames: one of them (`UseRandomFrame`).
+        let frames = if p.style.random_frame { (sprite.size.x / sprite.size.y).round().max(1.0) } else { 1.0 };
+        let (u0, u1) = {
+            let f = (p.frame % frames as u32) as f32;
+            (f / frames, (f + 1.0) / frames)
+        };
+        let size = Vec2::new(sprite.size.x / frames, sprite.size.y);
+        let half = size * p.state.scale * px(1.0) / 2.0;
         let (x, y) = (Vec2::from_angle(p.view_direction) * half.x, Vec2::from_angle(p.view_direction).perp() * half.y);
         let z = layer_of(p).z();
-        for (corner, uv) in [(-x - y, [0.0, 1.0]), (x - y, [1.0, 1.0]), (x + y, [1.0, 0.0]), (-x + y, [0.0, 0.0])] {
+        for (corner, uv) in [(-x - y, [u0, 1.0]), (x - y, [u1, 1.0]), (x + y, [u1, 0.0]), (-x + y, [u0, 0.0])] {
             q.positions.push((p.position + corner).extend(z).to_array());
             q.uvs.push(uv);
         }
