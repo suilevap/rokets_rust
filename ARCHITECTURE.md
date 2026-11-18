@@ -59,6 +59,7 @@ main
 | `actions/lifecycle` | `ActionOnCreate` (entities when they appear, the player's car at map start) and `ActionOnDestroy` (entities the game destroys: `DestroyEntity`, bombs and red boxes going off) | `TriggerManager.OnNewEntity`, `OnEntityDestroy` |
 | `actions/camera_path` | `CameraShowPath`: the camera flies a path (`CameraOverride` instead of its targets), physics paused while it moves, then `ActionOnEnd` (and back, `ActionOnReverseEnd`); it stays there until a focus action hands the camera back | `Camera2DOperatorFollowPath` |
 | `actions/splash` | `ShowSplash` without the splash yet: its `ActionOnHide` runs when it would hide (`AutoHideTimeSec`, 2 s for one left to a tap), so map scripts that go on from splashes do | `ShowSplashRun`, `SplashScreen` |
+| `platform` | Moving platforms (`AddMovingPlatformComponent`): an entity's speed set every step, still for half of `PeriodSec`, then out to its end (`Position`, or its length × `OpenDistanceScale` ahead) and back each half period | `MovingPlatform` |
 | `door` | Doors: `AddDoorComponent` makes a box slide along its facing by its length × `OpenDistanceScale`; `OpenDoor(id)` / `CloseDoor(id)` free and push it; at either end it snaps, stops, runs `ActionOnOpen` / `ActionOnClose`, fixes itself if static or fixed on open; a placeholder shows where it opens to. Its actions are registered here | `Door`, `AddDoorComponent`, `OpenCloseDoor` |
 | `pickups` | `Pickup`: collected by driving into it; the count | `Coin` |
 | `boost` | `Booster`: throws touching bodies along its facing and plays its flash | `Accelerator` |
@@ -112,7 +113,7 @@ main
 
 Everything outside MVP 0.1: menus and HUD, music, localisation, saves;
 weapons and gadgets; other cars and AI; doors, bombs, teleports, platforms,
-fake walls; towing; the other action types (clones, moving platforms, AI orders, splashes and text, …); most particle effects (the pool and the car's smoke are in);
+fake walls; towing; the other action types (AI orders, drawn splashes and text, markers, …); most particle effects (the pool and the car's smoke are in);
 slow motion; the agent/command server; editor hot reload. Rendering gaps:
 tyre marks,
 dynamic lights, the dirty-lens effect, per-map camera zoom.
