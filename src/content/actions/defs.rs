@@ -271,6 +271,9 @@ actions! {
     AddEntitiesToFocus("AddEntitiesToFocus") {
         item_ids "ItemIds": Vec<i64> = Vec::new(), from(&[PLAYERS, SIMPLE_CARS, ENTITIES, HINTS]);
         remove_all_others "RemoveAllOthers": bool = false, optional;
+    } => templates {
+        "FocusOnEntity(itemId)" => |a| Some(AddEntitiesToFocus { item_ids: vec![a.int(0)?], remove_all_others: true }),
+        "AddFocusOnEntity(itemId)" => |a| Some(AddEntitiesToFocus { item_ids: vec![a.int(0)?], remove_all_others: false }),
     }
 
     RemoveEntitiesFromFocus("RemoveEntitiesFromFocus") {

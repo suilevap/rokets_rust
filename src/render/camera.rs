@@ -85,6 +85,11 @@ pub struct CameraTarget {
     pub max_speed: f32,
 }
 
+/// Left out of the camera's framing for now (`RemoveEntitiesFromFocus`),
+/// keeping its [`CameraTarget`] for when it is back.
+#[derive(Component, Debug, Clone, Copy)]
+pub struct Unfocused;
+
 #[derive(Component)]
 pub struct MainCamera {
     /// Position above the ground, following the eased focus.
@@ -187,7 +192,7 @@ type CameraTargets<'w, 's> = Query<
         &'static CameraTarget,
         Option<&'static LinearVelocity>,
     ),
-    Without<MainCamera>,
+    (Without<MainCamera>, Without<Unfocused>),
 >;
 
 fn target_snapshot(

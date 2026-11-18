@@ -29,6 +29,7 @@
 
 mod body;
 mod entity;
+mod focus;
 mod level;
 mod silent;
 mod variables;
@@ -241,6 +242,7 @@ impl Plugin for ActionsPlugin {
             .add_plugins((
                 entity::EntityActionsPlugin,
                 body::BodyActionsPlugin,
+                focus::FocusActionsPlugin,
                 level::LevelActionsPlugin,
                 silent::SilentActionsPlugin,
                 variables::VariablesPlugin,
