@@ -38,7 +38,9 @@ use bevy::prelude::*;
 use rand::Rng;
 use rand::rngs::SmallRng;
 
+use crate::actions::{AddMapAction, MapIds, Run};
 use crate::car::Car;
+use crate::content::actions::defs::PlaySound as PlaySoundAction;
 use crate::car::impact::CarImpact;
 use crate::controls::{LocalPlayer, PlayerIntent};
 use crate::explosion::{Explosion, ExplosionSystems, Health, Hit};
@@ -49,7 +51,7 @@ use crate::pickups::CoinCollected;
 pub const HEARING: f32 = 32.0;
 
 /// Every sound a cue names (`Sounds/<name>.wav` in the C# content).
-pub const NAMES: [&str; 20] = [
+pub const NAMES: [&str; 27] = [
     "Engine",
     "EngineHover",
     "EngineTruck",
@@ -70,6 +72,14 @@ pub const NAMES: [&str; 20] = [
     "GButtonActivate",
     "GButtonRelease",
     "Teleport",
+    // Named by the maps' `PlaySound` actions.
+    "Bass",
+    "ChainStart",
+    "MapBuilding1",
+    "PongBounce",
+    "RocketLaunch",
+    "ScaryMoment",
+    "Stamp",
 ];
 
 /// `SoundManager._pitchArray`: the round of pitches for repeated blasts.
@@ -145,15 +155,32 @@ struct Cues {
     rng: SmallRng,
 }
 
+impl Default for Cues {
+    fn default() -> Self {
+        Cues {
+            next_pitch: 0,
+            rng: rand::SeedableRng::seed_from_u64(9),
+        }
+    }
+}
+
+/// The `PlaySound` map action, apart from playback (for tests).
+pub struct SoundActionsPlugin;
+
+impl Plugin for SoundActionsPlugin {
+    fn build(&self, app: &mut App) {
+        if !app.world().contains_resource::<Messages<PlaySound>>() {
+            app.add_message::<PlaySound>();
+        }
+        app.init_resource::<Cues>().add_map_action::<PlaySoundAction, _>(play_sound_action);
+    }
+}
+
 pub struct SoundPlugin;
 
 impl Plugin for SoundPlugin {
     fn build(&self, app: &mut App) {
-        app.add_message::<PlaySound>()
-            .insert_resource(Cues {
-                next_pitch: 0,
-                rng: rand::SeedableRng::seed_from_u64(9),
-            })
+        app.add_plugins(SoundActionsPlugin)
             .add_systems(
                 Update,
                 (
@@ -166,6 +193,42 @@ impl Plugin for SoundPlugin {
         #[cfg(feature = "sound")]
         app.add_plugins(playback::PlaybackPlugin);
     }
+}
+
+/// `PlaySound` (template `PlaySound(name)`): a sound by name at an
+/// entity, or at the listener; with `PlayWithNextPitch`, the next pitch
+/// of the round blasts use (`PlayOnceSoundByNameWithNextPitch`). Nothing
+/// plays when it has nowhere to come from, as in C#.
+fn play_sound_action(
+    In(run): In<Run<PlaySoundAction>>,
+    ids: MapIds,
+    places: Query<&Transform>,
+    mut cues: ResMut<Cues>,
+    mut play: MessageWriter<PlaySound>,
+) -> bool {
+    let d = &run.data;
+    let wanted = d.sound.as_deref().unwrap_or_default().trim();
+    let Some(name) = NAMES.iter().copied().find(|n| n.eq_ignore_ascii_case(wanted)) else {
+        warn!("sound {wanted:?} is not one the port loads");
+        return true;
+    };
+    let at = if d.use_listener_position {
+        None
+    } else {
+        let Some(t) = ids.entity(run.target(d.emmiter_entity_id)).and_then(|e| places.get(e).ok()) else {
+            return true;
+        };
+        Some(t.translation.truncate())
+    };
+    let pitch = if d.play_with_next_pitch {
+        let p = PITCH_ROUND[cues.next_pitch];
+        cues.next_pitch = (cues.next_pitch + 1) % PITCH_ROUND.len();
+        p
+    } else {
+        d.pitch
+    };
+    play.write(PlaySound { name, at, pitch, volume: d.volume });
+    true
 }
 
 fn log_cues(mut cues: MessageReader<PlaySound>) {

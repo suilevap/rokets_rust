@@ -316,6 +316,12 @@ actions! {
         pitch "Pitch": f32 = 0.0;
         /// Rotated list of pitches will be used
         play_with_next_pitch "PlayWithNextPitch": bool = false, optional;
+    } => templates {
+        "PlaySound(soundName)" => |a| Some(PlaySound {
+            sound: Some(a.text(0)?.to_string()),
+            use_listener_position: true,
+            ..PlaySound::default()
+        }),
     }
 
     ShowText("ShowText", name = "ShowText") {
