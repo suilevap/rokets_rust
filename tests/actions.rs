@@ -108,7 +108,7 @@ fn triggers_default_to_armed_and_many_uses() {
 #[test]
 fn every_map_action_of_a_ported_type_reads() {
     let mut app = App::new();
-    app.add_plugins((ActionsPlugin, tilerider::triggers::TriggersPlugin));
+    app.add_plugins((ActionsPlugin, tilerider::triggers::TriggersPlugin, tilerider::door::DoorPlugin));
     let registry = app.world().resource::<tilerider::actions::ActionRegistry>();
     let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("assets/Maps/Singleplayer");
     let (mut read, mut failed) = (0, Vec::new());
