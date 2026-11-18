@@ -126,3 +126,17 @@ fn every_map_action_of_a_ported_type_reads() {
     assert!(failed.is_empty(), "{failed:#?}");
     assert!(read > 100, "{read}");
 }
+
+#[test]
+fn of_actions_sharing_a_name_the_first_that_succeeds_runs() {
+    // C#'s `result = result || action.Run()`: the maps were tuned with it.
+    let mut app = app(
+        r#"<Item Type="GameLibrary.Note"><Name>Twice</Name><Text>first</Text></Item>
+           <Item Type="GameLibrary.Note"><Name>Twice</Name><Text>second</Text></Item>
+           <Item Type="GameLibrary.Note"><Name>Else</Name><Text>fail</Text></Item>
+           <Item Type="GameLibrary.Note"><Name>Else</Name><Text>fallback</Text></Item>"#,
+    );
+    assert!(run(app.world_mut(), "Twice", None, 0));
+    assert!(run(app.world_mut(), "Else", None, 0));
+    assert_eq!(notes(&app), ["first", "fail", "fallback"]);
+}

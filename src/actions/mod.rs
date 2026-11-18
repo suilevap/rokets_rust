@@ -17,8 +17,9 @@
 //!
 //! The runner: a [`RunAction`] message names an action (a map action, or
 //! a template such as `ActivateEntity(1001)`) and the map id of the entity
-//! that set it off (`itemId`). Every map action of that name runs in
-//! order, each followed by its `NextAction` if it succeeded. Handlers run
+//! that set it off (`itemId`). The map actions of that name run in order
+//! until one succeeds (as C#'s `result || action.Run()`), followed by its
+//! `NextAction`. Handlers run
 //! one after another with the world to themselves, so a sequence's later
 //! steps see what the earlier ones did, as in C#. Action types the port
 //! does not have yet are logged once per map.
@@ -39,7 +40,7 @@ use bevy::prelude::*;
 use serde::Deserialize;
 use serde::de::DeserializeOwned;
 
-use crate::content::actions::{ActionRef, MapActions, TemplateArgs};
+use crate::content::actions::{ActionRef, MapActions, RawAction, TemplateArgs};
 use crate::content::xna::Items;
 use crate::game::{GameState, LoadedMap, MapId};
 
@@ -179,6 +180,11 @@ fn register<T: MapAction>(
 #[derive(Resource, Default)]
 pub struct CurrentActions(pub MapActions);
 
+/// The `RunOnMapStart` actions of the map just started, by index; run
+/// on the first frame, once its entities exist.
+#[derive(Resource, Default)]
+struct StartQueue(Vec<usize>);
+
 /// Sequences waiting for their turn: seconds left, then the action.
 #[derive(Resource, Default)]
 struct Delayed(Vec<(f32, RunAction)>);
@@ -200,6 +206,7 @@ impl Plugin for ActionsPlugin {
             .init_resource::<Delayed>()
             .init_resource::<Reported>()
             .init_resource::<CurrentActions>()
+            .init_resource::<StartQueue>()
             .add_map_action_fn::<Sequence>(run_sequence)
             .add_plugins((
                 entity::EntityActionsPlugin,
@@ -224,17 +231,14 @@ fn run_on_map_start(
     mut current: ResMut<CurrentActions>,
     mut delayed: ResMut<Delayed>,
     mut reported: ResMut<Reported>,
-    mut run: MessageWriter<RunAction>,
+    mut start: ResMut<StartQueue>,
 ) {
     current.0 = map.data.actions.clone();
     delayed.0.clear();
     reported.0.clear();
-    for a in current.0.0.iter().filter(|a| a.run_on_map_start) {
-        run.write(RunAction {
-            name: a.name.clone(),
-            actor: None,
-        });
-    }
+    // Each runs itself, not by name: several may share one (eight
+    // `CreateTeleport`s on Unboxing).
+    start.0 = (0..current.0.0.len()).filter(|&i| current.0.0[i].run_on_map_start).collect();
 }
 
 fn tick_delayed(time: Res<Time>, mut delayed: ResMut<Delayed>, mut run: MessageWriter<RunAction>) {
@@ -252,6 +256,11 @@ fn tick_delayed(time: Res<Time>, mut delayed: ResMut<Delayed>, mut run: MessageW
 }
 
 fn run_actions(world: &mut World) {
+    let start = std::mem::take(&mut world.resource_mut::<StartQueue>().0);
+    for i in start {
+        let action = world.resource::<CurrentActions>().0.0[i].clone();
+        run_one(world, action, None, 0);
+    }
     let requests: Vec<RunAction> = world.resource_mut::<Messages<RunAction>>().drain().collect();
     for r in requests {
         run(world, &r.name, r.actor, 0);
@@ -276,23 +285,31 @@ pub fn run(world: &mut World, reference: &str, actor: Option<i64>, depth: usize)
         };
     }
     let actions: Vec<_> = world.resource::<CurrentActions>().0.named(&r.name).cloned().collect();
-    let mut any = false;
+    // `RunActions`: `result = result || action.Run(itemId)`, so once one
+    // succeeds the others of the name are skipped. The maps rely on it
+    // (JunkYard's two `CloneObj3007_3` made one clone).
     for a in actions {
-        let handler = world.resource::<ActionRegistry>().by_type.get(a.kind.as_str()).cloned();
-        let ok = match handler {
-            Some(h) => h(world, a.xml, actor, depth),
-            None => {
-                report(world, &a.kind);
-                false
-            }
-        };
-        let ok = match (&a.next, ok) {
-            (Some(next), true) => run(world, next, actor, depth + 1),
-            _ => ok,
-        };
-        any |= ok;
+        if run_one(world, a, actor, depth) {
+            return true;
+        }
     }
-    any
+    false
+}
+
+/// Runs one map action, then its `NextAction` if it succeeded.
+fn run_one(world: &mut World, a: RawAction, actor: Option<i64>, depth: usize) -> bool {
+    let handler = world.resource::<ActionRegistry>().by_type.get(a.kind.as_str()).cloned();
+    let ok = match handler {
+        Some(h) => h(world, a.xml, actor, depth),
+        None => {
+            report(world, &a.kind);
+            false
+        }
+    };
+    match (&a.next, ok) {
+        (Some(next), true) => run(world, next, actor, depth + 1),
+        _ => ok,
+    }
 }
 
 fn report(world: &mut World, kind: &str) {
