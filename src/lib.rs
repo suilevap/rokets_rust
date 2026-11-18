@@ -4,6 +4,7 @@ pub mod actions;
 pub mod animation;
 pub mod assets;
 pub mod boost;
+pub mod button;
 pub mod car;
 pub mod content;
 pub mod controls;
@@ -50,7 +51,7 @@ impl Plugin for TileRiderPlugin {
                 map::spawn::MapEntitiesPlugin,
                 render::spin::SpinPlugin,
                 render::animate::AnimatePlugin,
-                (triggers::TriggersPlugin, actions::ActionsPlugin, door::DoorPlugin),
+                (triggers::TriggersPlugin, actions::ActionsPlugin, door::DoorPlugin, button::ButtonPlugin),
                 hud::HudPlugin,
                 script::ScriptPlugin,
             ));

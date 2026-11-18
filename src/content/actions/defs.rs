@@ -448,7 +448,8 @@ actions! {
         action_press "ActionPress": Option<String> = None, from(ACTION);
         action_release "ActionRelease": Option<String> = None, optional, from(ACTION);
         /// Only for ButtonType.Button
-        subscribers "Subscribers": Vec<i64> = Vec::new(), from(ITEM);
+        /// Who may press it; null: the player's car, empty: nobody.
+        subscribers "Subscribers": Option<Vec<i64>> = None, from(ITEM);
         button_type "ButtonType": ButtonTypeType = ButtonTypeType::Button, optional;
     }
 
