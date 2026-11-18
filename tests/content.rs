@@ -56,3 +56,15 @@ fn texts_read_by_key_and_missing_ones_show_their_key() {
     assert_eq!(strings.get("Be_careful"), "Be Careful");
     assert_eq!(strings.get("No_such_key"), "#No_such_key");
 }
+
+#[test]
+fn a_language_falls_back_to_the_default_texts() {
+    let read = |name: &str| {
+        tilerider::content::strings::Strings::parse(&fs::read_to_string(assets().join(name)).unwrap()).unwrap()
+    };
+    let ru = read("Strings/Strings.ru.resx").over(read("Strings/Strings.resx"));
+    assert_eq!(ru.get("Where_Is_My_Box"), "Где моя коробка?");
+    let only = tilerider::content::strings::Strings::parse(r#"<root><data name="A"><value>a</value></data></root>"#).unwrap();
+    let base = tilerider::content::strings::Strings::parse(r#"<root><data name="B"><value>b</value></data></root>"#).unwrap();
+    assert_eq!(only.over(base).get("B"), "b");
+}

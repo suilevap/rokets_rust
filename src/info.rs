@@ -1,10 +1,10 @@
 //! Texts shown over the game (`UIManager.ShowInfo`, made by `ShowText`):
 //! lines found by key in the game's texts (`assets/Strings/Strings.resx`,
-//! English for now), for `ShowTimeSec` (7 s when not given), the physics
+//! with a [`Language`]'s file over it, `Strings.ru.resx`), drawn in the
+//! game's font (`Pixar Two`, `FontX*`), for `ShowTimeSec` (7 s when not given), the physics
 //! paused meanwhile with `PauseGame`. A newer text replaces the shown one.
 //!
-//! Not ported: the other languages (the files are imported), the C# panel's
-//! look and its slide in, tapping it away.
+//! Not ported: the C# panel's look and its slide in, tapping it away.
 
 use avian2d::prelude::*;
 use bevy::prelude::*;
@@ -22,8 +22,18 @@ const DEFAULT_SECS: f32 = 7.0;
 #[derive(Resource, Debug, Default)]
 pub struct Texts(pub Strings);
 
+/// The language of the texts (`ru`, `de`, `es`, `it`, `be`); none:
+/// English.
+#[derive(Resource, Debug, Default, Clone)]
+pub struct Language(pub Option<String>);
+
+/// The texts files being loaded: the default, and the language's.
 #[derive(Resource)]
-struct TextsFile(Handle<XmlText>);
+struct TextsFile(Handle<XmlText>, Option<Handle<XmlText>>);
+
+/// The game's font, for texts over the game.
+#[derive(Resource)]
+struct GameFont(Handle<Font>);
 
 /// The text on screen now: seconds left, and whether it paused the game.
 #[derive(Resource, Debug, Default)]
@@ -44,27 +54,46 @@ pub struct InfoPlugin;
 impl Plugin for InfoPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Texts>()
+            .init_resource::<Language>()
             .init_resource::<Shown>()
             .add_map_action::<ShowText, _>(show_text)
-            .add_systems(Startup, (load_texts, spawn_panel))
+            .add_systems(Startup, (load_texts, spawn_panel).chain())
             .add_systems(Update, read_texts.run_if(resource_exists::<TextsFile>))
             .add_systems(OnEnter(GameState::Playing), |mut shown: ResMut<Shown>| *shown = Shown::default())
             .add_systems(Update, (count_down, show).chain());
     }
 }
 
-fn load_texts(mut commands: Commands, server: Res<AssetServer>) {
-    commands.insert_resource(TextsFile(server.load("Strings/Strings.resx")));
+fn load_texts(mut commands: Commands, server: Res<AssetServer>, language: Res<Language>) {
+    let lang = language.0.as_ref().map(|l| server.load(format!("Strings/Strings.{l}.resx")));
+    commands.insert_resource(TextsFile(server.load("Strings/Strings.resx"), lang));
+    commands.insert_resource(GameFont(server.load("Fonts/Pixar Two.ttf")));
 }
 
-fn read_texts(mut commands: Commands, file: Res<TextsFile>, assets: Res<Assets<XmlText>>, mut texts: ResMut<Texts>) {
-    let Some(xml) = assets.get(&file.0) else {
+fn read_texts(
+    mut commands: Commands,
+    file: Res<TextsFile>,
+    server: Res<AssetServer>,
+    assets: Res<Assets<XmlText>>,
+    mut texts: ResMut<Texts>,
+) {
+    let Some(base) = assets.get(&file.0) else {
         return;
     };
-    match Strings::parse(&xml.0) {
-        Ok(s) => texts.0 = s,
-        Err(e) => warn!("Strings.resx: {e}"),
+    let read = |xml: &XmlText, name: &str| {
+        Strings::parse(&xml.0).map_err(|e| warn!("{name}: {e}")).unwrap_or_default()
+    };
+    let mut strings = read(base, "Strings.resx");
+    if let Some(lang) = &file.1 {
+        match assets.get(lang) {
+            Some(xml) => strings = read(xml, "language texts").over(strings),
+            None if matches!(server.get_load_state(lang), Some(bevy::asset::LoadState::Failed(_))) => {
+                warn!("no texts for that language; English");
+            }
+            None => return,
+        }
     }
+    texts.0 = strings;
     commands.remove_resource::<TextsFile>();
 }
 
@@ -107,7 +136,7 @@ fn count_down(time: Res<Time>, mut shown: ResMut<Shown>, mut physics: Option<Res
     }
 }
 
-fn spawn_panel(mut commands: Commands) {
+fn spawn_panel(mut commands: Commands, font: Res<GameFont>) {
     commands
         .spawn((
             Node {
@@ -123,6 +152,7 @@ fn spawn_panel(mut commands: Commands) {
             InfoText,
             Text::new(" "),
             TextFont {
+                font: font.0.clone().into(),
                 font_size: FontSize::Px(28.0),
                 ..default()
             },

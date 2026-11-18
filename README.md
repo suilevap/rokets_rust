@@ -26,6 +26,7 @@ cargo run --release -- -m LetItSnowDay
 | `--size WxH` | Window size (default 1280x720; `720x1280` for portrait) |
 | `--start x,y` | Put the car at that map cell instead of the map's start (first map only) |
 | `--glow X` | How strongly the additive (HDR) light of lamps with an `AdditiveRate` is added (default 3; `[` and `]` turn it by 0.25 while playing, shown as `glow` in the top line) |
+| `--lang LANG` | The maps' texts in another language: `ru`, `de`, `es`, `it`, `be` (default English) |
 | `--drive SCRIPT` | Drive by script, `x,y:seconds;...` (stick in world directions, y up), logging the car's path every 0.1 s |
 
 Portrait screens (a phone held upright) show the landscape view turned a

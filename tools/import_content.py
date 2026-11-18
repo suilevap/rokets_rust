@@ -28,6 +28,8 @@ ITEMS = [
     ("Sprites", "Gradient*.png", "Sprites"),
     ("Sprites", "WhitePixel.png", "Sprites"),
     ("Sounds", "*.wav", "Sounds"),
+    # The game's own font (`FontX1`, …; it has Cyrillic).
+    ("Fonts", "Pixar Two.ttf", "Fonts"),
 ]
 
 

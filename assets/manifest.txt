@@ -1,4 +1,5 @@
 Cars/Cars.xml
+Fonts/Pixar Two.ttf
 Maps/MapList.xml
 Maps/Multiplayer/TheCity.xml
 Maps/Multiplayer/TheGate.xml
