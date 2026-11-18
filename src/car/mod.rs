@@ -168,6 +168,12 @@ pub fn spawn_local_car(
     if car.mass > 0.0 {
         entity.insert(Mass(car.mass));
     }
+    // `GadgetFactory`: the magnet (`Link`), at `GadgetPosition` (pixels,
+    // y down).
+    if car.gadget.as_deref() == Some("Link") {
+        let at = car.gadget_position.map_or(Vec2::ZERO, |p| Vec2::new(p.x, -p.y) * px(1.0) * car.scale);
+        entity.insert(crate::gadget::Magnet::new(at));
+    }
     // Waiting for `SetControl(id,Local)`, as on LetItSnow's intro.
     if !crate::controls::is_players(&player.control) {
         entity.insert(crate::controls::NoInput);
