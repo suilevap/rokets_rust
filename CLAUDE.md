@@ -15,6 +15,19 @@ the C# repository: `docs/plans/RUST_BEVY_MIGRATION.md`.
 - **C# space is not ours**: it has y down and depth away from the
   camera. Translate positions, angles and rotations as `src/units.rs`
   describes (`from_cs`, `from_cs_rotation`), never by copying the signs.
+- **Port every branch, or name it.** Porting intent is not a licence to
+  drop details. Before writing, list every branch and condition of the
+  C# methods being ported (each `if`, special case, early return,
+  clamp, magic number); after writing, go through the list against the
+  Rust code. Each item is either ported or named in the module's "Not
+  ported" doc paragraph with the reason. Silent simplifications are how
+  behaviour drifts (the magnet once lost `MoveCargo`'s guard that keeps
+  a dragged box from shoving the car).
+- **Every pull request lists its differences from C#** under
+  "Differences from C#" (see `.github/pull_request_template.md`): what
+  is left out, simplified or behaves otherwise, down to single
+  conditions, and why. "None" only when that is checked. The reviewer
+  checks the list, not their memory of the original.
 - Keep `content/`, `map/grid`, `light/bake` and `car/drive` free of Bevy
   app code so they stay unit-testable.
 - Content comes from the C# repository via `tools/import_content.py`; do
