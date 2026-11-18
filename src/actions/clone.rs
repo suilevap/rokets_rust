@@ -163,7 +163,8 @@ pub fn along(path: &[Vec2], count: usize, turn: f32) -> Vec<Place> {
     out
 }
 
-fn point_at(path: &[Vec2], mut distance: f32) -> Vec2 {
+/// The point `distance` along a path (its end past it).
+pub(crate) fn point_at(path: &[Vec2], mut distance: f32) -> Vec2 {
     for w in path.windows(2) {
         let l = w[0].distance(w[1]);
         if distance <= l && l > 0.0 {

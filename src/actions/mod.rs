@@ -29,12 +29,14 @@
 //! C#'s `InitAllVariables`, then the rest in map order).
 
 mod body;
+mod camera_path;
 mod clone;
 mod entity;
 mod focus;
 mod level;
 mod lifecycle;
 mod silent;
+mod splash;
 mod variables;
 
 use std::collections::{BTreeSet, HashMap};
@@ -49,6 +51,7 @@ use crate::content::node::Node;
 use crate::game::{GameState, LoadedMap, MapId};
 
 pub use clone::{CloneOf, along, source_id};
+pub use camera_path::stop_camera_path;
 pub use entity::Inactive;
 pub use lifecycle::{OnDestroy, Respawned, destroy_action};
 pub use variables::{Owner, Variables};
@@ -252,11 +255,13 @@ impl Plugin for ActionsPlugin {
             .add_plugins((
                 entity::EntityActionsPlugin,
                 body::BodyActionsPlugin,
+                camera_path::CameraPathPlugin,
                 clone::CloneActionsPlugin,
                 focus::FocusActionsPlugin,
                 level::LevelActionsPlugin,
                 lifecycle::LifecyclePlugin,
                 silent::SilentActionsPlugin,
+                splash::SplashActionsPlugin,
                 variables::VariablesPlugin,
             ))
             .add_systems(OnEnter(GameState::Playing), run_on_map_start)
@@ -326,6 +331,11 @@ fn run_actions(world: &mut World) {
     for r in requests {
         run(world, &r.name, r.actor, 0);
     }
+}
+
+/// Runs an action `seconds` from now.
+pub fn run_later(world: &mut World, seconds: f32, action: RunAction) {
+    world.resource_mut::<Delayed>().0.push((seconds, action));
 }
 
 /// Runs an action reference now; whether it succeeded

@@ -478,6 +478,8 @@ actions! {
         auto_hide_time_sec "AutoHideTimeSec": f32 = 2.0;
         clickable "Clickable": bool = false;
         action_on_hide "ActionOnHide": Option<String> = None, from(ACTION);
+    } => templates {
+        "HideSplash()" => |_| Some(ShowSplash { splash_name: None, ..ShowSplash::default() }),
     }
 
     AddMovingPlatformComponent("AddMovingPlatformComponent", name = "MovingPlatformComponent", on_map_start = true) {

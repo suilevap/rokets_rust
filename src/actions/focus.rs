@@ -8,6 +8,8 @@
 //! that is the car's); `RemoveAllOthers` first leaves every other one
 //! out. A car left out keeps its settings for when it comes back.
 //!
+//! Each also ends a camera flight (`CameraShowPath`): back to the targets.
+//!
 //! Not ported: the long screen flash of `InstantCameraMove`.
 
 use avian2d::prelude::*;
@@ -22,10 +24,16 @@ pub struct FocusActionsPlugin;
 
 impl Plugin for FocusActionsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_map_action::<AddEntitiesToFocus, _>(add)
-            .add_map_action::<RemoveEntitiesFromFocus, _>(remove)
-            .add_map_action::<InstantCameraMove, _>(instant_move);
+        app.add_map_action::<AddEntitiesToFocus, _>(add.pipe(back_to_targets))
+            .add_map_action::<RemoveEntitiesFromFocus, _>(remove.pipe(back_to_targets))
+            .add_map_action::<InstantCameraMove, _>(instant_move.pipe(back_to_targets));
     }
+}
+
+/// `GetDefaultOperator`: the camera on its targets again.
+fn back_to_targets(In(ok): In<bool>, mut commands: Commands) -> bool {
+    commands.run_system_cached(super::stop_camera_path);
+    ok
 }
 
 fn add(
