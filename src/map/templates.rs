@@ -15,7 +15,7 @@ use crate::explosion::{Blast, Explosive, Trigger};
 use crate::render::layers::Layer;
 
 /// `HeavyBox._coefficientUnlinked`.
-const HEAVY_BOX_DENSITY: f32 = 64.0;
+pub const HEAVY_BOX_DENSITY: f32 = 64.0;
 /// `Accelerator.OnCollide`: impulse `30 × mass`, i.e. 30 units/s.
 const ACCELERATOR_BOOST: f32 = 30.0;
 /// Radians per second gears turn (`Coin`: a turn per 6.28 s).

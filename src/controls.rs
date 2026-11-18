@@ -28,6 +28,11 @@ pub struct PlayerIntent {
     /// Where to aim; unused until weapons.
     pub aim_dir: Vec2,
     pub fire: bool,
+    /// The gadget button is held (`GadgetControl`).
+    pub gadget: bool,
+    /// The world point the gadget aims at (the mouse); `None`: straight
+    /// ahead of the car.
+    pub gadget_at: Option<Vec2>,
 }
 
 /// Marks the car the local player drives.
@@ -82,7 +87,7 @@ impl Plugin for ControlsPlugin {
             .init_resource::<SchemeReadings>()
             .add_systems(
                 PreUpdate,
-                (read_keyboard, read_gamepad, read_touch, apply_active_scheme)
+                (read_keyboard, read_gamepad, read_touch, apply_active_scheme, read_gadget)
                     .chain()
                     .after(bevy::input::InputSystems),
             );
@@ -205,5 +210,39 @@ fn apply_active_scheme(
     let v = view.screen_to_world(v);
     for (mut intent, off) in &mut players {
         intent.move_dir = if off { Vec2::ZERO } else { v };
+    }
+}
+
+/// The gadget, as `PlayerCarControl` read it: the right mouse button (or
+/// the left with Shift) aims at the cursor; right Shift or `E` on the
+/// keyboard, or the gamepad's right shoulder, aims ahead of the car (the
+/// arrows, C#'s gadget aim, steer here).
+#[allow(clippy::type_complexity)]
+fn read_gadget(
+    mouse: Res<ButtonInput<MouseButton>>,
+    keys: Res<ButtonInput<KeyCode>>,
+    gamepads: Query<&Gamepad>,
+    windows: Query<&Window>,
+    cameras: Query<(&Camera, &GlobalTransform), With<crate::render::camera::MainCamera>>,
+    mut players: Query<(&mut PlayerIntent, Has<NoInput>), With<LocalPlayer>>,
+) {
+    let shift = keys.pressed(KeyCode::ShiftLeft);
+    let by_mouse = mouse.pressed(MouseButton::Right) || (mouse.pressed(MouseButton::Left) && shift);
+    let by_key = keys.pressed(KeyCode::ShiftRight)
+        || keys.pressed(KeyCode::KeyE)
+        || gamepads.iter().any(|p| p.pressed(GamepadButton::RightTrigger) || p.pressed(GamepadButton::RightTrigger2));
+    // The cursor on the ground plane.
+    let cursor = by_mouse
+        .then(|| {
+            let at = windows.iter().find_map(|w| w.cursor_position())?;
+            let (camera, transform) = cameras.iter().next()?;
+            let ray = camera.viewport_to_world(transform, at).ok()?;
+            let t = ray.intersect_plane(Vec3::ZERO, InfinitePlane3d::new(Vec3::Z))?;
+            Some(ray.get_point(t).truncate())
+        })
+        .flatten();
+    for (mut intent, off) in &mut players {
+        intent.gadget = !off && (by_mouse || by_key);
+        intent.gadget_at = cursor;
     }
 }

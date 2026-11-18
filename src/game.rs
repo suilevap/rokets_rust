@@ -95,6 +95,9 @@ fn sprites_for(map: &MapData, cars: &CarCatalog, registry: &crate::actions::Acti
             for part in ["Body", "Wheel", "Destroyed1", "Destroyed2"] {
                 names.extend(car.part_sprite(part));
             }
+            if car.gadget.as_deref() == Some("Link") {
+                names.extend(["Gadget\\ChainActive", "Gadget\\ChainInactive"].map(String::from));
+            }
         }
     }
     // What the map's actions draw (door hints, …).

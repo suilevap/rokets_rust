@@ -11,7 +11,9 @@ use avian2d::prelude::*;
 use bevy::prelude::*;
 
 use crate::boost::Booster;
-use crate::content::map::EntityData;
+use crate::content::map::{EntityData, EntityType};
+use crate::gadget::{Heavy, Linkable};
+use crate::map::templates::HEAVY_BOX_DENSITY;
 use crate::explosion::Beeps;
 use crate::game::{GameState, LoadedMap, MapEntity, MapId};
 use crate::map::templates::{BodyKind, BodySpec, EntityTemplate, casts_sprite_shadow, template_for};
@@ -93,6 +95,16 @@ pub fn spawn_entity(
     if template.beeps {
         // Each bomb its own period, 1–2 s (`1 + NextFloatFake()`).
         entity.insert(Beeps::every(1.0 + (e.id as f32 * 0.618_034).fract()));
+    }
+    // What the magnet can grab (`LinkablePhysicEntity.CanBeLinked`).
+    match e.kind {
+        EntityType::Box | EntityType::CoinDynamic => {
+            entity.insert(Linkable);
+        }
+        EntityType::HeavyBox => {
+            entity.insert((Linkable, Heavy(HEAVY_BOX_DENSITY)));
+        }
+        _ => {}
     }
     if let Some(rate) = template.spin {
         entity.insert(Spin(rate));

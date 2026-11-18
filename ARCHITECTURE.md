@@ -64,6 +64,7 @@ main
 | `info` | `ShowText`: lines by key from the game's texts (`assets/Strings/Strings.resx`, `content/strings.rs`; English for now) in a box over the game for `ShowTimeSec` (7 s default), physics paused with `PauseGame` | `UIManager.ShowInfo`, `StringsExt` |
 | `actions/view` | `AttachAdditionalView`: a sprite as the entity's child, placed where the map puts it relative to the entity's start pose, `Depth` units up (on walls, over boxes) | `AdditionalSprite` |
 | `markers` | Goal markers (`AddMarker` / `RemoveMarker`): an arrow off the player's car towards an entity or a trigger's middle, shown past 128 px and fading in over 256 | `MinimapManager` |
+| `gadget` | The magnet (`Link`): hold the gadget button 0.2 s to shoot it at the aim (cursor, or ahead) up to 8 units; a ray finds something `Linkable`; letting go links it to an 8-point rope (`gadget/rope.rs`, plain data) that holds it 3.5 units behind and breaks past 12; holding again drags the cargo, letting go drops it. Heavy boxes are light while towed | `ChainGadget`, `Chain`, `ActiveGadget`, `PlayerCarControlBase.GadgetControl` |
 | `door` | Doors: `AddDoorComponent` makes a box slide along its facing by its length × `OpenDistanceScale`; `OpenDoor(id)` / `CloseDoor(id)` free and push it; at either end it snaps, stops, runs `ActionOnOpen` / `ActionOnClose`, fixes itself if static or fixed on open; a placeholder shows where it opens to. Its actions are registered here | `Door`, `AddDoorComponent`, `OpenCloseDoor` |
 | `pickups` | `Pickup`: collected by driving into it; the count | `Coin` |
 | `boost` | `Booster`: throws touching bodies along its facing and plays its flash | `Accelerator` |
@@ -117,7 +118,7 @@ main
 
 Everything outside MVP 0.1: menus and HUD, music, localisation, saves;
 weapons and gadgets; other cars and AI; doors, bombs, teleports, platforms,
-fake walls; towing; the other action types (AI orders, drawn splashes, …); most particle effects (the pool and the car's smoke are in);
+fake walls; the other action types (AI orders, drawn splashes, …); most particle effects (the pool and the car's smoke are in);
 slow motion; the agent/command server; editor hot reload. Rendering gaps:
 tyre marks,
 dynamic lights, the dirty-lens effect, per-map camera zoom.

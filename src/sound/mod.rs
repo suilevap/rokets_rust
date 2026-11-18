@@ -51,7 +51,7 @@ use crate::pickups::CoinCollected;
 pub const HEARING: f32 = 32.0;
 
 /// Every sound a cue names (`Sounds/<name>.wav` in the C# content).
-pub const NAMES: [&str; 27] = [
+pub const NAMES: [&str; 29] = [
     "Engine",
     "EngineHover",
     "EngineTruck",
@@ -72,9 +72,12 @@ pub const NAMES: [&str; 27] = [
     "GButtonActivate",
     "GButtonRelease",
     "Teleport",
+    // The magnet.
+    "ChainStart",
+    "ChainConnect",
+    "ChainBrake",
     // Named by the maps' `PlaySound` actions.
     "Bass",
-    "ChainStart",
     "MapBuilding1",
     "PongBounce",
     "RocketLaunch",

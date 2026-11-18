@@ -27,7 +27,7 @@ cargo run --release -- -m LetItSnowDay
 | `--start x,y` | Put the car at that map cell instead of the map's start (first map only) |
 | `--glow X` | How strongly the additive (HDR) light of lamps with an `AdditiveRate` is added (default 3; `[` and `]` turn it by 0.25 while playing, shown as `glow` in the top line) |
 | `--lang LANG` | The maps' texts in another language: `ru`, `de`, `es`, `it`, `be` (default English) |
-| `--drive SCRIPT` | Drive by script, `x,y:seconds;...` (stick in world directions, y up), logging the car's path every 0.1 s |
+| `--drive SCRIPT` | Drive by script, `x,y:seconds;...` (stick in world directions, y up; `x,y,g:seconds` also holds the gadget, aimed ahead), logging the car's path every 0.1 s |
 
 Portrait screens (a phone held upright) show the landscape view turned a
 quarter turn: up on the screen is right on the map, and the controls follow
@@ -40,6 +40,10 @@ then returns closer when it slows down. Multiple camera targets share the frame.
 Keys: arrows / WASD drive (point where you want to go), `R` restarts,
 `N` skips to the next map. A gamepad's left stick or d-pad and touch (a
 floating stick where your finger lands) work too; the last one used wins.
+Cars with a magnet: hold the right mouse button (or Shift + left) to shoot
+it at the cursor and let go over a box to tow it; hold it again to drag
+what you tow, let go to drop it. Right Shift / `E` / the gamepad's right
+shoulder aim it ahead of the car. No touch gadget yet.
 
 On Linux, Bevy needs `pkg-config libwayland-dev libxkbcommon-dev libudev-dev
 libasound2-dev libx11-dev`.
