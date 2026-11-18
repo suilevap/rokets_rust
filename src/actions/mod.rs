@@ -25,7 +25,8 @@
 //! does not have yet are logged once per map.
 //!
 //! Built in here: `ActionSequence` / `Seq(…)` (now, or `TimeBetweenInSec`
-//! apart; `na` steps skipped) and `RunOnMapStart`.
+//! apart; `na` steps skipped) and `RunOnMapStart` (variables first, as
+//! C#'s `InitAllVariables`, then the rest in map order).
 
 mod body;
 mod entity;
@@ -269,11 +270,22 @@ fn run_on_map_start(
     current.0 = map.data.actions.clone();
     delayed.0.clear();
     reported.0.clear();
-    // Each runs itself, not by name: several may share one (eight
-    // `CreateTeleport`s on Unboxing).
-    start.0 = (0..current.0.0.len())
-        .filter(|&i| current.0.0[i].base.run_on_map_start)
-        .collect();
+    start.0 = start_order(&current.0);
+}
+
+/// The `RunOnMapStart` actions by index, in the order they run: variables
+/// first (`InitAllVariables`), so the rest see them, then map order. Each
+/// runs itself, not by name: several may share one (eight
+/// `CreateTeleport`s on Unboxing).
+pub fn start_order(actions: &MapActions) -> Vec<usize> {
+    let mut queue: Vec<usize> = (0..actions.0.len()).filter(|&i| actions.0[i].base.run_on_map_start).collect();
+    queue.sort_by_key(|&i| !is_variable(&actions.0[i].kind));
+    queue
+}
+
+/// C#'s `Variable` actions.
+fn is_variable(kind: &str) -> bool {
+    matches!(kind, "ChangeIntVariable" | "CheckIntVariable")
 }
 
 fn tick_delayed(time: Res<Time>, mut delayed: ResMut<Delayed>, mut run: MessageWriter<RunAction>) {

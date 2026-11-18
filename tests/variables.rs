@@ -87,3 +87,18 @@ fn if_is_a_condition_for_the_next_action() {
     assert!(run(w, "if(keys,==,need)", Some(7), 0));
     assert_eq!(notes(&mut app), ["try", "try"]);
 }
+
+#[test]
+fn variables_start_before_the_other_map_start_actions() {
+    let map = MapData::parse(
+        r#"<XnaContent><Asset Type="GameLibrary.MapData"><Name>T</Name><Actions>
+             <Item Type="GameLibrary.ActionSequence"><Name>Start</Name><RunOnMapStart>true</RunOnMapStart></Item>
+             <Item Type="GameLibrary.ActionSequence"><Name>Later</Name></Item>
+             <Item Type="GameLibrary.ChangeIntVariable"><Name>Init</Name><RunOnMapStart>true</RunOnMapStart></Item>
+             <Item Type="GameLibrary.AddDoorComponent"><Name>Door</Name></Item>
+           </Actions></Asset></XnaContent>"#,
+    )
+    .unwrap();
+    // `Door` runs on map start by its type's default.
+    assert_eq!(tilerider::actions::start_order(&map.actions), [2, 0, 3]);
+}
