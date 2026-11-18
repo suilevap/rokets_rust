@@ -359,7 +359,7 @@ fn follow_target(
     view: Res<ViewRotation>,
     targets: CameraTargets,
     mut shake: ResMut<CameraShake>,
-    over: Res<CameraOverride>,
+    over: Option<Res<CameraOverride>>,
     mut cameras: Query<(&mut MainCamera, &mut Transform, &Projection)>,
 ) {
     let jolt = shake.step(time.delta_secs());
@@ -368,7 +368,7 @@ fn follow_target(
         let Projection::Perspective(projection) = projection else {
             continue;
         };
-        let frame = match over.0 {
+        let frame = match over.as_ref().and_then(|o| o.0) {
             Some((focus, scale)) => Framing { focus, scale },
             None => match framing(targets.iter().map(target_snapshot), &view, projection) {
                 Some(frame) => frame,
