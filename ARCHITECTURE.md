@@ -63,6 +63,7 @@ main
 | `actions/control` | `SetControl` on the player's car: `Local` gives it back, anything else (`NoneLocal` in intros, AI types for now) marks it `NoInput`; the car also starts so when the map's player is not `Local`, and keeps its state across a respawn | `SetControlRun` |
 | `info` | `ShowText`: lines by key from the game's texts (`assets/Strings/Strings.resx`, `content/strings.rs`; English for now) in a box over the game for `ShowTimeSec` (7 s default), physics paused with `PauseGame` | `UIManager.ShowInfo`, `StringsExt` |
 | `actions/view` | `AttachAdditionalView`: a sprite as the entity's child, placed where the map puts it relative to the entity's start pose, `Depth` units up (on walls, over boxes) | `AdditionalSprite` |
+| `markers` | Goal markers (`AddMarker` / `RemoveMarker`): an arrow off the player's car towards an entity or a trigger's middle, shown past 128 px and fading in over 256 | `MinimapManager` |
 | `door` | Doors: `AddDoorComponent` makes a box slide along its facing by its length × `OpenDistanceScale`; `OpenDoor(id)` / `CloseDoor(id)` free and push it; at either end it snaps, stops, runs `ActionOnOpen` / `ActionOnClose`, fixes itself if static or fixed on open; a placeholder shows where it opens to. Its actions are registered here | `Door`, `AddDoorComponent`, `OpenCloseDoor` |
 | `pickups` | `Pickup`: collected by driving into it; the count | `Coin` |
 | `boost` | `Booster`: throws touching bodies along its facing and plays its flash | `Accelerator` |
@@ -116,7 +117,7 @@ main
 
 Everything outside MVP 0.1: menus and HUD, music, localisation, saves;
 weapons and gadgets; other cars and AI; doors, bombs, teleports, platforms,
-fake walls; towing; the other action types (AI orders, drawn splashes and text, markers, …); most particle effects (the pool and the car's smoke are in);
+fake walls; towing; the other action types (AI orders, drawn splashes, …); most particle effects (the pool and the car's smoke are in);
 slow motion; the agent/command server; editor hot reload. Rendering gaps:
 tyre marks,
 dynamic lights, the dirty-lens effect, per-map camera zoom.

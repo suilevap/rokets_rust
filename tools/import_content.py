@@ -25,9 +25,12 @@ ITEMS = [
     ("Sprites/Entities", "**/*.png", "Sprites/Entities"),
     ("Sprites/Particles", "**/*.png", "Sprites/Particles"),
     ("Sprites/Gadget", "**/*.png", "Sprites/Gadget"),
+    ("Sprites/Minimap", "*.png", "Sprites/Minimap"),
     ("Sprites", "Gradient*.png", "Sprites"),
     ("Sprites", "WhitePixel.png", "Sprites"),
     ("Sounds", "*.wav", "Sounds"),
+    # The game's own font (`FontX1`, …; it has Cyrillic).
+    ("Fonts", "Pixar Two.ttf", "Fonts"),
 ]
 
 

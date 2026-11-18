@@ -19,6 +19,13 @@ impl Strings {
         Ok(Strings(pairs.collect()))
     }
 
+    /// These texts over `base`: a language falls back to the default
+    /// texts for keys it lacks (.NET resource fallback).
+    pub fn over(self, mut base: Strings) -> Strings {
+        base.0.extend(self.0);
+        base
+    }
+
     /// The text of a key, or the key marked as missing (`StringsByStringKeys`
     /// wrote its warning prefix).
     pub fn get(&self, key: &str) -> String {

@@ -261,11 +261,15 @@ actions! {
 
     RemoveMarker("RemoveMarkerActionData", name = "RemoveMarker") {
         marker_id "MarkerId": i64 = 0, from(&[TRIGGERS]);
+    } => templates {
+        "RemoveMarker(markerId)" => |a| Some(RemoveMarker { marker_id: a.int(0)? }),
     }
 
     AddMarker("AddMarkerActionData", name = "AddMarker") {
         marker_id "MarkerId": i64 = 0, from(&[TRIGGERS]);
         item_id "ItemId": i64 = 0, from(&[TRIGGERS, PLAYERS, SIMPLE_CARS, ENTITIES]);
+    } => templates {
+        "AddMarker(itemId,markerId)" => |a| Some(AddMarker { item_id: a.int(0)?, marker_id: a.int(1)? }),
     }
 
     AddEntitiesToFocus("AddEntitiesToFocus") {
@@ -316,6 +320,12 @@ actions! {
         pitch "Pitch": f32 = 0.0;
         /// Rotated list of pitches will be used
         play_with_next_pitch "PlayWithNextPitch": bool = false, optional;
+    } => templates {
+        "PlaySound(soundName)" => |a| Some(PlaySound {
+            sound: Some(a.text(0)?.to_string()),
+            use_listener_position: true,
+            ..PlaySound::default()
+        }),
     }
 
     ShowText("ShowText", name = "ShowText") {
