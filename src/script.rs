@@ -18,6 +18,8 @@ pub struct DriveScript {
     /// Stick, gadget held, steps.
     steps: Vec<(Vec2, bool, u32)>,
     tick: u32,
+    /// Map ids to log every 0.1 s (`--trace`), as the C# game's `/trace`.
+    pub trace: Vec<i64>,
 }
 
 impl DriveScript {
@@ -39,7 +41,7 @@ impl DriveScript {
                 Some((v.clamp_length_max(1.0), gadget, (secs * 60.0).round() as u32))
             })
             .collect::<Option<Vec<_>>>()?;
-        Some(DriveScript { steps, tick: 0 })
+        Some(DriveScript { steps, tick: 0, trace: Vec::new() })
     }
 
     /// The stick and the gadget button at the current tick; `None` once
@@ -73,10 +75,30 @@ impl Plugin for ScriptPlugin {
 
 type ScriptedCar<'a> = (&'a mut PlayerIntent, &'a Transform, &'a avian2d::prelude::LinearVelocity, Has<NoInput>);
 
-fn run_script(mut script: ResMut<DriveScript>, mut cars: Query<ScriptedCar, (With<LocalPlayer>, With<Car>)>) {
+fn run_script(
+    mut script: ResMut<DriveScript>,
+    mut cars: Query<ScriptedCar, (With<LocalPlayer>, With<Car>)>,
+    traced: Query<(&crate::game::MapId, &Transform, Option<&avian2d::prelude::LinearVelocity>)>,
+) {
     let Some((stick, gadget)) = script.now() else {
         return;
     };
+    // `trace t id x y angle speed`, in the C# game's units and axes (y
+    // down, angles the other way) for `tools/compare.py`.
+    if script.tick.is_multiple_of(6) {
+        for (id, t, v) in traced.iter().filter(|(id, _, _)| script.trace.contains(&id.0)) {
+            let angle = t.rotation.to_euler(EulerRot::XYZ).2.to_degrees();
+            info!(
+                "trace {:.2} {} {:.3} {:.3} {:.2} {:.3}",
+                script.tick as f32 / 60.0,
+                id.0,
+                t.translation.x,
+                -t.translation.y,
+                -angle,
+                v.map_or(0.0, |v| v.0.length())
+            );
+        }
+    }
     for (mut intent, t, v, off) in &mut cars {
         // The script is the player: not while the car is not theirs.
         intent.move_dir = if off { Vec2::ZERO } else { stick };

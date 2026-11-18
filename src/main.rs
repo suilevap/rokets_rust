@@ -3,7 +3,8 @@
 //! `-m` picks the map (a name from `assets/Maps/Singleplayer`, default
 //! `EditorTest`). `--screenshot` saves the frame after N frames of play
 //! (default 90) and exits, for comparing with the C# game. `--drive`
-//! drives the car by a script and logs its path (see `script.rs`).
+//! drives the car by a script and logs its path (see `script.rs`);
+//! `--trace a,b` also logs those entities (map ids), for `tools/compare.py`.
 //! `--record DIR` saves every frame of play as `DIR/frame_NNNNN.png`, with
 //! time stepped exactly 1/30 s per frame (whatever the rendering speed),
 //! for `--frames N` frames, then exits: turn them into a video with ffmpeg.
@@ -49,6 +50,7 @@ struct Args {
     size: (u32, u32),
     glow: Option<f32>,
     lang: Option<String>,
+    trace: Vec<i64>,
 }
 
 /// The command line, or the page's URL parameters in the browser.
@@ -124,6 +126,7 @@ fn parse_args() -> Args {
     let mut size = (1280, 720);
     let mut glow = None;
     let mut lang = None;
+    let mut trace = Vec::new();
     let mut shot: Option<ScreenshotRequest> = None;
     let mut frames = 90;
     let mut args = raw_args().into_iter();
@@ -166,6 +169,12 @@ fn parse_args() -> Args {
             }
             "--glow" => glow = args.next().and_then(|v| v.parse().ok()),
             "--lang" => lang = args.next().filter(|l| !l.is_empty() && l != "en"),
+            "--trace" => {
+                trace = args
+                    .next()
+                    .map(|v| v.split(',').filter_map(|i| i.trim().parse().ok()).collect())
+                    .unwrap_or_default();
+            }
             "--frames" => frames = args.next().and_then(|v| v.parse().ok()).unwrap_or(frames),
             _ => {}
         }
@@ -187,6 +196,7 @@ fn parse_args() -> Args {
         size,
         glow,
         lang,
+        trace,
     }
 }
 
@@ -200,6 +210,7 @@ fn main() {
         size,
         glow,
         lang,
+        trace,
     } = parse_args();
     let mut app = App::new();
     app.add_plugins(
@@ -230,7 +241,8 @@ fn main() {
     if let Some(glow) = glow {
         app.insert_resource(tilerider::render::additive_light::GlowBoost(glow));
     }
-    if let Some(drive) = drive {
+    if let Some(mut drive) = drive {
+        drive.trace = trace;
         app.insert_resource(drive);
     }
     if let Some(record) = record {
