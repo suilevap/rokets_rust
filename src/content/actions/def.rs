@@ -522,6 +522,12 @@ macro_rules! xna_enum {
         impl $name {
             pub const NAMES: &'static [&'static str] = &[stringify!($first) $(, stringify!($variant))*];
             const ALL: &'static [$name] = &[$name::$first $(, $name::$variant)*];
+
+            /// By name, in any case (C#'s `Enum.Parse(…, true)`).
+            pub fn from_name(name: &str) -> Option<Self> {
+                let i = Self::NAMES.iter().position(|n| n.eq_ignore_ascii_case(name.trim()))?;
+                Some(Self::ALL[i])
+            }
         }
 
         impl $crate::content::actions::def::Value for $name {

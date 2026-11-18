@@ -288,6 +288,8 @@ actions! {
     SetControl("SetControl", name = "SetControl") {
         item_id "ItemId": i64 = 0, from(&[PLAYERS, SIMPLE_CARS]);
         control "Control": ControlType = ControlType::NoneLocal;
+    } => templates {
+        "SetControl(itemId,control)" => |a| Some(SetControl { item_id: a.int(0)?, control: ControlType::from_name(a.text(1)?)? }),
     }
 
     SuccessSequence("SuccessSequence", name = "seqSuccessSequence") {

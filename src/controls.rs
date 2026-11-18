@@ -34,6 +34,17 @@ pub struct PlayerIntent {
 #[derive(Component, Debug, Default)]
 pub struct LocalPlayer;
 
+/// The player's car, not driven by the player for now (`SetControl` to
+/// `NoneLocal` during an intro, or to an AI not ported yet).
+#[derive(Component, Debug)]
+pub struct NoInput;
+
+/// Whether a C# control type is the player's own (`Local`, the hot-seat
+/// ones).
+pub fn is_players(control: &str) -> bool {
+    matches!(control, "Local" | "LocalHotSeat1" | "LocalHotSeat2")
+}
+
 #[derive(Resource, Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub enum ActiveScheme {
     #[default]
@@ -183,7 +194,7 @@ fn apply_active_scheme(
     active: Res<ActiveScheme>,
     readings: Res<SchemeReadings>,
     view: Res<ViewRotation>,
-    mut players: Query<&mut PlayerIntent, With<LocalPlayer>>,
+    mut players: Query<(&mut PlayerIntent, Has<NoInput>), With<LocalPlayer>>,
 ) {
     let v = match *active {
         ActiveScheme::Keyboard => readings.keyboard,
@@ -192,7 +203,7 @@ fn apply_active_scheme(
     }
     .unwrap_or(Vec2::ZERO);
     let v = view.screen_to_world(v);
-    for mut intent in &mut players {
-        intent.move_dir = v;
+    for (mut intent, off) in &mut players {
+        intent.move_dir = if off { Vec2::ZERO } else { v };
     }
 }
