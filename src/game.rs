@@ -96,7 +96,7 @@ fn sprites_for(map: &MapData, cars: &CarCatalog, registry: &crate::actions::Acti
                 names.extend(car.part_sprite(part));
             }
             if car.gadget.as_deref() == Some("Link") {
-                names.extend(["Gadget\\ChainActive", "Gadget\\ChainInactive"].map(String::from));
+                names.extend(["Gadget\\ChainActive", "Gadget\\ChainInactive", "WhitePixel", "Gradient2Pixel"].map(String::from));
             }
         }
     }

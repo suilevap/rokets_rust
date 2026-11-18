@@ -30,7 +30,6 @@ use crate::controls::PlayerIntent;
 use crate::explosion::Explosive;
 use crate::game::{GameState, LoadedMap, MapEntity};
 use crate::render::layers::Layer;
-use crate::render::lines::{LineMaterial, LineMeshBuilder};
 use crate::render::sprite::{SpriteTint, UnitQuad, sprite_bundle};
 use crate::sound::PlaySound;
 use crate::units::px;
@@ -47,6 +46,11 @@ const DRAG: f32 = 8.0 * 2.56;
 /// The head's length (`ChainActive` is 24 px): the rope ends at its back.
 const HEAD_LENGTH: f32 = 24.0 / 32.0;
 const ACTIVE_SPRITE: &str = "Gadget\\ChainActive";
+/// The rope's pieces (`SpritePath`): plain, and fading for its ends.
+const PIXEL: &str = "WhitePixel";
+const GRADIENT: &str = "Gradient2Pixel";
+/// The rope's shadow on the floor (`Color.Black * 0.5`).
+const SHADOW_ALPHA: f32 = 0.5;
 const INACTIVE_SPRITE: &str = "Gadget\\ChainInactive";
 
 /// Can be grabbed by the magnet (`LinkablePhysicEntity.CanBeLinked`).
@@ -73,6 +77,15 @@ struct Candidate {
     normal: Vec2,
 }
 
+/// What a magnet is drawn with: the rope's pieces (each with its shadow)
+/// and the head (active, inactive).
+#[derive(Debug)]
+struct Views {
+    pieces: Vec<(Entity, Entity)>,
+    active: Entity,
+    inactive: Entity,
+}
+
 /// The magnet gadget of a car.
 #[derive(Component, Debug)]
 pub struct Magnet {
@@ -94,8 +107,7 @@ pub struct Magnet {
     rope: Rope,
     /// The rope's last pull on the cargo (`LinkedToForce`).
     last_force: Vec2,
-    /// Drawn: the rope's mesh, and the head (active, inactive).
-    views: Option<(Entity, Entity, Entity)>,
+    views: Option<Views>,
 }
 
 impl Magnet {
@@ -328,86 +340,87 @@ fn pull_ropes(
     }
 }
 
-/// The rope's mesh and the magnet head, made once per magnet.
+/// The rope's pieces and the magnet head, made once per magnet.
 fn spawn_views(
     mut commands: Commands,
     mut magnets: Query<&mut Magnet>,
     map: Res<LoadedMap>,
     quad: Res<UnitQuad>,
-    mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut lines: ResMut<Assets<LineMaterial>>,
 ) {
     for mut m in &mut magnets {
         if m.views.is_some() {
             continue;
         }
-        let rope = commands
-            .spawn((
-                Name::new("Magnet rope"),
-                MapEntity,
-                Mesh3d(meshes.add(LineMeshBuilder::default().build())),
-                MeshMaterial3d(lines.add(LineMaterial {
-                    color: LinearRgba::WHITE,
-                    camera_offset: 0.0,
-                })),
-                Transform::default(),
-                Visibility::Hidden,
-                bevy::camera::visibility::NoFrustumCulling,
-            ))
-            .id();
-        let tint = SpriteTint {
-            color: [1.0; 4],
-            lit: true,
-        };
-        let mut head = |name: &str| {
-            let sprite = map.sprites.get(name).map(|i| sprite_bundle(i, 1.0, Layer::CarBody, tint, &quad, &mut materials));
+        let mut sprite = |name: &str, layer: Layer, tint: SpriteTint| {
+            let sprite = map.sprites.get(name).map(|i| sprite_bundle(i, 1.0, layer, tint, &quad, &mut materials));
             match sprite {
-                Some(s) => commands.spawn((Name::new("Magnet head"), MapEntity, s, Visibility::Hidden)).id(),
+                Some(s) => commands.spawn((Name::new("Magnet"), MapEntity, s, Visibility::Hidden)).id(),
                 None => commands.spawn((MapEntity, Transform::default(), Visibility::Hidden)).id(),
             }
         };
-        let (active, inactive) = (head(ACTIVE_SPRITE), head(INACTIVE_SPRITE));
-        m.views = Some((rope, active, inactive));
+        let lit = SpriteTint {
+            color: [1.0; 4],
+            lit: true,
+        };
+        let shadow = SpriteTint {
+            color: [0.0, 0.0, 0.0, SHADOW_ALPHA],
+            lit: false,
+        };
+        // `SpritePath.Draw(…, useShadow, enableAlphaBegin, enableAlphaEnd)`:
+        // the two end pieces fade out (`Gradient2Pixel`).
+        let pieces = (0..rope::POINTS - 1)
+            .map(|i| {
+                let texture = if i == 0 || i == rope::POINTS - 2 { GRADIENT } else { PIXEL };
+                (sprite(texture, Layer::CarBody, lit), sprite(texture, Layer::Shadow, shadow))
+            })
+            .collect();
+        let (active, inactive) = (sprite(ACTIVE_SPRITE, Layer::CarBody, lit), sprite(INACTIVE_SPRITE, Layer::CarBody, lit));
+        m.views = Some(Views { pieces, active, inactive });
     }
 }
 
-/// `Chain.Draw` (a line along the rope, thinner as it stretches, green
-/// on something to grab) and `ChainGadget.Draw` (the head).
+/// `Chain.Draw`: a lit strip along the rope (`DepthConst.Chain`, over the
+/// cars), thinner as it stretches, green on something to grab, its ends
+/// fading out, with its shadow on the floor; and `ChainGadget.Draw`, the
+/// head.
 #[allow(clippy::type_complexity)]
 fn draw_magnets(
     magnets: Query<(&Magnet, &Position)>,
-    mut ropes: Query<(&Mesh3d, &MeshMaterial3d<LineMaterial>)>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut lines: ResMut<Assets<LineMaterial>>,
     mut views: Query<(&mut Transform, &mut Visibility)>,
+    mut tints: Query<&mut SpriteTint>,
     map: Res<LoadedMap>,
 ) {
     for (m, pos) in &magnets {
-        let Some((rope, active, inactive)) = m.views else {
+        let Some(v) = &m.views else {
             continue;
         };
+        let (active, inactive) = (v.active, v.inactive);
         let shown = m.active || m.link.is_some();
-        if let Ok((_, mut v)) = views.get_mut(rope) {
-            v.set_if_neq(if shown { Visibility::Inherited } else { Visibility::Hidden });
-        }
-        if shown && let Ok((mesh, material)) = ropes.get_mut(rope) {
-            let points = m.rope.points();
-            let end = *points.last().unwrap_or(&pos.0);
-            let width = px(6.0 - 4.0 * (pos.0.distance(end) / rope::MAX_LENGTH)).max(px(1.0));
-            let z = Layer::CarBody.z();
-            let mut b = LineMeshBuilder::default();
-            for w in points.windows(2) {
-                b.add_line(w[0].extend(z), w[1].extend(z), width);
+        let points = m.rope.points();
+        let end = *points.last().unwrap_or(&pos.0);
+        let width = px(6.0 - 4.0 * (pos.0.distance(end) / rope::MAX_LENGTH)).max(px(1.0));
+        let color = if m.candidate.is_some() { [0.0, 1.0, 0.0, 1.0] } else { [1.0; 4] };
+        for (i, (&(piece, shadow), w)) in v.pieces.iter().zip(points.windows(2)).enumerate() {
+            let delta = w[1] - w[0];
+            // The last piece turned round: its clear end at the cargo.
+            let turn = delta.to_angle() + if i == rope::POINTS - 2 { std::f32::consts::PI } else { 0.0 };
+            let visible = shown && delta.length() > 1e-4;
+            for (e, layer) in [(piece, Layer::CarBody), (shadow, Layer::Shadow)] {
+                let Ok((mut t, mut vis)) = views.get_mut(e) else {
+                    continue;
+                };
+                vis.set_if_neq(if visible { Visibility::Inherited } else { Visibility::Hidden });
+                if visible {
+                    t.translation = ((w[0] + w[1]) / 2.0).extend(layer.z());
+                    t.rotation = Quat::from_rotation_z(turn);
+                    t.scale = Vec3::new(delta.length(), width, 1.0);
+                }
             }
-            if let Some(mut mesh) = meshes.get_mut(&mesh.0) {
-                *mesh = b.build();
-            }
-            let color = if m.candidate.is_some() { LinearRgba::GREEN } else { LinearRgba::WHITE };
-            if let Some(mut mat) = lines.get_mut(&material.0)
-                && mat.color != color
+            if let Ok(mut tint) = tints.get_mut(piece)
+                && tint.color != color
             {
-                mat.color = color;
+                tint.color = color;
             }
         }
         // The head while it is out and nothing is on the rope; its sprite's
