@@ -45,6 +45,18 @@ def main() -> int:
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(path, target)
             copied += 1
+    # Sprites the maps name (`<Sprite>`) from folders not copied whole,
+    # such as `UI\IconLikeCircle` for `AttachAdditionalView`.
+    import re
+    named = set()
+    for m in sorted((CONTENT / "Maps").glob("**/*.xml")):
+        named.update(re.findall(r"<Sprite>([^<]+)</Sprite>", m.read_text(encoding="utf-8-sig")))
+    for name in sorted(named):
+        rel = Path("Sprites") / (name.strip().replace("\\", "/") + ".png")
+        if (CONTENT / rel).is_file() and not (DEST / rel).exists():
+            (DEST / rel).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(CONTENT / rel, DEST / rel)
+            copied += 1
     # The texts maps name by key (`ShowText`): the game's resources.
     strings = SRC / "PavXnaGame1" / "PavXnaGame1" / "Globalization"
     for path in sorted(strings.glob("Strings*.resx")):

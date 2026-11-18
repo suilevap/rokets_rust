@@ -99,7 +99,7 @@ fn sprites_for(map: &MapData, cars: &CarCatalog, registry: &crate::actions::Acti
     }
     // What the map's actions draw (door hints, …).
     for a in &map.actions.0 {
-        names.extend(registry.sprites(&a.kind).iter().map(|s| s.to_string()));
+        names.extend(registry.sprites_of(a));
     }
     // Shadows of cars and loose objects (`render/shadow`).
     names.extend(["Gradient4Pixel", "Gradient4PixelUniform"].map(String::from));
