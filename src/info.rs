@@ -121,7 +121,6 @@ fn spawn_panel(mut commands: Commands) {
         ))
         .with_child((
             InfoText,
-            // Not empty: a UI text made empty was never measured again.
             Text::new(" "),
             TextFont {
                 font_size: FontSize::Px(28.0),
