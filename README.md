@@ -43,7 +43,9 @@ floating stick where your finger lands) work too; the last one used wins.
 Cars with a magnet: hold the right mouse button (or Shift + left) to shoot
 it at the cursor and let go over a box to tow it; hold it again to drag
 what you tow, let go to drop it. Right Shift / `E` / the gamepad's right
-shoulder aim it ahead of the car. No touch gadget yet.
+shoulder aim it ahead of the car. On touch, hold a finger on the circle at
+the top right and drag from there to aim (the scheme is the landscape one
+for now).
 
 On Linux, Bevy needs `pkg-config libwayland-dev libxkbcommon-dev libudev-dev
 libasound2-dev libx11-dev`.

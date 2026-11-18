@@ -27,8 +27,9 @@ request; remove it here when it lands.
   scheme (`PlayerCarControl`: a floating stick, a gadget circle at the
   top right, flicks across the rope to cut it) was made for landscape and
   works well only there; in portrait the thumbs sit at the bottom and the
-  view is turned. The magnet is in for mouse, keyboard and gamepad
-  (`gadget`), the touch side is not: design a scheme that suits both
+  view is turned. For now the magnet takes C#'s landscape zone on every
+  screen (the top right quarter, drag to aim, a faint circle marks it):
+  design a scheme that suits both
   orientations (e.g. a second floating control in the other half of the
   screen, aim by where it is dragged) and try it on a phone through a
   pull request preview.

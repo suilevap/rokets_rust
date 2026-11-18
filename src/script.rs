@@ -82,6 +82,7 @@ fn run_script(mut script: ResMut<DriveScript>, mut cars: Query<ScriptedCar, (Wit
         intent.move_dir = if off { Vec2::ZERO } else { stick };
         intent.gadget = !off && gadget;
         intent.gadget_at = None;
+        intent.gadget_dir = None;
         if script.tick.is_multiple_of(6) {
             let angle = t.rotation.to_euler(EulerRot::XYZ).2.to_degrees();
             info!(

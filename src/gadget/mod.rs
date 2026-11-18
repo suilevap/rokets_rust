@@ -13,7 +13,10 @@
 //! towards the aim; letting go then drops it. A heavy box is light while
 //! towed (`HeavyBox`).
 //!
-//! Not ported: the touch gadget button and the flick that cuts the rope,
+//! On touch the top right quarter of the screen is the gadget's: hold a
+//! finger there and drag from where it landed to aim (no drag: ahead).
+//!
+//! Not ported: C#'s touch circles and the flick that cuts the rope,
 //! the highlight of what can be grabbed, sparks, the transporting beam,
 //! the other gadgets (`Accelerator`, `Bomb`, `EditorPointer`).
 
@@ -146,7 +149,9 @@ impl Plugin for GadgetPlugin {
                 .before(drive_cars)
                 .run_if(in_state(GameState::Playing)),
         )
-        .add_systems(Update, (spawn_views, draw_magnets).chain().run_if(in_state(GameState::Playing)));
+        .add_systems(Update, (spawn_views, draw_magnets).chain().run_if(in_state(GameState::Playing)))
+        .add_systems(Startup, spawn_touch_zone)
+        .add_systems(Update, show_touch_zone);
     }
 }
 
@@ -184,7 +189,10 @@ fn use_magnets(
                 sound(&mut play, "ChainStart", at);
             }
             // `GetTargetPosition`: the aim, no further than the reach.
-            let aim = intent.gadget_at.unwrap_or(at + facing * REACH);
+            let aim = intent
+                .gadget_at
+                .or(intent.gadget_dir.map(|d| at + d * REACH))
+                .unwrap_or(at + facing * REACH);
             let target = at + (aim - at).clamp_length_max(REACH);
             m.far_enough = target.distance(at) >= radius;
             match m.dragging {
@@ -418,6 +426,57 @@ fn draw_magnets(
                 t.translation = (m.head - dir * half).extend(Layer::CarBody.z());
                 t.rotation = Quat::from_rotation_z(m.head_dir);
             }
+        }
+    }
+}
+
+/// Where the gadget's touch zone is, shown on touch screens.
+#[derive(Component)]
+struct TouchZone;
+
+/// The circle's size, logical pixels.
+const ZONE_CIRCLE: f32 = 96.0;
+
+fn spawn_touch_zone(mut commands: Commands) {
+    commands.spawn((
+        TouchZone,
+        Node {
+            position_type: PositionType::Absolute,
+            // The middle of the top right quarter (`in_gadget_zone`).
+            left: Val::Percent(75.0),
+            top: Val::Percent(25.0),
+            margin: UiRect {
+                left: Val::Px(-ZONE_CIRCLE / 2.0),
+                top: Val::Px(-ZONE_CIRCLE / 2.0),
+                ..default()
+            },
+            width: Val::Px(ZONE_CIRCLE),
+            height: Val::Px(ZONE_CIRCLE),
+            border: UiRect::all(Val::Px(3.0)),
+            border_radius: BorderRadius::MAX,
+            ..default()
+        },
+        BorderColor::all(Color::NONE),
+        BackgroundColor(Color::NONE),
+        Pickable::IGNORE,
+    ));
+}
+
+/// Faint while it waits, bright while a finger holds it; only on touch,
+/// and only with a magnet.
+fn show_touch_zone(
+    scheme: Res<crate::controls::ActiveScheme>,
+    touch: Res<crate::controls::GadgetTouch>,
+    magnets: Query<(), (With<Magnet>, With<crate::controls::LocalPlayer>)>,
+    mut zones: Query<(&mut BorderColor, &mut BackgroundColor), With<TouchZone>>,
+) {
+    let shown = *scheme == crate::controls::ActiveScheme::Touch && !magnets.is_empty();
+    let alpha = if !shown { 0.0 } else if touch.finger.is_some() { 0.6 } else { 0.25 };
+    for (mut border, mut back) in &mut zones {
+        let edge = Color::srgba(1.0, 1.0, 1.0, alpha);
+        if border.top != edge {
+            *border = BorderColor::all(edge);
+            back.0 = Color::srgba(1.0, 1.0, 1.0, alpha * 0.25);
         }
     }
 }

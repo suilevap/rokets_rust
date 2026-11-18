@@ -33,6 +33,8 @@ pub struct PlayerIntent {
     /// The world point the gadget aims at (the mouse); `None`: straight
     /// ahead of the car.
     pub gadget_at: Option<Vec2>,
+    /// Or the way it aims, world, length 0..1 of its reach (a touch drag).
+    pub gadget_dir: Option<Vec2>,
 }
 
 /// Marks the car the local player drives.
@@ -66,6 +68,20 @@ pub struct TouchStick {
     pub current: Vec2,
 }
 
+/// The finger on the gadget's touch zone (`_gadgetTouchIndex`): the top
+/// right quarter of the screen, on cars with a gadget.
+#[derive(Resource, Debug, Default)]
+pub struct GadgetTouch {
+    pub finger: Option<u64>,
+    pub origin: Vec2,
+    pub current: Vec2,
+}
+
+/// Whether a screen point (logical pixels) is in the gadget's touch zone.
+pub fn in_gadget_zone(at: Vec2, screen: Vec2) -> bool {
+    at.x > screen.x / 2.0 && at.y < screen.y / 2.0
+}
+
 /// Screen pixels for a full-strength touch stick (56 at 800×480 in C#).
 pub const TOUCH_STICK_RADIUS: f32 = 70.0;
 const GAMEPAD_DEAD_ZONE: f32 = 0.15;
@@ -84,6 +100,7 @@ impl Plugin for ControlsPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<ActiveScheme>()
             .init_resource::<TouchStick>()
+            .init_resource::<GadgetTouch>()
             .init_resource::<SchemeReadings>()
             .add_systems(
                 PreUpdate,
@@ -163,9 +180,13 @@ fn read_gamepad(
     readings.gamepad = reading;
 }
 
+#[allow(clippy::too_many_arguments)]
 fn read_touch(
     touches: Res<Touches>,
     mut stick: ResMut<TouchStick>,
+    mut gadget: ResMut<GadgetTouch>,
+    windows: Query<&Window>,
+    with_gadget: Query<(), (With<LocalPlayer>, With<crate::gadget::Magnet>)>,
     mut readings: ResMut<SchemeReadings>,
     mut active: ResMut<ActiveScheme>,
 ) {
@@ -174,12 +195,23 @@ fn read_touch(
     {
         stick.finger = None;
     }
-    if stick.finger.is_none()
-        && let Some(t) = touches.iter_just_pressed().next()
-    {
-        stick.finger = Some(t.id());
-        stick.origin = t.position();
+    if let Some(id) = gadget.finger {
+        match touches.get_pressed(id) {
+            Some(t) => gadget.current = t.position(),
+            None => gadget.finger = None,
+        }
+    }
+    let screen = windows.iter().next().map_or(Vec2::ONE, |w| Vec2::new(w.width(), w.height()));
+    for t in touches.iter_just_pressed() {
         *active = ActiveScheme::Touch;
+        if gadget.finger.is_none() && !with_gadget.is_empty() && in_gadget_zone(t.position(), screen) {
+            gadget.finger = Some(t.id());
+            gadget.origin = t.position();
+            gadget.current = t.position();
+        } else if stick.finger.is_none() {
+            stick.finger = Some(t.id());
+            stick.origin = t.position();
+        }
     }
     readings.touch = stick
         .finger
@@ -217,13 +249,15 @@ fn apply_active_scheme(
 /// the left with Shift) aims at the cursor; right Shift or `E` on the
 /// keyboard, or the gamepad's right shoulder, aims ahead of the car (the
 /// arrows, C#'s gadget aim, steer here).
-#[allow(clippy::type_complexity)]
+#[allow(clippy::type_complexity, clippy::too_many_arguments)]
 fn read_gadget(
     mouse: Res<ButtonInput<MouseButton>>,
     keys: Res<ButtonInput<KeyCode>>,
     gamepads: Query<&Gamepad>,
     windows: Query<&Window>,
     cameras: Query<(&Camera, &GlobalTransform), With<crate::render::camera::MainCamera>>,
+    touch: Res<GadgetTouch>,
+    view: Res<ViewRotation>,
     mut players: Query<(&mut PlayerIntent, Has<NoInput>), With<LocalPlayer>>,
 ) {
     let shift = keys.pressed(KeyCode::ShiftLeft);
@@ -241,8 +275,19 @@ fn read_gadget(
             Some(ray.get_point(t).truncate())
         })
         .flatten();
+    // A touch drag from where the finger landed aims it (`ToGoRelative`):
+    // the full reach at a stick's radius.
+    let by_touch = touch.finger.is_some();
+    let drag = by_touch
+        .then(|| {
+            let d = (touch.current - touch.origin) / TOUCH_STICK_RADIUS;
+            let d = Vec2::new(d.x, -d.y).clamp_length_max(1.0);
+            (d.length() > 0.1).then(|| view.screen_to_world(d))
+        })
+        .flatten();
     for (mut intent, off) in &mut players {
-        intent.gadget = !off && (by_mouse || by_key);
+        intent.gadget = !off && (by_mouse || by_key || by_touch);
         intent.gadget_at = cursor;
+        intent.gadget_dir = drag;
     }
 }
