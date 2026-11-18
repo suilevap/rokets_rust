@@ -1,5 +1,5 @@
-//! Action definitions: every action in the maps reads, writes back and
-//! reads again the same, and the game carries out only defined types.
+//! Action definitions: every action in the maps has one, and reads,
+//! writes back and reads again the same.
 
 use std::path::Path;
 
@@ -24,20 +24,22 @@ fn maps() -> impl Iterator<Item = (String, MapData)> {
 }
 
 #[test]
-fn every_defined_action_in_the_maps_round_trips() {
+fn every_action_in_the_maps_is_defined_and_round_trips() {
     let (mut checked, mut failed) = (0, Vec::new());
     for (file, map) in maps() {
         for a in &map.actions.0 {
-            if let Some(def) = defs::find(&a.kind) {
-                match (def.check)(&a.node) {
-                    Ok(()) => checked += 1,
-                    Err(e) => failed.push(format!("{file}: {}: {e}", a.name())),
-                }
+            let Some(def) = defs::find(&a.kind) else {
+                failed.push(format!("{file}: {}: no definition of {}", a.name(), a.kind));
+                continue;
+            };
+            match (def.check)(&a.node) {
+                Ok(()) => checked += 1,
+                Err(e) => failed.push(format!("{file}: {}: {e}", a.name())),
             }
         }
     }
     assert!(failed.is_empty(), "{failed:#?}");
-    assert!(checked > 400, "{checked}");
+    assert!(checked > 1000, "{checked}");
    
 }
 
@@ -84,20 +86,14 @@ fn fields_carry_what_an_editor_needs() {
 }
 
 #[test]
-fn the_game_carries_out_only_defined_types() {
+fn templates_are_picked_by_name_and_number_of_arguments() {
     let mut app = App::new();
     app.add_plugins((
         ActionsPlugin,
         tilerider::triggers::TriggersPlugin,
         tilerider::door::DoorPlugin,
     ));
-    let registry = app.world().resource::<ActionRegistry>();
-    let defined: Vec<_> = defs::ALL.iter().filter(|d| registry.has(d.kind)).collect();
-    assert_eq!(
-        defined.len(),
-        defs::ALL.len(),
-        "every type defined so far is ported"
-    );
+    assert!(app.world().resource::<ActionRegistry>().has("MoveToNextMap"));
     // Templates are picked by name and number of arguments.
     assert!(run(app.world_mut(), "NextMap()", None, 0));
     assert!(run(app.world_mut(), "NextMap(3)", None, 0));
@@ -120,4 +116,23 @@ fn an_editor_finds_what_a_field_may_take_without_knowing_the_game() {
     assert!(source::SOUNDS.values(&map, &content).len() > 10);
     let custom = Source::Xml { file: None, path: "XnaContent/Asset/Players|Entities/Item/Id" };
     assert!(custom.values(&map, &content).len() > 1);
+}
+
+#[test]
+fn records_inside_actions_round_trip() {
+    // `ParticleStateData` in `SetParticleStyleActionData`; no map uses it.
+    let node = Node::parse(
+        r#"<Item Type="GameLibrary.SetParticleStyleActionData">
+             <Name>Smoke</Name><StyleName>smokeStyle</StyleName><LifeTime>2</LifeTime>
+             <BeginState><Scale>1 2</Scale><Color>80FF0000</Color></BeginState>
+           </Item>"#,
+    )
+    .unwrap();
+    (defs::find("SetParticleStyleActionData").unwrap().check)(&node).unwrap();
+    use tilerider::content::actions::ActionDef;
+    let style = defs::SetParticleStyle::read(&node).unwrap();
+    let begin = style.begin_state.unwrap();
+    assert_eq!(begin.scale.map(|s| (s.x, s.y)), Some((1.0, 2.0)));
+    assert_eq!(begin.speed, None);
+    assert!(style.end_state.is_none());
 }

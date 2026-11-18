@@ -91,7 +91,8 @@ pub struct RawAction {
 impl RawAction {
     pub fn read(node: Node) -> Result<RawAction, String> {
         let kind = node.attr("Type").unwrap_or_default();
-        let kind = kind.rsplit('.').next().unwrap_or_default().to_string();
+        // `GameLibrary.X`, or `GameLibrary:X` with a namespace prefix.
+        let kind = kind.rsplit(['.', ':']).next().unwrap_or_default().to_string();
         let base = Base::read(&node, defs::find(&kind))?;
         Ok(RawAction { kind, base, node })
     }
