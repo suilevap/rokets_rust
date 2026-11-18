@@ -28,6 +28,7 @@ cargo run --release -- -m LetItSnowDay
 | `--glow X` | How strongly the additive (HDR) light of lamps with an `AdditiveRate` is added (default 3; `[` and `]` turn it by 0.25 while playing, shown as `glow` in the top line) |
 | `--lang LANG` | The maps' texts in another language: `ru`, `de`, `es`, `it`, `be` (default English) |
 | `--drive SCRIPT` | Drive by script, `x,y:seconds;...` (stick in world directions, y up; `x,y,g:seconds` also holds the gadget, aimed ahead), logging the car's path every 0.1 s |
+| `--trace a,b` | With `--drive`: also log these entities (map ids) every 0.1 s, as `trace t id x y angle speed` in the C# game's axes, for `tools/compare.py` |
 
 Portrait screens (a phone held upright) show the landscape view turned a
 quarter turn: up on the screen is right on the map, and the controls follow
@@ -109,6 +110,21 @@ BEVY_ASSET_ROOT=$PWD VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json \
 ```
 
 (needs `mesa-vulkan-drivers`, `xvfb` and `libxkbcommon-x11-0`).
+
+Driving compared with the C# game, step by step: `tools/compare.py` drives
+both games by the same `--drive` script, records the car and the listed
+entities every 0.1 s of game time (the C# game through its debug server's
+`/drive` and `/trace`) and prints them side by side with the gap:
+
+```bash
+tools/compare.py AiTest --start 3.5,14.5 --ids 4001,1007 \
+    --drive "0,0,g:1;0,0:0.3;0,-1:2.5;0,0:2"   # tow a box with the magnet
+```
+
+It needs the C# game built in Debug next to this checkout (`../rokets`,
+or `--rokets PATH`); headless it starts Xvfb and PulseAudio itself, and
+the C# game runs about twenty times slower than real time, so a few
+seconds of driving take a few minutes.
 
 ## Content
 

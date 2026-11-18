@@ -76,7 +76,7 @@ main
 | `animation` | Animation as plain data: `Wave` (sawtooth / triangle phase over game time), `ColorTrack` (colour keyframes, stepped or blended), `Pulse` (one-shot blend). Unit-tested | `PhaseHelper`, `PeriodicUpdate.RemainPart` |
 | `render/animate` | `TintLoop` (a colour track on a wave, per sprite) and `TintPulse` (a one-shot blend over an entity's sprites); game time pauses and slows with the game, and loops on the same wave stay in step | `PhaseHelper` users |
 | `hud` | Debug text, `R` / `N` keys | — |
-| `script` | `--drive`: scripted stick input and a logged path, for comparing driving | — |
+| `script` | `--drive`: scripted stick input and a logged path, and `--trace`: other entities' paths, for comparing driving with the C# game (`tools/compare.py`, against its `/drive` and `/trace`) | `DriveCommand`, `ScriptedCarControl` (debug only, added for this) |
 
 ## Conventions
 
