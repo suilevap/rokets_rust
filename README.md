@@ -50,13 +50,19 @@ shoulder aim it ahead of the car (or where the arrows point, on a car
 with a gun). On touch, hold a finger on the circle at
 the top right and drag from there to aim (the scheme is the landscape one
 for now).
-Cars with a gun (the Minigun so far): hold the left mouse button to fire
+Cars with a gun (the Minigun and the Railgun so far): hold the left mouse button to fire
 at the cursor, or the arrows to aim and fire that way, or right Ctrl to
 fire where it points; the gamepad's right trigger fires and its right
 stick aims; on touch, hold a finger on the lower right (the whole right
 half without a gadget) and drag to aim. A green line shows the aim; the
 bar at the top is the energy shots draw on: empty, the gun stops until
-it is half full again.
+it is half full again. The Railgun fires one beam a 1.5 s reload, a
+shot that costs 0.6 of the energy and bounces once off walls: it fires
+when the left mouse button or the gamepad trigger is held (once reloaded),
+on a press of right Ctrl, on letting go of the arrows and on lifting the
+touch finger; its aim line is white and wide while it reloads and shows
+the bounce. In a drive script (`--drive`) `f` holds the trigger and fires
+the Railgun on its first step.
 
 On Linux, Bevy needs `pkg-config libwayland-dev libxkbcommon-dev libudev-dev
 libasound2-dev libx11-dev`.

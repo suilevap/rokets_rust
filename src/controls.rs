@@ -30,6 +30,12 @@ pub struct PlayerIntent {
     pub aim_dir: Vec2,
     /// The trigger is held (`FireType.ShootMultiple`).
     pub fire: bool,
+    /// An accurate shot is asked for (`FireType.ShootAccurate`, what the
+    /// Railgun fires on): a pulse on a press, a release or a fresh pull,
+    /// held down while the mouse or the gamepad's trigger is. Devices set
+    /// it in `PreUpdate` and it stays until the weapon takes it in the
+    /// next fixed step, so a pulse between two steps is not lost.
+    pub fire_accurate: bool,
     /// Where the player points the gun or the gadget, world, length 0..1
     /// (`WeaponAxisControl`: the cursor over 8 units away is 1); the
     /// camera looks that way (`CameraOffset`).
@@ -354,13 +360,18 @@ fn read_gadget(
 ///
 /// - the arrows aim (on a car with a gun) and fire while held, but only
 ///   aim the gadget while its key is down; right Ctrl fires where the
-///   gun points;
+///   gun points; letting the arrows go fires accurately, the way they
+///   pointed (`ShootAccurate`; so does a press of right Ctrl);
 /// - otherwise the left mouse button fires and the gun follows the
 ///   cursor, from the first click on, until the arrows take over again;
 ///   not while the mouse works the gadget;
 /// - the gamepad's right trigger fires and its right stick aims;
 /// - a finger on the fire zone fires while it is down and aims by how far
-///   it is dragged from where it landed.
+///   it is dragged from where it landed; lifting it fires accurately.
+///
+/// Accurate shots (`ShootAccurate`, [`PlayerIntent::fire_accurate`]): the
+/// left mouse button and the gamepad's trigger ask for one every frame
+/// they are held, the keyboard and the touch once.
 #[allow(clippy::type_complexity, clippy::too_many_arguments)]
 fn read_weapon(
     keys: Res<ButtonInput<KeyCode>>,
@@ -372,12 +383,15 @@ fn read_weapon(
     mut touch: ResMut<FireTouch>,
     view: Res<ViewRotation>,
     mut keyboard_only: Local<bool>,
+    mut arrows_before: Local<Vec2>,
+    mut finger_before: Local<bool>,
     mut players: Query<(&mut PlayerIntent, &crate::weapon::Weapon, Has<NoInput>, Has<crate::gadget::Magnet>), With<LocalPlayer>>,
 ) {
     let Ok((mut intent, gun, off, has_gadget)) = players.single_mut() else {
         return;
     };
     let mut fire;
+    let mut accurate = false;
     let mut aim = Vec2::ZERO;
     // The same as a stick, 0..1 (`WeaponAxisControl`).
     let mut look = Vec2::ZERO;
@@ -390,7 +404,15 @@ fn read_weapon(
         look = aim;
         *keyboard_only = true;
     } else {
+        // `_previousKeyboardWeaponAxis`: let go of the arrows, the shot
+        // goes the way they pointed.
+        if *arrows_before != Vec2::ZERO {
+            accurate = true;
+            aim = view.screen_to_world(*arrows_before);
+            look = aim;
+        }
         fire = keys.pressed(KeyCode::ControlRight);
+        accurate |= keys.just_pressed(KeyCode::ControlRight);
         // Browsers turn taps into clicks: on touch the mouse is ignored.
         if *scheme != ActiveScheme::Touch {
             let shift = keys.pressed(KeyCode::ShiftLeft) || keys.pressed(KeyCode::ShiftRight);
@@ -398,6 +420,7 @@ fn read_weapon(
             if !(has_gadget && gadget_by_mouse) {
                 if mouse.pressed(MouseButton::Left) {
                     fire = true;
+                    accurate = true;
                     *keyboard_only = false;
                 }
                 if !*keyboard_only && let Some(at) = cursor_on_ground(&windows, &cameras) {
@@ -410,6 +433,7 @@ fn read_weapon(
     for pad in &gamepads {
         if pad.pressed(GamepadButton::RightTrigger2) {
             fire = true;
+            accurate = true;
         }
         let stick = Vec2::new(
             pad.get(GamepadAxis::RightStickX).unwrap_or(0.0),
@@ -431,7 +455,14 @@ fn read_weapon(
             look = aim;
         }
     }
+    // Letting go of the fire zone.
+    accurate |= *finger_before && touch.finger.is_none();
+    *finger_before = touch.finger.is_some();
+    *arrows_before = arrows;
     intent.fire = !off && fire;
+    if !off && accurate {
+        intent.fire_accurate = true;
+    }
     intent.aim_dir = if off { Vec2::ZERO } else { aim };
     if !intent.gadget {
         intent.look = if off { Vec2::ZERO } else { look };

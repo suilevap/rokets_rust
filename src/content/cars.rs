@@ -93,12 +93,12 @@ pub struct CarCatalog {
 impl CarCatalog {
     pub fn parse(xml: &str) -> Result<Self, ContentError> {
         let raw: CarsXml = parse_asset(xml)?;
-        let by_name: HashMap<String, CarData> = raw
-            .cars
-            .items
-            .into_iter()
-            .map(|c| (c.name.clone(), c))
-            .collect();
+        // The first car of a name wins (`GetCarInfo`: `FirstOrDefault`):
+        // `SandBuggyMagnetMinigun` is listed twice, with a Minigun first.
+        let mut by_name: HashMap<String, CarData> = HashMap::new();
+        for c in raw.cars.items {
+            by_name.entry(c.name.clone()).or_insert(c);
+        }
         let mut cars = HashMap::new();
         for (name, car) in &by_name {
             let mut resolved = car.clone();

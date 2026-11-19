@@ -1,7 +1,9 @@
 //! The weapon's numbers and timing, without the app: presets
 //! (`WeaponOptions`, `DamageConst`), the smoothed aim and recoil
 //! (`HardasticAngle`, `Hardastic`), the player's energy
-//! (`EnergyComponent`) and the Minigun's firing rhythm (`MinigunWeapon`).
+//! (`EnergyComponent`), the Minigun's firing rhythm (`MinigunWeapon`), the
+//! Railgun's (`RailgunWeapon`, one shot a reload) and the bounce of its
+//! bullet ([`reflect`]).
 //!
 //! Timers count seconds down while the game runs (C#'s `PeriodicUpdate`
 //! compared absolute game times; the same while nothing pauses). One is
@@ -16,10 +18,13 @@ pub fn due(left: f32) -> bool {
 
 use std::f32::consts::PI;
 
+use bevy::math::Vec2;
+
 /// The weapons ported so far (`WeaponType`).
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Kind {
     Minigun,
+    Railgun,
 }
 
 /// A weapon's numbers (`WeaponOptions`): world units, seconds, radians.
@@ -44,6 +49,9 @@ pub struct Options {
     pub max_angle: f32,
     /// Reach of the aim line (`FireDistance`).
     pub range: f32,
+    /// Times a bullet bounces off what it hits (`MaxReflections`; the
+    /// Railgun's).
+    pub reflections: u32,
 }
 
 /// `DamageConst.Miningun`, `MiningunImpulse`.
@@ -61,6 +69,7 @@ pub const MINIGUN: Options = Options {
     energy: 0.1,
     max_angle: PI / 3.0,
     range: 32.0,
+    reflections: 0,
 };
 
 /// `MinigunPlayerDefaultOptions`: the player's, two bullets a pull, a
@@ -76,7 +85,34 @@ pub const MINIGUN_PLAYER: Options = Options {
     energy: 0.04,
     max_angle: PI / 3.0,
     range: 32.0,
+    reflections: 0,
 };
+
+/// `DamageConst.Railgun`.
+const RAILGUN_DAMAGE: i32 = 25;
+/// `BulletImpulse = ToSimUnits(128 * 15)`.
+const RAILGUN_IMPULSE: f32 = 128.0 * 15.0 / 32.0;
+
+/// `WeaponOptions.RailgunDefaultOptions`: one bullet a 1.5 s reload that
+/// costs 0.6 of the energy, straight (no dispersion), bouncing once. The
+/// same for everyone (no player preset).
+pub const RAILGUN: Options = Options {
+    damage: RAILGUN_DAMAGE,
+    impulse: RAILGUN_IMPULSE,
+    dispersion: 0.0,
+    bullets: 0,
+    shoot_time: 0.0,
+    reload: 1.5,
+    energy: 0.6,
+    max_angle: PI / 3.0,
+    range: 32.0,
+    reflections: 1,
+};
+
+/// `RailgunMinReflectionAngle` (`RailgunWeapon._reflectionMinAngle`): a
+/// bullet bounces only when it comes in more than this off the surface's
+/// normal; closer to head-on it stops.
+pub const REFLECTION_MIN_ANGLE: f32 = PI / 12.0;
 
 /// A `WeaponType` name from `Cars.xml` and its numbers, for the player
 /// (`local`) or not (`WeaponFactory`: the player gets the player preset
@@ -96,9 +132,14 @@ pub fn for_type(name: &str, local: bool) -> Option<(Kind, Options)> {
             reload: 2.0,
             ..MINIGUN
         },
+        "Railgun" => RAILGUN,
+        // The energy left at the default 0.1.
+        "RailgunNoReflection" => Options { energy: 0.1, reflections: 0, ..RAILGUN },
+        "RailgunAngle5" => Options { energy: 0.1, max_angle: PI / 36.0, ..RAILGUN },
         _ => return None,
     };
-    Some((Kind::Minigun, options))
+    let kind = if name.starts_with("Railgun") { Kind::Railgun } else { Kind::Minigun };
+    Some((kind, options))
 }
 
 /// `DamageConst.MinigunOptimalImpulseRate`, `MinigunMinImpulseRate`,
@@ -172,6 +213,8 @@ pub struct Aim {
 pub const RETURN_AFTER: f32 = 4.0;
 /// Pixels a bullet kicks the gun back (`_feedback.CurrentValue += 2`).
 pub const RECOIL: f32 = 2.0;
+/// The Railgun's kick (`_feedback.CurrentValue = 10`).
+pub const RAILGUN_RECOIL: f32 = 10.0;
 
 impl Aim {
     pub fn new(max_angle: f32, local: bool) -> Aim {
@@ -427,4 +470,90 @@ impl Minigun {
     pub fn cancel(&mut self) {
         self.active = false;
     }
+}
+
+/// How the aim line looks (`BaseComplexWeapon.UpdateLaser`).
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum AimLook {
+    /// Green (`SetLaserNormal`).
+    Normal,
+    /// White, pulsing: out of energy (`SetLaserLowEnergy`).
+    Low,
+    /// White, wide and fading as the reload runs out, from 1 to 0 of it
+    /// left (`SetLaserReload`).
+    Reload(f32),
+}
+
+/// The Railgun's rhythm (`RailgunWeapon`, `_fireOnlyAccurate`): one shot
+/// when the trigger is pulled accurately ([`Railgun::pull`]: a pulse, or
+/// held down on the mouse and the gamepad), once the reload is over and
+/// the energy allows. A pull without the energy overloads the store and
+/// fires nothing (no misfire click, as `BaseWeapon.TryShoot`).
+#[derive(Clone, Copy, Debug, PartialEq, Default)]
+pub struct Railgun {
+    /// Seconds before the next shot (`_reload`).
+    reload_in: f32,
+}
+
+impl Railgun {
+    /// The first shot waits a random part of the reload
+    /// (`PeriodicUpdate.Sparse`); `offset` is 0..1.
+    pub fn new(options: &Options, offset: f32) -> Railgun {
+        Railgun {
+            reload_in: options.reload * offset,
+        }
+    }
+
+    /// `Update`: time passes.
+    pub fn step(&mut self, dt: f32) {
+        self.reload_in -= dt;
+    }
+
+    /// `TryShoot` with `ShootAccurate`: fires, if the reload is over and
+    /// the energy pays (`BaseWeapon.TryShoot`).
+    pub fn pull(&mut self, options: &Options, mut energy: Option<&mut Energy>) -> bool {
+        if due(self.reload_in) && spend(&mut energy, options.energy) {
+            self.reload_in = options.reload;
+            true
+        } else {
+            false
+        }
+    }
+
+    /// `CanShoot`: the reload is over and there is the energy (asking sets
+    /// the energy's last-asked mark, as in C#; not asked during a reload).
+    pub fn can_fire(&self, options: &Options, mut energy: Option<&mut Energy>) -> bool {
+        due(self.reload_in) && has(&mut energy, options.energy)
+    }
+
+    /// `UpdateLaser` for a weapon that fires only accurately: the reload's
+    /// look while it runs (`RemainPart() >= 0`), then low or normal.
+    pub fn look(&self, options: &Options, energy: Option<&mut Energy>) -> AimLook {
+        if self.can_fire(options, energy) {
+            AimLook::Normal
+        } else if !due(self.reload_in) {
+            AimLook::Reload((self.reload_in / options.reload).min(1.0))
+        } else {
+            AimLook::Low
+        }
+    }
+}
+
+/// `SimulateRailgunBullet`'s bounce: the direction a bullet flying along
+/// `direction` leaves a surface with unit `normal` (pointing out of it),
+/// or `None` when it stops: no normal (it started inside, or hit nothing),
+/// or it comes in within [`REFLECTION_MIN_ANGLE`] of head-on. The same test
+/// as the aim line's.
+pub fn reflect(direction: f32, normal: Vec2) -> Option<f32> {
+    if normal == Vec2::ZERO {
+        return None;
+    }
+    let normal_angle = normal.to_angle();
+    let delta = direction_diff(normal_angle, direction + PI);
+    (delta.abs() > REFLECTION_MIN_ANGLE).then_some(normal_angle + delta)
+}
+
+/// `(byte)(damage / 2)`: what a bounced bullet still does.
+pub fn reflected_damage(damage: i32) -> i32 {
+    damage / 2
 }

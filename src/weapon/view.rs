@@ -3,15 +3,20 @@
 //! (`EnergyComponent.DrawOnUI`).
 //!
 //! The aim line runs from the muzzle to the first thing a bullet would
-//! hit, up to the gun's range. Normally it is a thin green line (3 C#
+//! hit, up to the gun's range, and on for a gun that bounces its bullets
+//! (the Railgun) along the bounce, as `LaserRenderer`'s `ReflectionCount`
+//! did (as far as the range is left; not off what can be hurt, or at a
+//! head-on blow). Normally it is a thin green line (3 C#
 //! pixels) of a noise strip (`Special\LaserLine`) whose rows scroll once
 //! a second, so it shimmers, with a wider faint glow (`LaserLine2`, the
 //! `ImprovedLaserView` the desktop had). While the gun cannot fire (out
 //! of energy, or between pulls), it is white, pulsing once a second and
 //! up to 8 pixels wide: solid when it ends on something, fading out at
-//! its end otherwise. Drawing it asked the energy whether it could fire
-//! at all (`CheckEnergy`), which reset the bar's last-asked mark; so
-//! does this.
+//! its end otherwise. A gun that fires only accurately shows its reload
+//! the same way, white, as wide as 26 pixels at the start of it and
+//! narrowing to 3 as it runs out, brightening (`SetLaserReload`).
+//! Drawing it asked the energy whether it could fire at all
+//! (`CheckEnergy`), which reset the bar's last-asked mark; so does this.
 //!
 //! The energy bar sits under the top edge, 144 × 4 pixels at 800 × 480
 //! (scaled with the screen as `UISizeMultiplier`): a faint track, the
@@ -20,9 +25,8 @@
 //! jolt when it is spent, runs dry or fills. Full, it fades out over
 //! 3 s.
 //!
-//! Not ported: the reload look (`SetLaserReload`, for weapons that fire
-//! only accurately, as the Railgun); the laser's sparkles on the
-//! player's own car; the extra offset C# gave the bar in hot-seat games
+//! Not ported: the laser's sparkles on the
+//! player's own car (`CreateLaserEffect`); the extra offset C# gave the bar in hot-seat games
 //! (`PlayerUIOffset`).
 
 use avian2d::prelude::*;
@@ -30,10 +34,9 @@ use bevy::math::Affine2;
 use bevy::prelude::*;
 use rand::Rng;
 
-use super::model::{Energy, MAX_ENERGY, SHOW_FULL};
-use super::{
-    BULLET_REACH, MINIGUN_ORIGIN, PassedByBullets, MINIGUN_SIZE, MINIGUN_SPRITE, PlayerEnergy, Weapon, WeaponSystems,
-};
+use super::beam;
+use super::model::{AimLook, Energy, MAX_ENERGY, SHOW_FULL};
+use super::{BULLET_REACH, Hurt, PassedByBullets, PlayerEnergy, Weapon, WeaponSystems, sprite_of};
 use crate::controls::{LocalPlayer, PlayerIntent};
 use crate::game::{GameState, LoadedMap, MapEntity};
 use crate::render::layers::Layer;
@@ -55,10 +58,24 @@ const STRIP_LENGTH: f32 = 32.0;
 #[derive(Component)]
 struct GunView;
 
-/// The aim line's two quads: the line and its glow.
+/// The most legs the aim line has: the muzzle's and bounces (a gun
+/// bounces its bullets once; more would be cut short).
+const MAX_LEGS: usize = 4;
+
+/// One leg of the aim line: its line or its glow.
 #[derive(Component)]
 struct AimLine {
     glow: bool,
+    leg: usize,
+}
+
+/// A leg of the aim line.
+#[derive(Clone, Copy)]
+struct Leg {
+    start: Vec2,
+    end: Vec2,
+    /// It ends on something (not just at the range).
+    hit: bool,
 }
 
 /// The energy bar's parts.
@@ -97,17 +114,18 @@ impl Plugin for WeaponViewPlugin {
 /// The gun's sprite, turned about its origin, as a child of the car.
 fn spawn_gun_views(
     mut commands: Commands,
-    guns: Query<(Entity, Option<&Children>), With<Weapon>>,
+    guns: Query<(Entity, &Weapon, Option<&Children>)>,
     views: Query<(), With<GunView>>,
     map: Res<LoadedMap>,
     quad: Res<UnitQuad>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    for (car, children) in &guns {
+    for (car, gun, children) in &guns {
         if children.is_some_and(|c| c.iter().any(|e| views.contains(e))) {
             continue;
         }
-        let Some(info) = map.sprites.get(MINIGUN_SPRITE) else {
+        let def = sprite_of(gun.kind);
+        let Some(info) = map.sprites.get(def.name) else {
             continue;
         };
         let lit = SpriteTint {
@@ -116,7 +134,7 @@ fn spawn_gun_views(
         };
         let mut sprite = sprite_bundle(info, 1.0, Layer::Weapon, lit, &quad, &mut materials);
         // From the turning point to the sprite's middle (texture y down).
-        let centre = MINIGUN_SIZE / 2.0 - MINIGUN_ORIGIN;
+        let centre = def.size / 2.0 - def.origin;
         sprite.2.translation.x = centre.x / PX_PER_UNIT;
         sprite.2.translation.y = -centre.y / PX_PER_UNIT;
         let pivot = commands
@@ -145,6 +163,32 @@ fn triangle(seconds: f32) -> f32 {
     if r > 1.0 { 2.0 - r } else { r }
 }
 
+/// `LaserRenderer.Render`'s legs ([`beam::trace`]): from the muzzle, then
+/// bounced `reflections` times while the range lasts, not off what can be
+/// hurt.
+fn aim_legs(
+    gun: &Weapon,
+    car: Entity,
+    spatial: &SpatialQuery,
+    skipped: &Query<(), PassedByBullets>,
+    hurt: &Query<(), Hurt>,
+) -> Vec<Leg> {
+    let rules = beam::BeamRules {
+        reach: beam::Reach::Total(gun.options.range.min(BULLET_REACH)),
+        bounces: gun.options.reflections.min(MAX_LEGS as u32 - 1),
+        stop_at_hurt: true,
+    };
+    let (passes, can_hurt) = (|e| skipped.contains(e), |e| hurt.contains(e));
+    beam::trace(spatial, car, &passes, &can_hurt, gun.muzzle(), gun.at, gun.direction, rules)
+        .into_iter()
+        .map(|l| Leg {
+            start: l.start,
+            end: l.end,
+            hit: l.hit.is_some(),
+        })
+        .collect()
+}
+
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 fn draw_aim_lines(
     mut commands: Commands,
@@ -156,28 +200,31 @@ fn draw_aim_lines(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut guns: Query<(Entity, &Weapon, &PlayerIntent, Option<&mut PlayerEnergy>), With<LocalPlayer>>,
     skipped: Query<(), PassedByBullets>,
+    hurt: Query<(), Hurt>,
     mut lines: Query<(&AimLine, &mut Transform, &mut Visibility, &MeshMaterial3d<StandardMaterial>)>,
 ) {
     if lines.is_empty() {
-        for glow in [false, true] {
-            let material = materials.add(StandardMaterial {
-                base_color_texture: map.sprites.get(LASER_LINE).map(|s| s.image.clone()),
-                alpha_mode: AlphaMode::Add,
-                unlit: true,
-                double_sided: true,
-                cull_mode: None,
-                depth_bias: Layer::Glow.depth_bias(),
-                ..default()
-            });
-            commands.spawn((
-                Name::new("Aim line"),
-                MapEntity,
-                AimLine { glow },
-                Mesh3d(quad.0.clone()),
-                MeshMaterial3d(material),
-                Transform::default(),
-                Visibility::Hidden,
-            ));
+        for leg in 0..MAX_LEGS {
+            for glow in [false, true] {
+                let material = materials.add(StandardMaterial {
+                    base_color_texture: map.sprites.get(LASER_LINE).map(|s| s.image.clone()),
+                    alpha_mode: AlphaMode::Add,
+                    unlit: true,
+                    double_sided: true,
+                    cull_mode: None,
+                    depth_bias: Layer::Glow.depth_bias(),
+                    ..default()
+                });
+                commands.spawn((
+                    Name::new("Aim line"),
+                    MapEntity,
+                    AimLine { glow, leg },
+                    Mesh3d(quad.0.clone()),
+                    MeshMaterial3d(material),
+                    Transform::default(),
+                    Visibility::Hidden,
+                ));
+            }
         }
         return;
     }
@@ -186,54 +233,51 @@ fn draw_aim_lines(
         if !gun.aiming || intent.gadget {
             return None;
         }
-        // `MinigunWeapon.UpdateLaser`: low while it cannot fire and is not firing.
-        let can_fire = gun.minigun.can_pull(energy.map(|e| &mut e.into_inner().0));
-        let low = !can_fire && !gun.minigun.active;
-        let start = gun.muzzle();
-        let dir = Vec2::from_angle(gun.direction);
-        let filter = SpatialQueryFilter::from_excluded_entities([car]);
-        let hit = Dir2::new(dir).ok().and_then(|d| {
-            spatial.cast_ray_predicate(gun.at, d, gun.options.range.min(BULLET_REACH), true, &filter, &|e| {
-                !skipped.contains(e)
-            })
-        });
-        let end = hit.map_or(gun.at + dir * gun.options.range, |h| gun.at + dir * h.distance);
-        Some((start, end, low, hit.is_some()))
+        // `UpdateLaser`: low while it cannot fire, wide while it reloads.
+        let look = gun.aim_look(energy.map(|e| &mut e.into_inner().0));
+        Some((aim_legs(gun, car, &spatial, &skipped, &hurt), look))
     });
     let t = time.elapsed_secs();
     for (line, mut transform, mut visibility, material) in &mut lines {
-        let Some((start, end, low, hit)) = shown else {
+        let Some(leg) = shown.as_ref().and_then(|(legs, look)| legs.get(line.leg).map(|l| (*l, *look))) else {
             *visibility = Visibility::Hidden;
             continue;
         };
+        let (Leg { start, end, hit }, look) = leg;
         let length = start.distance(end);
-        if length <= 0.0 || (low && line.glow) {
+        // The glow goes with the green line only.
+        if length <= 0.0 || (look != AimLook::Normal && line.glow) {
             *visibility = Visibility::Hidden;
             continue;
         }
         let Some(mut m) = materials.get_mut(&material.0) else {
             continue;
         };
-        let (texture, width, color, uv) = if low {
-            let tri = triangle(t);
-            let texture = if hit { SOLID } else { FADING };
-            // The fading strip runs from its solid end at the muzzle.
-            let uv = if hit {
-                Affine2::IDENTITY
-            } else {
-                Affine2::from_scale_angle_translation(Vec2::new(-1.0, 1.0), 0.0, Vec2::new(1.0, 0.0))
-            };
-            (texture, 3.0 + 5.0 * (1.0 - tri), Color::srgba(1.0, 1.0, 1.0, 0.1 + 0.9 * tri), uv)
-        } else {
-            // A row of the strip, as long a part of it as the line is of 32.
+        let white = |alpha: f32| Color::srgba(1.0, 1.0, 1.0, alpha);
+        let (width, color) = match look {
+            AimLook::Normal => (3.0, Color::srgba(0.0, 128.0 / 255.0 * if line.glow { 0.5 } else { 1.0 }, 0.0, 1.0)),
+            AimLook::Low => {
+                let tri = triangle(t);
+                (3.0 + 5.0 * (1.0 - tri), white(0.1 + 0.9 * tri))
+            }
+            AimLook::Reload(left) => (3.0 + 23.0 * left, white(1.0 - left * 0.5)),
+        };
+        let (texture, width, uv) = if width <= 3.0 {
+            // A row of the strip, as long a part of it as the line is of 32
+            // (`Color.Green` is (0, 128, 0); the glow at half and wider).
             let rows = if line.glow { 33.0 } else { 16.0 };
             let row = ((t % 1.0) * 15.0).floor();
             let row = if line.glow { row * 2.0 + 1.0 } else { row };
             let part = ((length / STRIP_LENGTH).min(1.0) * 128.0).floor().max(1.0) / 128.0;
             let uv = Affine2::from_scale_angle_translation(Vec2::new(part, 1.0 / rows), 0.0, Vec2::new(0.0, row / rows));
-            // `Color.Green` is (0, 128, 0); the glow at half.
-            let (w, k) = if line.glow { (12.0, 0.5) } else { (3.0, 1.0) };
-            (if line.glow { LASER_GLOW } else { LASER_LINE }, w, Color::srgba(0.0, 128.0 / 255.0 * k, 0.0, 1.0), uv)
+            let w = if line.glow { 12.0 } else { width };
+            (if line.glow { LASER_GLOW } else { LASER_LINE }, w, uv)
+        } else if hit || length > STRIP_LENGTH {
+            (SOLID, width, Affine2::IDENTITY)
+        } else {
+            // The fading strip runs from its solid end at the leg's start.
+            let uv = Affine2::from_scale_angle_translation(Vec2::new(-1.0, 1.0), 0.0, Vec2::new(1.0, 0.0));
+            (FADING, width, uv)
         };
         let image = map.sprites.get(texture).map(|s| s.image.clone());
         if m.base_color_texture != image {
