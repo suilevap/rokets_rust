@@ -50,6 +50,15 @@ fn car_catalogue_resolves_base_cars() {
 }
 
 #[test]
+fn the_first_car_of_a_name_wins() {
+    // `SandBuggyMagnetMinigun` is listed twice; C#'s `GetCarInfo` takes
+    // the first, with the Minigun, not the later Railgun.
+    let cars = CarCatalog::parse(&fs::read_to_string(assets().join("Cars/Cars.xml")).unwrap()).unwrap();
+    let car = cars.get("SandBuggyMagnetMinigun").unwrap();
+    assert_eq!(car.weapon.as_deref(), Some("Minigun360"));
+}
+
+#[test]
 fn texts_read_by_key_and_missing_ones_show_their_key() {
     let xml = fs::read_to_string(assets().join("Strings/Strings.resx")).unwrap();
     let strings = tilerider::content::strings::Strings::parse(&xml).unwrap();
