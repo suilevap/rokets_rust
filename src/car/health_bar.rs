@@ -59,15 +59,16 @@ pub struct Look {
 
 impl Look {
     /// `DrawHealth`'s numbers. `shield`: the shield's share when it has
-    /// any left (shown instead, white).
-    pub fn of(at: Vec2, radius: f32, health: f32, shield: Option<f32>, left: f32) -> Look {
+    /// any left (shown instead, white). `up` is the screen's up in the
+    /// world (turned on portrait screens), where the bar goes.
+    pub fn of(at: Vec2, radius: f32, health: f32, shield: Option<f32>, left: f32, up: Vec2) -> Look {
         let (share, fill_colour) = match shield {
             Some(part) => (part, [1.0, 1.0, 1.0]),
             // `Color.Lerp(Color.Yellow, Color.Red, share)`.
             None => (health, [1.0, 1.0 - health, 0.0]),
         };
         Look {
-            centre: at + Vec2::new(0.0, radius * ABOVE),
+            centre: at + up * radius * ABOVE,
             back: BACK * radius,
             fill: Vec2::new(FILL.x * share, FILL.y) * radius,
             fill_colour,
@@ -140,7 +141,12 @@ fn place_bars(
     time: Res<Time>,
     mut cars: Query<(&mut HealthBar, &Health, Option<&Shield>, &Transform), Without<BarPart>>,
     mut parts: Query<(Entity, &BarPart, &mut Transform, &mut SpriteTint, &mut Visibility)>,
+    view: Res<crate::render::camera::ViewRotation>,
 ) {
+    // Over the car and level on the screen, whichever way it is turned
+    // (C# had no portrait view: world up was always the screen's).
+    let up = view.screen_to_world(Vec2::Y);
+    let turn = Quat::from_rotation_z(up.to_angle() - std::f32::consts::FRAC_PI_2);
     for (e, part, mut transform, mut tint, mut visibility) in &mut parts {
         // The car is gone, or dead (it has no more health bar then).
         let Ok((mut bar, health, shield, car)) = cars.get_mut(part.car) else {
@@ -157,13 +163,13 @@ fn place_bars(
         }
         let shield_part = shield.filter(|s| s.points() > 0).map(Shield::part);
         let share = health.hp as f32 / health.max.max(1) as f32;
-        let look = Look::of(car.translation.truncate(), bar.radius, share, shield_part, bar.left);
+        let look = Look::of(car.translation.truncate(), bar.radius, share, shield_part, bar.left, up);
         let size = if part.fill { look.fill } else { look.back };
         transform.translation.x = look.centre.x;
         transform.translation.y = look.centre.y;
         // The fill a hair over the back, so it is drawn after it.
         transform.translation.z = Layer::HealthBar.z() + if part.fill { FILL_LIFT } else { 0.0 };
-        transform.rotation = Quat::IDENTITY;
+        transform.rotation = turn;
         transform.scale = size.extend(1.0);
         let [r, g, b] = if part.fill { look.fill_colour } else { [0.0; 3] };
         tint.color = [r, g, b, look.alpha];

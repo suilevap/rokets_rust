@@ -212,27 +212,30 @@ mod health_bar {
 
     #[test]
     fn the_bar_sits_above_the_car_and_shrinks_with_its_health() {
-        let full = Look::of(Vec2::new(10.0, -4.0), 1.0, 1.0, None, SHOWN_FOR);
+        let full = Look::of(Vec2::new(10.0, -4.0), 1.0, 1.0, None, SHOWN_FOR, Vec2::Y);
         assert_eq!(full.centre, Vec2::new(10.0, -4.0 + 1.1));
         assert!((full.back.x - 3.0).abs() < 1e-6 && (full.back.y - 0.15).abs() < 1e-6);
         assert!((full.fill.x - 2.875).abs() < 1e-6 && (full.fill.y - 0.1).abs() < 1e-6);
-        let half = Look::of(Vec2::ZERO, 2.0, 0.5, None, SHOWN_FOR);
+        let half = Look::of(Vec2::ZERO, 2.0, 0.5, None, SHOWN_FOR, Vec2::Y);
+        // Turned to portrait, it sits at the screen's top: the world's x.
+        let turned = Look::of(Vec2::ZERO, 1.0, 1.0, None, SHOWN_FOR, Vec2::X);
+        assert!((turned.centre - Vec2::new(1.1, 0.0)).length() < 1e-6, "{:?}", turned.centre);
         assert!((half.fill.x - 2.875).abs() < 1e-6, "{:?}", half.fill);
         assert!((half.back.x - 6.0).abs() < 1e-6);
     }
 
     #[test]
     fn it_runs_from_red_when_whole_to_yellow_and_fades_over_two_seconds() {
-        assert_eq!(Look::of(Vec2::ZERO, 1.0, 1.0, None, 2.0).fill_colour, [1.0, 0.0, 0.0]);
-        assert_eq!(Look::of(Vec2::ZERO, 1.0, 0.0, None, 2.0).fill_colour, [1.0, 1.0, 0.0]);
-        assert_eq!(Look::of(Vec2::ZERO, 1.0, 1.0, None, 2.0).alpha, 1.0);
-        assert_eq!(Look::of(Vec2::ZERO, 1.0, 1.0, None, 1.0).alpha, 0.5);
-        assert_eq!(Look::of(Vec2::ZERO, 1.0, 1.0, None, 0.0).alpha, 0.0);
+        assert_eq!(Look::of(Vec2::ZERO, 1.0, 1.0, None, 2.0, Vec2::Y).fill_colour, [1.0, 0.0, 0.0]);
+        assert_eq!(Look::of(Vec2::ZERO, 1.0, 0.0, None, 2.0, Vec2::Y).fill_colour, [1.0, 1.0, 0.0]);
+        assert_eq!(Look::of(Vec2::ZERO, 1.0, 1.0, None, 2.0, Vec2::Y).alpha, 1.0);
+        assert_eq!(Look::of(Vec2::ZERO, 1.0, 1.0, None, 1.0, Vec2::Y).alpha, 0.5);
+        assert_eq!(Look::of(Vec2::ZERO, 1.0, 1.0, None, 0.0, Vec2::Y).alpha, 0.0);
     }
 
     #[test]
     fn a_shield_shows_instead_of_the_health_in_white() {
-        let look = Look::of(Vec2::ZERO, 1.0, 1.0, Some(0.25), 2.0);
+        let look = Look::of(Vec2::ZERO, 1.0, 1.0, Some(0.25), 2.0, Vec2::Y);
         assert_eq!(look.fill_colour, [1.0, 1.0, 1.0]);
         assert!((look.fill.x - 2.875 * 0.25).abs() < 1e-6);
     }

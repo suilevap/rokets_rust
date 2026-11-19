@@ -14,6 +14,7 @@ pub mod lines;
 pub mod map_mesh;
 pub mod outland;
 pub mod particles;
+pub mod premultiply;
 pub mod shadow;
 pub mod spin;
 pub mod sprite;
@@ -28,6 +29,7 @@ pub struct RenderPlugin;
 
 impl Plugin for RenderPlugin {
     fn build(&self, app: &mut App) {
+        app.init_resource::<premultiply::Premultiplied>();
         // `Renderer.Draw` clears to the background colour; it shows past
         // the outland's rim.
         let [r, g, b] = map_mesh::BACKGROUND;

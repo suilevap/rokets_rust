@@ -215,6 +215,7 @@ fn draw_aim_lines(
     map: Res<LoadedMap>,
     quad: Res<UnitQuad>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    (mut images, mut premultiplied): (ResMut<Assets<Image>>, ResMut<crate::render::premultiply::Premultiplied>),
     mut guns: Query<(Entity, &Weapon, &PlayerIntent, Option<&mut PlayerEnergy>), With<LocalPlayer>>,
     skipped: Query<(), PassedByBullets>,
     hurt: Query<(), Hurt>,
@@ -224,7 +225,7 @@ fn draw_aim_lines(
         for leg in 0..MAX_LEGS {
             for glow in [false, true] {
                 let material = materials.add(StandardMaterial {
-                    base_color_texture: map.sprites.get(LASER_LINE).map(|s| s.image.clone()),
+                    base_color_texture: map.sprites.get(LASER_LINE).map(|s| premultiplied.of(&s.image, &mut images)),
                     alpha_mode: AlphaMode::Add,
                     unlit: true,
                     double_sided: true,
@@ -296,7 +297,8 @@ fn draw_aim_lines(
             let uv = Affine2::from_scale_angle_translation(Vec2::new(-1.0, 1.0), 0.0, Vec2::new(1.0, 0.0));
             (FADING, width, uv)
         };
-        let image = map.sprites.get(texture).map(|s| s.image.clone());
+        // Additive, as XNA added a premultiplied texture (`render/premultiply`).
+        let image = map.sprites.get(texture).map(|s| premultiplied.of(&s.image, &mut images));
         if m.base_color_texture != image {
             m.base_color_texture = image;
         }

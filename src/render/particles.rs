@@ -145,6 +145,7 @@ struct Quads {
     colors: Vec<[f32; 4]>,
 }
 
+#[allow(clippy::too_many_arguments)]
 fn draw(
     mut commands: Commands,
     map: Res<LoadedMap>,
@@ -152,6 +153,7 @@ fn draw(
     flash: Res<FlashBoost>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    (mut images, mut premultiplied): (ResMut<Assets<Image>>, ResMut<super::premultiply::Premultiplied>),
     mut batches: Query<(&Batch, &Mesh3d, &mut Visibility)>,
 ) {
     let mut quads: HashMap<Key, Quads> = HashMap::new();
@@ -221,7 +223,12 @@ fn draw(
                     },
                     Mesh3d(meshes.add(build(q))),
                     MeshMaterial3d(materials.add(StandardMaterial {
-                        base_color_texture: Some(sprite.image.clone()),
+                        // Additive: as XNA added a premultiplied texture.
+                        base_color_texture: Some(if key.2 {
+                            premultiplied.of(&sprite.image, &mut images)
+                        } else {
+                            sprite.image.clone()
+                        }),
                         alpha_mode: if key.2 { AlphaMode::Add } else { AlphaMode::Blend },
                         unlit: true,
                         double_sided: true,
