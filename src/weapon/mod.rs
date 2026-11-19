@@ -45,6 +45,7 @@
 //! Railgun, not ported: damage not sparing one's own team (no teams); the team check and `IsStatic` of the aim
 //! line (enemies' guns).
 
+pub mod beam;
 pub mod model;
 mod view;
 
@@ -252,6 +253,11 @@ fn fire_weapons(
         return;
     }
     let rng = &mut rng.0;
+    let (passes, can_hurt) = (|e| skipped.contains(e), |e| hurt.contains(e));
+    let targets = Targets {
+        passes: &passes,
+        hurt: &can_hurt,
+    };
     for (car, mut gun, mut intent, position, rotation, sway, mut energy) in &mut guns {
         let angle = rotation.as_radians();
         let gun = &mut *gun;
@@ -284,7 +290,7 @@ fn fire_weapons(
                             impulse: options.impulse * impulse_rate,
                             damage: options.damage,
                         };
-                        shoot(bullet, car, &spatial, &skipped, &mut bodies, &hurt, rng, &mut particles, &mut hits, &mut play);
+                        shoot(bullet, car, &spatial, targets, &mut bodies, &hurt, rng, &mut particles, &mut hits, &mut play);
                         gun.aim.recoil.current += model::RECOIL;
                     }
                     Some(Shot::Misfire { pitch }) => {
@@ -309,7 +315,7 @@ fn fire_weapons(
                         impulse: options.impulse,
                         damage: options.damage,
                     };
-                    let sound_at = shoot_beam(bullet, options.reflections, car, &spatial, &skipped, &mut bodies, &hurt, rng, &mut particles, &mut hits);
+                    let sound_at = shoot_beam(bullet, options.reflections, car, &spatial, targets, &mut bodies, &hurt, rng, &mut particles, &mut hits);
                     // Set, not added to: the Railgun kicks the same each time.
                     gun.aim.recoil.current = model::RAILGUN_RECOIL;
                     play.write(PlaySound {
@@ -341,80 +347,76 @@ struct Bullet {
     damage: i32,
 }
 
-/// Where a bullet ended and what it did there.
-#[derive(Clone, Copy, Debug)]
-struct Strike {
-    point: Vec2,
-    /// The surface's normal, pointing out of it; zero when it hit nothing
-    /// (or started inside).
-    normal: Vec2,
-    /// It hit something that can be hurt (and so shows its own damage).
-    wounded: bool,
+/// What bullets fly through, and what they can hurt, as [`beam::trace`]
+/// asks.
+#[derive(Clone, Copy)]
+struct Targets<'a> {
+    passes: &'a dyn Fn(Entity) -> bool,
+    hurt: &'a dyn Fn(Entity) -> bool,
 }
 
-/// `SimulateBullet`: a ray from `from` along `direction`: it pushes what
-/// it hits at the point along its line, swung off it by up to 45°, and
-/// hurts what can be hurt.
+impl Targets<'_> {
+    /// One leg per bounce, each its full reach, bouncing off anything
+    /// (`SimulateBullet`, `SimulateRailgunBullet`).
+    fn bullet(&self, spatial: &SpatialQuery, shooter: Entity, bullet: &Bullet, bounces: u32) -> Vec<beam::Leg> {
+        let rules = beam::BeamRules {
+            reach: beam::Reach::EachLeg(BULLET_REACH),
+            bounces,
+            stop_at_hurt: false,
+        };
+        beam::trace(spatial, shooter, self.passes, self.hurt, bullet.muzzle, bullet.from, bullet.direction, rules)
+    }
+}
+
+/// `SimulateBullet`'s blow where a leg ended: it pushes what it hit at the
+/// point along its line, swung off it by up to 45°, and hurts what can be
+/// hurt; true then (it shows its own damage rather than sparks).
 #[allow(clippy::too_many_arguments)]
 fn strike(
-    from: Vec2,
-    direction: f32,
+    leg: &beam::Leg,
     impulse: f32,
     damage: i32,
-    shooter: Entity,
-    spatial: &SpatialQuery,
-    skipped: &Query<(), PassedByBullets>,
     bodies: &mut Query<(&RigidBody, Forces), Without<Weapon>>,
     hurt: &Query<Option<&Health>, Hurt>,
     rng: &mut SmallRng,
     particles: &mut Particles,
     hits: &mut MessageWriter<Hit>,
-) -> Strike {
-    let dir = Vec2::from_angle(direction);
-    let filter = SpatialQueryFilter::from_excluded_entities([shooter]);
-    let hit = Dir2::new(dir)
-        .ok()
-        .and_then(|d| spatial.cast_ray_predicate(from, d, BULLET_REACH, true, &filter, &|e| !skipped.contains(e)));
-    let point = hit.map_or(from + dir * BULLET_REACH, |h| from + dir * h.distance);
+) -> bool {
+    let point = leg.end;
     // `RUST_LOG=tilerider::weapon=debug`, in C#'s axes as `/trace`.
-    debug!("shot impulse {:.2} at {:.3} {:.3} hit {:?}", impulse, point.x, -point.y, hit.map(|h| h.entity));
-    let mut wounded = false;
-    if let Some(hit) = hit {
-        // Pushed along the bullet's line, swung off it by up to 45°.
-        if let Ok((body, mut forces)) = bodies.get_mut(hit.entity)
-            && body.is_dynamic()
-        {
-            let along = point - from;
-            let amount = (along + along.perp() * (rng.random::<f32>() * 2.0 - 1.0)).normalize_or_zero();
-            forces.apply_linear_impulse_at_point(amount * impulse, point);
-        }
-        if let Ok(health) = hurt.get(hit.entity) {
-            wounded = true;
-            if health.is_some_and(|h| h.hp > 0) {
-                particles.add_scaled(&DAMAGE_GLOW, point, 0.0, rng.random::<f32>() * std::f32::consts::TAU, 1.0);
-            }
-            hits.write(Hit {
-                target: hit.entity,
-                damage,
-                from: direction,
-            });
-        }
+    debug!("shot impulse {:.2} at {:.3} {:.3} hit {:?}", impulse, point.x, -point.y, leg.hit.map(|h| h.0));
+    let Some((entity, _)) = leg.hit else {
+        return false;
+    };
+    if let Ok((body, mut forces)) = bodies.get_mut(entity)
+        && body.is_dynamic()
+    {
+        let along = point - leg.cast_from;
+        let amount = (along + along.perp() * (rng.random::<f32>() * 2.0 - 1.0)).normalize_or_zero();
+        forces.apply_linear_impulse_at_point(amount * impulse, point);
     }
-    Strike {
-        point,
-        normal: hit.map_or(Vec2::ZERO, |h| h.normal),
-        wounded,
+    let Ok(health) = hurt.get(entity) else {
+        return false;
+    };
+    if health.is_some_and(|h| h.hp > 0) {
+        particles.add_scaled(&DAMAGE_GLOW, point, 0.0, rng.random::<f32>() * std::f32::consts::TAU, 1.0);
     }
+    hits.write(Hit {
+        target: entity,
+        damage,
+        from: leg.direction,
+    });
+    true
 }
 
-/// `SimulateMinigunBullet`: [`strike`], then its flash, its trail and
-/// where it struck.
+/// `SimulateMinigunBullet`: one leg, its blow, then its flash, its trail
+/// and where it struck.
 #[allow(clippy::too_many_arguments)]
 fn shoot(
     bullet: Bullet,
     shooter: Entity,
     spatial: &SpatialQuery,
-    skipped: &Query<(), PassedByBullets>,
+    targets: Targets,
     bodies: &mut Query<(&RigidBody, Forces), Without<Weapon>>,
     hurt: &Query<Option<&Health>, Hurt>,
     rng: &mut SmallRng,
@@ -422,12 +424,14 @@ fn shoot(
     hits: &mut MessageWriter<Hit>,
     play: &mut MessageWriter<PlaySound>,
 ) {
-    let hit = strike(bullet.from, bullet.direction, bullet.impulse, bullet.damage, shooter, spatial, skipped, bodies, hurt, rng, particles, hits);
-    let point = hit.point;
+    let legs = targets.bullet(spatial, shooter, &bullet, 0);
+    let leg = &legs[0];
+    let wounded = strike(leg, bullet.impulse, bullet.damage, bodies, hurt, rng, particles, hits);
+    let point = leg.end;
     particles.try_add(&BULLET_SPLASH, bullet.muzzle, bullet.direction, bullet.direction + std::f32::consts::PI);
     trail(particles, rng, bullet.muzzle, point, bullet.direction);
     // What can be hurt shows its own damage; the rest sparks and rings.
-    if !hit.wounded {
+    if !wounded {
         spark(particles, rng, point, bullet.direction);
         if rng.random::<f32>() > 0.65 {
             play.write(PlaySound {
@@ -440,14 +444,11 @@ fn shoot(
     }
 }
 
-/// How far off the surface a bounced beam starts (`normal * 0.1f`).
-const BOUNCE_OFFSET: f32 = 0.1;
-
-/// `SimulateRailgunBullet`: [`strike`], then up to `reflections` times
-/// bounced off what it hit (not at a head-on blow, [`model::reflect`]),
-/// each bounce half as damaging and the same push, with a trail along each
-/// leg and a flash at the muzzle and at every end. Bounces off whatever it
-/// hits, things that can be hurt too; the aim line stops at those.
+/// `SimulateRailgunBullet`: a beam of up to `reflections` bounces
+/// ([`beam::trace`]: off whatever it hits, things that can be hurt too;
+/// the aim line stops at those), each bounce half as damaging and the same
+/// push, with a trail along each leg (a bounced one from where its ray
+/// starts) and a flash at the muzzle and at every end.
 ///
 /// Returns where the shot is heard: the gun, or where it last bounced
 /// (C# passed `_worldPosition` by reference as the start of each leg and
@@ -458,32 +459,23 @@ fn shoot_beam(
     reflections: u32,
     shooter: Entity,
     spatial: &SpatialQuery,
-    skipped: &Query<(), PassedByBullets>,
+    targets: Targets,
     bodies: &mut Query<(&RigidBody, Forces), Without<Weapon>>,
     hurt: &Query<Option<&Health>, Hurt>,
     rng: &mut SmallRng,
     particles: &mut Particles,
     hits: &mut MessageWriter<Hit>,
 ) -> Vec2 {
-    let mut heard_at = bullet.from;
-    let mut direction = bullet.direction;
-    let mut hit = strike(bullet.from, direction, bullet.impulse, bullet.damage, shooter, spatial, skipped, bodies, hurt, rng, particles, hits);
-    beam_trail(particles, rng, bullet.muzzle, hit.point, direction);
-    particles.try_add(&RAILGUN_SPLASH, bullet.muzzle, direction, 0.0);
-    particles.try_add(&RAILGUN_SPLASH, hit.point, direction, 0.0);
-    for _ in 0..reflections {
-        let Some(bounced) = model::reflect(direction, hit.normal) else {
-            break;
-        };
-        direction = bounced;
-        let start = hit.point + hit.normal * BOUNCE_OFFSET;
-        heard_at = start;
-        let damage = model::reflected_damage(bullet.damage);
-        hit = strike(start, direction, bullet.impulse, damage, shooter, spatial, skipped, bodies, hurt, rng, particles, hits);
-        beam_trail(particles, rng, start, hit.point, direction);
-        particles.try_add(&RAILGUN_SPLASH, hit.point, direction, 0.0);
+    let legs = targets.bullet(spatial, shooter, &bullet, reflections);
+    particles.try_add(&RAILGUN_SPLASH, bullet.muzzle, bullet.direction, 0.0);
+    for (i, leg) in legs.iter().enumerate() {
+        let damage = if i == 0 { bullet.damage } else { model::reflected_damage(bullet.damage) };
+        strike(leg, bullet.impulse, damage, bodies, hurt, rng, particles, hits);
+        let from = if i == 0 { leg.start } else { leg.cast_from };
+        beam_trail(particles, rng, from, leg.end, leg.direction);
+        particles.try_add(&RAILGUN_SPLASH, leg.end, leg.direction, 0.0);
     }
-    heard_at
+    legs.last().filter(|_| legs.len() > 1).map_or(bullet.from, |l| l.cast_from)
 }
 
 /// `CreateRailgunTrailBetween`: a spark every 1.25 units along the path,

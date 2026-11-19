@@ -34,7 +34,8 @@ use bevy::math::Affine2;
 use bevy::prelude::*;
 use rand::Rng;
 
-use super::model::{self, AimLook, Energy, MAX_ENERGY, SHOW_FULL};
+use super::beam;
+use super::model::{AimLook, Energy, MAX_ENERGY, SHOW_FULL};
 use super::{BULLET_REACH, Hurt, PassedByBullets, PlayerEnergy, Weapon, WeaponSystems, sprite_of};
 use crate::controls::{LocalPlayer, PlayerIntent};
 use crate::game::{GameState, LoadedMap, MapEntity};
@@ -162,9 +163,9 @@ fn triangle(seconds: f32) -> f32 {
     if r > 1.0 { 2.0 - r } else { r }
 }
 
-/// `LaserRenderer.Render`'s legs: from the muzzle, then bounced `reflections`
-/// times while the range lasts, off what cannot be hurt and not at a
-/// head-on blow.
+/// `LaserRenderer.Render`'s legs ([`beam::trace`]): from the muzzle, then
+/// bounced `reflections` times while the range lasts, not off what can be
+/// hurt.
 fn aim_legs(
     gun: &Weapon,
     car: Entity,
@@ -172,37 +173,20 @@ fn aim_legs(
     skipped: &Query<(), PassedByBullets>,
     hurt: &Query<(), Hurt>,
 ) -> Vec<Leg> {
-    let filter = SpatialQueryFilter::from_excluded_entities([car]);
-    let mut legs = Vec::new();
-    let (mut cast_from, mut start, mut direction, mut length) = (gun.at, gun.muzzle(), gun.direction, gun.options.range);
-    let bounces = (gun.options.reflections as usize).min(MAX_LEGS - 1);
-    for i in 0..=bounces {
-        let dir = Vec2::from_angle(direction);
-        let hit = Dir2::new(dir).ok().and_then(|d| {
-            spatial.cast_ray_predicate(cast_from, d, length.min(BULLET_REACH), true, &filter, &|e| !skipped.contains(e))
-        });
-        let end = cast_from + dir * hit.map_or(length, |h| h.distance);
-        legs.push(Leg {
-            start,
-            end,
-            hit: hit.is_some(),
-        });
-        length -= start.distance(end);
-        let Some(hit) = hit.filter(|_| i < bounces && length > 0.0) else {
-            break;
-        };
-        // Not off what can be hurt, nor with no surface to bounce off.
-        if hurt.contains(hit.entity) {
-            break;
-        }
-        let Some(bounced) = model::reflect(direction, hit.normal) else {
-            break;
-        };
-        direction = bounced;
-        cast_from = end + hit.normal * super::BOUNCE_OFFSET;
-        start = end;
-    }
-    legs
+    let rules = beam::BeamRules {
+        reach: beam::Reach::Total(gun.options.range.min(BULLET_REACH)),
+        bounces: gun.options.reflections.min(MAX_LEGS as u32 - 1),
+        stop_at_hurt: true,
+    };
+    let (passes, can_hurt) = (|e| skipped.contains(e), |e| hurt.contains(e));
+    beam::trace(spatial, car, &passes, &can_hurt, gun.muzzle(), gun.at, gun.direction, rules)
+        .into_iter()
+        .map(|l| Leg {
+            start: l.start,
+            end: l.end,
+            hit: l.hit.is_some(),
+        })
+        .collect()
 }
 
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
