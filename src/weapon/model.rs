@@ -2,8 +2,9 @@
 //! (`WeaponOptions`, `DamageConst`), the smoothed aim and recoil
 //! (`HardasticAngle`, `Hardastic`), the player's energy
 //! (`EnergyComponent`), the Minigun's firing rhythm (`MinigunWeapon`), the
-//! Railgun's (`RailgunWeapon`, one shot a reload) and the bounce of its
-//! bullet ([`reflect`]).
+//! Railgun's (`RailgunWeapon`, one shot a reload), the bounce of its
+//! bullet ([`reflect`]) and the Hammer's saw: its place, reach, damage
+//! and the list of enemies it keeps hurting ([`Hammer`], [`Tracking`]).
 //!
 //! Timers count seconds down while the game runs (C#'s `PeriodicUpdate`
 //! compared absolute game times; the same while nothing pauses). One is
@@ -25,6 +26,17 @@ use bevy::math::Vec2;
 pub enum Kind {
     Minigun,
     Railgun,
+    /// The saw on the car's nose (`HammerWeapon`).
+    Hammer,
+}
+
+impl Kind {
+    /// `IBaseWeapon.AutoFire`: the weapon works by itself. The player does
+    /// not aim it (no aim line, no fire zone, and the mouse and the
+    /// gamepad neither fire nor aim it: `_hasControllableWeapon`).
+    pub fn auto_fire(self) -> bool {
+        self == Kind::Hammer
+    }
 }
 
 /// A weapon's numbers (`WeaponOptions`): world units, seconds, radians.
@@ -32,6 +44,9 @@ pub enum Kind {
 pub struct Options {
     /// `DamageMin`, the damage a bullet does (`Damage`).
     pub damage: i32,
+    /// `DamageMax`: the most a blow of the Hammer does at speed (the
+    /// others' is the same as `damage`).
+    pub damage_max: i32,
     /// `BulletImpulse`.
     pub impulse: f32,
     /// Bullets fly within ± this of the aim (`Dispersion`).
@@ -61,6 +76,7 @@ const MINIGUN_IMPULSE: f32 = 6.0;
 /// `WeaponOptions.MinigunDefaultOptions`: the enemies' Minigun.
 pub const MINIGUN: Options = Options {
     damage: MINIGUN_DAMAGE,
+    damage_max: MINIGUN_DAMAGE,
     impulse: MINIGUN_IMPULSE,
     dispersion: PI / 18.0,
     bullets: 10,
@@ -77,6 +93,7 @@ pub const MINIGUN: Options = Options {
 /// (0.03 in easy mode, not ported).
 pub const MINIGUN_PLAYER: Options = Options {
     damage: 1,
+    damage_max: 1,
     impulse: 6.0,
     dispersion: PI / 36.0,
     bullets: 2,
@@ -98,6 +115,7 @@ const RAILGUN_IMPULSE: f32 = 128.0 * 15.0 / 32.0;
 /// same for everyone (no player preset).
 pub const RAILGUN: Options = Options {
     damage: RAILGUN_DAMAGE,
+    damage_max: RAILGUN_DAMAGE,
     impulse: RAILGUN_IMPULSE,
     dispersion: 0.0,
     bullets: 0,
@@ -107,6 +125,31 @@ pub const RAILGUN: Options = Options {
     max_angle: PI / 3.0,
     range: 32.0,
     reflections: 1,
+};
+
+/// `DamageConst.HammerImmediateMin`, `HammerImmediateMax`.
+const HAMMER_DAMAGE_MIN: i32 = 4;
+const HAMMER_DAMAGE_MAX: i32 = 8;
+
+/// `WeaponOptions.HammerDefaultOptions` (`GetHammer` at level 0): the same
+/// for everyone, no player preset. A blow does 4 to 8 damage by the car's
+/// speed and shoves what it hits with an impulse of 48. The energy is the
+/// default 0.1 (the player's fire keys spend it, [`Hammer`]); `reload` is
+/// ignored by the weapon, `dispersion` and `range` only steer the enemies'
+/// aim (`TargetInFireRange`); the Hammer does not aim, so `max_angle`
+/// stays unused.
+pub const HAMMER: Options = Options {
+    damage: HAMMER_DAMAGE_MIN,
+    damage_max: HAMMER_DAMAGE_MAX,
+    impulse: 48.0,
+    dispersion: PI / 2.0,
+    bullets: 0,
+    shoot_time: 0.0,
+    reload: 0.0,
+    energy: 0.1,
+    max_angle: PI / 3.0,
+    range: 8.0,
+    reflections: 0,
 };
 
 /// `RailgunMinReflectionAngle` (`RailgunWeapon._reflectionMinAngle`): a
@@ -133,12 +176,19 @@ pub fn for_type(name: &str, local: bool) -> Option<(Kind, Options)> {
             ..MINIGUN
         },
         "Railgun" => RAILGUN,
+        "Hammer" => HAMMER,
         // The energy left at the default 0.1.
         "RailgunNoReflection" => Options { energy: 0.1, reflections: 0, ..RAILGUN },
         "RailgunAngle5" => Options { energy: 0.1, max_angle: PI / 36.0, ..RAILGUN },
         _ => return None,
     };
-    let kind = if name.starts_with("Railgun") { Kind::Railgun } else { Kind::Minigun };
+    let kind = if name.starts_with("Railgun") {
+        Kind::Railgun
+    } else if name == "Hammer" {
+        Kind::Hammer
+    } else {
+        Kind::Minigun
+    };
     Some((kind, options))
 }
 
@@ -556,4 +606,129 @@ pub fn reflect(direction: f32, normal: Vec2) -> Option<f32> {
 /// `(byte)(damage / 2)`: what a bounced bullet still does.
 pub fn reflected_damage(damage: i32) -> i32 {
     damage / 2
+}
+
+/// `DepthConst.HammerWeaponScale`: the saw is this many times as wide as
+/// the car.
+pub const HAMMER_SCALE: f32 = 1.2;
+/// `_maxDamageOnSpeed`: the speed (units a second) of the hardest blow.
+pub const HAMMER_FULL_SPEED: f32 = 16.0;
+/// `_reloadTrackingDamage`: seconds between the hurts a saw keeps doing to
+/// an enemy it has hit and still touches.
+pub const HAMMER_TRACKING_PERIOD: f32 = 0.33;
+/// `CreateCollisionSparks` counts: a blow throws four, a tracked hurt two.
+pub const HAMMER_BLOW_SPARKS: usize = 4;
+pub const HAMMER_TRACK_SPARKS: usize = 2;
+/// `Sawtooth_Period100`: the saw's turn comes round every 0.1 s.
+pub const SAW_PERIOD: f32 = 0.1;
+
+/// The Hammer's saw (`HammerWeapon`): where it sits, how big it is and
+/// when it reaches something.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Hammer {
+    /// The saw's centre in the car's frame (`WeaponFactory`: from the
+    /// middle of the car to its nose, less a fifth of the saw's width).
+    pub mount: Vec2,
+    /// The saw's drawn height (`_scale`: the car's width × 1.2).
+    pub diameter: f32,
+    /// `_sawRadius`: half the saw's drawn width.
+    pub radius: f32,
+}
+
+impl Hammer {
+    /// A saw on a car of `car` size (world units), its sprite `aspect`
+    /// (width over height) wide.
+    pub fn new(car: Vec2, aspect: f32) -> Hammer {
+        let diameter = car.y * HAMMER_SCALE;
+        Hammer {
+            mount: Vec2::new(car.x / 2.0 - car.y * 0.2 * HAMMER_SCALE, 0.0),
+            diameter,
+            radius: diameter * aspect / 2.0,
+        }
+    }
+
+    /// `VectorExtension.CloserThanByChebyshev` in the blow's test: the saw
+    /// at `saw` reaches an entity at `other` of `radius` (a square, not a
+    /// circle: both axes closer than the radii's sum).
+    pub fn reaches(&self, saw: Vec2, other: Vec2, radius: f32) -> bool {
+        closer_by_chebyshev(saw, other, radius + self.radius)
+    }
+}
+
+/// `VectorExtension.CloserThanByChebyshev`.
+pub fn closer_by_chebyshev(a: Vec2, b: Vec2, distance: f32) -> bool {
+    let d = a - b;
+    d.x.abs() < distance && d.y.abs() < distance
+}
+
+/// The damage of a blow (`OnEntityCollide`): `damage_max` from a car that
+/// stands static; otherwise `damage` up to `damage_max` by the square of
+/// its speed over the square of [`HAMMER_FULL_SPEED`] (capped at 1),
+/// truncated to a whole number (`(byte)`).
+pub fn hammer_damage(options: &Options, speed_squared: f32, is_static: bool) -> i32 {
+    if is_static {
+        return options.damage_max;
+    }
+    let amount = (speed_squared / (HAMMER_FULL_SPEED * HAMMER_FULL_SPEED)).min(1.0);
+    (options.damage as f32 + (options.damage_max - options.damage) as f32 * amount) as i32
+}
+
+/// The saw's turn while it works (`-Sawtooth_Period100` radians, C#'s
+/// clockwise negated): 0 to 1 radian every 0.1 s of game time, then back to
+/// 0, so it shivers rather than spins.
+pub fn saw_turn(seconds: f32) -> f32 {
+    (seconds % SAW_PERIOD) / SAW_PERIOD
+}
+
+/// The enemies a saw keeps hurting (`_trackedEntities`, a `WeakList` of
+/// the cars it hit, and `_reloadTrackingDamage`).
+#[derive(Clone, Debug, PartialEq)]
+pub struct Tracking<T> {
+    /// Seconds to the next round of hurts.
+    left: f32,
+    /// A car appears once for every blow it took, as `Add` did not look.
+    tracked: Vec<T>,
+}
+
+impl<T> Default for Tracking<T> {
+    fn default() -> Self {
+        Tracking {
+            left: 0.0,
+            tracked: Vec::new(),
+        }
+    }
+}
+
+impl<T: Copy> Tracking<T> {
+    /// Time passes (the timer is the game's clock, whatever the saw does).
+    pub fn tick(&mut self, dt: f32) {
+        self.left -= dt;
+    }
+
+    /// `_trackedEntities.Add`.
+    pub fn add(&mut self, enemy: T) {
+        self.tracked.push(enemy);
+    }
+
+    pub fn len(&self) -> usize {
+        self.tracked.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.tracked.is_empty()
+    }
+
+    /// `Update`'s tracking: while the saw `works`, every 0.33 s (the
+    /// timer runs out even with nobody tracked, as `NeedUpdate` was asked
+    /// before the count), those of the tracked for whom `near` holds are
+    /// hurt again, once for each time they were added, and the rest are
+    /// dropped (dead, or no longer touching the saw).
+    pub fn due(&mut self, works: bool, mut near: impl FnMut(T) -> bool) -> Vec<T> {
+        if !works || !due(self.left) {
+            return Vec::new();
+        }
+        self.left = HAMMER_TRACKING_PERIOD;
+        self.tracked.retain(|&e| near(e));
+        self.tracked.clone()
+    }
 }

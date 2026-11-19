@@ -1,4 +1,5 @@
-//! What the gun looks like: its sprite on the cabin, the aim line
+//! What the gun looks like: its sprite on the cabin (the Hammer's saw
+//! under the car, `HammerWeapon.Draw`), the aim line
 //! (`LaserRenderer`, `LaserView`) and the energy bar
 //! (`EnergyComponent.DrawOnUI`).
 //!
@@ -35,7 +36,7 @@ use bevy::prelude::*;
 use rand::Rng;
 
 use super::beam;
-use super::model::{AimLook, Energy, MAX_ENERGY, SHOW_FULL};
+use super::model::{self, AimLook, Energy, Kind, MAX_ENERGY, SHOW_FULL};
 use super::{BULLET_REACH, Hurt, PassedByBullets, PlayerEnergy, Weapon, WeaponSystems, sprite_of};
 use crate::controls::{LocalPlayer, PlayerIntent};
 use crate::game::{GameState, LoadedMap, MapEntity};
@@ -132,7 +133,12 @@ fn spawn_gun_views(
             color: [1.0; 4],
             lit: true,
         };
-        let mut sprite = sprite_bundle(info, 1.0, Layer::Weapon, lit, &quad, &mut materials);
+        // The saw is as tall as the car is wide ×1.2, under the car.
+        let (scale, layer) = match gun.kind {
+            Kind::Hammer => (gun.hammer.diameter * PX_PER_UNIT / info.size.y, Layer::Hammer),
+            _ => (1.0, Layer::Weapon),
+        };
+        let mut sprite = sprite_bundle(info, scale, layer, lit, &quad, &mut materials);
         // From the turning point to the sprite's middle (texture y down).
         let centre = def.size / 2.0 - def.origin;
         sprite.2.translation.x = centre.x / PX_PER_UNIT;
@@ -145,12 +151,23 @@ fn spawn_gun_views(
     }
 }
 
-fn place_gun_views(guns: Query<(&Weapon, &Children)>, mut views: Query<&mut Transform, With<GunView>>) {
-    for (gun, children) in &guns {
+fn place_gun_views(
+    time: Res<Time>,
+    guns: Query<(&Weapon, &Children, &Transform), Without<GunView>>,
+    mut views: Query<&mut Transform, With<GunView>>,
+) {
+    for (gun, children, car) in &guns {
+        // A working saw shivers in the world's frame (`-Sawtooth_Period100`,
+        // negated for our angles); an idle one lies along the car.
+        let angle = if gun.kind == Kind::Hammer && gun.working {
+            model::saw_turn(time.elapsed_secs()) - car.rotation.to_euler(EulerRot::ZYX).0
+        } else {
+            gun.local_angle
+        };
         for child in children.iter() {
             if let Ok(mut t) = views.get_mut(child) {
                 t.translation = gun.local.extend(0.0);
-                t.rotation = Quat::from_rotation_z(gun.local_angle);
+                t.rotation = Quat::from_rotation_z(angle);
             }
         }
     }
@@ -230,7 +247,7 @@ fn draw_aim_lines(
     }
     let shown = guns.iter_mut().next().and_then(|(car, gun, intent, energy)| {
         // `LaserVisiblityUpdate`: while aiming, not while the gadget charges.
-        if !gun.aiming || intent.gadget {
+        if !super::has_aim_line(gun.kind) || !gun.aiming || intent.gadget {
             return None;
         }
         // `UpdateLaser`: low while it cannot fire, wide while it reloads.
@@ -421,10 +438,11 @@ fn spawn_fire_zone(mut commands: Commands) {
 fn show_fire_zone(
     scheme: Res<crate::controls::ActiveScheme>,
     touch: Res<crate::controls::FireTouch>,
-    guns: Query<Has<crate::gadget::Magnet>, (With<Weapon>, With<LocalPlayer>)>,
+    guns: Query<(&Weapon, Has<crate::gadget::Magnet>), With<LocalPlayer>>,
     mut zones: Query<(&mut Node, &mut BorderColor, &mut BackgroundColor), With<FireZone>>,
 ) {
-    let gun = guns.iter().next();
+    // Not for a weapon that works by itself (`_hasControllableWeapon`).
+    let gun = guns.iter().find(|(w, _)| !w.kind.auto_fire()).map(|(_, magnet)| magnet);
     let shown = *scheme == crate::controls::ActiveScheme::Touch && gun.is_some();
     let alpha = if !shown { 0.0 } else if touch.finger.is_some() { 0.6 } else { 0.25 };
     let top = Val::Percent(if gun == Some(true) { 75.0 } else { 50.0 });

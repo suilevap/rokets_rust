@@ -180,7 +180,7 @@ pub fn spawn_local_car(
         let at = car.weapon_positon.map_or(Vec2::ZERO, |p| Vec2::new(p.x, -p.y) * px(1.0) * car.scale);
         let mut rng = <rand::rngs::SmallRng as rand::SeedableRng>::seed_from_u64(player.id as u64);
         entity.insert((
-            crate::weapon::Weapon::new(kind, options, at, true, &mut rng),
+            crate::weapon::Weapon::new(kind, options, at, size, true, &mut rng),
             crate::weapon::PlayerEnergy::default(),
         ));
     }

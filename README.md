@@ -63,6 +63,10 @@ on a press of right Ctrl, on letting go of the arrows and on lifting the
 touch finger; its aim line is white and wide while it reloads and shows
 the bounce. In a drive script (`--drive`) `f` holds the trigger and fires
 the Railgun on its first step.
+The Hammer (a saw on the nose, drawn under the car) works by itself: drive
+into things with it. It hurts bombs, red boxes and cars by the car's speed
+(4 to 8) and shoves what it hits; it has no aim line, no fire zone and the
+mouse and the gamepad do not fire it (the fire keys only spend its energy).
 
 On Linux, Bevy needs `pkg-config libwayland-dev libxkbcommon-dev libudev-dev
 libasound2-dev libx11-dev`.

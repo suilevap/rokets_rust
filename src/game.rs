@@ -97,7 +97,9 @@ fn sprites_for(map: &MapData, cars: &CarCatalog, registry: &crate::actions::Acti
             }
             if let Some((kind, _)) = car.weapon.as_deref().and_then(|w| crate::weapon::model::for_type(w, true)) {
                 names.push(crate::weapon::sprite_of(kind).name.to_string());
-                names.extend(crate::weapon::AIM_LINE_TEXTURES.map(String::from));
+                if crate::weapon::has_aim_line(kind) {
+                    names.extend(crate::weapon::AIM_LINE_TEXTURES.map(String::from));
+                }
             }
             if car.gadget.as_deref() == Some("Link") {
                 names.extend(["Gadget\\ChainActive", "Gadget\\ChainInactive", "WhitePixel", "Gradient2Pixel"].map(String::from));

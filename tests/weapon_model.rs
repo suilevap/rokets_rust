@@ -5,8 +5,9 @@ use std::f32::consts::PI;
 
 use bevy::math::Vec2;
 use tilerider::weapon::model::{
-    Aim, AimLook, Energy, Kind, MINIGUN, MINIGUN_PLAYER, Minigun, RAILGUN, REFLECTION_MIN_ANGLE, Railgun, STRONG_IMPULSE,
-    Shot, WEAK_IMPULSE, for_type, reflect, reflected_damage,
+    Aim, AimLook, Energy, HAMMER, HAMMER_TRACKING_PERIOD, Hammer, Kind, MINIGUN, MINIGUN_PLAYER, Minigun, RAILGUN,
+    REFLECTION_MIN_ANGLE, Railgun, STRONG_IMPULSE, Shot, Tracking, WEAK_IMPULSE, for_type, hammer_damage, reflect,
+    reflected_damage, saw_turn,
 };
 
 const DT: f32 = 1.0 / 60.0;
@@ -250,4 +251,102 @@ fn the_players_aim_turns_all_round_and_swings_back() {
     let mut ai = Aim::new(PI / 3.0, false);
     ai.aim(PI / 2.0, 0.0);
     assert_eq!(ai.angle.destination, PI / 3.0);
+}
+
+/// A 1.5 × 1 car, as the saw's sprite is square.
+fn saw() -> Hammer {
+    Hammer::new(Vec2::new(1.5, 1.0), 1.0)
+}
+
+#[test]
+fn the_hammer_has_one_preset_for_everyone() {
+    assert_eq!(for_type("Hammer", true), Some((Kind::Hammer, HAMMER)));
+    assert_eq!(for_type("Hammer", false), Some((Kind::Hammer, HAMMER)));
+    assert_eq!((HAMMER.damage, HAMMER.damage_max, HAMMER.impulse), (4, 8, 48.0));
+    assert!(Kind::Hammer.auto_fire() && !Kind::Minigun.auto_fire() && !Kind::Railgun.auto_fire());
+}
+
+#[test]
+fn the_saw_sits_on_the_nose_and_is_a_fifth_wider_than_the_car() {
+    let saw = saw();
+    // From the middle of the car to its nose (0.75), less 0.2 × 1.2 × its width.
+    assert!((saw.mount.x - (0.75 - 0.24)).abs() < 1e-6 && saw.mount.y == 0.0);
+    assert!((saw.diameter - 1.2).abs() < 1e-6 && (saw.radius - 0.6).abs() < 1e-6);
+    // It sticks out 0.36 past the nose.
+    assert!((saw.mount.x + saw.radius - (0.75 + 0.36)).abs() < 1e-6);
+    // A wider sprite is wider.
+    assert!((Hammer::new(Vec2::new(1.5, 1.0), 2.0).radius - 1.2).abs() < 1e-6);
+}
+
+#[test]
+fn the_saw_reaches_by_a_square_of_the_radii() {
+    let saw = saw();
+    let at = Vec2::new(5.0, 5.0);
+    // A box of radius 0.5: both axes within 1.1.
+    assert!(saw.reaches(at, at + Vec2::new(1.0, 1.0), 0.5));
+    // Its corner is further than 1.1 in a circle, but a square takes it.
+    assert!(saw.reaches(at, at + Vec2::new(1.09, 1.09), 0.5));
+    assert!(!saw.reaches(at, at + Vec2::new(1.11, 0.0), 0.5));
+    assert!(!saw.reaches(at, at + Vec2::new(0.0, -1.11), 0.5));
+    // Strictly closer.
+    assert!(!saw.reaches(at, at + Vec2::new(1.1, 0.0), 0.5));
+}
+
+#[test]
+fn a_blow_hurts_by_the_cars_speed() {
+    // Standing: the least. At 16 and over: the most. Between: by the square.
+    assert_eq!(hammer_damage(&HAMMER, 0.0, false), 4);
+    assert_eq!(hammer_damage(&HAMMER, 16.0 * 16.0, false), 8);
+    assert_eq!(hammer_damage(&HAMMER, 40.0 * 40.0, false), 8);
+    // 8 units a second: a quarter of the way, 4 + 4 × ¼ = 5.
+    assert_eq!(hammer_damage(&HAMMER, 64.0, false), 5);
+    // Cut, not rounded: 4 + 4 × 0.9 = 7.6.
+    assert_eq!(hammer_damage(&HAMMER, 0.9 * 256.0, false), 7);
+    // A car that stands static does the most.
+    assert_eq!(hammer_damage(&HAMMER, 0.0, true), 8);
+}
+
+#[test]
+fn the_working_saw_shivers_a_radian_every_tenth_of_a_second() {
+    assert_eq!(saw_turn(0.0), 0.0);
+    assert!((saw_turn(0.05) - 0.5).abs() < 1e-4);
+    assert!(saw_turn(0.0999) > 0.99);
+    assert!(saw_turn(0.1001) < 0.02);
+}
+
+#[test]
+fn tracked_enemies_are_hurt_again_every_third_of_a_second_while_near() {
+    let mut tracking: Tracking<u32> = Tracking::default();
+    // Not working: nothing, and the list stays.
+    tracking.add(1);
+    assert!(tracking.due(false, |_| true).is_empty());
+    assert_eq!(tracking.len(), 1);
+    // The first round is at once (`_invalidatedTime` 0).
+    assert_eq!(tracking.due(true, |_| true), vec![1]);
+    // Then every 0.33 s.
+    tracking.tick(0.3);
+    assert!(tracking.due(true, |_| true).is_empty());
+    tracking.tick(HAMMER_TRACKING_PERIOD - 0.3);
+    assert_eq!(tracking.due(true, |_| true), vec![1]);
+}
+
+#[test]
+fn tracking_drops_the_far_and_the_dead_and_counts_each_blow() {
+    let mut tracking: Tracking<u32> = Tracking::default();
+    // Hit twice before the round: hurt twice (`Add` did not look).
+    for enemy in [1, 2, 2, 3] {
+        tracking.add(enemy);
+    }
+    assert_eq!(tracking.due(true, |e| e != 3), vec![1, 2, 2]);
+    assert_eq!(tracking.len(), 3);
+    // 3 is forgotten for good, even if it comes back near.
+    tracking.tick(1.0);
+    assert_eq!(tracking.due(true, |_| true), vec![1, 2, 2]);
+    // The timer ran out with nobody tracked, as `NeedUpdate` was asked first.
+    let mut idle: Tracking<u32> = Tracking::default();
+    assert!(idle.due(true, |_| true).is_empty());
+    idle.add(7);
+    assert!(idle.due(true, |_| true).is_empty(), "the round was spent");
+    idle.tick(HAMMER_TRACKING_PERIOD);
+    assert_eq!(idle.due(true, |_| true), vec![7]);
 }

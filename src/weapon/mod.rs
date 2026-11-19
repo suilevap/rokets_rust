@@ -1,7 +1,7 @@
-//! The car's gun: the Minigun and the Railgun so far.
+//! The car's gun: the Minigun, the Railgun and the Hammer so far.
 //!
 //! C# origin: `BaseWeapon`, `BaseComplexWeapon`, `MinigunWeapon`,
-//! `RailgunWeapon`, `WeaponHelper.SimulateMinigunBullet` /
+//! `RailgunWeapon`, `HammerWeapon`, `WeaponHelper.SimulateMinigunBullet` /
 //! `SimulateRailgunBullet` / `SimulateBullet`, `WeaponFactory`,
 //! `EnergyComponent` and the fire input of the `PlayerCarControl*`
 //! classes (2010–2016). The numbers and the timing are in [`model`]; this
@@ -23,6 +23,11 @@
 //!   push that bounces once off what it hits ([`shoot_beam`],
 //!   `SimulateRailgunBullet`; [`model::reflect`]), the bounce doing half
 //!   the damage, and kicks the gun back 10 pixels.
+//! - The Hammer is a saw on the car's nose (`HammerWeapon`, [`hammer`]): it
+//!   has no gun to aim and no trigger to pull; whatever the car runs into
+//!   with it hurts and is shoved. Only the player's fire keys do anything,
+//!   and that is to spend 0.1 of the energy a press (`BaseWeapon.TryShoot`
+//!   with an empty `OnShoot`).
 //! - The gun rides the swaying cabin (`DrawCabina` updated it a second
 //!   time with the cabin's offset, which also doubled the speed of its
 //!   eases; [`Aim::step`] runs twice for cars with a cabin, as there).
@@ -44,8 +49,18 @@
 //!
 //! Railgun, not ported: damage not sparing one's own team (no teams); the team check and `IsStatic` of the aim
 //! line (enemies' guns).
+//!
+//! Hammer, not ported: teams (every car it hits counts as an enemy, none
+//! is a friend, so `isFriend` is never set); `GetHammer(level)`'s damage
+//! by level (the enemy spawn director) and the enemies' use of
+//! `TargetInFireRange` (`range`, `dispersion`); the view check on the
+//! sparks (the particle pool takes them all); the saw staying on a dead car
+//! (the wreck takes it and the car's drawn parts away, as with the other
+//! guns); the saw's hold on `IsStatic` cars is ported
+//! ([`model::hammer_damage`]) but only a dynamic car exists for now.
 
 pub mod beam;
+pub mod hammer;
 pub mod model;
 mod view;
 
@@ -65,7 +80,7 @@ use crate::particles::styles::{
 use crate::render::particles::Particles;
 use crate::sound::{CarSounds, LoopCue, PlaySound};
 use crate::units::PX_PER_UNIT;
-use model::{AimLook, Aim, Energy, Kind, Minigun, Options, Railgun, Shot};
+use model::{AimLook, Aim, Energy, Hammer, Kind, Minigun, Options, Railgun, Shot, Tracking};
 
 pub use view::{AIM_LINE_TEXTURES, energy_bar_alpha};
 
@@ -91,12 +106,26 @@ pub const RAILGUN_SPRITE: GunSprite = GunSprite {
     origin: Vec2::new(6.0, 6.0),
 };
 
+/// `HammerWeapon`: `Weapons\Saw`, round and turned about its middle.
+pub const HAMMER_SPRITE: GunSprite = GunSprite {
+    name: "Weapons\\Saw",
+    size: Vec2::new(128.0, 128.0),
+    origin: Vec2::new(64.0, 64.0),
+};
+
 /// The sprite of a kind of gun.
 pub fn sprite_of(kind: Kind) -> GunSprite {
     match kind {
         Kind::Minigun => MINIGUN_SPRITE,
         Kind::Railgun => RAILGUN_SPRITE,
+        Kind::Hammer => HAMMER_SPRITE,
     }
+}
+
+/// Whether the gun shows an aim line (`BaseComplexWeapon`; the Hammer is
+/// a plain `BaseWeapon`).
+pub fn has_aim_line(kind: Kind) -> bool {
+    kind != Kind::Hammer
 }
 
 /// How far a bullet flies (`SimulateBullet`: 1024 pixels).
@@ -117,6 +146,13 @@ pub struct Weapon {
     /// (the other is never used).
     pub minigun: Minigun,
     pub railgun: Railgun,
+    /// The saw of a [`Kind::Hammer`]: its size and reach, and the cars it
+    /// keeps hurting.
+    pub hammer: Hammer,
+    pub tracking: Tracking<Entity>,
+    /// The saw is turning and hurts (`_isWorking`): its car is alive and
+    /// someone drives it.
+    pub working: bool,
     /// The pivot in the car's frame and the barrel's angle from straight
     /// ahead, as last placed (`_worldPosition`, `_worldDirection`).
     pub local: Vec2,
@@ -129,8 +165,12 @@ pub struct Weapon {
 }
 
 impl Weapon {
-    /// The gun a `Cars.xml` weapon type names, at `mount` (car frame).
-    pub fn new(kind: Kind, options: Options, mount: Vec2, local: bool, rng: &mut impl Rng) -> Weapon {
+    /// The gun a `Cars.xml` weapon type names, at `mount` (car frame), on a
+    /// car of `car` size (the Hammer sits by it, not by `WeaponPositon`).
+    pub fn new(kind: Kind, options: Options, mount: Vec2, car: Vec2, local: bool, rng: &mut impl Rng) -> Weapon {
+        let sprite = sprite_of(kind);
+        let hammer = Hammer::new(car, sprite.size.x / sprite.size.y);
+        let mount = if kind == Kind::Hammer { hammer.mount } else { mount };
         Weapon {
             kind,
             options,
@@ -142,6 +182,9 @@ impl Weapon {
             aim: Aim::new(options.max_angle, local),
             minigun: Minigun::new(&options, rng.random()),
             railgun: Railgun::new(&options, rng.random()),
+            hammer,
+            tracking: Tracking::default(),
+            working: false,
             local: mount,
             local_angle: 0.0,
             at: Vec2::ZERO,
@@ -163,6 +206,8 @@ impl Weapon {
                 }
             }
             Kind::Railgun => self.railgun.look(&self.options, energy),
+            // No aim line; never asked.
+            Kind::Hammer => AimLook::Normal,
         }
     }
 
@@ -209,6 +254,19 @@ impl Plugin for WeaponPlugin {
                 fire_weapons
                     .in_set(WeaponSystems)
                     .after(sway_cabins)
+                    .run_if(in_state(GameState::Playing)),
+            )
+            .add_systems(
+                FixedUpdate,
+                hammer::run_saws
+                    .in_set(WeaponSystems)
+                    .after(fire_weapons)
+                    .run_if(in_state(GameState::Playing)),
+            )
+            .add_systems(
+                Update,
+                hammer::hammer_blows
+                    .before(crate::explosion::ExplosionSystems)
                     .run_if(in_state(GameState::Playing)),
             )
             .add_systems(Update, gun_sounds.run_if(in_state(GameState::Playing)))
@@ -264,7 +322,8 @@ fn fire_weapons(
         if let Some(e) = energy.as_mut() {
             e.0.step(dt);
         }
-        gun.aiming = intent.aim_dir != Vec2::ZERO;
+        // The Hammer does not aim (`HammerWeapon.Aim` is empty).
+        gun.aiming = gun.kind != Kind::Hammer && intent.aim_dir != Vec2::ZERO;
         if gun.aiming {
             gun.aim.aim(intent.aim_dir.to_angle(), angle);
         }
@@ -326,8 +385,19 @@ fn fire_weapons(
                     });
                 }
             }
+            // `FireType.Shoot` of either kind reaches `TryShoot`, which spends
+            // the energy and then does nothing (`OnShoot` is empty), once a
+            // step as the key stays down.
+            Kind::Hammer => {
+                if (intent.fire || accurate)
+                    && let Some(e) = energy.as_mut()
+                {
+                    e.0.try_spend(options.energy);
+                }
+            }
         }
-        let cabin = sway.map_or((Vec2::ZERO, 0.0), |s| s.pose(angle));
+        // The saw does not ride the cabin (its `Update` ignored `deltaPos`).
+        let cabin = sway.filter(|_| gun.kind != Kind::Hammer).map_or((Vec2::ZERO, 0.0), |s| s.pose(angle));
         gun.aim.step(dt);
         if sway.is_some() {
             gun.aim.step(dt);
