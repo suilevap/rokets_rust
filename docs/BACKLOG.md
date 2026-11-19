@@ -9,29 +9,35 @@ request; remove it here when it lands.
 
 The map's `SimpleCars` are spawned (`car`, `car/simple`, `car/death`) with
 their health, shield, team, weapon and wreck. Their controls (`ai`) are live
-for `AiSimpleTurret` / `AiSimpleTurretFriend` (`TurretAi` flattened), `AlwaysShoot`
+for `AiSimpleTurret` / `AiSimpleTurretFriend` (`TurretAi`, a flatbt tree), `AlwaysShoot`
 and `ShootPattern`; every other `ControlType` that is an `AIBTBaseControl`
 stands idle until the next slice. In order:
 
-1. **Flat behaviour trees and navigation.** The tree engine
-   (`BTLib`: `Selector`, `Sequence`, `ActionNode`, `While`, `All`,
-   `Optional`, the running-path rules that `ai/turret.rs` hand-codes for one
-   tree), `AiBlackboard` (target, `LastDamager`, `State`, timers, `Path`,
-   `Orders`, `Traits`), `BTActionFactory` and its trees (`AiChaser`,
-   `MoveByPath*`, `SimpleFlocking`, `ZombieFlocking*`,
+1. **The other behaviour trees and navigation.** The engine is in: `flatbt`
+   and `flatbt-bevy` (`BTLib` → flatbt), the `AiBlackboard`
+   (`ai/blackboard.rs`) and the shared nodes (`ai/nodes/`: `DecoratorCondition`,
+   `Timer`, `All`, `FindNearestEnemy`, `FireToTarget`, `SimpleFollowByTarget`,
+   `Idle`, `Scanning`), with `TurretAi` as the first tree (`ai/trees.rs`).
+   Next, the rest of `BTActionFactory`'s trees, built from the same nodes
+   (`AiChaser`, `MoveByPath*`, `SimpleFlocking`, `ZombieFlocking*`,
    `SimpleAttackNearestEnemy`, `SimpleFollowByEnemyAi`,
    `MoveAndFireInInitDirection`, `GuardAi`, `SupportAi*`, `OrderExecutor*`,
    `CaptureTheBox*`, `AttackAi*`, `HammerAi*`, `ChickenAi`,
    `GoToEnemySimplePredictionPosition`, `ChaserTargetFromLocalVariable`,
-   `Ai` / `AiFriend` = `SimpleAi`), their nodes (`FindNearestEnemy`,
-   `FireToTarget`, `AimToTarget`, `MoveToPoint`, `MoveToRandomVisiblePosition`,
-   `FollowBy`, `Flocking`, `TriggerMapAction`, `GrabByChainGadget`, …),
+   `Ai` / `AiFriend` = `SimpleAi`), with their nodes (`AimToTarget`,
+   `MoveToPoint`, `MoveToRandomVisiblePosition`, `FollowBy`, `Flocking`,
+   `TriggerMapAction`, `GrabByChainGadget`, …, and `BTLib`'s `Optional`,
+   `RepeatUntilSuccess`, `DynamicNode`, `Condition`), the blackboard's rest
+   (`Path`, `Orders`, `Traits`, `Leader`, `LastKnowTargetPosition`),
    `SetPath` and `ScanDistance` for them, `ActionOnBTTrigger`,
    `OrdersManager`, and navigation over the map (`NavGraph`, `NavPath`,
    `MapManager.GetPath`, free points). `AiSimpleTurretFriendFireAvailableTarget`
    (`TurretAiFireToAnyone`: `SimpleAttackByAngle`, `FindAngleNearestEnemy`,
-   `TryFireToAnyone`; no map uses it) goes with them. Then the turret
-   can move to the tree and `ai/turret.rs` becomes its test.
+   `TryFireToAnyone`; no map uses it) goes with them. A tree whose world reads
+   are heavier than the turret's (paths, many cars) will want the gather to
+   copy less per step than the turret's (it already casts sight only on a
+   thinking step), and `flatbt-bevy`'s `.parallel()` once the blackboard is
+   the only thing a tree touches (the port runs single-threaded on the web).
    `GetPredictionPosition` corrects a prediction that lands in a wall
    (`GetNearestFreePoint`: the first 16 of the map's free points): not ported,
    decide it with the free points.

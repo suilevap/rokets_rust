@@ -668,6 +668,26 @@ pub fn target_in_fire_range(muzzle: Vec2, direction: f32, range: f32, dispersion
     direction_diff(direction, delta.to_angle()).abs() < dispersion + add_range
 }
 
+/// What `TargetInFireRange` reads of a gun, as plain numbers: where its
+/// shots start, where the barrel points now, how far they reach and how
+/// wide they scatter. Copied out of the weapon so whoever asks (the enemies'
+/// AI) need not hold it.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FireRange {
+    pub from: Vec2,
+    /// World radians.
+    pub direction: f32,
+    pub range: f32,
+    pub dispersion: f32,
+}
+
+impl FireRange {
+    /// [`target_in_fire_range`] for this gun.
+    pub fn contains(&self, target: Vec2, radius: f32) -> bool {
+        target_in_fire_range(self.from, self.direction, self.range, self.dispersion, target, radius)
+    }
+}
+
 /// `VectorExtension.CloserThanByChebyshev`.
 pub fn closer_by_chebyshev(a: Vec2, b: Vec2, distance: f32) -> bool {
     let d = a - b;

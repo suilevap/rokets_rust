@@ -242,8 +242,13 @@ impl Weapon {
     /// the gun points now and within its range. The Hammer is a plain
     /// `BaseWeapon`: its `PiuPosition` is its mount, not a muzzle.
     pub fn in_fire_range(&self, target: Vec2, radius: f32) -> bool {
+        self.fire_range().contains(target, radius)
+    }
+
+    /// The numbers `TargetInFireRange` reads, as they are now.
+    pub fn fire_range(&self) -> model::FireRange {
         let from = if self.kind == Kind::Hammer { self.at } else { self.muzzle() };
-        model::target_in_fire_range(from, self.direction, self.options.range, self.options.dispersion, target, radius)
+        model::FireRange { from, direction: self.direction, range: self.options.range, dispersion: self.options.dispersion }
     }
 
     /// Places the gun on a car at `car` facing `angle`, its cabin moved

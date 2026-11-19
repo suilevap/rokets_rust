@@ -38,6 +38,9 @@ avian2d = { version = "0.8.0", default-features = false, features = ["2d", "parr
 serde = { version = "1", features = ["derive"] }
 quick-xml = { version = "0.42", features = ["serialize"] }
 thiserror = "2"
+# The behaviour-tree runtime and its Bevy integration (`ai`).
+flatbt = { git = "https://github.com/suilevap/flatbt", rev = "baccc06" }
+flatbt-bevy = { git = "https://github.com/suilevap/flatbt", rev = "baccc06" }
 rand = { version = "0.9", default-features = false, features = ["small_rng"] }
 
 # The browser build: JS glue, and the JS crypto API for any OS entropy.

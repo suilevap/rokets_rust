@@ -31,7 +31,7 @@ use bevy::prelude::*;
 
 use super::{AddMapAction, MapIds, Run};
 use crate::car::control::{Team, control_kind};
-use crate::ai::Turret;
+use crate::ai::AiBlackboard;
 use crate::car::control::AutoAimVisible;
 use crate::content::actions::defs::{AIAdjustment, BoolSetterType, ControlType, SetControl};
 use crate::controls::{LocalPlayer, NoInput, PlayerIntent, is_players};
@@ -81,7 +81,7 @@ fn ai_adjustment(
     In(run): In<Run<AIAdjustment>>,
     ids: MapIds,
     cars: Cars,
-    mut turrets: Query<&mut Turret>,
+    mut blackboards: Query<&mut AiBlackboard>,
     mut guns: Query<&mut Weapon>,
     mut commands: Commands,
 ) -> bool {
@@ -97,9 +97,9 @@ fn ai_adjustment(
         commands.entity(e).insert(Team(data.team.clamp(0, 254) as u8));
     }
     // `AIBTBaseControl`'s own: the turret.
-    if let Ok(mut turret) = turrets.get_mut(e) {
+    if let Ok(mut blackboard) = blackboards.get_mut(e) {
         if data.scan_distance >= 0.0 {
-            turret.scan_distance = data.scan_distance;
+            blackboard.scan_distance = data.scan_distance;
         }
         if data.weapon_max_angle_deg >= 0.0
             && let Ok(mut gun) = guns.get_mut(e)
@@ -113,7 +113,7 @@ fn ai_adjustment(
                 commands.entity(e).insert(AutoAimVisible(visible == BoolSetterType::Yes));
             }
         }
-        turret.fire_accuracy = data.fire_accuracy;
+        blackboard.fire_accuracy = data.fire_accuracy;
     }
     true
 }
