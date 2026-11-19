@@ -15,8 +15,9 @@
 //! |---|---|---|
 //! | [`orders`] | [`Orders`]: what a tree makes the car do (flatbt's act) | `IControl` |
 //! | [`blackboard`] | [`AiBlackboard`]: what the trees read and write | `AiBlackboard` |
-//! | [`nodes`] | the shared nodes: `DecoratorCondition`, `Timer`, `All`, `FindNearestEnemy`, `FireToTarget`, … | `BTLib`, `BTActions/*` |
-//! | [`trees`] | the trees put together from them: `TurretAi` and its subtrees | `BTActionFactory` |
+//! | [`nodes`] | the shared nodes: `DecoratorCondition`, `Timer`, `All`, `Optional`, `FindNearestEnemy`, `FireToTarget`, `MoveBase`, `MoveToPoint`, `FollowBy`, … | `BTLib`, `BTActions/*` |
+//! | [`trees`] | the trees put together from them: `TurretAi`, `ChaserAi`, `FollowPathAi` and their subtrees | `BTActionFactory` |
+//! | [`navigation`] | [`Navigation`]: the map's navigation graph ([`crate::map::nav`]) as a resource, `SetPath`, `--nav` | `MapManager._navigation`, `ActionRunner.SetPathRun` |
 //! | [`fire`] | `AlwaysShoot`, `ShootPattern`: plain controls, not trees | `AiSimpleControl`, `PeriodicFireControl` |
 //!
 //! The controls that are live:
@@ -24,6 +25,10 @@
 //! | `ControlType` | Control |
 //! |---|---|
 //! | `AiSimpleTurret`, `AiSimpleTurretFriend` | a flatbt `Behavior` running `TurretAi` over an [`AiBlackboard`]: finds an enemy within `ScanDistance` in sight, turns the gun on it, fires when it points there; scans otherwise |
+//! | `AiChaser` | `BTActionFactory.Chase`: finds the nearest enemy anywhere on the map (`ScanDistance` = the room's width and height), follows it by a path from the navigation graph (`FollowBy`: the path is extended while the target stays near its end and made again when it is old or the target has moved on), fires when the gun points at it, goes to where it was last seen when it is lost, and sleeps two seconds when there is nobody |
+//! | `MoveByPath`, `MoveByPathFriend` | `BTActionFactory.FollowPathAi`: follows the `Path` that `SetPath` gave it (`MoveBase`), firing at anyone in the gun's line at most every 3 s (`TryFireToAnyone`); with no path (or when an open one is done) it runs the action `AIAdjustment` gave it (`ActionOnBTTrigger`) once |
+//! | `MoveByPathSafelyFriend` | `FollowPathAiSafe`: the same, but runs from an enemy in sight |
+//! | `GoToEnemySimplePredictionPosition` | finds an enemy and goes straight at where it will be (`MoveTowardsTargetNoPath`) |
 //! | `AlwaysShoot` | [`AlwaysShoot`]: the trigger always down, the gun where the car points |
 //! | `ShootPattern` | [`ShootPattern`]: a random pattern of quarter-second silences and bursts |
 //! | `NoneLocal`, `NoneEnemy`, `NoneFriend` | nothing (`AINone`; see `car::control`) |
@@ -106,18 +111,33 @@
 //! `Condition` (with the trees that use them), `BTBuilder`'s single-child
 //! shortcut (a `Selector` or `Sequence` of one child is the child).
 //!
+//! # Paths
+//!
+//! The trees that drive (`ChaserAi`, `FollowPathAi`) steer at a *carrot* on
+//! the blackboard's `Path` (see [`nodes`]' `MoveBase` and
+//! [`crate::map::nav::NavPath`]); the path is the map's (`SetPath`: closed or
+//! open, `Path` or `Patrol`) or made by the navigation graph
+//! ([`crate::map::nav`], the resource is [`Navigation`], handed to each
+//! blackboard by the gather). A car that is stuck (two seconds on an open path
+//! without having moved half a unit while pushing) gives the path up. What
+//! `Control.ClearAxis` did is [`AiBlackboard::clear_stick`], which
+//! `carry_out` turns into a zero stick; `MapManager.Triggers.RunAction` is
+//! queued by the tree ([`AiBlackboard::run_action`]) and sent by
+//! `send_trigger_actions`.
+//!
 //! Everything else that is an `AIBTBaseControl` waits for the trees that use
-//! the nodes not yet ported: `Ai`, `AiFriend`,
-//! `AiSimpleTurretFriendFireAvailableTarget`, `AiChaser`, `MoveByPath*`,
+//! the nodes not yet ported (`docs/BACKLOG.md` says which node each needs):
+//! `Ai`, `AiFriend`, `AiSimpleTurretFriendFireAvailableTarget`,
 //! `SimpleFlocking`, `ZombieFlocking*`, `SimpleAttackNearestEnemy`,
 //! `SimpleFollowByEnemyAi`, `MoveAndFireInInitDirection`, `GuardAi`,
 //! `SupportAi*`, `OrderExecutor*`, `CaptureTheBox*`, `AttackAi*`, `HammerAi*`,
-//! `ChickenAi`, `GoToEnemySimplePredictionPosition`,
-//! `ChaserTargetFromLocalVariable`. Cars with those stand idle, as before,
-//! and `AIAdjustment` sets only their team. `AITurret`, `AISimpleCarControl`,
-//! `AITouchAndRunCarControl` and `AIPathCarControl` are not reached by any
-//! `ControlType` (the last two only by game modes the port does not have,
-//! and they need `NavGraph`): not ported.
+//! `ChickenAi`, `ChaserTargetFromLocalVariable`. Cars with those stand idle, as
+//! before, and `AIAdjustment` sets only their team. `AITurret` and
+//! `AISimpleCarControl` are not reached by any `ControlType`;
+//! `AIPathCarControl` (the base of `AISimpleCarControl`,
+//! `AITouchAndRunCarControl` and the player's `PlayerCarControlPath`: they
+//! call `MapManager.GetPath`, which [`Navigation::get_path`] now is) only by
+//! game modes the port does not have: not ported.
 //!
 //! [`Foe`]s are the cars alive (`Health` above 0) and not deactivated; the
 //! team decides who is an enemy. What a turret remembers of who hurt it
@@ -134,6 +154,7 @@
 
 pub mod blackboard;
 pub mod fire;
+pub mod navigation;
 pub mod nodes;
 pub mod orders;
 pub mod trees;
@@ -142,9 +163,10 @@ use avian2d::prelude::*;
 use bevy::prelude::*;
 use flatbt_bevy::prelude::*;
 
-use crate::actions::Inactive;
+use crate::actions::{Inactive, RunAction};
 use crate::car::CarRadius;
 use crate::car::control::Team;
+use crate::car::simple::SimpleDrive;
 use crate::controls::PlayerIntent;
 use crate::explosion::{Damaged, ExplosionSystems, Health};
 use crate::game::{GameState, LoadedMap, MapId};
@@ -152,17 +174,23 @@ use crate::weapon::Weapon;
 use crate::weapon::model::Kind;
 pub use fire::{AlwaysShoot, ShootPattern};
 pub use blackboard::{AiBlackboard, Body, Foe, Gun};
+pub use navigation::Navigation;
 pub use orders::Orders;
 
 pub struct AiPlugin;
 
 impl Plugin for AiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(
-            BehaviorPlugin::for_tree(trees::turret_ai)
+        app.add_plugins((
+            BehaviorPlugin::for_tree(trees::turret_ai).in_schedule(FixedUpdate).tick_mode(tick_mode),
+            BehaviorPlugin::for_tree(trees::chaser_ai).in_schedule(FixedUpdate).tick_mode(tick_mode),
+            BehaviorPlugin::for_tree(trees::follow_path_ai).in_schedule(FixedUpdate).tick_mode(tick_mode),
+            BehaviorPlugin::for_tree(trees::follow_path_ai_safe).in_schedule(FixedUpdate).tick_mode(tick_mode),
+            BehaviorPlugin::for_tree(trees::go_to_enemy_simple_prediction_position)
                 .in_schedule(FixedUpdate)
                 .tick_mode(tick_mode),
-        )
+            navigation::NavigationPlugin,
+        ))
         .configure_sets(
             FixedUpdate,
             BehaviorSystems.before(crate::car::drive_cars).run_if(in_state(GameState::Playing)).run_if(stepping),
@@ -171,7 +199,7 @@ impl Plugin for AiPlugin {
             FixedUpdate,
             (
                 gather_blackboards.before(BehaviorSystems),
-                carry_out.after(BehaviorSystems).run_if(stepping),
+                (carry_out, send_trigger_actions).after(BehaviorSystems).run_if(stepping),
                 (run_always_shoot, run_shoot_patterns),
             )
                 .before(crate::car::drive_cars)
@@ -193,30 +221,66 @@ impl Plugin for AiPlugin {
 /// id). Controls that are not live (the behaviour-tree ones, `AINone`) leave
 /// the car with none.
 pub fn set_control(car: &mut EntityCommands, control: &str, seed: u64) {
-    car.remove::<(AiBlackboard, AlwaysShoot, ShootPattern)>().stop_behavior(trees::turret_ai);
+    car.remove::<(AiBlackboard, AlwaysShoot, ShootPattern)>()
+        .stop_behavior(trees::turret_ai)
+        .stop_behavior(trees::chaser_ai)
+        .stop_behavior(trees::follow_path_ai)
+        .stop_behavior(trees::follow_path_ai_safe)
+        .stop_behavior(trees::go_to_enemy_simple_prediction_position);
     #[cfg(debug_assertions)]
     car.remove::<DebugBehavior>();
+    let mut brain = AiBlackboard::new(seed);
     match control.trim() {
         "AiSimpleTurret" | "AiSimpleTurretFriend" => {
-            car.insert((AiBlackboard::new(seed), Behavior::for_tree(trees::turret_ai)));
-            #[cfg(debug_assertions)]
-            car.insert(DebugBehavior::default());
+            car.insert((brain, Behavior::for_tree(trees::turret_ai)));
+        }
+        // `ScanDistance` = the room's width and height.
+        "AiChaser" => {
+            brain.scan_distance = trees::CHASER_SCAN_DISTANCE;
+            car.insert((brain, Behavior::for_tree(trees::chaser_ai)));
+        }
+        // `TryFireToAnyone` asks `GetEnemies` as it ticks.
+        "MoveByPath" | "MoveByPathFriend" => {
+            brain.watch_enemies = true;
+            car.insert((brain, Behavior::for_tree(trees::follow_path_ai)));
+        }
+        "MoveByPathSafelyFriend" => {
+            brain.watch_enemies = true;
+            car.insert((brain, Behavior::for_tree(trees::follow_path_ai_safe)));
+        }
+        "GoToEnemySimplePredictionPosition" => {
+            car.insert((brain, Behavior::for_tree(trees::go_to_enemy_simple_prediction_position)));
         }
         "AlwaysShoot" => {
             car.insert(AlwaysShoot);
+            return;
         }
         "ShootPattern" => {
             let mut rng = <rand::rngs::SmallRng as rand::SeedableRng>::seed_from_u64(seed);
             car.insert(ShootPattern::random(&mut rng));
+            return;
         }
-        _ => {}
+        _ => return,
     }
+    #[cfg(debug_assertions)]
+    car.insert(DebugBehavior::default());
 }
 
 /// Whether the port has a live control for a `ControlType` (see the table
 /// above).
 pub fn is_live(control: &str) -> bool {
-    matches!(control.trim(), "AiSimpleTurret" | "AiSimpleTurretFriend" | "AlwaysShoot" | "ShootPattern")
+    matches!(
+        control.trim(),
+        "AiSimpleTurret"
+            | "AiSimpleTurretFriend"
+            | "AiChaser"
+            | "MoveByPath"
+            | "MoveByPathFriend"
+            | "MoveByPathSafelyFriend"
+            | "GoToEnemySimplePredictionPosition"
+            | "AlwaysShoot"
+            | "ShootPattern"
+    )
 }
 
 /// Writes `value` only when it differs, so the intent is not marked
@@ -247,7 +311,21 @@ fn gather_blackboards(
     physics: Res<Time<Physics>>,
     map: Res<LoadedMap>,
     cars: Query<(Entity, &Team, &Position, Option<&LinearVelocity>, &CarRadius, &Health), Without<Inactive>>,
-    mut brains: Query<(&mut AiBlackboard, Has<Orders>, &Position, &Rotation, &Team, &Health, Option<&Weapon>, Has<Inactive>)>,
+    mut brains: Query<(
+        &mut AiBlackboard,
+        Has<Orders>,
+        &Position,
+        &Rotation,
+        &Team,
+        &Health,
+        Option<&Weapon>,
+        Has<Inactive>,
+        Option<&LinearVelocity>,
+        &CarRadius,
+        Has<SimpleDrive>,
+        &PlayerIntent,
+    )>,
+    navigation: Option<Res<Navigation>>,
     mut foes: Local<Vec<Foe>>,
 ) {
     let dt = time.delta_secs();
@@ -263,7 +341,9 @@ fn gather_blackboards(
         radius: radius.0,
     }));
     let blocked = |a: Vec2, b: Vec2| map.line_collides(a, b);
-    for (mut blackboard, running, position, rotation, team, health, weapon, inactive) in &mut brains {
+    for (mut blackboard, running, position, rotation, team, health, weapon, inactive, velocity, radius, can_move, intent) in
+        &mut brains
+    {
         // `ControlableEntity.Update`: nothing for a car that is inactive
         // or dead.
         if health.hp <= 0 || inactive {
@@ -275,7 +355,14 @@ fn gather_blackboards(
             heading: rotation.as_radians(),
             team: team.0,
             gun: weapon.map(|w| Gun { complex: w.kind != Kind::Hammer, max_angle: w.aim.max_angle, range: w.fire_range() }),
+            velocity: velocity.map_or(Vec2::ZERO, |v| v.0),
+            radius: radius.0,
+            can_move,
+            stick: intent.move_dir,
         };
+        if blackboard.nav.is_none() {
+            blackboard.nav = navigation.as_deref().cloned();
+        }
         blackboard.gather(dt, running, body, &foes, &blocked);
     }
 }
@@ -284,8 +371,8 @@ fn gather_blackboards(
 /// tree into the car's intent. A car whose tree ended this step has no act and
 /// writes nothing (its trigger is let go).
 #[allow(clippy::type_complexity)]
-fn carry_out(mut brains: Query<(&mut PlayerIntent, Option<&Orders>, &Health, Has<Inactive>), With<AiBlackboard>>) {
-    for (mut intent, orders, health, inactive) in &mut brains {
+fn carry_out(mut brains: Query<(&mut PlayerIntent, Option<&Orders>, &Health, Has<Inactive>, &mut AiBlackboard)>) {
+    for (mut intent, orders, health, inactive, mut blackboard) in &mut brains {
         // `ControlableEntity.Update`: nothing for a car that is inactive
         // or dead.
         let orders = match orders {
@@ -296,11 +383,28 @@ fn carry_out(mut brains: Query<(&mut PlayerIntent, Option<&Orders>, &Health, Has
         // (`Control.Fire &= ~FireType.Shoot` takes it after).
         set(&mut intent.fire, orders.fire);
         set(&mut intent.fire_accurate, orders.fire);
-        if let Some(m) = orders.move_dir {
-            set(&mut intent.move_dir, m);
+        // An action that ended let the stick go (`Control.ClearAxis`); what a
+        // tick wrote after that stands.
+        let cleared = blackboard.bypass_change_detection().take_stick_cleared();
+        match orders.move_dir {
+            Some(m) => set(&mut intent.move_dir, m),
+            None if cleared => set(&mut intent.move_dir, Vec2::ZERO),
+            None => {}
         }
         if let Some(a) = orders.aim_dir {
             set(&mut intent.aim_dir, a);
+        }
+    }
+}
+
+/// `MapManager.Triggers.RunAction(name, Entity.CustomId)` for the map actions
+/// the trees asked for (`TriggerMapAction`).
+fn send_trigger_actions(mut brains: Query<(&mut AiBlackboard, Option<&MapId>)>, mut run: MessageWriter<RunAction>) {
+    for (mut blackboard, id) in &mut brains {
+        if blackboard.has_actions() {
+            for name in blackboard.take_actions() {
+                run.write(RunAction { name, actor: id.map(|i| i.0) });
+            }
         }
     }
 }

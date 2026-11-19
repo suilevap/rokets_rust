@@ -126,6 +126,11 @@ impl LineMeshBuilder {
             .extend_from_slice(&[base, base + 1, base + 2, base, base + 2, base + 3]);
     }
 
+    /// Whether nothing was added (such a mesh has no vertices).
+    pub fn is_empty(&self) -> bool {
+        self.positions.is_empty()
+    }
+
     pub fn build(self) -> Mesh {
         Mesh::new(
             PrimitiveTopology::TriangleList,

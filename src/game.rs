@@ -307,6 +307,8 @@ fn poll_loading(
         "map {} ready: {}x{} cells, {} lamps",
         data.name, grid.width, grid.height, light.lamps.len()
     );
+    // `_navigation.BuildFromDistanceField`, once the map is ready.
+    commands.insert_resource(crate::ai::Navigation::build(&grid, cell));
     commands.insert_resource(LoadedMap {
         data,
         grid,

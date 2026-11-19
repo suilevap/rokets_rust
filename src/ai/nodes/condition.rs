@@ -95,3 +95,16 @@ pub fn timer<Child>(
         child,
     )
 }
+
+/// `BTActions/WhileTargetAlive(child)`: runs `child` while the blackboard has
+/// a target that is alive; `Fail` (the child dropped) when it has none. A
+/// `DecoratorCondtion` with no `init`.
+pub fn while_target_alive<Child>(
+    child: Child,
+) -> DecoratorCondition<impl Fn(&mut AiBlackboard), impl Fn(&mut AiBlackboard) -> NodeResult<()>, Child> {
+    decorator_condition(
+        |_: &mut AiBlackboard| {},
+        |bb: &mut AiBlackboard| if bb.live_target().is_some() { NodeResult::RUNNING } else { NodeResult::Failure },
+        child,
+    )
+}

@@ -14,10 +14,22 @@
 //!   back at the start it is closed (`ActionOnClose`, fixed again if
 //!   static). Without a door component, `OpenDoor` just pushes the entity.
 //!
-//! Not ported: the animated arrow hint, the opening splash, navigation
-//! links (no AI yet).
+//! - **Navigation links** (`IsGenerateNavLink`): the door makes a pair of
+//!   links in the map's navigation graph across itself (the points are half
+//!   its width plus half a cell either side of its start), blocked and far
+//!   (`Door.BreakNavigation`: a cell × 32 long) while it is closed; opening
+//!   it (`OpenDoor`) makes them as long as it is wide and free, closing it
+//!   breaks them again. The graph does not look at `blocked` when it searches
+//!   (a way through a closed door is found and refused by the car that wants
+//!   it).
+//!
+//! Not ported: the animated arrow hint, the opening splash. The links follow
+//! the open/close *actions* (as C#'s `OpenDoor()` / `CloseDoor()` did), not a
+//! door shoved open by a car.
 
 use crate::actions::{AddMapAction, MapIds, Run, RunAction};
+use crate::ai::Navigation;
+use crate::map::nav::{Blocker, LinkRef};
 use crate::content::actions::defs::{AddDoorComponent, OpenCloseDoor};
 use crate::game::{GameState, LoadedMap, MapEntity, MapId};
 use crate::render::layers::Layer;
@@ -43,6 +55,11 @@ pub struct Door {
     on_close: Option<String>,
     last_velocity: Vec2,
     hint: Option<Entity>,
+    /// The links it made in the navigation graph, and how wide it is
+    /// (`Size.Y`) and how far a closed one is (`CellSize * 32`).
+    nav_links: Vec<LinkRef>,
+    width: f32,
+    closed_cost: f32,
 }
 
 pub struct DoorPlugin;
@@ -65,6 +82,7 @@ fn add_door(
     ids: MapIds,
     bodies: Query<(&Position, &Rotation, &Collider, &MapId)>,
     map: Res<LoadedMap>,
+    nav: Option<Res<Navigation>>,
     quad: Res<UnitQuad>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut commands: Commands,
@@ -97,6 +115,27 @@ fn add_door(
                 .id()
         });
     let name = |s: &Option<String>| s.clone().filter(|s| !s.trim().is_empty());
+    let closed_cost = map.cell.0 * 32.0;
+    // `Door.Init`: `LinkPoints(start - delta, start + delta, false, this)`, the
+    // way across, `delta` being the facing turned a quarter (C#'s
+    // `RotateLeft90` in y-down is `(y, -x)` here) by half a width and a half
+    // cell; then `BreakNavigation`: the door is closed.
+    let nav_links = match (&nav, d.is_generate_nav_link) {
+        (Some(nav), true) => {
+            let delta = Vec2::new(facing.y, -facing.x) * (size.y + map.cell.0) * 0.5;
+            nav.write(|g| {
+                let links = g.link_points(pos.0 - delta, pos.0 + delta, false, Some(Blocker(e.to_bits())));
+                for link in &links {
+                    g.set_link(*link, closed_cost, true);
+                }
+                links
+            })
+        }
+        _ => Vec::new(),
+    };
+    if !nav_links.is_empty() {
+        debug!("door {:?} made {} navigation links", e, nav_links.len());
+    }
     commands.entity(e).insert((
         Door {
             start: pos.0,
@@ -110,6 +149,9 @@ fn add_door(
             on_close: name(&d.action_on_close),
             last_velocity: Vec2::ZERO,
             hint,
+            nav_links,
+            width: size.y,
+            closed_cost,
         },
         Restitution::ZERO,
     ));
@@ -124,6 +166,7 @@ fn open_close(
     In(run): In<Run<OpenCloseDoor>>,
     ids: MapIds,
     mut bodies: Query<(&Rotation, &mut LinearVelocity, &Collider, Option<&Door>)>,
+    nav: Option<Res<Navigation>>,
     mut commands: Commands,
 ) -> bool {
     let Some(e) = ids.entity(run.target(run.data.item_id)) else {
@@ -140,6 +183,12 @@ fn open_close(
             // freed first; its speed goes in with the change of body, as
             // the physics clears a static body's speed.
             let push = facing * door.push * 2.0 * sign;
+            if let Some(nav) = &nav {
+                // `OpenDoor`: free and as long as the door is wide;
+                // `CloseDoor`: `BreakNavigation`.
+                let (cost, blocked) = if run.data.open { (door.width, false) } else { (door.closed_cost, true) };
+                nav.write(|g| door.nav_links.iter().for_each(|l| g.set_link(*l, cost, blocked)));
+            }
             if door.fix_on_open || door.fixed {
                 commands
                     .entity(e)

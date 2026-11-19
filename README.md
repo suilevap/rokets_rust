@@ -30,6 +30,7 @@ cargo run --release -- -m LetItSnowDay
 | `--lang LANG` | The maps' texts in another language: `ru`, `de`, `es`, `it`, `be` (default English) |
 | `--drive SCRIPT` | Drive by script, `x,y:seconds;...` (stick in world directions, y up; `x,y,g:seconds` also holds the gadget, aimed ahead, `x,y,f:seconds` the trigger, the gun firing where it points), logging the car's path every 0.1 s |
 | `--trace a,b` | With `--drive`: also log these entities (map ids) every 0.1 s, as `trace t id x y angle speed` in the C# game's axes, for `tools/compare.py`, and their health as `health t id hp` |
+| `--nav` | Draw the navigation graph over the map (links in green, crossings in orange; red links are dear ones), as `NavGraph.Draw` did in the C# game's AI debug build |
 
 Portrait screens (a phone held upright) show the landscape view turned a
 quarter turn: up on the screen is right on the map, and the controls follow

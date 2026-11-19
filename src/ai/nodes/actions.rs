@@ -201,7 +201,10 @@ impl BtAction<AiBlackboard, Orders> for Scanning {
             }
             _ => Vec2::new(ctx.random() * 2.0 - 1.0, ctx.random() * 2.0 - 1.0),
         };
-        Some(ctx.pos + direction * ctx.scan_distance)
+        let at = ctx.pos + direction * ctx.scan_distance;
+        // `b.TargetPosition = …`: the blackboard's own.
+        ctx.target_position = at;
+        Some(at)
     }
 
     fn is_in_progress(&self, _: &Vec2, _: &AiBlackboard, _: ()) -> bool {
@@ -215,5 +218,192 @@ impl BtAction<AiBlackboard, Orders> for Scanning {
         let to = *at - ctx.pos;
         let aim = if to.length_squared() < scan * scan { to / scan } else { to.normalize_or_zero() };
         Orders { aim_dir: Some(aim), ..Orders::default() }
+    }
+}
+
+/// `BTActions/MoveTowardsTargetNoPath(predictSec)`: steers straight at where
+/// the target will be, with no path (a car that goes through the room as the
+/// crow flies). Starts when the target lives and is in sight now or in 0.5 s;
+/// goes on while that holds; completes `Ok` when the target is gone (or
+/// dead), `Fail` when it is lost from sight.
+///
+/// C#'s stick is `ToGoWorld(pos, ScanDistance)` made a unit vector
+/// (`SafeNormalize`): the same direction as [`FireToTarget`]'s aim.
+#[derive(Clone, Copy, Debug)]
+pub struct MoveTowardsTargetNoPath {
+    /// `_predictSec`.
+    pub predict: f32,
+}
+
+impl MoveTowardsTargetNoPath {
+    pub fn new(predict: f32) -> MoveTowardsTargetNoPath {
+        MoveTowardsTargetNoPath { predict }
+    }
+}
+
+impl BtAction<AiBlackboard, Orders> for MoveTowardsTargetNoPath {
+    type State = ();
+
+    fn start(&self, ctx: &mut AiBlackboard, _: ()) -> Option<()> {
+        (ctx.live_target().is_some() && ctx.can_see_target()).then_some(())
+    }
+
+    fn is_in_progress(&self, _: &(), ctx: &AiBlackboard, _: ()) -> bool {
+        ctx.live_target().is_some() && ctx.can_see_target()
+    }
+
+    fn tick(&self, _: &mut (), ctx: &mut AiBlackboard, _: ()) -> Orders {
+        let Some(foe) = ctx.live_target() else {
+            return Orders::default();
+        };
+        Orders { move_dir: Some(direction_to(foe, ctx.pos, self.predict)), ..Orders::default() }
+    }
+
+    fn complete(&self, _: &mut (), ctx: &mut AiBlackboard, _: ()) -> bool {
+        ctx.live_target().is_none()
+    }
+}
+
+/// `BTActions/TryFireToAnyone(periodSec)`: pulls the trigger when anyone of
+/// the enemies within `ScanDistance` is in the gun's fire range (the radius
+/// scaled by `FireAccuracy`), at most once every `period` seconds (a `PeriodicUpdate`
+/// that starts due). Never ends by itself, and turns nothing: the gun stays
+/// where it points.
+///
+/// The enemies are asked every step, not only when the tree thinks: a tree that
+/// uses this watches them ([`AiBlackboard::watch_enemies`]).
+#[derive(Clone, Copy, Debug)]
+pub struct TryFireToAnyone {
+    /// `_periodSec`.
+    pub period: f32,
+}
+
+impl TryFireToAnyone {
+    pub fn new(period: f32) -> TryFireToAnyone {
+        TryFireToAnyone { period }
+    }
+}
+
+impl BtAction<AiBlackboard, Orders> for TryFireToAnyone {
+    /// `PeriodicUpdate._invalidatedTime`, s: shots wait until the game time
+    /// is past it.
+    type State = f64;
+
+    fn start(&self, _: &mut AiBlackboard, _: ()) -> Option<f64> {
+        Some(0.0)
+    }
+
+    fn is_in_progress(&self, _: &f64, _: &AiBlackboard, _: ()) -> bool {
+        true
+    }
+
+    fn tick(&self, until: &mut f64, ctx: &mut AiBlackboard, _: ()) -> Orders {
+        let Some(gun) = ctx.gun else {
+            return Orders::default();
+        };
+        let accuracy = ctx.fire_accuracy;
+        let someone = ctx.enemies().any(|e| gun.range.contains(e.pos, e.radius * accuracy));
+        if someone && ctx.now() > *until {
+            *until = ctx.now() + self.period as f64;
+            return Orders { fire: true, ..Orders::default() };
+        }
+        Orders::default()
+    }
+}
+
+/// `BTActions/TriggerMapAction(runOnlyOnce, optional)`: runs the map action
+/// the car was given (`AIAdjustment`'s `ActionOnBTTrigger`), in the tree's
+/// thinking pass, and is over at once. With `run_only_once` the action is
+/// forgotten after it runs. An `optional` one succeeds whatever; otherwise it
+/// fails (as C#'s `result` always was).
+#[derive(Clone, Copy, Debug)]
+pub struct TriggerMapAction {
+    pub run_only_once: bool,
+    pub optional: bool,
+}
+
+impl TriggerMapAction {
+    /// `TriggerMapAction(runOnlyOnce)`: optional.
+    pub fn new(run_only_once: bool) -> TriggerMapAction {
+        TriggerMapAction { run_only_once, optional: true }
+    }
+}
+
+impl BtAction<AiBlackboard, Orders> for TriggerMapAction {
+    type State = ();
+
+    fn start(&self, ctx: &mut AiBlackboard, _: ()) -> Option<()> {
+        if let Some(name) = ctx.map_action_on_trigger.clone().filter(|n| !n.trim().is_empty()) {
+            ctx.run_action(name);
+            if self.run_only_once {
+                ctx.map_action_on_trigger = None;
+            }
+        }
+        self.optional.then_some(())
+    }
+
+    fn is_in_progress(&self, _: &(), _: &AiBlackboard, _: ()) -> bool {
+        false
+    }
+
+    /// C# throws here (an action that is never in progress is never ticked).
+    fn tick(&self, _: &mut (), _: &mut AiBlackboard, _: ()) -> Orders {
+        Orders::default()
+    }
+}
+
+/// `Sleep2Sec` (`b.Control.Sleep(2.0f)`): puts the next forced think off by
+/// `secs` and a period; over at once.
+#[derive(Clone, Copy, Debug)]
+pub struct Sleep {
+    pub secs: f32,
+}
+
+impl BtAction<AiBlackboard, Orders> for Sleep {
+    type State = ();
+
+    fn start(&self, ctx: &mut AiBlackboard, _: ()) -> Option<()> {
+        ctx.sleep(self.secs);
+        Some(())
+    }
+
+    fn is_in_progress(&self, _: &(), _: &AiBlackboard, _: ()) -> bool {
+        false
+    }
+
+    fn tick(&self, _: &mut (), _: &mut AiBlackboard, _: ()) -> Orders {
+        Orders::default()
+    }
+}
+
+/// `FollowPathAiSafe`'s `Runaway`: while the target is in sight or will be in
+/// 0.5 s, the stick points away from it (`ToGoRelative(-delta, ScanDistance, 0)`:
+/// a unit stick when it is `ScanDistance` or more away, a shorter one the
+/// nearer it is). Never ends by itself, and completes `Ok`.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct Runaway;
+
+impl BtAction<AiBlackboard, Orders> for Runaway {
+    type State = ();
+
+    fn start(&self, ctx: &mut AiBlackboard, _: ()) -> Option<()> {
+        ctx.can_see_target().then_some(())
+    }
+
+    fn is_in_progress(&self, _: &(), ctx: &AiBlackboard, _: ()) -> bool {
+        ctx.can_see_target()
+    }
+
+    fn tick(&self, _: &mut (), ctx: &mut AiBlackboard, _: ()) -> Orders {
+        let away = ctx.pos - ctx.target_position_safe();
+        let length = away.length();
+        let stick = if length == 0.0 {
+            Vec2::ZERO
+        } else if length < ctx.scan_distance {
+            away / ctx.scan_distance
+        } else {
+            away / length
+        };
+        Orders { move_dir: Some(stick), ..Orders::default() }
     }
 }

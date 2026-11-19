@@ -9,25 +9,40 @@
 //!
 //! | Node | C# |
 //! |---|---|
-//! | [`DecoratorCondition`], [`timer`] | `BTLib.DecoratorCondtion` (`While`), `BTActionFactory.Timer` |
+//! | [`DecoratorCondition`], [`timer`], [`while_target_alive`] | `BTLib.DecoratorCondtion` (`While`), `BTActionFactory.Timer`, `BTActions/WhileTargetAlive` |
 //! | [`quiet_start`] | the way `Context.Think` starts an action without ticking it |
 //! | [`all`] | `BTLib.ParallelAllActionNode` (`All`) |
+//! | [`optional`] | `BTLib.OptionalActionNode` (`bt.Optional`) |
 //! | [`FindNearestEnemy`] | `BTActions/FindNearestEnemy` |
 //! | [`FireToTarget`] | `BTActions/FireToTarget` |
 //! | [`SimpleFollowByTarget`] | `BTActions/SimpleFollowByTarget` |
+//! | [`MoveTowardsTargetNoPath`] | `BTActions/MoveTowardsTargetNoPath` |
+//! | [`MoveBase`], [`MoveToPoint`], [`FollowBy`] | `BTActions/MoveBase`, `MoveToPoint`, `FollowBy`: drive along a [`NavPath`](crate::map::nav::NavPath) |
+//! | [`TryFireToAnyone`] | `BTActions/TryFireToAnyone` |
+//! | [`TriggerMapAction`] | `BTActions/TriggerMapAction` |
+//! | [`Sleep`] | `BTActionFactory.Sleep2Sec` |
+//! | [`Runaway`] | the `Runaway` action of `BTActionFactory.FollowPathAiSafe` |
 //! | [`Idle`] | `BTBuilder.Idle` |
 //! | [`Scanning`] | the `Scanning` action of `BTActionFactory.SimpleScanning` |
 //!
-//! The rest of `BTActions/` (`FollowBy`, `MoveBase`, `MoveToPoint`,
-//! `Flocking`, `ExecuteOrders`, `AimToTarget`, …) comes with the trees that
-//! use it.
+//! The rest of `BTActions/` (`Flocking`, `ExecuteOrders`, `AimToTarget`,
+//! `MoveToRandomVisiblePosition`, `FindAngleNearestEnemy`,
+//! `FindNearestLeader`, `GetTargetFromVariables`, the chain gadget ones, …)
+//! comes with the trees that use it (`docs/BACKLOG.md` lists which).
 
 mod actions;
 mod condition;
+mod optional;
 mod parallel;
+mod path;
 mod quiet;
 
-pub use actions::{FindNearestEnemy, FireToTarget, Idle, Scanning, SimpleFollowByTarget};
-pub use condition::{DecoratorCondition, WhileState, decorator_condition, timer};
+pub use actions::{
+    FindNearestEnemy, FireToTarget, Idle, MoveTowardsTargetNoPath, Runaway, Scanning, SimpleFollowByTarget, Sleep,
+    TriggerMapAction, TryFireToAnyone,
+};
+pub use condition::{DecoratorCondition, WhileState, decorator_condition, timer, while_target_alive};
+pub use optional::{Optional, optional, optional_required};
 pub use parallel::{All, all};
+pub use path::{FollowBy, MoveBase, MoveParams, MoveToPoint, PositionFn, go_to_position, to_go_world};
 pub use quiet::{QuietStart, quiet_start};

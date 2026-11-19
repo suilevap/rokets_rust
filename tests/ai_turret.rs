@@ -120,6 +120,10 @@ impl Setup {
                 max_angle: self.max_angle,
                 range: FireRange { from: Vec2::ZERO, direction: barrel, range: MINIGUN.range, dispersion: MINIGUN.dispersion },
             }),
+            velocity: Vec2::ZERO,
+            radius: 1.0,
+            can_move: true,
+            stick: Vec2::ZERO,
         };
         rig.bb.gather(DT, rig.act.is_some(), body, &self.cars, &blocked);
         // `flatbt_bevy`'s tick for one agent.

@@ -18,12 +18,13 @@
 //!   with a behaviour-tree control (`AIBTBaseControl`: the turrets so far)
 //!   it also sets `ScanDistance` (when 0 or more), the gun's `MaxAngle` from
 //!   `WeaponMaxAngleDeg` (when 0 or more, and the gun aims),
-//!   `IsVisibleForAutoAim` (`Yes`/`No`, not `DoNotChange`) and `FireAccuracy`
-//!   (always: the default 1 puts it back, as in C#).
+//!   `IsVisibleForAutoAim` (`Yes`/`No`, not `DoNotChange`), `FireAccuracy` and
+//!   `ActionOnBTTrigger` (`MapActionOnTirgger`, the action
+//!   `TriggerMapAction` runs; both always: the defaults put them back, as in
+//!   C#).
 //!
-//! Not ported: `ActionOnBTTrigger` (`MapActionOnTirgger`, read by the
-//! behaviour tree's `TriggerMapAction` only); the AI adjustments on the
-//! cars whose controls wait for the behaviour-tree slice; a simple car given
+//! Not ported: the AI adjustments on the cars whose controls wait for the
+//! behaviour-tree slice; a simple car given
 //! `Local` stays undriven by the player's devices; an AI control for the
 //! player's car (`SetControl(player, AiChaser)`).
 
@@ -114,6 +115,7 @@ fn ai_adjustment(
             }
         }
         blackboard.fire_accuracy = data.fire_accuracy;
+        blackboard.map_action_on_trigger = data.action_on_bt_trigger.clone();
     }
     true
 }

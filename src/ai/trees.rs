@@ -46,16 +46,66 @@
 //! not in progress and completes `Fail` (the target lives); the second does
 //! the same.) It costs a failed start; `tests/ai_turret.rs` checks that it never runs.
 //!
+//! The trees that drive along paths (`MoveBase`, `MoveToPoint`, `FollowBy`):
+//!
+//! ```text
+//! C#                                              Rust
+//! Chase =                                         chase() =
+//!   bt.Selector("ChaseAI",                          select((
+//!     bt.Sequence("Chase",                            seq((
+//!       FindNearestEnemy,                               action(FindNearestEnemy),
+//!       WhileTargetAlive(                               while_target_alive(
+//!         bt.All("Chase and fire",                        action(all((
+//!           bt.Optional(FireToTarget()),                    optional(FireToTarget(0)),
+//!           FollowBy("Target",                              FollowBy(target's safe position)
+//!             b => b.Target.SafePosition)))),             )))))),
+//!     MoveToLastKnownTargetPosition =                 seq((
+//!       bt.Sequence(                                    check(has a live target),
+//!         bt.Condition("HastTarget", …),                action(MoveToPoint(last known position)),
+//!         MoveToPoint("MoveToLastKnownPos",           )),
+//!           b => b.LastKnowTargetPosition)),          seq((action(Sleep(2)), action(Idle))),
+//!     bt.Sequence("Sleep", Sleep2Sec, bt.Idle))     ))
+//! ChaserAi = Chase                                chaser_ai() = chase()
+//!
+//! FollowPathAi =                                  follow_path_ai() =
+//!   bt.Selector("Brain",                            select((
+//!     bt.All("Fire",                                  action(all((TryFireToAnyone(3),
+//!       TryFireToAnyone(3.0f),                                    MoveBase))),
+//!       MoveBase("MoveByPath")),                      action(TriggerMapAction(once)),
+//!     TriggerMapAction(true),                         action(TryFireToAnyone(3)),
+//!     TryFireToAnyone(3.0f))                        ))
+//! FollowPathAiSafe =                              follow_path_ai_safe() =
+//!   bt.Selector("Brain",                            select((
+//!     bt.Sequence("Danger",                           seq((action(FindNearestEnemy),
+//!       FindNearestEnemy, Runaway),                           action(Runaway))),
+//!     bt.All("Fire", TryFireToAnyone(3.0f),           action(all((TryFireToAnyone(3),
+//!       MoveBase("MoveByPath")))                                  MoveBase))),
+//!                                                   ))
+//! GoToEnemySimplePredictionPosition =             go_to_enemy_simple_prediction_position() =
+//!   bt.Sequence("FindAndFollow",                    seq((action(FindNearestEnemy),
+//!     FindNearestEnemy,                                   action(MoveTowardsTargetNoPath(0.6))))
+//!     MoveTowardsTargetNoPath(0.6f))
+//! ```
+//!
+//! `FollowPathAi`'s third branch (`TryFireToAnyone` alone) is kept as C#'s
+//! though it never runs: `TriggerMapAction` (optional) always succeeds, and
+//! the selector stops at the first success. A car with no path therefore does
+//! nothing but run its trigger action (once), and does not even fire.
+//!
 //! Not ported here: every other tree of `BTActionFactory` (`SimpleAttackDelayPos`,
-//! `Attack`, `Chase*`, `SimpleAi`, `GuardAi`, … the ones with the nodes not
-//! yet ported), and `TurretAiFireToAnyone` (`AiSimpleTurretFriendFireAvailableTarget`:
+//! `Attack`, `SimpleAi`, `GuardAi`, … the ones with the nodes not
+//! yet ported: see `docs/BACKLOG.md`), and `TurretAiFireToAnyone`
+//! (`AiSimpleTurretFriendFireAvailableTarget`:
 //! `SimpleAttackByAngle`, `FindAngleNearestEnemy`, `TryFireToAnyone`), which no
 //! map uses.
 
 use flatbt_bevy::prelude::*;
 
 use super::blackboard::AiBlackboard;
-use super::nodes::{FindNearestEnemy, FireToTarget, Idle, Scanning, SimpleFollowByTarget, all, quiet_start, timer};
+use super::nodes::{
+    FindNearestEnemy, FireToTarget, FollowBy, Idle, MoveBase, MoveTowardsTargetNoPath, MoveToPoint, Runaway, Scanning,
+    SimpleFollowByTarget, Sleep, TriggerMapAction, TryFireToAnyone, all, optional, quiet_start, timer, while_target_alive,
+};
 use super::orders::Orders;
 
 /// `SimpleAttackTarget(0.2f)`: how far ahead of the target the turret aims, s.
@@ -63,6 +113,15 @@ pub const AIM_AHEAD: f32 = 0.2;
 /// `SimpleScanning`: `Timer(1.0f, …)` twice, s.
 pub const IDLE_TIME: f32 = 1.0;
 pub const SCAN_TIME: f32 = 1.0;
+/// `Sleep2Sec`: how long a chaser with nobody to chase waits, s.
+pub const SLEEP_TIME: f32 = 2.0;
+/// `TryFireToAnyone(3.0f)`: at most a shot every this many seconds, s.
+pub const FIRE_TO_ANYONE_PERIOD: f32 = 3.0;
+/// `GoToEnemySimplePredictionPosition`: how far ahead it steers, s.
+pub const GO_TO_ENEMY_PREDICT: f32 = 0.6;
+/// `AiControlFactory`'s `AiChaser`: `ScanDistance = World.RoomSize.Width +
+/// World.RoomSize.Height` (800 × 4 and 480 × 4 sim units): the whole map.
+pub const CHASER_SCAN_DISTANCE: f32 = 800.0 * 4.0 + 480.0 * 4.0;
 
 /// `BTActionFactory.SimpleAttackTarget`: fires at the target while steering
 /// at it, with the gun's aim `predict_sec` ahead of it.
@@ -92,4 +151,68 @@ pub fn simple_scanning() -> impl BehaviorNode<AiBlackboard, Orders> {
 /// `BTActionFactory.TurretAi`: attack, else scan.
 pub fn turret_ai() -> impl BehaviorNode<AiBlackboard, Orders> {
     select((simple_attack(), simple_scanning())).named("TurretBrain")
+}
+
+/// `BTActionFactory.Chase`'s `MoveToLastKnownTargetPosition`: with a target
+/// (alive), go to where it was last seen.
+fn move_to_last_known_target_position() -> impl BehaviorNode<AiBlackboard, Orders> {
+    seq((
+        check(|bb: &AiBlackboard| bb.live_target().is_some()).named("HastTarget"),
+        action(quiet_start(MoveToPoint::new(|bb| bb.last_known_target_position))).named("MoveToLastKnownPos"),
+    ))
+    .named("MoveToLastKnownTargetPosition")
+}
+
+/// `BTActionFactory.Chase` (`ChaserAi`): find an enemy and chase it, firing
+/// when the gun points at it; failing that, go to where it was last seen;
+/// failing that, sleep two seconds.
+pub fn chase() -> impl BehaviorNode<AiBlackboard, Orders> {
+    select((
+        seq((
+            action(FindNearestEnemy),
+            while_target_alive(
+                action(quiet_start(all((
+                    optional(FireToTarget::new(0.0)),
+                    FollowBy::new(|bb| bb.target_position_safe()),
+                ))))
+                .named("Chase and fire"),
+            ),
+        ))
+        .named("Chase"),
+        move_to_last_known_target_position(),
+        seq((action(Sleep { secs: SLEEP_TIME }).named("Sleep2s"), action(quiet_start(Idle)).named("Idle"))).named("Sleep"),
+    ))
+    .named("ChaseAI")
+}
+
+/// `BTActionFactory.ChaserAi`.
+pub fn chaser_ai() -> impl BehaviorNode<AiBlackboard, Orders> {
+    chase()
+}
+
+/// `BTActionFactory.FollowPathAi`: follow the path the map gave it, firing at
+/// anyone in the gun's line; with no path, run the map action it was given.
+pub fn follow_path_ai() -> impl BehaviorNode<AiBlackboard, Orders> {
+    select((
+        action(quiet_start(all((TryFireToAnyone::new(FIRE_TO_ANYONE_PERIOD), MoveBase::default())))).named("Fire"),
+        action(quiet_start(TriggerMapAction::new(true))).named("Trigger"),
+        action(quiet_start(TryFireToAnyone::new(FIRE_TO_ANYONE_PERIOD))),
+    ))
+    .named("Brain")
+}
+
+/// `BTActionFactory.FollowPathAiSafe`: follow the path, but run from an enemy
+/// in sight.
+pub fn follow_path_ai_safe() -> impl BehaviorNode<AiBlackboard, Orders> {
+    select((
+        seq((action(FindNearestEnemy), action(quiet_start(Runaway)).named("Runaway"))).named("Danger"),
+        action(quiet_start(all((TryFireToAnyone::new(FIRE_TO_ANYONE_PERIOD), MoveBase::default())))).named("Fire"),
+    ))
+    .named("Brain")
+}
+
+/// `BTActionFactory.GoToEnemySimplePredictionPosition`: find an enemy and go
+/// straight at where it will be.
+pub fn go_to_enemy_simple_prediction_position() -> impl BehaviorNode<AiBlackboard, Orders> {
+    seq((action(FindNearestEnemy), action(quiet_start(MoveTowardsTargetNoPath::new(GO_TO_ENEMY_PREDICT))))).named("FindAndFollow")
 }
