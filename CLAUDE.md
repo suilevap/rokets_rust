@@ -28,6 +28,13 @@ the C# repository: `docs/plans/RUST_BEVY_MIGRATION.md`.
   is left out, simplified or behaves otherwise, down to single
   conditions, and why. "None" only when that is checked. The reviewer
   checks the list, not their memory of the original.
+- **One finished piece of work, one pull request.** A system that
+  stands on its own (navigation, a weapon, a behaviour tree, a fix) gets
+  its own pull request, small enough to review. Do not add the next
+  piece to a pull request that is still open: once it is merged, start
+  the next one. While it waits, the next piece may be prepared but stays
+  uncommitted (agents limited to one branch cannot open a second
+  pull request beside it).
 - Keep `content/`, `map/grid`, `light/bake` and `car/drive` free of Bevy
   app code so they stay unit-testable.
 - Content comes from the C# repository via `tools/import_content.py`; do
