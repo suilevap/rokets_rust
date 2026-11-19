@@ -78,6 +78,8 @@ pub enum Layer {
     CarWheel,
     /// The cabin (`CarBase + BodyDelta`).
     CarBody,
+    /// The gun on the cabin (`Height + WeaponDelta`).
+    Weapon,
     /// Gears (`DepthConst.Coin`): drawn over the cars.
     Coin,
     /// Particles in the air (smoke, sparks; `DepthConst.Smoke*`): over
@@ -89,7 +91,7 @@ pub enum Layer {
 }
 
 impl Layer {
-    pub const ALL: [Layer; 11] = [
+    pub const ALL: [Layer; 12] = [
         Layer::GroundDecor,
         Layer::Accelerator,
         Layer::Shadow,
@@ -98,6 +100,7 @@ impl Layer {
         Layer::CarBase,
         Layer::CarWheel,
         Layer::CarBody,
+        Layer::Weapon,
         Layer::Coin,
         Layer::AirParticles,
         Layer::Glow,

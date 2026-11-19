@@ -174,6 +174,16 @@ pub fn spawn_local_car(
         let at = car.gadget_position.map_or(Vec2::ZERO, |p| Vec2::new(p.x, -p.y) * px(1.0) * car.scale);
         entity.insert(crate::gadget::Magnet::new(at));
     }
+    // `WeaponFactory`: the player's preset, at `WeaponPositon` (pixels,
+    // y down; the gun itself is drawn unscaled).
+    if let Some((kind, options)) = car.weapon.as_deref().and_then(|w| crate::weapon::model::for_type(w, true)) {
+        let at = car.weapon_positon.map_or(Vec2::ZERO, |p| Vec2::new(p.x, -p.y) * px(1.0) * car.scale);
+        let mut rng = <rand::rngs::SmallRng as rand::SeedableRng>::seed_from_u64(player.id as u64);
+        entity.insert((
+            crate::weapon::Weapon::new(kind, options, at, true, &mut rng),
+            crate::weapon::PlayerEnergy::default(),
+        ));
+    }
     // Waiting for `SetControl(id,Local)`, as on LetItSnow's intro.
     if !crate::controls::is_players(&player.control) {
         entity.insert(crate::controls::NoInput);

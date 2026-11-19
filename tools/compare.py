@@ -19,7 +19,8 @@ and, headless, Xvfb and PulseAudio (rokets `docs/RUNNING_ON_LINUX.md`);
 the C# game runs about twenty times slower than real time there, so a
 few seconds of driving take a couple of minutes.
 
-The port runs the script from the map's start, the C# game from when it
+The port has no `SimpleCars` (enemies, turrets) yet: pick a map without
+them, or they shoot and push the C# car. The port runs the script from the map's start, the C# game from when it
 answers `/drive`, some seconds later: pick a map without a scripted intro
 (a `SetControl` or a paused `ShowText` at the start, as on Middleware), or
 the two intros fall at different script times.
@@ -37,6 +38,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 PORT = 7778
+# What the C# game printed, for when it falls over.
+CS_LOG = "/tmp/compare_cs.log"
 
 
 def total_seconds(script):
@@ -104,8 +107,9 @@ def run_cs(args, ids, seconds, heading):
         xvfb = subprocess.Popen(["Xvfb", ":98", "-screen", "0", "800x480x24"], stderr=subprocess.DEVNULL)
         env["DISPLAY"] = ":98"
     subprocess.run(["pulseaudio", "--start", "--exit-idle-time=-1"], env=env, capture_output=True)
+    log = open(CS_LOG, "w")
     game = subprocess.Popen(["dotnet", "TileRider.dll", "-m", args.map, "-window", "-server", str(PORT), "-nosplash"],
-                            cwd=exe, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                            cwd=exe, env=env, stdout=log, stderr=subprocess.STDOUT)
     try:
         for _ in range(180):
             try:
@@ -144,6 +148,9 @@ def run_cs(args, ids, seconds, heading):
                 break
             time.sleep(2)
         return record
+    except OSError as e:
+        tail = "\n".join(Path(CS_LOG).read_text(errors="replace").splitlines()[-20:])
+        sys.exit(f"c#: the game stopped answering ({e}); {CS_LOG} ends:\n{tail}")
     finally:
         game.kill()
         if xvfb:

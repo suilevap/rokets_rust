@@ -11,12 +11,14 @@
 //! `--start x,y` puts the car at that map cell instead of the map's start.
 //! `--size WxH` sets the window size (default 1280x720; e.g. 720x1280 to
 //! try portrait). `--glow X` sets how strongly the additive (HDR) light is
-//! added (default 3; `[` and `]` turn it while playing). `--lang ru` shows
+//! added (default 3; `[` and `]` turn it while playing). `--flash X` sets
+//! how much brighter additive effects (flashes, sparks, the aim line) are
+//! drawn (default 1.5; `;` and `'` turn it). `--lang ru` shows
 //! the maps' texts in another language (`ru`, `de`, `es`, `it`, `be`).
 //!
 //! In the browser the page's URL parameters are the options, without `--`:
 //! `?map=Middleware&start=84,9.5&drive=1,0:3&glow=4&lang=ru`. Only `map`,
-//! `start`, `drive`, `glow` and `lang` apply there; the file-writing options are native only.
+//! `start`, `drive`, `glow`, `flash` and `lang` apply there; the file-writing options are native only.
 
 use bevy::prelude::*;
 use bevy::render::view::screenshot::{Screenshot, save_to_disk};
@@ -49,6 +51,7 @@ struct Args {
     start: Option<Vec2>,
     size: (u32, u32),
     glow: Option<f32>,
+    flash: Option<f32>,
     lang: Option<String>,
     trace: Vec<i64>,
 }
@@ -75,7 +78,7 @@ mod web {
     }
 
     /// Options the browser build accepts, as URL parameters.
-    const WEB_OPTIONS: &[&str] = &["map", "start", "drive", "glow", "lang"];
+    const WEB_OPTIONS: &[&str] = &["map", "start", "drive", "glow", "flash", "lang"];
 
     /// `?map=Middleware&start=84,9.5` → `["--map", "Middleware", "--start", "84,9.5"]`.
     pub fn url_args() -> Vec<String> {
@@ -125,6 +128,7 @@ fn parse_args() -> Args {
     let mut start = None;
     let mut size = (1280, 720);
     let mut glow = None;
+    let mut flash = None;
     let mut lang = None;
     let mut trace = Vec::new();
     let mut shot: Option<ScreenshotRequest> = None;
@@ -168,6 +172,7 @@ fn parse_args() -> Args {
                 }
             }
             "--glow" => glow = args.next().and_then(|v| v.parse().ok()),
+            "--flash" => flash = args.next().and_then(|v| v.parse().ok()),
             "--lang" => lang = args.next().filter(|l| !l.is_empty() && l != "en"),
             "--trace" => {
                 trace = args
@@ -195,6 +200,7 @@ fn parse_args() -> Args {
         start,
         size,
         glow,
+        flash,
         lang,
         trace,
     }
@@ -209,6 +215,7 @@ fn main() {
         start,
         size,
         glow,
+        flash,
         lang,
         trace,
     } = parse_args();
@@ -240,6 +247,9 @@ fn main() {
     app.insert_resource(tilerider::info::Language(lang));
     if let Some(glow) = glow {
         app.insert_resource(tilerider::render::additive_light::GlowBoost(glow));
+    }
+    if let Some(flash) = flash {
+        app.insert_resource(tilerider::render::particles::FlashBoost(flash));
     }
     if let Some(mut drive) = drive {
         drive.trace = trace;

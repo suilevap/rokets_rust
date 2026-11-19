@@ -21,9 +21,37 @@ use crate::units::px;
 
 /// `ParticleSystemManager.MaxParticleCount × CountRate` on desktop.
 const WORLD_POOL: usize = 128;
-/// How much brighter additive particles are drawn than their XNA colours,
-/// to make up for adding in linear light (see `render/additive_light`).
+/// How much brighter additive particles (flashes, sparks, trails) are
+/// drawn than their XNA colours, to make up for adding in linear light
+/// (see `render/additive_light`), by default.
 pub const GLOW_BOOST: f32 = 1.5;
+
+/// The additive particles' boost now: `--flash X` (`?flash=X` in the
+/// browser) sets it, `;` and `'` turn it while playing, to find the value
+/// that looks like the C# game.
+#[derive(Resource, Debug, Clone, Copy, PartialEq)]
+pub struct FlashBoost(pub f32);
+
+impl Default for FlashBoost {
+    fn default() -> Self {
+        FlashBoost(GLOW_BOOST)
+    }
+}
+
+const FLASH_STEP: f32 = 0.25;
+const MAX_FLASH: f32 = 8.0;
+
+fn turn_flash(keys: Res<ButtonInput<KeyCode>>, mut boost: ResMut<FlashBoost>) {
+    let step = if keys.just_pressed(KeyCode::Quote) {
+        FLASH_STEP
+    } else if keys.just_pressed(KeyCode::Semicolon) {
+        -FLASH_STEP
+    } else {
+        return;
+    };
+    boost.0 = (boost.0 + step).clamp(0.0, MAX_FLASH);
+    info!("flash boost {:.2}", boost.0);
+}
 /// `MaxParticleCountAdditive × CountRate`.
 const ADDITIVE_POOL: usize = 64;
 
@@ -79,6 +107,8 @@ pub struct ParticlesPlugin;
 impl Plugin for ParticlesPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Particles>()
+            .init_resource::<FlashBoost>()
+            .add_systems(Update, turn_flash)
             .add_systems(OnEnter(GameState::Playing), clear)
             .add_systems(
                 PostUpdate,
@@ -119,6 +149,7 @@ fn draw(
     mut commands: Commands,
     map: Res<LoadedMap>,
     particles: Res<Particles>,
+    flash: Res<FlashBoost>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut batches: Query<(&Batch, &Mesh3d, &mut Visibility)>,
@@ -138,9 +169,12 @@ fn draw(
         let size = Vec2::new(sprite.size.x / frames, sprite.size.y);
         let half = size * p.state.scale * px(1.0) / 2.0;
         let (x, y) = (Vec2::from_angle(p.view_direction) * half.x, Vec2::from_angle(p.view_direction).perp() * half.y);
+        // The texture's origin on the point (texture y runs down, ours up).
+        let o = p.style.origin;
+        let centre = p.position - x * (2.0 * o.x - 1.0) + y * (2.0 * o.y - 1.0);
         let z = layer_of(p).z();
         for (corner, uv) in [(-x - y, [u0, 1.0]), (x - y, [u1, 1.0]), (x + y, [u1, 0.0]), (-x + y, [u0, 0.0])] {
-            q.positions.push((p.position + corner).extend(z).to_array());
+            q.positions.push((centre + corner).extend(z).to_array());
             q.uvs.push(uv);
         }
         // Additive glows are light themselves, not lit (`DefaultWorldAdditive`).
@@ -153,7 +187,7 @@ fn draw(
         // numbers: they get a boost, milder than the additive light's
         // (stacked flashes clip to white quickly).
         let straight = |c: f32, l: f32| if a > 0.0 { (c / a).min(1.0) * l } else { 0.0 };
-        let (alpha, boost) = if p.style.additive { (a * a, GLOW_BOOST) } else { (a, 1.0) };
+        let (alpha, boost) = if p.style.additive { (a * a, flash.0) } else { (a, 1.0) };
         let linear = Color::srgb(straight(r, light[0]), straight(g, light[1]), straight(b, light[2])).to_linear();
         let color = [linear.red * boost, linear.green * boost, linear.blue * boost, alpha];
         q.colors.extend([color; 4]);

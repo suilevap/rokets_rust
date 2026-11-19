@@ -25,6 +25,7 @@ static FADE: Style = Style {
     texture: "T",
     additive: false,
     random_frame: false,
+    origin: Vec2::splat(0.5),
 };
 
 #[test]

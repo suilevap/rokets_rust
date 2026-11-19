@@ -104,6 +104,10 @@ pub fn spawn_entity(
         EntityType::HeavyBox => {
             entity.insert((Linkable, Heavy(HEAVY_BOX_DENSITY)));
         }
+        // Low enough for bullets to fly over (`PhysicBodyCategory.LowWall`).
+        EntityType::IgnoreWeaponBox => {
+            entity.insert(crate::weapon::IgnoresWeapons);
+        }
         _ => {}
     }
     if let Some(rate) = template.spin {

@@ -28,6 +28,7 @@ pub mod sound;
 pub mod teleport;
 pub mod triggers;
 pub mod units;
+pub mod weapon;
 
 use avian2d::prelude::*;
 use bevy::prelude::*;
@@ -56,7 +57,7 @@ impl Plugin for TileRiderPlugin {
                 map::spawn::MapEntitiesPlugin,
                 render::spin::SpinPlugin,
                 render::animate::AnimatePlugin,
-                (triggers::TriggersPlugin, actions::ActionsPlugin, door::DoorPlugin, button::ButtonPlugin, teleport::TeleportPlugin, platform::PlatformPlugin, info::InfoPlugin, markers::MarkersPlugin, gadget::GadgetPlugin),
+                (triggers::TriggersPlugin, actions::ActionsPlugin, door::DoorPlugin, button::ButtonPlugin, teleport::TeleportPlugin, platform::PlatformPlugin, info::InfoPlugin, markers::MarkersPlugin, gadget::GadgetPlugin, weapon::WeaponPlugin),
                 hud::HudPlugin,
                 script::ScriptPlugin,
             ));

@@ -25,6 +25,9 @@ ITEMS = [
     ("Sprites/Entities", "**/*.png", "Sprites/Entities"),
     ("Sprites/Particles", "**/*.png", "Sprites/Particles"),
     ("Sprites/Gadget", "**/*.png", "Sprites/Gadget"),
+    ("Sprites/Weapons", "*.png", "Sprites/Weapons"),
+    # The aim line's strips.
+    ("Sprites/Special", "LaserLine*.png", "Sprites/Special"),
     ("Sprites/Minimap", "*.png", "Sprites/Minimap"),
     ("Sprites", "Gradient*.png", "Sprites"),
     ("Sprites", "WhitePixel.png", "Sprites"),

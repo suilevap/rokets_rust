@@ -66,7 +66,11 @@ fn log_frame_rate(time: Res<Time<Real>>, diagnostics: Res<DiagnosticsStore>, mut
 
 fn update_text(
     diagnostics: Res<DiagnosticsStore>,
-    (boost, map): (Res<crate::render::additive_light::GlowBoost>, Option<Res<crate::game::LoadedMap>>),
+    (boost, map, flash): (
+        Res<crate::render::additive_light::GlowBoost>,
+        Option<Res<crate::game::LoadedMap>>,
+        Res<crate::render::particles::FlashBoost>,
+    ),
     name: Res<CurrentMapName>,
     coins: Res<CoinCount>,
     scheme: Res<ActiveScheme>,
@@ -82,8 +86,8 @@ fn update_text(
     // Lives count once there is somewhere to come back to.
     let lives = respawn.point.map_or(String::new(), |_| format!("  lives {}", respawn.lives.max(0)));
     let s = format!(
-        "{}  gears {}/{}{lives}  [{:?}]  R restart, N next{fps}{glow}{}",
-        name.0, coins.collected, coins.total, *scheme, done
+        "{}  gears {}/{}{lives}  [{:?}]  R restart, N next{fps}{glow}  flash {:.2}{}",
+        name.0, coins.collected, coins.total, *scheme, flash.0, done
     );
     for mut t in &mut text {
         if t.0 != s {

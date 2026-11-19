@@ -36,9 +36,24 @@ fn target(position: Vec2, velocity: Vec2) -> FocusTarget {
     FocusTarget {
         position,
         velocity,
+        look: Vec2::ZERO,
         radius: 0.5,
         max_speed: 10.0,
     }
+}
+
+#[test]
+fn aiming_leads_the_camera_five_units_and_zooms_out_less() {
+    let view = ViewRotation::default();
+    let projection = PerspectiveProjection::default();
+    let t = FocusTarget {
+        look: Vec2::new(0.0, 1.0),
+        ..target(Vec2::new(4.0, 5.0), Vec2::X * 5.0)
+    };
+    let frame = framing([t], &view, &projection).unwrap();
+    assert!((frame.focus - Vec2::new(4.0 + 3.5, 10.0)).length() < 1e-5, "{:?}", frame.focus);
+    // 0.4 + 0.6 × (1 − 0.5) × 0.8.
+    assert!((frame.scale - 0.64).abs() < 1e-5, "{}", frame.scale);
 }
 
 #[test]
