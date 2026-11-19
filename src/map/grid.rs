@@ -258,6 +258,55 @@ impl MapGrid {
         rects
     }
 
+    /// `MapManager.LineCollide`: walks from `a` towards `b` (world units, y
+    /// down) a unit at a time along the longer axis, without `b` itself, and
+    /// hits on a wall cell; the map's outer ring does not count.
+    pub fn line_collides(&self, cell: f32, a: [f32; 2], b: [f32; 2]) -> bool {
+        let (dx, dy) = (b[0] - a[0], b[1] - a[1]);
+        let d = dx.abs().max(dy.abs());
+        if d == 0.0 {
+            return false;
+        }
+        let (sx, sy) = (dx / d, dy / d);
+        let (w, h) = (self.width as i32, self.height as i32);
+        let mut i = 0.0;
+        while i < d {
+            let (x, y) = (a[0] + sx * i, a[1] + sy * i);
+            // C# truncates towards zero, so just outside the map reads as the ring.
+            let (cx, cy) = ((x / cell) as i32, (y / cell) as i32);
+            if cx > 0 && cy > 0 && cx < w - 2 && cy < h - 2 && self.is_wall(cx, cy) {
+                return true;
+            }
+            i += 1.0;
+        }
+        false
+    }
+
+    /// Whether a ray from `from` (world units, y down) along `direction`
+    /// (a unit vector, y down) meets a wall within `length`: a wall cell, a
+    /// corner wedge, or the map's edge. Sampled every eighth of a cell, so a
+    /// sliver of a corner thinner than that can slip through. Stands for
+    /// `PhysicsManager.RayCollide` against the wall geometry alone
+    /// (`AdjustWeaponMaxAngle` ignores every entity).
+    pub fn ray_hits_wall(&self, cell: f32, from: [f32; 2], direction: [f32; 2], length: f32) -> bool {
+        let step = cell / 8.0;
+        let mut d = 0.0;
+        while d <= length {
+            let (x, y) = ((from[0] + direction[0] * d) / cell, (from[1] + direction[1] * d) / cell);
+            let (cx, cy) = (x.floor() as i32, y.floor() as i32);
+            if self.is_wall(cx, cy) {
+                return true;
+            }
+            if let Some(edge) = self.edge(cx, cy)
+                && edge_solid(edge.open, x - cx as f32, y - cy as f32)
+            {
+                return true;
+            }
+            d += step;
+        }
+        false
+    }
+
     /// True if the segment between two points (in cells) crosses a wall cell.
     pub fn line_hits_wall(&self, from: (f32, f32), to: (f32, f32)) -> bool {
         let (dx, dy) = (to.0 - from.0, to.1 - from.1);
@@ -268,6 +317,16 @@ impl MapGrid {
             self.is_wall(x.floor() as i32, y.floor() as i32)
         })
     }
+}
+
+/// Whether the point `(u, v)` of a cell (0..1, y down) is in the wedge of
+/// an [`Edge`] whose `open` corner stays floor: the side of the diagonal
+/// between the two corners beside it that the open one is not on.
+fn edge_solid(open: usize, u: f32, v: f32) -> bool {
+    let corner = |i: usize| [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)][i % 4];
+    let (o, a, b) = (corner(open), corner(open + 1), corner(open + 3));
+    let side = |p: (f32, f32)| (b.0 - a.0) * (p.1 - a.1) - (b.1 - a.1) * (p.0 - a.0);
+    side((u, v)) * side(o) <= 0.0
 }
 
 /// `TilesMap.GetH`: heights come in steps of 32 pixels.

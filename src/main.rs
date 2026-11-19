@@ -5,6 +5,7 @@
 //! (default 90) and exits, for comparing with the C# game. `--drive`
 //! drives the car by a script and logs its path (see `script.rs`);
 //! `--trace a,b` also logs those entities (map ids), for `tools/compare.py`.
+//! `--nav` draws the AI's navigation graph.
 //! `--record DIR` saves every frame of play as `DIR/frame_NNNNN.png`, with
 //! time stepped exactly 1/30 s per frame (whatever the rendering speed),
 //! for `--frames N` frames, then exits: turn them into a video with ffmpeg.
@@ -54,6 +55,7 @@ struct Args {
     flash: Option<f32>,
     lang: Option<String>,
     trace: Vec<i64>,
+    nav: bool,
 }
 
 /// The command line, or the page's URL parameters in the browser.
@@ -78,7 +80,7 @@ mod web {
     }
 
     /// Options the browser build accepts, as URL parameters.
-    const WEB_OPTIONS: &[&str] = &["map", "start", "drive", "glow", "flash", "lang"];
+    const WEB_OPTIONS: &[&str] = &["map", "start", "drive", "glow", "flash", "lang", "nav"];
 
     /// `?map=Middleware&start=84,9.5` → `["--map", "Middleware", "--start", "84,9.5"]`.
     pub fn url_args() -> Vec<String> {
@@ -131,6 +133,7 @@ fn parse_args() -> Args {
     let mut flash = None;
     let mut lang = None;
     let mut trace = Vec::new();
+    let mut nav = false;
     let mut shot: Option<ScreenshotRequest> = None;
     let mut frames = 90;
     let mut args = raw_args().into_iter();
@@ -180,6 +183,7 @@ fn parse_args() -> Args {
                     .map(|v| v.split(',').filter_map(|i| i.trim().parse().ok()).collect())
                     .unwrap_or_default();
             }
+            "--nav" => nav = true,
             "--frames" => frames = args.next().and_then(|v| v.parse().ok()).unwrap_or(frames),
             _ => {}
         }
@@ -203,6 +207,7 @@ fn parse_args() -> Args {
         flash,
         lang,
         trace,
+        nav,
     }
 }
 
@@ -218,6 +223,7 @@ fn main() {
         flash,
         lang,
         trace,
+        nav,
     } = parse_args();
     let mut app = App::new();
     app.add_plugins(
@@ -250,6 +256,9 @@ fn main() {
     }
     if let Some(flash) = flash {
         app.insert_resource(tilerider::render::particles::FlashBoost(flash));
+    }
+    if nav {
+        app.init_resource::<tilerider::ai::navigation::NavDebug>();
     }
     if let Some(mut drive) = drive {
         drive.trace = trace;

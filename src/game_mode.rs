@@ -18,6 +18,8 @@
 //! `SaveAction` (`Save()`: where the car is now, with an action to run on
 //! respawn).
 //!
+//! Other cars' deaths are `car::death`'s.
+//!
 //! Not ported: the respawn flashes (`CreateRespawn`), the lives shown on
 //! screen (`ShowEnergy`; the top line shows them).
 
@@ -84,6 +86,8 @@ impl Respawn {
 pub struct Wreckable {
     pub sprites: [String; 2],
     pub scale: f32,
+    /// Where the wreck is drawn (the car's own sprite's layer).
+    pub layer: Layer,
 }
 
 /// A destroyed car, until the level restarts or the car comes back.
@@ -148,7 +152,7 @@ fn wreck_cars(
                 color: [1.0; 4],
                 lit: true,
             };
-            let sprite = sprite_bundle(info, wreckable.scale, Layer::CarBase, lit, &quad, &mut materials);
+            let sprite = sprite_bundle(info, wreckable.scale, wreckable.layer, lit, &quad, &mut materials);
             commands.entity(*entity).with_child(sprite);
         }
         burst(&mut particles, rng, transform.translation.truncate());
@@ -157,7 +161,7 @@ fn wreck_cars(
 
 /// `CreateCarParts` without the flying parts (a frame strip, not ported):
 /// `CreateSmokeCrash(pos, 3)` and `CreateBoom`.
-fn burst(particles: &mut Particles, rng: &mut SmallRng, at: Vec2) {
+pub(crate) fn burst(particles: &mut Particles, rng: &mut SmallRng, at: Vec2) {
     for _ in 0..3 {
         // Within a unit of the wreck either way.
         let offset = Vec2::new(rng.random::<f32>() - 0.5, rng.random::<f32>() - 0.5) * 2.0;

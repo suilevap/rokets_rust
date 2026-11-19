@@ -51,6 +51,12 @@ impl LoadedMap {
         self.cell.to_world(x, y)
     }
 
+    /// `MapManager.LineCollide` between two world points: a wall in the
+    /// way (what the AI's sight is).
+    pub fn line_collides(&self, a: Vec2, b: Vec2) -> bool {
+        self.grid.line_collides(self.cell.0, [a.x, -a.y], [b.x, -b.y])
+    }
+
     /// The light layer at a world point (what sprites are multiplied by).
     pub fn light_at(&self, p: Vec2) -> [f32; 3] {
         let (x, y) = self.cell.to_cells(p);
@@ -97,12 +103,30 @@ fn sprites_for(map: &MapData, cars: &CarCatalog, registry: &crate::actions::Acti
             }
             if let Some((kind, _)) = car.weapon.as_deref().and_then(|w| crate::weapon::model::for_type(w, true)) {
                 names.push(crate::weapon::sprite_of(kind).name.to_string());
-                names.extend(crate::weapon::AIM_LINE_TEXTURES.map(String::from));
+                if crate::weapon::has_aim_line(kind) {
+                    names.extend(crate::weapon::AIM_LINE_TEXTURES.map(String::from));
+                }
             }
             if car.gadget.as_deref() == Some("Link") {
                 names.extend(["Gadget\\ChainActive", "Gadget\\ChainInactive", "WhitePixel", "Gradient2Pixel"].map(String::from));
             }
         }
+    }
+    // The simple cars (prototypes too, for the clones): the chassis, the
+    // wreck, the guns (the non-player preset) and the health bar's pixel.
+    for sc in map.simple_cars.iter() {
+        let Some(car) = cars.get_simple(&sc.car_name) else {
+            continue;
+        };
+        names.extend(car.base_sprite());
+        for part in ["Destroyed1", "Destroyed2"] {
+            names.extend(car.part_sprite(part));
+        }
+        let weapon = crate::car::weapon_type(sc.weapon_override(), car.weapon.as_deref());
+        if let Some((kind, _)) = weapon.and_then(|w| crate::weapon::model::for_type(w, false)) {
+            names.push(crate::weapon::sprite_of(kind).name.to_string());
+        }
+        names.push("WhitePixel".to_string());
     }
     // What the map's actions draw (door hints, …).
     for a in &map.actions.0 {
@@ -283,6 +307,8 @@ fn poll_loading(
         "map {} ready: {}x{} cells, {} lamps",
         data.name, grid.width, grid.height, light.lamps.len()
     );
+    // `_navigation.BuildFromDistanceField`, once the map is ready.
+    commands.insert_resource(crate::ai::Navigation::build(&grid, cell));
     commands.insert_resource(LoadedMap {
         data,
         grid,

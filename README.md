@@ -29,7 +29,8 @@ cargo run --release -- -m LetItSnowDay
 | `--flash X` | How much brighter additive effects (flashes, sparks, bullet trails, the aim line) are drawn (default 1.5; `;` and `'` turn it by 0.25 while playing, shown as `flash` in the top line) |
 | `--lang LANG` | The maps' texts in another language: `ru`, `de`, `es`, `it`, `be` (default English) |
 | `--drive SCRIPT` | Drive by script, `x,y:seconds;...` (stick in world directions, y up; `x,y,g:seconds` also holds the gadget, aimed ahead, `x,y,f:seconds` the trigger, the gun firing where it points), logging the car's path every 0.1 s |
-| `--trace a,b` | With `--drive`: also log these entities (map ids) every 0.1 s, as `trace t id x y angle speed` in the C# game's axes, for `tools/compare.py` |
+| `--trace a,b` | With `--drive`: also log these entities (map ids) every 0.1 s, as `trace t id x y angle speed` in the C# game's axes, for `tools/compare.py`, and their health as `health t id hp` |
+| `--nav` | Draw the navigation graph over the map (links in green, crossings in orange; red links are dear ones), as `NavGraph.Draw` did in the C# game's AI debug build |
 
 Portrait screens (a phone held upright) show the landscape view turned a
 quarter turn: up on the screen is right on the map, and the controls follow
@@ -63,6 +64,38 @@ on a press of right Ctrl, on letting go of the arrows and on lifting the
 touch finger; its aim line is white and wide while it reloads and shows
 the bounce. In a drive script (`--drive`) `f` holds the trigger and fires
 the Railgun on its first step.
+The Hammer (a saw on the nose, drawn under the car) works by itself: drive
+into things with it. It hurts bombs, red boxes and cars by the car's speed
+(4 to 8) and shoves what it hits; it has no aim line, no fire zone and the
+mouse and the gamepad do not fire it (the fire keys only spend its energy).
+
+The map's `SimpleCars` (targets, turrets, enemy buggies) are there: you can
+shoot them, ram them and saw them. A hurt one shows a health bar over it for
+two seconds, and when it is destroyed it bursts, lies smoking as a wreck for
+two seconds and then goes (running its `ActionOnDestroy`). Your own team's
+(`NoneFriend`, the `*Friend` controls) are spared by your guns and saw. Their
+Hammers spin (the saw works for every control but `NoneLocal`, `NoneEnemy` and
+`NoneFriend`) and hurt what touches them.
+
+Turrets (`AiSimpleTurret`) and the enemies that shoot without looking
+(`AlwaysShoot`, `ShootPattern`) act now. A turret looks for you within 16
+units, in sight, turns its gun on you (it takes a moment to turn; a gun
+that cannot turn much, because walls are near it, only fires at what is in
+front) and fires only when the gun points your way: a Minigun in bursts of
+ten, 1.4 s apart, a Railgun one beam a 1.5 s reload. Their guns need no
+energy. It keeps on you until it loses sight; whoever shoots it is
+shot back at, from any distance, for five seconds; when it sees nobody it
+stands a second and then sweeps the gun about. One that can move (a buggy
+with a saw) chases you. A car with a gun can now kill you: you are wrecked
+and the level starts again (or you come back at the respawn point), as
+before. `AlwaysShoot` fires all the time in the direction the car faces;
+`ShootPattern` fires in a random pattern of short bursts. The other enemies
+(chasers, path followers, flocks, `Ai`: the behaviour-tree ones) still stand
+idle. Enemies do not show a red aim line yet.
+
+Aim help: with a gun, the aim leans towards the enemy you point near (on
+screen, in sight, within the gun's range), three quarters of the way, so
+shots land more easily; it picks the enemy again every half second.
 
 On Linux, Bevy needs `pkg-config libwayland-dev libxkbcommon-dev libudev-dev
 libasound2-dev libx11-dev`.

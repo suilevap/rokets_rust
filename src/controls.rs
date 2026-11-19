@@ -53,8 +53,10 @@ pub struct PlayerIntent {
 #[derive(Component, Debug, Default)]
 pub struct LocalPlayer;
 
-/// The player's car, not driven by the player for now (`SetControl` to
-/// `NoneLocal` during an intro, or to an AI not ported yet).
+/// A car nobody drives for now: the player's, after `SetControl` to
+/// `NoneLocal` during an intro (or to an AI not ported yet); a simple
+/// car's with a `None*` control (`AINone`, which also keeps a Hammer's saw
+/// still).
 #[derive(Component, Debug)]
 pub struct NoInput;
 
@@ -225,7 +227,7 @@ fn read_touch(
     mut fire: ResMut<FireTouch>,
     windows: Query<&Window>,
     with_gadget: Query<(), (With<LocalPlayer>, With<crate::gadget::Magnet>)>,
-    with_gun: Query<(), (With<LocalPlayer>, With<crate::weapon::Weapon>)>,
+    with_gun: Query<&crate::weapon::Weapon, With<LocalPlayer>>,
     mut readings: ResMut<SchemeReadings>,
     mut active: ResMut<ActiveScheme>,
 ) {
@@ -249,7 +251,9 @@ fn read_touch(
     let screen = windows.iter().next().map_or(Vec2::ONE, |w| Vec2::new(w.width(), w.height()));
     for t in touches.iter_just_pressed() {
         *active = ActiveScheme::Touch;
-        let (has_gadget, has_gun) = (!with_gadget.is_empty(), !with_gun.is_empty());
+        // A weapon that works by itself has no fire zone.
+        let has_gadget = !with_gadget.is_empty();
+        let has_gun = with_gun.iter().any(|w| !w.kind.auto_fire());
         if gadget.finger.is_none() && has_gadget && in_gadget_zone(t.position(), screen) {
             gadget.finger = Some(t.id());
             gadget.origin = t.position();
@@ -390,6 +394,10 @@ fn read_weapon(
     let Ok((mut intent, gun, off, has_gadget)) = players.single_mut() else {
         return;
     };
+    // `_hasControllableWeapon`: the mouse, the gamepad and the fire zone work
+    // a weapon the player aims; one that works by itself (the Hammer) is
+    // fired and aimed by the keys only (they still spend its energy).
+    let controllable = !gun.kind.auto_fire();
     let mut fire;
     let mut accurate = false;
     let mut aim = Vec2::ZERO;
@@ -414,7 +422,7 @@ fn read_weapon(
         fire = keys.pressed(KeyCode::ControlRight);
         accurate |= keys.just_pressed(KeyCode::ControlRight);
         // Browsers turn taps into clicks: on touch the mouse is ignored.
-        if *scheme != ActiveScheme::Touch {
+        if controllable && *scheme != ActiveScheme::Touch {
             let shift = keys.pressed(KeyCode::ShiftLeft) || keys.pressed(KeyCode::ShiftRight);
             let gadget_by_mouse = mouse.pressed(MouseButton::Right) || (mouse.pressed(MouseButton::Left) && shift);
             if !(has_gadget && gadget_by_mouse) {
@@ -430,7 +438,7 @@ fn read_weapon(
             }
         }
     }
-    for pad in &gamepads {
+    for pad in gamepads.iter().filter(|_| controllable) {
         if pad.pressed(GamepadButton::RightTrigger2) {
             fire = true;
             accurate = true;

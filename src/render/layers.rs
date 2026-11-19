@@ -70,6 +70,10 @@ pub enum Layer {
     /// Particles on the ground (wheel streaks): under everything that
     /// stands on it.
     GroundParticles,
+    /// The Hammer's saw (`DepthConst.HammerWeapon`, just over the car's
+    /// base value, so under the car and the boxes; the shadows are under
+    /// it): it shows only where it sticks out ahead of the nose.
+    Hammer,
     /// Boxes (`DepthConst.CustomEntity`, the car's height).
     Prop,
     /// The car's chassis (`DepthConst.CarBase`).
@@ -88,14 +92,19 @@ pub enum Layer {
     /// Additive particles (flashes, pings): after every sprite, but still
     /// hidden by walls (`DefaultWorldAdditive`: drawn last, depth read).
     Glow,
+    /// A hurt car's health bar (`DepthConst.HealthIndicatorBack` and
+    /// `Fore`, drawn in the foreground pass, unlit, over the world); its
+    /// fill lies a hair above its back.
+    HealthBar,
 }
 
 impl Layer {
-    pub const ALL: [Layer; 12] = [
+    pub const ALL: [Layer; 14] = [
         Layer::GroundDecor,
         Layer::Accelerator,
         Layer::Shadow,
         Layer::GroundParticles,
+        Layer::Hammer,
         Layer::Prop,
         Layer::CarBase,
         Layer::CarWheel,
@@ -104,6 +113,7 @@ impl Layer {
         Layer::Coin,
         Layer::AirParticles,
         Layer::Glow,
+        Layer::HealthBar,
     ];
 
     /// Height above the ground plane, world units: all near zero (see the

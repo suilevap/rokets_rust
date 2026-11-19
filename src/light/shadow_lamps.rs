@@ -67,12 +67,12 @@ impl ShadowLamps {
                     match *spot {
                         Spot::Nobody => {}
                         Spot::Free => {
-                            if !line_collides(grid, cell, at, p) {
+                            if !grid.line_collides(cell, at, p) {
                                 *spot = Spot::Lamp(i);
                             }
                         }
                         Spot::Lamp(other) => {
-                            if line_collides(grid, cell, at, p) {
+                            if grid.line_collides(cell, at, p) {
                                 continue;
                             }
                             let o = &lamps[other];
@@ -107,28 +107,4 @@ impl ShadowLamps {
             _ => None,
         }
     }
-}
-
-/// `MapManager.LineCollide`: walks from `a` towards `b` (world units, y
-/// down) a unit at a time along the longer axis, without `b` itself, and
-/// hits on a wall cell; the map's outer ring does not count.
-fn line_collides(grid: &MapGrid, cell: f32, a: [f32; 2], b: [f32; 2]) -> bool {
-    let (dx, dy) = (b[0] - a[0], b[1] - a[1]);
-    let d = dx.abs().max(dy.abs());
-    if d == 0.0 {
-        return false;
-    }
-    let (sx, sy) = (dx / d, dy / d);
-    let (w, h) = (grid.width as i32, grid.height as i32);
-    let mut i = 0.0;
-    while i < d {
-        let (x, y) = (a[0] + sx * i, a[1] + sy * i);
-        // C# truncates towards zero, so just outside the map reads as the ring.
-        let (cx, cy) = ((x / cell) as i32, (y / cell) as i32);
-        if cx > 0 && cy > 0 && cx < w - 2 && cy < h - 2 && grid.is_wall(cx, cy) {
-            return true;
-        }
-        i += 1.0;
-    }
-    false
 }

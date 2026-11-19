@@ -8,8 +8,9 @@
 //!     louder the harder the blow, at a random pitch within half an octave.
 //!   - **Blasts**: `RocketDestroy` (seven times in ten) or `Explosion`, at
 //!     the next pitch of a fixed round (`PlayOnceWithNextPith`).
-//!   - **Damage** to the player: one of three crunches; `Accident` when it
-//!     is destroyed. **Gears**: `CoinCollected`. **Finish**: `EndLevel`.
+//!   - **Damage** to a car (`TakeDamage`; the player's or any other): one of
+//!     three crunches, `ShieldDamage` (a random pitch up to half an octave)
+//!     when its shield took it all; `Accident` when it is destroyed. **Gears**: `CoinCollected`. **Finish**: `EndLevel`.
 //! - **Loops** on the car ([`CarSounds`]), updated every frame:
 //!   - **Engine** (`Car.EngineSoundControl`): while the stick is held, the
 //!     car's `EngineSound`, louder with the stick, higher with the speed
@@ -42,8 +43,8 @@ use crate::actions::{AddMapAction, MapIds, Run};
 use crate::car::Car;
 use crate::content::actions::defs::PlaySound as PlaySoundAction;
 use crate::car::impact::CarImpact;
-use crate::controls::{LocalPlayer, PlayerIntent};
-use crate::explosion::{Explosion, ExplosionSystems, Health, Hit};
+use crate::controls::PlayerIntent;
+use crate::explosion::{Damaged, Explosion, ExplosionSystems};
 use crate::game::{ChangeMap, GameState};
 use crate::pickups::CoinCollected;
 
@@ -51,7 +52,7 @@ use crate::pickups::CoinCollected;
 pub const HEARING: f32 = 32.0;
 
 /// Every sound a cue names (`Sounds/<name>.wav` in the C# content).
-pub const NAMES: [&str; 33] = [
+pub const NAMES: [&str; 34] = [
     "Engine",
     "EngineHover",
     "EngineTruck",
@@ -64,6 +65,7 @@ pub const NAMES: [&str; 33] = [
     "CarDamaged1",
     "CarDamaged2",
     "Accident",
+    "ShieldDamage",
     "RocketDestroy",
     "Explosion",
     "CoinCollected",
@@ -276,25 +278,28 @@ fn blast_sounds(mut blasts: MessageReader<Explosion>, mut cues: ResMut<Cues>, mu
 }
 
 fn damage_sounds(
-    mut hits: MessageReader<Hit>,
-    players: Query<(&Health, &Transform), With<LocalPlayer>>,
+    mut damaged: MessageReader<Damaged>,
+    places: Query<&Transform>,
     mut cues: ResMut<Cues>,
     mut play: MessageWriter<PlaySound>,
 ) {
-    for hit in hits.read() {
-        let Ok((health, t)) = players.get(hit.target) else {
+    for hit in damaged.read() {
+        let Ok(t) = places.get(hit.target) else {
             continue;
         };
-        // Runs after the hits are taken: health is already down.
-        let name = if health.hp <= 0 {
-            "Accident"
+        // `TakeDamage`: death, else a crunch for what got through, else
+        // the shield's ring at a random pitch up to half an octave.
+        let (name, pitch) = if hit.killed {
+            ("Accident", 0.0)
+        } else if hit.taken > 0 {
+            (["CarDamaged0", "CarDamaged1", "CarDamaged2"][cues.rng.random_range(0..3)], 0.0)
         } else {
-            ["CarDamaged0", "CarDamaged1", "CarDamaged2"][cues.rng.random_range(0..3)]
+            ("ShieldDamage", cues.rng.random::<f32>() * 0.5)
         };
         play.write(PlaySound {
             name,
             at: Some(t.translation.truncate()),
-            pitch: 0.0,
+            pitch,
             volume: 1.0,
         });
     }

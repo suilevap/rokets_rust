@@ -1,7 +1,7 @@
-//! The car's gun: the Minigun and the Railgun so far.
+//! The car's gun: the Minigun, the Railgun and the Hammer so far.
 //!
 //! C# origin: `BaseWeapon`, `BaseComplexWeapon`, `MinigunWeapon`,
-//! `RailgunWeapon`, `WeaponHelper.SimulateMinigunBullet` /
+//! `RailgunWeapon`, `HammerWeapon`, `WeaponHelper.SimulateMinigunBullet` /
 //! `SimulateRailgunBullet` / `SimulateBullet`, `WeaponFactory`,
 //! `EnergyComponent` and the fire input of the `PlayerCarControl*`
 //! classes (2010–2016). The numbers and the timing are in [`model`]; this
@@ -23,6 +23,11 @@
 //!   push that bounces once off what it hits ([`shoot_beam`],
 //!   `SimulateRailgunBullet`; [`model::reflect`]), the bounce doing half
 //!   the damage, and kicks the gun back 10 pixels.
+//! - The Hammer is a saw on the car's nose (`HammerWeapon`, [`hammer`]): it
+//!   has no gun to aim and no trigger to pull; whatever the car runs into
+//!   with it hurts and is shoved. Only the player's fire keys do anything,
+//!   and that is to spend 0.1 of the energy a press (`BaseWeapon.TryShoot`
+//!   with an empty `OnShoot`). It spares its own team.
 //! - The gun rides the swaying cabin (`DrawCabina` updated it a second
 //!   time with the cabin's offset, which also doubled the speed of its
 //!   eases; [`Aim::step`] runs twice for cars with a cabin, as there).
@@ -32,9 +37,25 @@
 //!   energy is too low to fire; the Railgun's, wide and fading, while it
 //!   reloads.
 //!
-//! Not ported: enemies' guns (they come with the AI) and so teams and
-//! the aim help that bends the aim towards the nearest enemy
-//! (`UpdateAimMagnet`); the energy the score multiplier gives
+//! - A bullet or beam does not hurt a car of the shooter's own team
+//!   (`SimulateBullet`'s `ignoreDamage`): it still pushes it, but no damage
+//!   is done or shown, and nothing sparks off it (it is a car).
+//!
+//! - Enemies' guns (a simple car's, the non-player preset) fire when their
+//!   control pulls the trigger ([`crate::ai`] writes `fire` and
+//!   `fire_accurate` as the player's devices do): the Minigun's bursts of
+//!   ten and its 1.4 s reload, the Railgun's pulse once a 1.5 s reload,
+//!   without an energy store (`EnergyComponent` spends nothing for a car
+//!   the player does not drive: no [`PlayerEnergy`], so `None` spends
+//!   nothing). An enemy aims with [`Aim::aim`](model::Aim::aim) limited to
+//!   the gun's `MaxAngle` (the player's turns all round and faster), and
+//!   [`Weapon::in_fire_range`] says whether it points at a target
+//!   (`TargetInFireRange`). [`max_angle`] narrows a static car's `MaxAngle`
+//!   where walls are near (`AdjustWeaponMaxAngle`).
+//! - The player's aim help ([`aim_help`]): the aim leans towards the enemy
+//!   it points near (`UpdateAimMagnet`).
+//!
+//! Not ported: the energy the score multiplier gives
 //! (`OnScoreManagerAddMult`, no score yet); easy mode's cheaper bullets;
 //! `Unaim` (unused); the slow-motion extras along a bullet's trail
 //! (`CreateBulletTrailBetween` with `TimeScale < 0.9`) and the sounds'
@@ -42,10 +63,22 @@
 //! effects off screen (the particle pool takes them all). A ray that
 //! starts inside a box hits it at once; Farseer's ray passed out of it.
 //!
-//! Railgun, not ported: damage not sparing one's own team (no teams); the team check and `IsStatic` of the aim
-//! line (enemies' guns).
+//! Aim line, not ported: the team check and `IsStatic` of
+//! `LaserVisiblityUpdate` (a static or enemy gun shows a red line in C#, a
+//! warning of where it points; only the player's green line is drawn here),
+//! and the Railgun's bounces drawn for the player only (`ReflectionCount`).
+//!
+//! Hammer, not ported: `GetHammer(level)`'s damage
+//! by level (the enemy spawn director); the view check on the
+//! sparks (the particle pool takes them all); the saw staying on a dead car
+//! (the wreck takes it and the car's drawn parts away, as with the other
+//! guns); the saw's hold on `IsStatic` cars is ported
+//! ([`model::hammer_damage`]) but only a dynamic car exists for now.
 
+pub mod aim_help;
 pub mod beam;
+pub mod hammer;
+pub mod max_angle;
 pub mod model;
 mod view;
 
@@ -55,6 +88,7 @@ use rand::rngs::SmallRng;
 use rand::{Rng, SeedableRng};
 
 use crate::car::cabin::{CabinSway, sway_cabins};
+use crate::car::control::{Team, spares};
 use crate::controls::PlayerIntent;
 use crate::explosion::{Explosive, Health, Hit};
 use crate::game::GameState;
@@ -65,7 +99,7 @@ use crate::particles::styles::{
 use crate::render::particles::Particles;
 use crate::sound::{CarSounds, LoopCue, PlaySound};
 use crate::units::PX_PER_UNIT;
-use model::{AimLook, Aim, Energy, Kind, Minigun, Options, Railgun, Shot};
+use model::{AimLook, Aim, Energy, Hammer, Kind, Minigun, Options, Railgun, Shot, Tracking};
 
 pub use view::{AIM_LINE_TEXTURES, energy_bar_alpha};
 
@@ -91,12 +125,26 @@ pub const RAILGUN_SPRITE: GunSprite = GunSprite {
     origin: Vec2::new(6.0, 6.0),
 };
 
+/// `HammerWeapon`: `Weapons\Saw`, round and turned about its middle.
+pub const HAMMER_SPRITE: GunSprite = GunSprite {
+    name: "Weapons\\Saw",
+    size: Vec2::new(128.0, 128.0),
+    origin: Vec2::new(64.0, 64.0),
+};
+
 /// The sprite of a kind of gun.
 pub fn sprite_of(kind: Kind) -> GunSprite {
     match kind {
         Kind::Minigun => MINIGUN_SPRITE,
         Kind::Railgun => RAILGUN_SPRITE,
+        Kind::Hammer => HAMMER_SPRITE,
     }
+}
+
+/// Whether the gun shows an aim line (`BaseComplexWeapon`; the Hammer is
+/// a plain `BaseWeapon`).
+pub fn has_aim_line(kind: Kind) -> bool {
+    kind != Kind::Hammer
 }
 
 /// How far a bullet flies (`SimulateBullet`: 1024 pixels).
@@ -117,6 +165,13 @@ pub struct Weapon {
     /// (the other is never used).
     pub minigun: Minigun,
     pub railgun: Railgun,
+    /// The saw of a [`Kind::Hammer`]: its size and reach, and the cars it
+    /// keeps hurting.
+    pub hammer: Hammer,
+    pub tracking: Tracking<Entity>,
+    /// The saw is turning and hurts (`_isWorking`): its car is alive and
+    /// someone drives it.
+    pub working: bool,
     /// The pivot in the car's frame and the barrel's angle from straight
     /// ahead, as last placed (`_worldPosition`, `_worldDirection`).
     pub local: Vec2,
@@ -126,11 +181,17 @@ pub struct Weapon {
     pub direction: f32,
     /// Aimed this step: the aim line shows (`EnableWeaponLineDraw`).
     pub aiming: bool,
+    /// The player's aim help ([`aim_help`]).
+    pub magnet: aim_help::AimMagnet,
 }
 
 impl Weapon {
-    /// The gun a `Cars.xml` weapon type names, at `mount` (car frame).
-    pub fn new(kind: Kind, options: Options, mount: Vec2, local: bool, rng: &mut impl Rng) -> Weapon {
+    /// The gun a `Cars.xml` weapon type names, at `mount` (car frame), on a
+    /// car of `car` size (the Hammer sits by it, not by `WeaponPositon`).
+    pub fn new(kind: Kind, options: Options, mount: Vec2, car: Vec2, local: bool, rng: &mut impl Rng) -> Weapon {
+        let sprite = sprite_of(kind);
+        let hammer = Hammer::new(car, sprite.size.x / sprite.size.y);
+        let mount = if kind == Kind::Hammer { hammer.mount } else { mount };
         Weapon {
             kind,
             options,
@@ -142,11 +203,15 @@ impl Weapon {
             aim: Aim::new(options.max_angle, local),
             minigun: Minigun::new(&options, rng.random()),
             railgun: Railgun::new(&options, rng.random()),
+            hammer,
+            tracking: Tracking::default(),
+            working: false,
             local: mount,
             local_angle: 0.0,
             at: Vec2::ZERO,
             direction: 0.0,
             aiming: false,
+            magnet: aim_help::AimMagnet::default(),
         }
     }
 
@@ -163,12 +228,27 @@ impl Weapon {
                 }
             }
             Kind::Railgun => self.railgun.look(&self.options, energy),
+            // No aim line; never asked.
+            Kind::Hammer => AimLook::Normal,
         }
     }
 
     /// The muzzle in the world (`PiuPosition`).
     pub fn muzzle(&self) -> Vec2 {
         self.at + Vec2::from_angle(self.direction) * self.length
+    }
+
+    /// `TargetInFireRange`: whether a target (middle and radius) is where
+    /// the gun points now and within its range. The Hammer is a plain
+    /// `BaseWeapon`: its `PiuPosition` is its mount, not a muzzle.
+    pub fn in_fire_range(&self, target: Vec2, radius: f32) -> bool {
+        self.fire_range().contains(target, radius)
+    }
+
+    /// The numbers `TargetInFireRange` reads, as they are now.
+    pub fn fire_range(&self) -> model::FireRange {
+        let from = if self.kind == Kind::Hammer { self.at } else { self.muzzle() };
+        model::FireRange { from, direction: self.direction, range: self.options.range, dispersion: self.options.dispersion }
     }
 
     /// Places the gun on a car at `car` facing `angle`, its cabin moved
@@ -211,8 +291,28 @@ impl Plugin for WeaponPlugin {
                     .after(sway_cabins)
                     .run_if(in_state(GameState::Playing)),
             )
+            .add_systems(
+                FixedUpdate,
+                aim_help::update_aim_magnets
+                    .in_set(WeaponSystems)
+                    .before(fire_weapons)
+                    .run_if(in_state(GameState::Playing)),
+            )
+            .add_systems(
+                FixedUpdate,
+                hammer::run_saws
+                    .in_set(WeaponSystems)
+                    .after(fire_weapons)
+                    .run_if(in_state(GameState::Playing)),
+            )
+            .add_systems(
+                Update,
+                hammer::hammer_blows
+                    .before(crate::explosion::ExplosionSystems)
+                    .run_if(in_state(GameState::Playing)),
+            )
             .add_systems(Update, gun_sounds.run_if(in_state(GameState::Playing)))
-            .add_plugins(view::WeaponViewPlugin);
+            .add_plugins((view::WeaponViewPlugin, max_angle::MaxAnglePlugin));
     }
 }
 
@@ -240,9 +340,11 @@ fn fire_weapons(
     physics: Res<Time<Physics>>,
     spatial: SpatialQuery,
     mut guns: Query<Gun>,
+    places: Query<&Position>,
     skipped: Query<(), PassedByBullets>,
     mut bodies: Query<(&RigidBody, Forces), Without<Weapon>>,
     hurt: Query<Option<&Health>, Hurt>,
+    teams: Query<&Team>,
     mut rng: ResMut<WeaponRng>,
     mut particles: ResMut<Particles>,
     mut hits: MessageWriter<Hit>,
@@ -264,9 +366,16 @@ fn fire_weapons(
         if let Some(e) = energy.as_mut() {
             e.0.step(dt);
         }
-        gun.aiming = intent.aim_dir != Vec2::ZERO;
+        // The Hammer does not aim (`HammerWeapon.Aim` is empty).
+        gun.aiming = gun.kind != Kind::Hammer && intent.aim_dir != Vec2::ZERO;
         if gun.aiming {
-            gun.aim.aim(intent.aim_dir.to_angle(), angle);
+            // The aim help leans the aim towards its candidate (`Aim`).
+            gun.magnet.source = intent.aim_dir;
+            let aim = match gun.magnet.candidate.and_then(|c| places.get(c).ok()) {
+                Some(candidate) => aim_help::pulled(intent.aim_dir, gun.at, candidate.0),
+                None => intent.aim_dir,
+            };
+            gun.aim.aim(aim.to_angle(), angle);
         }
         let options = gun.options;
         // The pulse is taken (`Control.Fire &= ~FireType.Shoot`), changing
@@ -290,7 +399,7 @@ fn fire_weapons(
                             impulse: options.impulse * impulse_rate,
                             damage: options.damage,
                         };
-                        shoot(bullet, car, &spatial, targets, &mut bodies, &hurt, rng, &mut particles, &mut hits, &mut play);
+                        shoot(bullet, car, &spatial, targets, &mut bodies, &hurt, &teams, rng, &mut particles, &mut hits, &mut play);
                         gun.aim.recoil.current += model::RECOIL;
                     }
                     Some(Shot::Misfire { pitch }) => {
@@ -315,7 +424,7 @@ fn fire_weapons(
                         impulse: options.impulse,
                         damage: options.damage,
                     };
-                    let sound_at = shoot_beam(bullet, options.reflections, car, &spatial, targets, &mut bodies, &hurt, rng, &mut particles, &mut hits);
+                    let sound_at = shoot_beam(bullet, options.reflections, car, &spatial, targets, &mut bodies, &hurt, &teams, rng, &mut particles, &mut hits);
                     // Set, not added to: the Railgun kicks the same each time.
                     gun.aim.recoil.current = model::RAILGUN_RECOIL;
                     play.write(PlaySound {
@@ -326,8 +435,19 @@ fn fire_weapons(
                     });
                 }
             }
+            // `FireType.Shoot` of either kind reaches `TryShoot`, which spends
+            // the energy and then does nothing (`OnShoot` is empty), once a
+            // step as the key stays down.
+            Kind::Hammer => {
+                if (intent.fire || accurate)
+                    && let Some(e) = energy.as_mut()
+                {
+                    e.0.try_spend(options.energy);
+                }
+            }
         }
-        let cabin = sway.map_or((Vec2::ZERO, 0.0), |s| s.pose(angle));
+        // The saw does not ride the cabin (its `Update` ignored `deltaPos`).
+        let cabin = sway.filter(|_| gun.kind != Kind::Hammer).map_or((Vec2::ZERO, 0.0), |s| s.pose(angle));
         gun.aim.step(dt);
         if sway.is_some() {
             gun.aim.step(dt);
@@ -376,8 +496,10 @@ fn strike(
     leg: &beam::Leg,
     impulse: f32,
     damage: i32,
+    shooter: Entity,
     bodies: &mut Query<(&RigidBody, Forces), Without<Weapon>>,
     hurt: &Query<Option<&Health>, Hurt>,
+    teams: &Query<&Team>,
     rng: &mut SmallRng,
     particles: &mut Particles,
     hits: &mut MessageWriter<Hit>,
@@ -398,6 +520,11 @@ fn strike(
     let Ok(health) = hurt.get(entity) else {
         return false;
     };
+    // `ignoreDamage`: the shooter's own team is pushed but not hurt, and
+    // it is a car all the same (no sparks).
+    if spares(teams.get(shooter).ok().copied(), teams.get(entity).ok().copied()) {
+        return true;
+    }
     if health.is_some_and(|h| h.hp > 0) {
         particles.add_scaled(&DAMAGE_GLOW, point, 0.0, rng.random::<f32>() * std::f32::consts::TAU, 1.0);
     }
@@ -405,6 +532,7 @@ fn strike(
         target: entity,
         damage,
         from: leg.direction,
+        by: Some(shooter),
     });
     true
 }
@@ -419,6 +547,7 @@ fn shoot(
     targets: Targets,
     bodies: &mut Query<(&RigidBody, Forces), Without<Weapon>>,
     hurt: &Query<Option<&Health>, Hurt>,
+    teams: &Query<&Team>,
     rng: &mut SmallRng,
     particles: &mut Particles,
     hits: &mut MessageWriter<Hit>,
@@ -426,7 +555,7 @@ fn shoot(
 ) {
     let legs = targets.bullet(spatial, shooter, &bullet, 0);
     let leg = &legs[0];
-    let wounded = strike(leg, bullet.impulse, bullet.damage, bodies, hurt, rng, particles, hits);
+    let wounded = strike(leg, bullet.impulse, bullet.damage, shooter, bodies, hurt, teams, rng, particles, hits);
     let point = leg.end;
     particles.try_add(&BULLET_SPLASH, bullet.muzzle, bullet.direction, bullet.direction + std::f32::consts::PI);
     trail(particles, rng, bullet.muzzle, point, bullet.direction);
@@ -462,6 +591,7 @@ fn shoot_beam(
     targets: Targets,
     bodies: &mut Query<(&RigidBody, Forces), Without<Weapon>>,
     hurt: &Query<Option<&Health>, Hurt>,
+    teams: &Query<&Team>,
     rng: &mut SmallRng,
     particles: &mut Particles,
     hits: &mut MessageWriter<Hit>,
@@ -470,7 +600,7 @@ fn shoot_beam(
     particles.try_add(&RAILGUN_SPLASH, bullet.muzzle, bullet.direction, 0.0);
     for (i, leg) in legs.iter().enumerate() {
         let damage = if i == 0 { bullet.damage } else { model::reflected_damage(bullet.damage) };
-        strike(leg, bullet.impulse, damage, bodies, hurt, rng, particles, hits);
+        strike(leg, bullet.impulse, damage, shooter, bodies, hurt, teams, rng, particles, hits);
         let from = if i == 0 { leg.start } else { leg.cast_from };
         beam_trail(particles, rng, from, leg.end, leg.direction);
         particles.try_add(&RAILGUN_SPLASH, leg.end, leg.direction, 0.0);

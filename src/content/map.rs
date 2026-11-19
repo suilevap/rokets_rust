@@ -131,14 +131,38 @@ fn default_player_car() -> String {
 pub struct SimpleCarData {
     pub id: i64,
     pub position: XVec2,
+    /// `ControlType`: who drives it (`NoneEnemy`, `AiSimpleTurret`, …).
     #[serde(default)]
     pub control: String,
-    #[serde(default)]
+    /// A name in `Cars.xml`'s `SimpleCars`.
+    #[serde(default = "default_simple_car")]
     pub car_name: String,
     #[serde(default)]
     pub direction_deg: f32,
+    /// `Default`: the car's own weapon; otherwise this `WeaponType` (see
+    /// [`SimpleCarData::weapon_override`]).
+    #[serde(default)]
+    pub weapon: Option<String>,
+    /// Run when it appears (at map start, or as a clone), for it.
+    #[serde(default)]
+    pub action_on_create: Option<String>,
+    /// Run when it is destroyed, for it.
+    #[serde(default)]
+    pub action_on_destroy: Option<String>,
     #[serde(default, deserialize_with = "boolean")]
     pub is_prototype: bool,
+}
+
+fn default_simple_car() -> String {
+    "SimpleBuggy".into()
+}
+
+impl SimpleCarData {
+    /// The map's weapon type when it overrides the car's (`Weapon` other
+    /// than `Default`).
+    pub fn weapon_override(&self) -> Option<&str> {
+        self.weapon.as_deref().map(str::trim).filter(|w| !w.is_empty() && *w != "Default")
+    }
 }
 
 #[derive(Clone, Debug, Deserialize)]

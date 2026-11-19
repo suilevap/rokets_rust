@@ -5,6 +5,99 @@ repository's plan (`docs/plans/RUST_BEVY_MIGRATION.md`, section 9 onwards);
 this file keeps what came up along the way. Take an item into its own pull
 request; remove it here when it lands.
 
+## Enemies and AI
+
+The map's `SimpleCars` are spawned (`car`, `car/simple`, `car/death`) with
+their health, shield, team, weapon and wreck. Their controls (`ai`) are live
+for `AiSimpleTurret` / `AiSimpleTurretFriend` (`TurretAi`), `AiChaser`
+(`ChaserAi`), `MoveByPath` / `MoveByPathFriend` / `MoveByPathSafelyFriend`
+(`FollowPathAi`, `FollowPathAiSafe`), `GoToEnemySimplePredictionPosition`
+(all flatbt trees), `AlwaysShoot` and `ShootPattern`; every other
+`ControlType` that is an `AIBTBaseControl` stands idle until the next slice.
+The navigation (`map/nav`: `NavGraph`, `NavPath`) and the nodes that drive
+along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
+`TriggerMapAction`, `Optional`) are in. In order:
+
+1. **The other behaviour trees.** Each with what it still needs (the rest of
+   `BTActions/*` and `BTActionFactory`):
+   - `Ai` / `AiFriend` (`GameMode.GetAi`: check which tree the single-player
+     mode gives; `SimpleAi` = `Selector(Attack, MoveBase, SimpleScanning)`
+     would need only ported nodes);
+   - `SimpleAttackNearestEnemy` = `Selector(SimpleAttack, Idle)`,
+     `SimpleFollowByEnemyAi` = `Selector(Sequence(FindNearestEnemy,
+     SimpleFollowByTarget(0.2)), Idle)` (`ScanDistance` 20) and
+     `MoveAndFireInInitDirection` (`MoveInOneDirectionAi`: the stick and aim
+     along the car's initial direction, the trigger down): only ported nodes,
+     not registered yet;
+   - `SimpleFlocking`, `ZombieFlocking*`: `Flocking` (the flocking steering,
+     with `GetFriends`), `FindNearestLeader`, `Leader` and `Traits` on the
+     blackboard, `ZombieWeapon`, `Weapon.CanShoot`, `GetFriends`, the
+     `TakeDamage` state, `Drawer.Particles.CreateBip2` / the small teleport
+     particle, a friend's blackboard reached from a tree (`Uii`);
+   - `GuardAi`: `Emotion` (the `?` / `!` bubbles), `SeeTargetForward`,
+     `PatrolAction` (`MoveToPoint` to `Entity.StartPosition` — the car's start
+     — then `PatrolPath` as the `Path`; `SetPath` already stores it),
+     `AlwaysTryShoot`, `MoveToRandomVisiblePosition`
+     (`GetRandomFreeVisiblePoint`, `RandomHelper.NextVector2Fake`);
+   - `SupportAi*`, `OrderExecutor*`: `ExecuteOrders`, `OrdersManager`,
+     `FollowLeader`, `FindNearestLeader`, `Leader.Control.LocalDevice`,
+     `SmartAttack` (below);
+   - `AttackAi`, `AttackAiVer2`, `HammerAi*`, `ChickenAi` (= `PanicBehaviour`):
+     `SmartAttack` / `SmartAttackVer2` (`AimToTarget`, `StopAction`, `Timer`s,
+     `Maneur` with `MoveToRandomVisiblePosition`,
+     `Weapon.IsImmidiate` / `Range`), `MapManager.GetRandomNodePosition`
+     (`NavGraph::get_nodes` is ready; `RandomHelper.NextIntFakeRange`),
+     `GetRandomFreeNonVisiblePoint`, `GetRandomFreeVisiblePoint`,
+     `TakeDamage`, `Entity.MaxHealth`, `RemeberTargetPos`
+     (`GetPredictionPosition`);
+   - `CaptureTheBox*` (`CustomAi`): the chain gadget actions
+     (`GrabByChainGadget`, `DropByChainGadget`), `FixBlocker` (the path's
+     `Blocker` is there), `MoveUntilPositionNonVisible`, custom data on the
+     blackboard;
+   - `ChaserTargetFromLocalVariable`: `GetTargetFromVariables` (map
+     variables read from a tree);
+   - `AiSimpleTurretFriendFireAvailableTarget` (`TurretAiFireToAnyone`:
+     `SimpleAttackByAngle`, `FindAngleNearestEnemy`; no map uses it).
+   And `BTLib`'s `RepeatUntilSuccess`, `DynamicNode`, `Condition` where a tree
+   wants them, `Orders`, `LastDamagerPosition`, `AdditionalTargetPosition`.
+   A tree whose world reads are heavier than the turret's (many cars) will
+   want the gather to copy less per step than it does (it already casts
+   sight only on a thinking step; `FollowPathAi` cars also gather the
+   enemies every step for `TryFireToAnyone`), and `flatbt-bevy`'s
+   `.parallel()` once the blackboard is the only thing a tree touches (the
+   port runs single-threaded on the web).
+   `GetPredictionPosition` corrects a prediction that lands in a wall
+   (`GetNearestFreePoint`: the first 16 of the map's free points): not ported,
+   decide it with the free points.
+   **Navigation, left open:** a door shoved open by a car does not open
+   its navigation links (C# opened them from `OpenDoor()` only too);
+   fake walls are free in C#'s distance field (the port has no fake walls
+   yet); the free points (`GetFreePoints`, `FreePoints`,
+   `GetRandomFreeVisiblePoint`, …); `AIPathCarControl` (`AISimpleCarControl`,
+   `AITouchAndRunCarControl`, `PlayerCarControlPath`: no `ControlType`
+   reaches them); a debug view of each car's path (`AiBlackboard.Draw`).
+2. **Weapons and enemy extras.** The other weapons (`PlasmaGun`, `Laser`,
+   `Tesla`, `Shotgun`, `Rocketlauncher*`, `ZombieWeapon`, `LaserWithDelay`:
+   `PeriodicFireControl`'s pre-fire uses its `ChargeTime`), the red aim
+   line of a static or enemy gun (`LaserVisiblityUpdate`: drawn for every
+   gun, not only the player's, with the Railgun's bounces), `SetImmortal`
+   and the `Immortal` shield, `HighlightEnemy` / `HighlightDeadEnemy`.
+3. Other `Players` of a map (AI-driven `Car`s: only the first is spawned),
+   their clones, `Local` simple cars (`DoorsDream1`, `MyGalaxy`: the player
+   drives a `SimpleCar`), `NoneLocal` cars' immunity out of the view, an AI
+   control on the player's own car (`SetControl(player, AiChaser)`).
+4. Check C#'s friction on cars: `ControlableEntity` sets
+   `PhysicBody.Friction = 0` (`LinearDragCoefficientDefault`) after the
+   fixture exists, so cars may have no friction in C#, not 0.8 as boxes
+   and cars have here. Compare a car sliding along a wall.
+5. Compare the turrets with the C# game over many runs: first shots come
+   after a random part of the weapon's reload (`PeriodicUpdate.Sparse`), so
+   one run each says little. On `JunkYard` the Railgun turret in front of
+   the player's start fired at 4.5 s in C# against 1.1 s here, on `Targets`
+   and `Friend` they matched in kind (a Minigun kills the 12-health car in
+   about 1.4 s, a Railgun in one shot); find out what holds the C# turret
+   there (a map script?).
+
 ## Phone
 
 - **Accelerometer.** In the C# game it did not steer the car: it tilted the
@@ -67,10 +160,13 @@ request; remove it here when it lands.
 - Move the remaining inline `#[cfg(test)] mod tests { … }` blocks out of
   source files (see `CLAUDE.md`).
 - `tools/compare.py` on a map with `SimpleCars` (Targets, every Minigun
-  map but Teleport): take them out of the C# game quietly first.
-  `DestroyEntity` blows them up (the blasts move boxes nearby) and, sent
-  before their first update, crashes the game (their weapon is made
-  then and reads their place). Then compare bullets pushing a box.
+  map but Teleport): they are in the port now, so compare bullets and
+  rams on a target against the C# game too. `DestroyEntity` takes a simple
+  car out at once in the port (no wreck, no blast, `ActionOnDestroy` runs:
+  `NetworkPhysicEntity.Destroy` then `FinalRemove`, read from the source; an
+  older note here said it blasts, which the source does not show: check). Sent
+  before its first update it crashed the C# game (its weapon is made then and
+  reads its place).
 - `tools/compare.py` on a map with a scripted intro: start the C#
   script with the map (e.g. `/drive` reporting the map's game time, or
   a `-drive` command-line option), so intros line up.

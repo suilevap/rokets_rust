@@ -1,8 +1,8 @@
 //! Actions a map item runs for itself (`TriggerManager.OnNewEntity`,
 //! `OnEntityDestroy`): `ActionOnCreate` when it appears (at map start or
 //! as a clone, looked up by its source), `ActionOnDestroy` when the game
-//! destroys it (`DestroyEntity`, a bomb going off). Leaving the map does
-//! not count.
+//! destroys it (`DestroyEntity`, a bomb going off, a simple car's wreck
+//! removed two seconds after it died). Leaving the map does not count.
 //!
 //! The player's car runs its `ActionOnCreate` at map start only: coming
 //! back at a respawn point it is the same car in C#.
@@ -36,6 +36,9 @@ fn actions_of(map: &LoadedMap, id: i64) -> (Option<String>, Option<String>) {
     }
     if let Some(p) = map.data.players.items.iter().find(|p| p.id == id) {
         return (named(&p.action_on_create), None);
+    }
+    if let Some(c) = map.data.simple_cars.items.iter().find(|c| c.id == id) {
+        return (named(&c.action_on_create), named(&c.action_on_destroy));
     }
     (None, None)
 }
