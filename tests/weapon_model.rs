@@ -288,8 +288,9 @@ fn the_saw_reaches_by_a_square_of_the_radii() {
     assert!(saw.reaches(at, at + Vec2::new(1.09, 1.09), 0.5));
     assert!(!saw.reaches(at, at + Vec2::new(1.11, 0.0), 0.5));
     assert!(!saw.reaches(at, at + Vec2::new(0.0, -1.11), 0.5));
-    // Strictly closer.
-    assert!(!saw.reaches(at, at + Vec2::new(1.1, 0.0), 0.5));
+    // Strictly closer: just inside the sum reaches, just outside not.
+    assert!(saw.reaches(at, at + Vec2::new(1.099, 0.0), 0.5));
+    assert!(!saw.reaches(at, at + Vec2::new(1.101, 0.0), 0.5));
 }
 
 #[test]
