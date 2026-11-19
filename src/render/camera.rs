@@ -1,6 +1,9 @@
 //! Perspective framing from XNA's `Camera2D` and `Camera2DOperatoAllInCadr`.
 //!
-//! A solo target leads by 0.7 seconds of velocity and zooms out with speed.
+//! A solo target leads by 0.7 seconds of velocity and zooms out with speed;
+//! the player's car also leads up to 5 units where the gun or the gadget
+//! is aimed (`Control.CameraOffset`, `WeaponAxisControl × 5`), zooming out
+//! a fifth less meanwhile.
 //! Multiple targets share the frame, including a six-radius driving margin.
 //! Focus (1.9/s), camera position (4/s) and scale (0.9/s) ease separately;
 //! scale stays between 1 and `CameraMinScaleBase` (0.4).
@@ -29,6 +32,8 @@ const FOCUS_RATE: f32 = 1.9;
 const FOLLOW_RATE: f32 = 4.0;
 const SCALE_RATE: f32 = 0.9;
 const LOOK_AHEAD: f32 = 0.7;
+/// How far the camera leads towards the aim, world units (`CameraOffset`).
+const AIM_LEAD: f32 = 5.0;
 const TARGET_MARGIN: f32 = 6.0;
 
 /// How fast the view turns between landscape and portrait, per second.
@@ -127,6 +132,8 @@ impl MainCamera {
 struct FocusTarget {
     position: Vec2,
     velocity: Vec2,
+    /// The player's aim, 0..1 ([`PlayerIntent::look`]).
+    look: Vec2,
     radius: f32,
     max_speed: f32,
 }
@@ -167,9 +174,11 @@ fn framing(
         } else {
             0.0
         };
+        // `CameraOffset` and `scaleSpeedRelated *= 0.8`.
+        let (offset, slow) = if first.look != Vec2::ZERO { (first.look * AIM_LEAD, 0.8) } else { (Vec2::ZERO, 1.0) };
         return Some(Framing {
-            focus: first.position + first.velocity * LOOK_AHEAD,
-            scale: 1.0 - (1.0 - MIN_SCALE) * speed,
+            focus: first.position + first.velocity * LOOK_AHEAD + offset,
+            scale: MIN_SCALE + (1.0 - MIN_SCALE) * (1.0 - speed) * slow,
         });
     }
     let focus = sum / count as f32;
@@ -197,16 +206,23 @@ type CameraTargets<'w, 's> = Query<
         &'static Transform,
         &'static CameraTarget,
         Option<&'static LinearVelocity>,
+        Option<&'static crate::controls::PlayerIntent>,
     ),
     (Without<MainCamera>, Without<Unfocused>),
 >;
 
 fn target_snapshot(
-    (transform, target, velocity): (&Transform, &CameraTarget, Option<&LinearVelocity>),
+    (transform, target, velocity, intent): (
+        &Transform,
+        &CameraTarget,
+        Option<&LinearVelocity>,
+        Option<&crate::controls::PlayerIntent>,
+    ),
 ) -> FocusTarget {
     FocusTarget {
         position: transform.translation.truncate(),
         velocity: velocity.map_or(Vec2::ZERO, |v| v.0),
+        look: intent.map_or(Vec2::ZERO, |i| i.look),
         radius: target.radius,
         max_speed: target.max_speed,
     }

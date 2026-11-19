@@ -30,6 +30,10 @@ pub struct PlayerIntent {
     pub aim_dir: Vec2,
     /// The trigger is held (`FireType.ShootMultiple`).
     pub fire: bool,
+    /// Where the player points the gun or the gadget, world, length 0..1
+    /// (`WeaponAxisControl`: the cursor over 8 units away is 1); the
+    /// camera looks that way (`CameraOffset`).
+    pub look: Vec2,
     /// The gadget button is held (`GadgetControl`).
     pub gadget: bool,
     /// The world point the gadget aims at (the mouse); `None`: straight
@@ -302,7 +306,7 @@ fn read_gadget(
     cameras: Query<(&Camera, &GlobalTransform), With<crate::render::camera::MainCamera>>,
     touch: Res<GadgetTouch>,
     view: Res<ViewRotation>,
-    mut players: Query<(&mut PlayerIntent, Has<NoInput>, Has<crate::weapon::Weapon>), With<LocalPlayer>>,
+    mut players: Query<(&mut PlayerIntent, Has<NoInput>, Has<crate::weapon::Weapon>, &Transform), With<LocalPlayer>>,
 ) {
     let shift = keys.pressed(KeyCode::ShiftLeft);
     let by_mouse = mouse.pressed(MouseButton::Right) || (mouse.pressed(MouseButton::Left) && shift);
@@ -330,10 +334,18 @@ fn read_gadget(
         })
         .flatten();
     let arrows = key_axis(&keys, ARROWS);
-    for (mut intent, off, gun) in &mut players {
+    for (mut intent, off, gun, at) in &mut players {
         intent.gadget = !off && (by_mouse || by_key || by_touch);
         intent.gadget_at = cursor;
         intent.gadget_dir = drag.or_else(|| (gun && by_key && arrows != Vec2::ZERO).then(|| view.screen_to_world(arrows.normalize())));
+        // `GadgetControl` set the weapon axis to its aim while held.
+        intent.look = if !intent.gadget {
+            Vec2::ZERO
+        } else if let Some(c) = cursor {
+            reach(c - at.translation.truncate())
+        } else {
+            intent.gadget_dir.unwrap_or(Vec2::ZERO)
+        };
     }
 }
 
@@ -367,12 +379,15 @@ fn read_weapon(
     };
     let mut fire;
     let mut aim = Vec2::ZERO;
+    // The same as a stick, 0..1 (`WeaponAxisControl`).
+    let mut look = Vec2::ZERO;
     let arrows = key_axis(&keys, ARROWS);
     let gadget_key = keys.pressed(KeyCode::ShiftRight) || keys.pressed(KeyCode::KeyE);
     if arrows != Vec2::ZERO {
         // `HandleKeyboadrFireAndGadget`.
         fire = !(has_gadget && gadget_key);
         aim = view.screen_to_world(arrows);
+        look = aim;
         *keyboard_only = true;
     } else {
         fire = keys.pressed(KeyCode::ControlRight);
@@ -387,6 +402,7 @@ fn read_weapon(
                 }
                 if !*keyboard_only && let Some(at) = cursor_on_ground(&windows, &cameras) {
                     aim = at - gun.at;
+                    look = reach(aim);
                 }
             }
         }
@@ -401,6 +417,7 @@ fn read_weapon(
         );
         if stick.length() > GAMEPAD_DEAD_ZONE && !intent.gadget {
             aim = view.screen_to_world(stick);
+            look = aim;
         }
     }
     if touch.finger.is_some() {
@@ -411,10 +428,22 @@ fn read_weapon(
         if d.length() >= touch.dead_zone && d != Vec2::ZERO {
             touch.dead_zone = 0.0;
             aim = view.screen_to_world(d.clamp_length_max(1.0));
+            look = aim;
         }
     }
     intent.fire = !off && fire;
     intent.aim_dir = if off { Vec2::ZERO } else { aim };
+    if !intent.gadget {
+        intent.look = if off { Vec2::ZERO } else { look };
+    }
+}
+
+/// `BaseControl.Length`: 256 pixels, the mouse's full reach.
+const REACH: f32 = 256.0 / 32.0;
+
+/// `BaseControl.Aim`: a world offset as a stick, full at [`REACH`].
+fn reach(v: Vec2) -> Vec2 {
+    if v.length() < REACH { v / REACH } else { v.normalize_or_zero() }
 }
 
 /// Where the mouse points on the ground plane.

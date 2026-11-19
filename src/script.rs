@@ -119,6 +119,7 @@ fn run_script(
         intent.gadget_dir = None;
         intent.fire = !off && buttons.fire;
         intent.aim_dir = Vec2::ZERO;
+        intent.look = Vec2::ZERO;
         if script.tick.is_multiple_of(6) {
             let angle = t.rotation.to_euler(EulerRot::XYZ).2.to_degrees();
             info!(
