@@ -170,6 +170,33 @@ pub static BOOM_SMOKE: Style = Style {
     origin: CENTRE,
 };
 
+/// `_damagedSmokeStyle`: grey smoke a wrecked simple car puffs for its
+/// last two seconds, growing and thinning over four.
+pub static DAMAGED_SMOKE: Style = Style {
+    begin: State {
+        speed: 4.0 / 32.0,
+        scale: Vec2::splat(1.25),
+        view_rotation: -0.5,
+        rotation: 0.0,
+        // `Color.Gray`.
+        color: color(128.0 / 255.0, 128.0 / 255.0, 128.0 / 255.0),
+        height: SMOKE_START,
+    },
+    end: State {
+        speed: 0.0,
+        scale: Vec2::splat(4.5),
+        view_rotation: -0.05,
+        rotation: 0.0,
+        color: TRANSPARENT,
+        height: SMOKE_END,
+    },
+    lifetime: 4.0,
+    texture: "Particles\\Smoke",
+    additive: false,
+    random_frame: false,
+    origin: CENTRE,
+};
+
 /// `_smokeCrashedStyle`: thick black smoke over a wreck, shrinking as it
 /// thins over six seconds.
 pub static CRASH_SMOKE: Style = Style {

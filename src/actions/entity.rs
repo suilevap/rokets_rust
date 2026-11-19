@@ -1,6 +1,7 @@
 //! Actions on one entity (`ActionRunner`): activate, destroy, push, hurt.
 
 use super::{AddMapAction, MapIds, OnDestroy, Run, RunAction, destroy_action};
+use crate::controls::LocalPlayer;
 use crate::game::MapId;
 use crate::content::actions::defs::{ActivateEntity, ApplyImpulse, DamageEntity, DestroyEntity};
 use crate::explosion::{Destroyed, Explosion, Explosive, Health, Hit};
@@ -46,12 +47,14 @@ fn set_active(In(run): In<Run<ActivateEntity>>, ids: MapIds, mut commands: Comma
 }
 
 /// `DestroyEntityActionData`, `DestroyEntity(id)`: `Entity.Destroy`;
-/// bombs and red boxes blow up, the player's car wrecks.
+/// bombs and red boxes blow up, the player's car wrecks, anything else
+/// (a simple car too: no wreck, no blast) is gone at once and runs its
+/// `ActionOnDestroy`.
 #[allow(clippy::type_complexity)]
 fn destroy(
     In(run): In<Run<DestroyEntity>>,
     ids: MapIds,
-    things: Query<(&Transform, Option<&Explosive>, Has<Health>, Option<&OnDestroy>, Option<&MapId>)>,
+    things: Query<(&Transform, Option<&Explosive>, Has<Health>, Has<LocalPlayer>, Option<&OnDestroy>, Option<&MapId>)>,
     mut commands: Commands,
     mut explosions: MessageWriter<Explosion>,
     mut destroyed: MessageWriter<Destroyed>,
@@ -60,10 +63,10 @@ fn destroy(
     let Some(e) = ids.entity(run.target(run.data.item_id)) else {
         return false;
     };
-    let Ok((t, explosive, alive, on_destroy, id)) = things.get(e) else {
+    let Ok((t, explosive, alive, player, on_destroy, id)) = things.get(e) else {
         return false;
     };
-    if alive {
+    if alive && player {
         destroyed.write(Destroyed(e));
         return true;
     }
@@ -71,6 +74,7 @@ fn destroy(
         explosions.write(Explosion {
             at: t.translation.truncate(),
             blast: explosive.blast,
+            owner: None,
         });
     }
     if let Some(action) = destroy_action(on_destroy, id) {

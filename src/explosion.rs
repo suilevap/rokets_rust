@@ -7,11 +7,17 @@
 //! - [`Explosion`] at a point: bodies in range are thrown away from it and
 //!   whatever can be hurt there gets a [`Hit`]; walls shelter what is
 //!   behind them. It flashes and smokes (`CreateBigBoom`).
-//! - [`Hit`]: a [`Health`] loses points, and sends [`Destroyed`] when it
-//!   runs out (what then happens to a car is the game mode's business);
-//!   an [`Explosive`] that blows up when hit lights its fuse.
+//! - [`Hit`]: a [`Health`] loses points (after its [`Shield`] has taken
+//!   what it can), is told of it by [`Damaged`] (sounds, health bar) and
+//!   sends [`Destroyed`] when it runs out (what then happens to a car is
+//!   the game mode's, for the player's, and `car::death`'s business); an
+//!   [`Explosive`] that blows up when hit lights its fuse.
 //! - An [`Explosive`] blows up on touch (bombs) or a moment after a hit
 //!   (red boxes, which so set each other off).
+//!
+//! A blast with an owner spares the owner's team (`CreateExplosion`:
+//! `Control.Team != ownerTeam`); one with none (bombs, red boxes) hurts
+//! everything it reaches. The throw is not spared: it pushes every body.
 //!
 //! The throw is simpler than Farseer's: it cast rays over each body's
 //! outline; here a body gets one push from the centre, as strong as all
@@ -26,6 +32,8 @@ use rand::Rng;
 use rand::rngs::SmallRng;
 
 use crate::actions::{OnDestroy, RunAction, destroy_action};
+use crate::car::control::{Team, spares};
+use crate::car::shield::Shield;
 use crate::game::{GameState, LoadedMap, MapId};
 use crate::particles::styles::{BOMB_BEEP, BOOM_FIRE, BOOM_FLASH, BOOM_RING, BOOM_SMOKE, ring_rate};
 use crate::render::particles::Particles;
@@ -87,6 +95,8 @@ impl Beeps {
 pub struct Explosion {
     pub at: Vec2,
     pub blast: Blast,
+    /// Whose it is: its team is spared (`CreateExplosion`'s `owner`).
+    pub owner: Option<Entity>,
 }
 
 /// Damage to an entity, from a direction (radians, towards it).
@@ -94,6 +104,17 @@ pub struct Explosion {
 pub struct Hit {
     pub target: Entity,
     pub damage: i32,
+    pub from: f32,
+}
+
+/// A car with health took a blow it was alive for (`TakeDamage`): `taken`
+/// is what got past its shield.
+#[derive(Message, Debug, Clone, Copy)]
+pub struct Damaged {
+    pub target: Entity,
+    pub taken: i32,
+    /// It was the last of its health.
+    pub killed: bool,
     pub from: f32,
 }
 
@@ -121,6 +142,7 @@ impl Plugin for ExplosionPlugin {
     fn build(&self, app: &mut App) {
         app.add_message::<Explosion>()
             .add_message::<Hit>()
+            .add_message::<Damaged>()
             .add_message::<Destroyed>()
             .insert_resource(BoomRng(rand::SeedableRng::seed_from_u64(11)))
             .add_systems(
@@ -171,6 +193,7 @@ fn blow_up_on_touch(
                 explosions.write(Explosion {
                     at: t.translation.truncate(),
                     blast: explosive.blast,
+                    owner: None,
                 });
             }
         }
@@ -193,23 +216,28 @@ fn burn_fuses(
             explosions.write(Explosion {
                 at: t.translation.truncate(),
                 blast: explosive.blast,
+                owner: None,
             });
         }
     }
 }
 
-#[allow(clippy::type_complexity)]
+#[allow(clippy::type_complexity, clippy::too_many_arguments)]
 fn explode(
     mut explosions: MessageReader<Explosion>,
     map: Res<LoadedMap>,
     mut particles: ResMut<Particles>,
     mut rng: ResMut<BoomRng>,
     mut bodies: Query<(&RigidBody, &ColliderAabb, &Position, Forces), Without<Sensor>>,
-    targets: Query<(Entity, &Transform, Option<&ColliderAabb>), Or<(With<Health>, With<Explosive>)>>,
+    targets: Query<(Entity, &Transform, Option<&ColliderAabb>, Option<&Team>), Or<(With<Health>, With<Explosive>)>>,
+    teams: Query<&Team>,
     mut hits: MessageWriter<Hit>,
 ) {
     for ex in explosions.read() {
         let (at, blast) = (ex.at, ex.blast);
+        // A dead owner is no owner (C#'s `Control.Team` of a removed car
+        // is not asked either: the explosion keeps the car it came from).
+        let owner_team = ex.owner.and_then(|o| teams.get(o).ok()).copied();
         boom(&map, &mut particles, &mut rng.0, at, blast.range);
         let sheltered = |p: Vec2| {
             let (a, b) = (map.cell.to_cells(at), map.cell.to_cells(p));
@@ -225,10 +253,10 @@ fn explode(
                 forces.apply_linear_impulse(impulse);
             }
         }
-        for (entity, t, aabb) in &targets {
+        for (entity, t, aabb, team) in &targets {
             let p = t.translation.truncate();
             let radius = aabb.map_or(0.0, |a| a.size().max_element() / 2.0);
-            if p.distance(at) < blast.range + radius && !sheltered(p) {
+            if p.distance(at) < blast.range + radius && !sheltered(p) && !spares(owner_team, team.copied()) {
                 hits.write(Hit {
                     target: entity,
                     damage: blast.damage,
@@ -254,17 +282,27 @@ fn boom(map: &LoadedMap, particles: &mut Particles, rng: &mut SmallRng, at: Vec2
 fn take_hits(
     mut commands: Commands,
     mut hits: MessageReader<Hit>,
-    mut health: Query<&mut Health>,
+    mut health: Query<(&mut Health, Option<&mut Shield>)>,
     explosives: Query<(&Explosive, &Children), Without<Fuse>>,
     mut tints: Query<&mut SpriteTint>,
+    mut damaged: MessageWriter<Damaged>,
     mut destroyed: MessageWriter<Destroyed>,
 ) {
     for hit in hits.read() {
-        if let Ok(mut h) = health.get_mut(hit.target)
+        if let Ok((mut h, shield)) = health.get_mut(hit.target)
             && h.hp > 0
         {
-            h.hp -= hit.damage;
-            if h.hp <= 0 {
+            // The shield takes what it can first (`Shield.Spend`).
+            let taken = shield.map_or(hit.damage, |mut s| s.spend(hit.damage));
+            h.hp -= taken;
+            let killed = h.hp <= 0;
+            damaged.write(Damaged {
+                target: hit.target,
+                taken,
+                killed,
+                from: hit.from,
+            });
+            if killed {
                 destroyed.write(Destroyed(hit.target));
             }
         }

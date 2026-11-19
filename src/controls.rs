@@ -53,8 +53,10 @@ pub struct PlayerIntent {
 #[derive(Component, Debug, Default)]
 pub struct LocalPlayer;
 
-/// The player's car, not driven by the player for now (`SetControl` to
-/// `NoneLocal` during an intro, or to an AI not ported yet).
+/// A car nobody drives for now: the player's, after `SetControl` to
+/// `NoneLocal` during an intro (or to an AI not ported yet); a simple
+/// car's with a `None*` control (`AINone`, which also keeps a Hammer's saw
+/// still).
 #[derive(Component, Debug)]
 pub struct NoInput;
 

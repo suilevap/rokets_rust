@@ -92,10 +92,14 @@ pub enum Layer {
     /// Additive particles (flashes, pings): after every sprite, but still
     /// hidden by walls (`DefaultWorldAdditive`: drawn last, depth read).
     Glow,
+    /// A hurt car's health bar (`DepthConst.HealthIndicatorBack` and
+    /// `Fore`, drawn in the foreground pass, unlit, over the world); its
+    /// fill lies a hair above its back.
+    HealthBar,
 }
 
 impl Layer {
-    pub const ALL: [Layer; 13] = [
+    pub const ALL: [Layer; 14] = [
         Layer::GroundDecor,
         Layer::Accelerator,
         Layer::Shadow,
@@ -109,6 +113,7 @@ impl Layer {
         Layer::Coin,
         Layer::AirParticles,
         Layer::Glow,
+        Layer::HealthBar,
     ];
 
     /// Height above the ground plane, world units: all near zero (see the

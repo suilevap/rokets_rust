@@ -1,7 +1,19 @@
 //! `GameLibrary.CarsData`: `assets/Cars/Cars.xml`, the car catalogue.
 //!
 //! A car may name a `BaseCar`; it then takes everything from the base and
-//! only its own weapon and gadget (as `CarsData.MergeCar` does in C#).
+//! only its own weapon and gadget (as `CarsData.MergeCar` does in C#; the
+//! base's own base first, as `GetCarInfo` recurses).
+//!
+//! The file lists two catalogues: `Cars`, the players' cars, and
+//! `SimpleCars`, the ones the map's `SimpleCars` name (targets, turrets,
+//! enemies; `GetSimpleCarInfo`, which merges only the weapon and its
+//! position, as `MergeSimpleCar`). They are the same data here
+//! ([`CarData`]; a simple car has no wheels or gadget). A name's first
+//! entry wins in each.
+//!
+//! Not ported: easy mode's `EasyModeMaxHealthDelta` and
+//! `EasyModeShieldDelta` (C# adds them on phones only; `Settings.IsEasyMode`
+//! is false for the desktop and the browser).
 
 use std::collections::HashMap;
 
@@ -44,6 +56,18 @@ pub struct CarData {
     pub flying: bool,
     #[serde(default = "yes", deserialize_with = "boolean")]
     pub can_move: bool,
+    /// The magnet may grab it (`CanLink`, `LinkablePhysicEntity.CanBeLinked`).
+    #[serde(default, deserialize_with = "boolean")]
+    pub can_link: bool,
+    /// Its collider is this share of the sprite's size (`GeometryScale`).
+    #[serde(default = "one")]
+    pub geometry_scale: f32,
+    /// A circle collider instead of a box (`UseCircleForGeometry`).
+    #[serde(default, deserialize_with = "boolean")]
+    pub use_circle_for_geometry: bool,
+    /// Points of shield (`Shield`, a byte; `ShieldComponent`).
+    #[serde(default)]
+    pub shield: u8,
     /// Front-left wheel, in sprite pixels from the car's centre.
     #[serde(default)]
     pub left_wheel_position: Option<XVec2>,
@@ -82,12 +106,50 @@ fn yes() -> bool {
 struct CarsXml {
     #[serde(default)]
     cars: Items<CarData>,
+    #[serde(default)]
+    simple_cars: Items<CarData>,
 }
 
 /// All cars by name, with `BaseCar` already resolved.
 #[derive(Clone, Debug, Default)]
 pub struct CarCatalog {
     cars: HashMap<String, CarData>,
+    simple_cars: HashMap<String, CarData>,
+}
+
+/// How deep a `BaseCar` chain may go (C# recursed without a limit; a
+/// cycle would never end there).
+const MAX_BASES: usize = 8;
+
+/// `GetCarInfo` / `GetSimpleCarInfo`: the first entry of each name (a
+/// duplicate is ignored, `FirstOrDefault`), its base merged in.
+fn resolve_all(items: Vec<CarData>) -> HashMap<String, CarData> {
+    let mut by_name: HashMap<String, CarData> = HashMap::new();
+    for c in items {
+        by_name.entry(c.name.clone()).or_insert(c);
+    }
+    let resolve = |car: &CarData| {
+        let mut chain = vec![car];
+        while let Some(base) = chain.last().and_then(|c| c.base_car.as_deref()).filter(|b| !b.is_empty()).and_then(|b| by_name.get(b)) {
+            if chain.len() >= MAX_BASES {
+                break;
+            }
+            chain.push(base);
+        }
+        // From the root out: each takes everything but its own weapon and
+        // gadget from the one before.
+        let mut resolved = chain.pop().expect("a car").clone();
+        while let Some(next) = chain.pop() {
+            resolved.name = next.name.clone();
+            resolved.base_car = next.base_car.clone();
+            resolved.weapon = next.weapon.clone();
+            resolved.weapon_positon = next.weapon_positon;
+            resolved.gadget = next.gadget.clone();
+            resolved.gadget_position = next.gadget_position;
+        }
+        resolved
+    };
+    by_name.iter().map(|(name, car)| (name.clone(), resolve(car))).collect()
 }
 
 impl CarCatalog {
@@ -95,31 +157,20 @@ impl CarCatalog {
         let raw: CarsXml = parse_asset(xml)?;
         // The first car of a name wins (`GetCarInfo`: `FirstOrDefault`):
         // `SandBuggyMagnetMinigun` is listed twice, with a Minigun first.
-        let mut by_name: HashMap<String, CarData> = HashMap::new();
-        for c in raw.cars.items {
-            by_name.entry(c.name.clone()).or_insert(c);
-        }
-        let mut cars = HashMap::new();
-        for (name, car) in &by_name {
-            let mut resolved = car.clone();
-            if let Some(base_name) = &car.base_car
-                && let Some(base) = by_name.get(base_name)
-            {
-                resolved = base.clone();
-                resolved.name = car.name.clone();
-                resolved.base_car = car.base_car.clone();
-                resolved.weapon = car.weapon.clone();
-                resolved.weapon_positon = car.weapon_positon;
-                resolved.gadget = car.gadget.clone();
-                resolved.gadget_position = car.gadget_position;
-            }
-            cars.insert(name.clone(), resolved);
-        }
-        Ok(CarCatalog { cars })
+        Ok(CarCatalog {
+            cars: resolve_all(raw.cars.items),
+            simple_cars: resolve_all(raw.simple_cars.items),
+        })
     }
 
+    /// A player's car (`GetCarInfo`).
     pub fn get(&self, name: &str) -> Option<&CarData> {
         self.cars.get(name)
+    }
+
+    /// A car a map's `SimpleCars` names (`GetSimpleCarInfo`).
+    pub fn get_simple(&self, name: &str) -> Option<&CarData> {
+        self.simple_cars.get(name)
     }
 
     pub fn len(&self) -> usize {

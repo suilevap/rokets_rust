@@ -11,15 +11,20 @@
 //! its source ([`CloneOf`]), so triggers, buttons and teleports that list
 //! the source take its clones too (`GetSourceCustomId`).
 //!
-//! Not ported: clones of cars (players and `SimpleCars`), which need the
-//! AI.
+//! A `SimpleCars` entry is cloned the same way (`CreateSimpleCarServer`
+//! with the source's car, control and weapon).
+//!
+//! Not ported: clones of the players' cars (`SendRequestForNewPlayer`;
+//! the map's other `Players` are not spawned at all yet).
 
 use bevy::prelude::*;
 use rand::rngs::SmallRng;
 use rand::{Rng, SeedableRng};
 
 use super::{AddMapAction, MapIds, Run};
+use crate::car::spawn_simple_car;
 use crate::content::actions::defs::{CloneObject, CloneObjectByPath};
+use crate::content::map::SimpleCarData;
 use crate::content::xna::{XRect, XVec2};
 use crate::game::{LoadedMap, MapId};
 use crate::map::spawn::spawn_entity;
@@ -67,6 +72,43 @@ impl Cloning<'_, '_> {
         self.rng.get_or_insert_with(|| SmallRng::seed_from_u64(41))
     }
 
+    /// Where a clone's offset starts: round the `RelativeByItem` entity
+    /// when the action asks for it.
+    fn around(&self, d: &CloneObject, actor: Option<i64>) -> Vec2 {
+        if d.is_use_relative_position {
+            self.ids
+                .entity(super::target_id(d.relative_by_item, actor))
+                .and_then(|e| self.places.get(e).ok())
+                .map_or(Vec2::ZERO, |t| t.translation.truncate())
+        } else {
+            Vec2::ZERO
+        }
+    }
+
+    /// A `SimpleCars` entry made again, one per free id.
+    fn clone_simple_cars(
+        &mut self,
+        car: &SimpleCarData,
+        source: i64,
+        targets: Vec<i64>,
+        actor: Option<i64>,
+        d: &CloneObject,
+        mut place: impl FnMut(&mut Self, usize) -> Place,
+    ) {
+        let around = self.around(d, actor);
+        for (i, target) in targets.into_iter().enumerate() {
+            let (at, angle) = place(self, i);
+            let at = at + around;
+            let (map, quad) = (&*self.map, &*self.quad);
+            if let Some(e) = spawn_simple_car(&mut self.commands, map, quad, &mut self.materials, car, target, at, angle) {
+                if target != source {
+                    self.commands.entity(e).insert(CloneOf(source));
+                }
+                self.particles.try_add(&CLONE_FLASH, at, 0.0, 0.0);
+            }
+        }
+    }
+
     /// `RunCloneObjectBase`: the ids to make, then each at its place.
     fn clone(&mut self, d: &CloneObject, actor: Option<i64>, mut place: impl FnMut(&mut Self, usize) -> Place) {
         let Some(source) = super::target_id(d.item_id, actor) else {
@@ -84,21 +126,14 @@ impl Cloning<'_, '_> {
         }
         let map = &self.map;
         let Some(data) = map.data.entities.iter().find(|e| e.id == source).cloned() else {
-            let car = map.data.players.items.iter().any(|p| p.id == source)
-                || map.data.simple_cars.items.iter().any(|c| c.id == source);
-            if car {
-                debug!("clones of car {source} are not ported yet");
+            if let Some(car) = map.data.simple_cars.items.iter().find(|c| c.id == source).cloned() {
+                self.clone_simple_cars(&car, source, targets, actor, d, place);
+            } else if map.data.players.items.iter().any(|p| p.id == source) {
+                debug!("clones of player car {source} are not ported yet");
             }
             return;
         };
-        let around = if d.is_use_relative_position {
-            self.ids
-                .entity(super::target_id(d.relative_by_item, actor))
-                .and_then(|e| self.places.get(e).ok())
-                .map_or(Vec2::ZERO, |t| t.translation.truncate())
-        } else {
-            Vec2::ZERO
-        };
+        let around = self.around(d, actor);
         for (i, target) in targets.into_iter().enumerate() {
             let (at, angle) = place(self, i);
             let at = at + around;

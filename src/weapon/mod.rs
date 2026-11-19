@@ -27,7 +27,7 @@
 //!   has no gun to aim and no trigger to pull; whatever the car runs into
 //!   with it hurts and is shoved. Only the player's fire keys do anything,
 //!   and that is to spend 0.1 of the energy a press (`BaseWeapon.TryShoot`
-//!   with an empty `OnShoot`).
+//!   with an empty `OnShoot`). It spares its own team.
 //! - The gun rides the swaying cabin (`DrawCabina` updated it a second
 //!   time with the cabin's offset, which also doubled the speed of its
 //!   eases; [`Aim::step`] runs twice for cars with a cabin, as there).
@@ -37,9 +37,13 @@
 //!   energy is too low to fire; the Railgun's, wide and fading, while it
 //!   reloads.
 //!
-//! Not ported: enemies' guns (they come with the AI) and so teams and
-//! the aim help that bends the aim towards the nearest enemy
-//! (`UpdateAimMagnet`); the energy the score multiplier gives
+//! - A bullet or beam does not hurt a car of the shooter's own team
+//!   (`SimulateBullet`'s `ignoreDamage`): it still pushes it, but no damage
+//!   is done or shown, and nothing sparks off it (it is a car).
+//!
+//! Not ported: enemies' guns firing (they come with the AI; a simple car
+//! with a gun wears it, idle) and the aim help that bends the aim towards
+//! the nearest enemy (`UpdateAimMagnet`); the energy the score multiplier gives
 //! (`OnScoreManagerAddMult`, no score yet); easy mode's cheaper bullets;
 //! `Unaim` (unused); the slow-motion extras along a bullet's trail
 //! (`CreateBulletTrailBetween` with `TimeScale < 0.9`) and the sounds'
@@ -47,11 +51,10 @@
 //! effects off screen (the particle pool takes them all). A ray that
 //! starts inside a box hits it at once; Farseer's ray passed out of it.
 //!
-//! Railgun, not ported: damage not sparing one's own team (no teams); the team check and `IsStatic` of the aim
-//! line (enemies' guns).
+//! Railgun, not ported: the team check and `IsStatic` of the aim line
+//! (enemies' guns).
 //!
-//! Hammer, not ported: teams (every car it hits counts as an enemy, none
-//! is a friend, so `isFriend` is never set); `GetHammer(level)`'s damage
+//! Hammer, not ported: `GetHammer(level)`'s damage
 //! by level (the enemy spawn director) and the enemies' use of
 //! `TargetInFireRange` (`range`, `dispersion`); the view check on the
 //! sparks (the particle pool takes them all); the saw staying on a dead car
@@ -70,6 +73,7 @@ use rand::rngs::SmallRng;
 use rand::{Rng, SeedableRng};
 
 use crate::car::cabin::{CabinSway, sway_cabins};
+use crate::car::control::{Team, spares};
 use crate::controls::PlayerIntent;
 use crate::explosion::{Explosive, Health, Hit};
 use crate::game::GameState;
@@ -301,6 +305,7 @@ fn fire_weapons(
     skipped: Query<(), PassedByBullets>,
     mut bodies: Query<(&RigidBody, Forces), Without<Weapon>>,
     hurt: Query<Option<&Health>, Hurt>,
+    teams: Query<&Team>,
     mut rng: ResMut<WeaponRng>,
     mut particles: ResMut<Particles>,
     mut hits: MessageWriter<Hit>,
@@ -349,7 +354,7 @@ fn fire_weapons(
                             impulse: options.impulse * impulse_rate,
                             damage: options.damage,
                         };
-                        shoot(bullet, car, &spatial, targets, &mut bodies, &hurt, rng, &mut particles, &mut hits, &mut play);
+                        shoot(bullet, car, &spatial, targets, &mut bodies, &hurt, &teams, rng, &mut particles, &mut hits, &mut play);
                         gun.aim.recoil.current += model::RECOIL;
                     }
                     Some(Shot::Misfire { pitch }) => {
@@ -374,7 +379,7 @@ fn fire_weapons(
                         impulse: options.impulse,
                         damage: options.damage,
                     };
-                    let sound_at = shoot_beam(bullet, options.reflections, car, &spatial, targets, &mut bodies, &hurt, rng, &mut particles, &mut hits);
+                    let sound_at = shoot_beam(bullet, options.reflections, car, &spatial, targets, &mut bodies, &hurt, &teams, rng, &mut particles, &mut hits);
                     // Set, not added to: the Railgun kicks the same each time.
                     gun.aim.recoil.current = model::RAILGUN_RECOIL;
                     play.write(PlaySound {
@@ -446,8 +451,10 @@ fn strike(
     leg: &beam::Leg,
     impulse: f32,
     damage: i32,
+    shooter: Entity,
     bodies: &mut Query<(&RigidBody, Forces), Without<Weapon>>,
     hurt: &Query<Option<&Health>, Hurt>,
+    teams: &Query<&Team>,
     rng: &mut SmallRng,
     particles: &mut Particles,
     hits: &mut MessageWriter<Hit>,
@@ -468,6 +475,11 @@ fn strike(
     let Ok(health) = hurt.get(entity) else {
         return false;
     };
+    // `ignoreDamage`: the shooter's own team is pushed but not hurt, and
+    // it is a car all the same (no sparks).
+    if spares(teams.get(shooter).ok().copied(), teams.get(entity).ok().copied()) {
+        return true;
+    }
     if health.is_some_and(|h| h.hp > 0) {
         particles.add_scaled(&DAMAGE_GLOW, point, 0.0, rng.random::<f32>() * std::f32::consts::TAU, 1.0);
     }
@@ -489,6 +501,7 @@ fn shoot(
     targets: Targets,
     bodies: &mut Query<(&RigidBody, Forces), Without<Weapon>>,
     hurt: &Query<Option<&Health>, Hurt>,
+    teams: &Query<&Team>,
     rng: &mut SmallRng,
     particles: &mut Particles,
     hits: &mut MessageWriter<Hit>,
@@ -496,7 +509,7 @@ fn shoot(
 ) {
     let legs = targets.bullet(spatial, shooter, &bullet, 0);
     let leg = &legs[0];
-    let wounded = strike(leg, bullet.impulse, bullet.damage, bodies, hurt, rng, particles, hits);
+    let wounded = strike(leg, bullet.impulse, bullet.damage, shooter, bodies, hurt, teams, rng, particles, hits);
     let point = leg.end;
     particles.try_add(&BULLET_SPLASH, bullet.muzzle, bullet.direction, bullet.direction + std::f32::consts::PI);
     trail(particles, rng, bullet.muzzle, point, bullet.direction);
@@ -532,6 +545,7 @@ fn shoot_beam(
     targets: Targets,
     bodies: &mut Query<(&RigidBody, Forces), Without<Weapon>>,
     hurt: &Query<Option<&Health>, Hurt>,
+    teams: &Query<&Team>,
     rng: &mut SmallRng,
     particles: &mut Particles,
     hits: &mut MessageWriter<Hit>,
@@ -540,7 +554,7 @@ fn shoot_beam(
     particles.try_add(&RAILGUN_SPLASH, bullet.muzzle, bullet.direction, 0.0);
     for (i, leg) in legs.iter().enumerate() {
         let damage = if i == 0 { bullet.damage } else { model::reflected_damage(bullet.damage) };
-        strike(leg, bullet.impulse, damage, bodies, hurt, rng, particles, hits);
+        strike(leg, bullet.impulse, damage, shooter, bodies, hurt, teams, rng, particles, hits);
         let from = if i == 0 { leg.start } else { leg.cast_from };
         beam_trail(particles, rng, from, leg.end, leg.direction);
         particles.try_add(&RAILGUN_SPLASH, leg.end, leg.direction, 0.0);

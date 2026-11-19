@@ -68,6 +68,15 @@ into things with it. It hurts bombs, red boxes and cars by the car's speed
 (4 to 8) and shoves what it hits; it has no aim line, no fire zone and the
 mouse and the gamepad do not fire it (the fire keys only spend its energy).
 
+The map's `SimpleCars` (targets, turrets, enemy buggies) are there: you can
+shoot them, ram them and saw them. A hurt one shows a health bar over it for
+two seconds, and when it is destroyed it bursts, lies smoking as a wreck for
+two seconds and then goes (running its `ActionOnDestroy`). Your own team's
+(`NoneFriend`, the `*Friend` controls) are spared by your guns and saw. They
+do not drive or fire yet: that is the AI, still to come. Their Hammers
+spin (the saw works for every control but `NoneLocal`, `NoneEnemy` and
+`NoneFriend`) and hurt what touches them.
+
 On Linux, Bevy needs `pkg-config libwayland-dev libxkbcommon-dev libudev-dev
 libasound2-dev libx11-dev`.
 

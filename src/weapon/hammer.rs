@@ -17,6 +17,10 @@
 //!   dead and the ones that have moved away.
 //! - The saw works while the car is alive and someone drives it (not
 //!   `AINone`: [`NoInput`]); otherwise it does nothing and is drawn still.
+//!   A car with an AI control works its saw (it turns and hurts what it
+//!   touches) although the AI does not drive it yet.
+//! - It spares its own team (`isFriend`): a car of the same team is not
+//!   hurt, tracked or shoved, only sparked on.
 //!
 //! The contact begins are Avian's [`CollisionStart`]: Farseer called
 //! `OnCollision` as a contact began too. The car's speed is the one before
@@ -34,7 +38,7 @@ use rand::rngs::SmallRng;
 
 use super::model::{self, HAMMER_BLOW_SPARKS, HAMMER_TRACK_SPARKS, Kind};
 use super::{Hurt, Weapon, WeaponRng};
-use crate::car::Car;
+use crate::car::control::{Team, spares};
 use crate::car::impact::LastVelocity;
 use crate::controls::NoInput;
 use crate::explosion::{Health, Hit};
@@ -119,7 +123,8 @@ pub(super) fn run_saws(
 pub(super) fn hammer_blows(
     mut started: MessageReader<CollisionStart>,
     mut saws: Query<(&mut Weapon, &Position, &Rotation, &LastVelocity, &RigidBody)>,
-    others: Query<(&Position, &Collider, Has<Sensor>, Has<Car>), With<MapId>>,
+    others: Query<(&Position, &Collider, Has<Sensor>, Option<&Team>), With<MapId>>,
+    teams: Query<&Team>,
     hurt: Query<(), Hurt>,
     mut bodies: Query<(&RigidBody, Forces), Without<Weapon>>,
     mut owners: Query<Forces, With<Weapon>>,
@@ -136,7 +141,7 @@ pub(super) fn hammer_blows(
             let Ok((mut gun, position, rotation, last, body)) = saws.get_mut(car) else {
                 continue;
             };
-            let Ok((other_at, collider, sensor, brain)) = others.get(other) else {
+            let Ok((other_at, collider, sensor, other_team)) = others.get(other) else {
                 continue;
             };
             if gun.kind != Kind::Hammer || !gun.working || sensor {
@@ -148,11 +153,15 @@ pub(super) fn hammer_blows(
                 continue;
             }
             let delta = other_at.0 - saw;
+            let brain = other_team.is_some();
+            // `isFriend`: a car of the saw's own team (the saw's car has a
+            // team; a box has none).
+            let friend = spares(teams.get(car).ok().copied(), other_team.copied());
             // `RUST_LOG=tilerider::weapon=debug`.
             debug!("hammer blow on {other:?} at {:.2} {:.2}, speed {:.2}", saw.x, -saw.y, last.0.length());
-            // Whatever can be hurt (`NetworkPhysicEntity`) is, whatever
-            // team: a car is tracked and hurt again.
-            if hurt.contains(other) {
+            // Whatever can be hurt (`NetworkPhysicEntity`) is, but a
+            // friend: a car is tracked and hurt again.
+            if !friend && hurt.contains(other) {
                 let damage = model::hammer_damage(&gun.options, last.0.length_squared(), body.is_static());
                 if brain {
                     gun.tracking.add(other);
@@ -164,7 +173,13 @@ pub(super) fn hammer_blows(
                 });
             }
             // The shove (`SafeNormalize`: nothing when the centres meet),
-            // at a point within the other's radius.
+            // at a point within the other's radius; not on a friend, but the
+            // sparks fly (`CreateCollisionSparks` is outside the `if`).
+            if friend {
+                let dir = rng.random::<f32>() * TAU;
+                collision_sparks(&mut particles, rng, saw, dir, HAMMER_BLOW_SPARKS);
+                continue;
+            }
             let push = delta.normalize_or_zero() * gun.options.impulse;
             let point = other_at.0 + Vec2::new(rng.random::<f32>() * 2.0 - 1.0, rng.random::<f32>() * 2.0 - 1.0) * radius;
             if let Ok((body, mut forces)) = bodies.get_mut(other)

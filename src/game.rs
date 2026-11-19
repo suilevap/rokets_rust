@@ -106,6 +106,22 @@ fn sprites_for(map: &MapData, cars: &CarCatalog, registry: &crate::actions::Acti
             }
         }
     }
+    // The simple cars (prototypes too, for the clones): the chassis, the
+    // wreck, the guns (the non-player preset) and the health bar's pixel.
+    for sc in map.simple_cars.iter() {
+        let Some(car) = cars.get_simple(&sc.car_name) else {
+            continue;
+        };
+        names.extend(car.base_sprite());
+        for part in ["Destroyed1", "Destroyed2"] {
+            names.extend(car.part_sprite(part));
+        }
+        let weapon = crate::car::weapon_type(sc.weapon_override(), car.weapon.as_deref());
+        if let Some((kind, _)) = weapon.and_then(|w| crate::weapon::model::for_type(w, false)) {
+            names.push(crate::weapon::sprite_of(kind).name.to_string());
+        }
+        names.push("WhitePixel".to_string());
+    }
     // What the map's actions draw (door hints, …).
     for a in &map.actions.0 {
         names.extend(registry.sprites_of(a));

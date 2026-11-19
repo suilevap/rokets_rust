@@ -5,6 +5,33 @@ repository's plan (`docs/plans/RUST_BEVY_MIGRATION.md`, section 9 onwards);
 this file keeps what came up along the way. Take an item into its own pull
 request; remove it here when it lands.
 
+## Enemies and AI
+
+The map's `SimpleCars` are spawned (`car`, `car/simple`, `car/death`) with
+their health, shield, team, weapon and wreck, and stand idle: their
+`PlayerIntent` stays zero until an AI writes it. In order:
+
+1. **Turret AI and enemy firing.** `AiSimpleTurret*`, `AlwaysShoot` (fire
+   along the car's heading: `c.Fire = Shoot; WeaponAxisControl =
+   DirectionVector`), `ShootPattern` (`PeriodicFireControl`), the enemies'
+   use of weapons (`TryShoot` with `EnergyComponent` for enemies, the
+   firing range and dispersion, `AdjustWeaponMaxAngle` for static cars with
+   a weapon the map names, the aim line of static / enemy guns,
+   `UpdateAimMagnet`), the other weapons (`PlasmaGun`, `Laser`, `Tesla`,
+   `Shotgun`, `Rocketlauncher*`, `ZombieWeapon`), `SetImmortal` and the
+   `Immortal` shield, `HighlightEnemy` / `HighlightDeadEnemy`.
+2. **Flat behaviour trees and navigation.** `AIBTBaseControl`
+   (`BTActionFactory`: chasers, flocking, path followers, `SetPath`,
+   `ScanDistance`, `ActionOnBTTrigger`, `FireAccuracy`,
+   `IsVisibleForAutoAim`), `AiBlackboard`, navigation over the map.
+3. Other `Players` of a map (AI-driven `Car`s: only the first is spawned),
+   their clones, `Local` simple cars (`DoorsDream1`, `MyGalaxy`: the player
+   drives a `SimpleCar`), `NoneLocal` cars' immunity out of the view.
+4. Check C#'s friction on cars: `ControlableEntity` sets
+   `PhysicBody.Friction = 0` (`LinearDragCoefficientDefault`) after the
+   fixture exists, so cars may have no friction in C#, not 0.8 as boxes
+   and cars have here. Compare a car sliding along a wall.
+
 ## Phone
 
 - **Accelerometer.** In the C# game it did not steer the car: it tilted the
@@ -67,10 +94,13 @@ request; remove it here when it lands.
 - Move the remaining inline `#[cfg(test)] mod tests { … }` blocks out of
   source files (see `CLAUDE.md`).
 - `tools/compare.py` on a map with `SimpleCars` (Targets, every Minigun
-  map but Teleport): take them out of the C# game quietly first.
-  `DestroyEntity` blows them up (the blasts move boxes nearby) and, sent
-  before their first update, crashes the game (their weapon is made
-  then and reads their place). Then compare bullets pushing a box.
+  map but Teleport): they are in the port now, so compare bullets and
+  rams on a target against the C# game too. `DestroyEntity` takes a simple
+  car out at once in the port (no wreck, no blast, `ActionOnDestroy` runs:
+  `NetworkPhysicEntity.Destroy` then `FinalRemove`, read from the source; an
+  older note here said it blasts, which the source does not show: check). Sent
+  before its first update it crashed the C# game (its weapon is made then and
+  reads its place).
 - `tools/compare.py` on a map with a scripted intro: start the C#
   script with the map (e.g. `/drive` reporting the map's game time, or
   a `-drive` command-line option), so intros line up.
