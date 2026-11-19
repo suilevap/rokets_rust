@@ -8,29 +8,54 @@ request; remove it here when it lands.
 ## Enemies and AI
 
 The map's `SimpleCars` are spawned (`car`, `car/simple`, `car/death`) with
-their health, shield, team, weapon and wreck, and stand idle: their
-`PlayerIntent` stays zero until an AI writes it. In order:
+their health, shield, team, weapon and wreck. Their controls (`ai`) are live
+for `AiSimpleTurret` / `AiSimpleTurretFriend` (`TurretAi` flattened), `AlwaysShoot`
+and `ShootPattern`; every other `ControlType` that is an `AIBTBaseControl`
+stands idle until the next slice. In order:
 
-1. **Turret AI and enemy firing.** `AiSimpleTurret*`, `AlwaysShoot` (fire
-   along the car's heading: `c.Fire = Shoot; WeaponAxisControl =
-   DirectionVector`), `ShootPattern` (`PeriodicFireControl`), the enemies'
-   use of weapons (`TryShoot` with `EnergyComponent` for enemies, the
-   firing range and dispersion, `AdjustWeaponMaxAngle` for static cars with
-   a weapon the map names, the aim line of static / enemy guns,
-   `UpdateAimMagnet`), the other weapons (`PlasmaGun`, `Laser`, `Tesla`,
-   `Shotgun`, `Rocketlauncher*`, `ZombieWeapon`), `SetImmortal` and the
-   `Immortal` shield, `HighlightEnemy` / `HighlightDeadEnemy`.
-2. **Flat behaviour trees and navigation.** `AIBTBaseControl`
-   (`BTActionFactory`: chasers, flocking, path followers, `SetPath`,
-   `ScanDistance`, `ActionOnBTTrigger`, `FireAccuracy`,
-   `IsVisibleForAutoAim`), `AiBlackboard`, navigation over the map.
+1. **Flat behaviour trees and navigation.** The tree engine
+   (`BTLib`: `Selector`, `Sequence`, `ActionNode`, `While`, `All`,
+   `Optional`, the running-path rules that `ai/turret.rs` hand-codes for one
+   tree), `AiBlackboard` (target, `LastDamager`, `State`, timers, `Path`,
+   `Orders`, `Traits`), `BTActionFactory` and its trees (`AiChaser`,
+   `MoveByPath*`, `SimpleFlocking`, `ZombieFlocking*`,
+   `SimpleAttackNearestEnemy`, `SimpleFollowByEnemyAi`,
+   `MoveAndFireInInitDirection`, `GuardAi`, `SupportAi*`, `OrderExecutor*`,
+   `CaptureTheBox*`, `AttackAi*`, `HammerAi*`, `ChickenAi`,
+   `GoToEnemySimplePredictionPosition`, `ChaserTargetFromLocalVariable`,
+   `Ai` / `AiFriend` = `SimpleAi`), their nodes (`FindNearestEnemy`,
+   `FireToTarget`, `AimToTarget`, `MoveToPoint`, `MoveToRandomVisiblePosition`,
+   `FollowBy`, `Flocking`, `TriggerMapAction`, `GrabByChainGadget`, …),
+   `SetPath` and `ScanDistance` for them, `ActionOnBTTrigger`,
+   `OrdersManager`, and navigation over the map (`NavGraph`, `NavPath`,
+   `MapManager.GetPath`, free points). `AiSimpleTurretFriendFireAvailableTarget`
+   (`TurretAiFireToAnyone`: `SimpleAttackByAngle`, `FindAngleNearestEnemy`,
+   `TryFireToAnyone`; no map uses it) goes with them. Then the turret
+   can move to the tree and `ai/turret.rs` becomes its test.
+   `GetPredictionPosition` corrects a prediction that lands in a wall
+   (`GetNearestFreePoint`: the first 16 of the map's free points): not ported,
+   decide it with the free points.
+2. **Weapons and enemy extras.** The other weapons (`PlasmaGun`, `Laser`,
+   `Tesla`, `Shotgun`, `Rocketlauncher*`, `ZombieWeapon`, `LaserWithDelay`:
+   `PeriodicFireControl`'s pre-fire uses its `ChargeTime`), the red aim
+   line of a static or enemy gun (`LaserVisiblityUpdate`: drawn for every
+   gun, not only the player's, with the Railgun's bounces), `SetImmortal`
+   and the `Immortal` shield, `HighlightEnemy` / `HighlightDeadEnemy`.
 3. Other `Players` of a map (AI-driven `Car`s: only the first is spawned),
    their clones, `Local` simple cars (`DoorsDream1`, `MyGalaxy`: the player
-   drives a `SimpleCar`), `NoneLocal` cars' immunity out of the view.
+   drives a `SimpleCar`), `NoneLocal` cars' immunity out of the view, an AI
+   control on the player's own car (`SetControl(player, AiChaser)`).
 4. Check C#'s friction on cars: `ControlableEntity` sets
    `PhysicBody.Friction = 0` (`LinearDragCoefficientDefault`) after the
    fixture exists, so cars may have no friction in C#, not 0.8 as boxes
    and cars have here. Compare a car sliding along a wall.
+5. Compare the turrets with the C# game over many runs: first shots come
+   after a random part of the weapon's reload (`PeriodicUpdate.Sparse`), so
+   one run each says little. On `JunkYard` the Railgun turret in front of
+   the player's start fired at 4.5 s in C# against 1.1 s here, on `Targets`
+   and `Friend` they matched in kind (a Minigun kills the 12-health car in
+   about 1.4 s, a Railgun in one shot); find out what holds the C# turret
+   there (a map script?).
 
 ## Phone
 

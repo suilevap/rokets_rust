@@ -51,6 +51,12 @@ impl LoadedMap {
         self.cell.to_world(x, y)
     }
 
+    /// `MapManager.LineCollide` between two world points: a wall in the
+    /// way (what the AI's sight is).
+    pub fn line_collides(&self, a: Vec2, b: Vec2) -> bool {
+        self.grid.line_collides(self.cell.0, [a.x, -a.y], [b.x, -b.y])
+    }
+
     /// The light layer at a world point (what sprites are multiplied by).
     pub fn light_at(&self, p: Vec2) -> [f32; 3] {
         let (x, y) = self.cell.to_cells(p);

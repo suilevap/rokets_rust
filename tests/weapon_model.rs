@@ -351,3 +351,22 @@ fn tracking_drops_the_far_and_the_dead_and_counts_each_blow() {
     idle.tick(HAMMER_TRACKING_PERIOD);
     assert_eq!(idle.due(true, |_| true), vec![7]);
 }
+
+#[test]
+fn an_enemy_fires_when_the_barrel_points_at_the_target_within_range() {
+    use tilerider::weapon::model::target_in_fire_range as in_range;
+    let (range, spread) = (MINIGUN.range, MINIGUN.dispersion);
+    let at = |x: f32, y: f32| Vec2::new(x, y);
+    // Straight along the barrel, near and at the edge of the range.
+    assert!(in_range(Vec2::ZERO, 0.0, range, spread, at(10.0, 0.0), 1.0));
+    assert!(!in_range(Vec2::ZERO, 0.0, range, spread, at(range + 0.1, 0.0), 1.0));
+    // Off the line by more than the spread plus what the radius covers.
+    assert!(!in_range(Vec2::ZERO, 0.0, range, spread, at(10.0, 4.0), 1.0));
+    // A bigger radius (a worse `FireAccuracy`) covers more.
+    assert!(in_range(Vec2::ZERO, 0.0, range, spread, at(10.0, 4.0), 3.0));
+    // It is the barrel's direction now, the short way round.
+    assert!(in_range(Vec2::ZERO, 2.0 * PI - 0.05, range, spread, at(10.0, 0.0), 1.0));
+    assert!(!in_range(Vec2::ZERO, PI, range, spread, at(10.0, 0.0), 1.0));
+    // From the muzzle, not the car's middle; right on it counts.
+    assert!(in_range(at(5.0, 5.0), 0.0, range, spread, at(5.0, 5.0), 1.0));
+}

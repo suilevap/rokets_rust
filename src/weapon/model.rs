@@ -655,6 +655,19 @@ impl Hammer {
     }
 }
 
+/// `BaseWeapon.TargetInFireRange`: a target (its middle, and its radius)
+/// is within the gun's `range` of its `muzzle` and within `dispersion`
+/// (plus the angle its radius covers) of where the barrel points now, not
+/// where it is told to point. The enemies' trigger finger.
+pub fn target_in_fire_range(muzzle: Vec2, direction: f32, range: f32, dispersion: f32, target: Vec2, radius: f32) -> bool {
+    let delta = target - muzzle;
+    if delta.length_squared() >= range * range {
+        return false;
+    }
+    let add_range = radius / delta.length();
+    direction_diff(direction, delta.to_angle()).abs() < dispersion + add_range
+}
+
 /// `VectorExtension.CloserThanByChebyshev`.
 pub fn closer_by_chebyshev(a: Vec2, b: Vec2, distance: f32) -> bool {
     let d = a - b;

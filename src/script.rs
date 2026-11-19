@@ -94,7 +94,7 @@ type ScriptedCar<'a> = (&'a mut PlayerIntent, &'a Transform, &'a avian2d::prelud
 fn run_script(
     mut script: ResMut<DriveScript>,
     mut cars: Query<ScriptedCar, (With<LocalPlayer>, With<Car>)>,
-    traced: Query<(&crate::game::MapId, &Transform, Option<&avian2d::prelude::LinearVelocity>)>,
+    traced: Query<(&crate::game::MapId, &Transform, Option<&avian2d::prelude::LinearVelocity>, Option<&crate::explosion::Health>)>,
 ) {
     let Some((stick, buttons)) = script.now() else {
         return;
@@ -102,7 +102,7 @@ fn run_script(
     // `trace t id x y angle speed`, in the C# game's units and axes (y
     // down, angles the other way) for `tools/compare.py`.
     if script.tick.is_multiple_of(6) {
-        for (id, t, v) in traced.iter().filter(|(id, _, _)| script.trace.contains(&id.0)) {
+        for (id, t, v, health) in traced.iter().filter(|(id, ..)| script.trace.contains(&id.0)) {
             let angle = t.rotation.to_euler(EulerRot::XYZ).2.to_degrees();
             info!(
                 "trace {:.2} {} {:.3} {:.3} {:.2} {:.3}",
@@ -113,6 +113,11 @@ fn run_script(
                 -angle,
                 v.map_or(0.0, |v| v.0.length())
             );
+            // The health too (the C# game's `/entities` has it, not its
+            // `/trace`).
+            if let Some(h) = health {
+                info!("health {:.2} {} {}", script.tick as f32 / 60.0, id.0, h.hp);
+            }
         }
     }
     // As the fire key: held, and accurate on the press

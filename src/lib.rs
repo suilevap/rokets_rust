@@ -1,6 +1,7 @@
 //! TileRider in Rust and Bevy. See `ARCHITECTURE.md` for the layout.
 
 pub mod actions;
+pub mod ai;
 pub mod animation;
 pub mod assets;
 pub mod boost;
@@ -57,7 +58,7 @@ impl Plugin for TileRiderPlugin {
                 map::spawn::MapEntitiesPlugin,
                 render::spin::SpinPlugin,
                 render::animate::AnimatePlugin,
-                (triggers::TriggersPlugin, actions::ActionsPlugin, door::DoorPlugin, button::ButtonPlugin, teleport::TeleportPlugin, platform::PlatformPlugin, info::InfoPlugin, markers::MarkersPlugin, gadget::GadgetPlugin, weapon::WeaponPlugin),
+                (triggers::TriggersPlugin, actions::ActionsPlugin, door::DoorPlugin, button::ButtonPlugin, teleport::TeleportPlugin, platform::PlatformPlugin, info::InfoPlugin, markers::MarkersPlugin, gadget::GadgetPlugin, weapon::WeaponPlugin, ai::AiPlugin),
                 hud::HudPlugin,
                 script::ScriptPlugin,
             ));

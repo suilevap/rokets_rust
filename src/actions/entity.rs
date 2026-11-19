@@ -124,6 +124,7 @@ fn damage(
             target: e,
             damage: run.data.damage as i32,
             from: run.data.direction.to_radians(),
+            by: None,
         });
     } else if let Ok(mut h) = health.get_mut(e) {
         h.hp = (h.hp - run.data.damage as i32).min(h.max);

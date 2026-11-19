@@ -22,17 +22,17 @@
 //!   scaled by `GeometryScale` or a circle; a static body when it cannot
 //!   move (turrets, static targets; it turns dynamic when destroyed); a
 //!   health bar when it is hurt ([`health_bar`]); gone after its wreck lay
-//!   for two seconds ([`death`]). Its intent stays idle until the AI
-//!   writes it (not yet): it stands still, or shoved, as `AINone` does.
+//!   for two seconds ([`death`]). Its intent is written by its control
+//!   ([`crate::ai`]: turrets, `AlwaysShoot`, `ShootPattern`); with a control
+//!   that is not live yet (the behaviour-tree ones) or `AINone` it stands
+//!   still, or shoved.
 //!
 //! Not ported: `GeometryScale`'s lift of the sprite's depth
 //! (`EntityWithGeometryScaleDelta`), the highlight border of enemies
 //! (`HighlightEnemy`, `HighlightDeadEnemy`), a `NoneLocal` simple car's immunity out of the camera's view
 //! (`Control.LocalDevice && !IsInView` in `TakeDamage`), the magnet on a
-//! static car (`OnLinkTo`), `AdjustWeaponMaxAngle` for a static car whose
-//! weapon the map names (it limits the aim, so it comes with the turrets'
-//! aim), the `EnergyComponent` of enemies (their firing comes with the AI),
-//! and giving a simple car the player's devices (a `Local` control on a
+//! static car (`OnLinkTo`), the `EnergyComponent` of enemies (it spends
+//! nothing for a car the player does not drive: no store is made), and giving a simple car the player's devices (a `Local` control on a
 //! simple car, as `DoorsDream1` has).
 
 pub mod cabin;
@@ -71,6 +71,10 @@ const WHEEL_TURN_RATE: f32 = 12.0;
 /// map's own start (`--start x,y`); used once, on the first map.
 #[derive(Resource, Debug, Clone, Copy)]
 pub struct StartOverride(pub Vec2);
+
+/// `Entity.Radius`: half the longer side of the car's sprite, world units.
+#[derive(Component, Debug, Clone, Copy, PartialEq)]
+pub struct CarRadius(pub f32);
 
 #[derive(Component, Debug)]
 pub struct Car {
@@ -269,6 +273,8 @@ pub fn spawn_car(
         MapEntity,
         MapId(id),
         control::Team(kind.team),
+        control::AutoAimVisible(!kind.ai_none),
+        CarRadius(radius),
         PlayerIntent::default(),
         CastsShadow { size },
         Health::full(car.max_health),
@@ -319,7 +325,13 @@ pub fn spawn_car(
     if let Some((kind, options)) = weapon_type(weapon, car.weapon.as_deref()).and_then(|w| crate::weapon::model::for_type(w, player)) {
         let at = car.weapon_positon.map_or(Vec2::ZERO, |p| Vec2::new(p.x, -p.y) * px(1.0) * car.scale);
         let mut rng = <rand::rngs::SmallRng as rand::SeedableRng>::seed_from_u64(id as u64);
-        entity.insert(crate::weapon::Weapon::new(kind, options, at, size, player, &mut rng));
+        let mut gun = crate::weapon::Weapon::new(kind, options, at, size, player, &mut rng);
+        // `CreateSimpleCar`: a static car with a gun the map names does not
+        // aim into the walls beside it (`AdjustWeaponMaxAngle`).
+        if static_body && weapon.is_some_and(|w| w != "None") {
+            crate::weapon::max_angle::adjust(&mut gun, &map.grid, map.cell.0, position, angle, map.cell.0 * 2.5);
+        }
+        entity.insert(gun);
         if player {
             entity.insert(crate::weapon::PlayerEnergy::default());
         } else {
@@ -331,6 +343,7 @@ pub fn spawn_car(
         insert_player_parts(&mut entity, car, radius, friction, control);
     } else {
         insert_simple_parts(&mut entity, car, radius, kind);
+        crate::ai::set_control(&mut entity, control, id as u64);
     }
     entity.with_children(|parent| {
         if player {

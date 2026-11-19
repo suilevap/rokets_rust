@@ -18,7 +18,8 @@
 //! - The saw works while the car is alive and someone drives it (not
 //!   `AINone`: [`NoInput`]); otherwise it does nothing and is drawn still.
 //!   A car with an AI control works its saw (it turns and hurts what it
-//!   touches) although the AI does not drive it yet.
+//!   touches), and a turret-controlled one chases and saws its target
+//!   ([`crate::ai`]).
 //! - It spares its own team (`isFriend`): a car of the same team is not
 //!   hurt, tracked or shoved, only sparked on.
 //!
@@ -79,7 +80,7 @@ fn collision_sparks(particles: &mut Particles, rng: &mut SmallRng, mut at: Vec2,
 pub(super) fn run_saws(
     time: Res<Time>,
     physics: Res<Time<Physics>>,
-    mut saws: Query<(&mut Weapon, &Position, &Rotation, Option<&Health>, Has<NoInput>)>,
+    mut saws: Query<(Entity, &mut Weapon, &Position, &Rotation, Option<&Health>, Has<NoInput>)>,
     enemies: Query<(&Position, &Collider, Option<&Health>), With<MapId>>,
     mut rng: ResMut<WeaponRng>,
     mut particles: ResMut<Particles>,
@@ -90,7 +91,7 @@ pub(super) fn run_saws(
         return;
     }
     let rng = &mut rng.0;
-    for (mut gun, position, rotation, health, off) in &mut saws {
+    for (owner, mut gun, position, rotation, health, off) in &mut saws {
         if gun.kind != Kind::Hammer {
             continue;
         }
@@ -110,6 +111,7 @@ pub(super) fn run_saws(
                 target: enemy,
                 damage,
                 from: rng.random::<f32>() * TAU,
+                by: Some(owner),
             });
             let dir = rng.random::<f32>() * TAU;
             collision_sparks(&mut particles, rng, at, dir, HAMMER_TRACK_SPARKS);
@@ -170,6 +172,7 @@ pub(super) fn hammer_blows(
                     target: other,
                     damage,
                     from: delta.to_angle(),
+                    by: Some(car),
                 });
             }
             // The shove (`SafeNormalize`: nothing when the centres meet),

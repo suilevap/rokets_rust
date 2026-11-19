@@ -10,8 +10,9 @@
 //! less. It does not brake, steer or skid. A car that cannot move
 //! (`CanMove` false: turrets, static targets) has no [`SimpleDrive`] at all.
 //!
-//! The AI will write the stick; until then nothing does and the car only
-//! coasts to a stop (damping) and is shoved around.
+//! The stick is written by the car's control ([`crate::ai`]: a turret that
+//! can move chases its target); a car with none coasts to a stop (damping)
+//! and is shoved around.
 
 use avian2d::prelude::*;
 use bevy::prelude::*;

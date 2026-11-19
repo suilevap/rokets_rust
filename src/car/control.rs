@@ -7,9 +7,9 @@
 //! bullets, blasts and saw spare (`WeaponHelper.SimulateBullet`,
 //! `CreateExplosion`, `HammerWeapon`) and, later, whom the AI attacks.
 //!
-//! Not ported: the controls themselves (the AI types; they come with the
-//! behaviour trees). `Ai` and `AiFriend` are `GameMode.GetAi(team)` in
-//! C#, an `AIBTBaseControl` with team 1 and 0.
+//! The controls themselves are [`crate::ai`]'s; the ones that need
+//! behaviour trees are not ported yet. `Ai` and `AiFriend` are
+//! `GameMode.GetAi(team)` in C#, an `AIBTBaseControl` with team 1 and 0.
 
 use bevy::prelude::*;
 
@@ -17,6 +17,13 @@ use bevy::prelude::*;
 /// the same team. 0 is the player's and its friends', 1 the enemies'.
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Team(pub u8);
+
+/// `IControl.IsVisibleForAutoAim`: for an enemy, whether the player's aim
+/// help may pull the aim towards it. `AINone` (`NoneLocal`, `NoneEnemy`,
+/// `NoneFriend`) is not, every other control is until `AIAdjustment` says
+/// otherwise.
+#[derive(Component, Debug, Clone, Copy, PartialEq, Eq)]
+pub struct AutoAimVisible(pub bool);
 
 /// What a `ControlType` makes of a car.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

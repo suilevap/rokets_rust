@@ -105,6 +105,9 @@ pub struct Hit {
     pub target: Entity,
     pub damage: i32,
     pub from: f32,
+    /// Who dealt it, when it was someone's blow (`entityDamager`: the
+    /// shooter, the saw's car, a blast's owner): the AI hits back at it.
+    pub by: Option<Entity>,
 }
 
 /// A car with health took a blow it was alive for (`TakeDamage`): `taken`
@@ -112,10 +115,13 @@ pub struct Hit {
 #[derive(Message, Debug, Clone, Copy)]
 pub struct Damaged {
     pub target: Entity,
+    /// The blow as it came, before the shield (`totalDamage`).
+    pub damage: i32,
     pub taken: i32,
     /// It was the last of its health.
     pub killed: bool,
     pub from: f32,
+    pub by: Option<Entity>,
 }
 
 /// An entity's health ran out.
@@ -261,6 +267,7 @@ fn explode(
                     target: entity,
                     damage: blast.damage,
                     from: (p - at).to_angle(),
+                    by: ex.owner,
                 });
             }
         }
@@ -298,9 +305,11 @@ fn take_hits(
             let killed = h.hp <= 0;
             damaged.write(Damaged {
                 target: hit.target,
+                damage: hit.damage,
                 taken,
                 killed,
                 from: hit.from,
+                by: hit.by,
             });
             if killed {
                 destroyed.write(Destroyed(hit.target));
