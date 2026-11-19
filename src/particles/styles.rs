@@ -435,8 +435,71 @@ pub static DAMAGE_GLOW: Style = Style {
     origin: CENTRE,
 };
 
+/// `DepthConst.SmokeFlyTrailStart`: over the cars.
+const SMOKE_FLY_TRAIL_START: f32 = -10.0 / 32.0 / 16.0;
+
+/// `_railgunTrailStyle1` and `2`: a white spark of the Railgun's beam that
+/// turns yellow and shrinks away in half a second, drifting off and
+/// spinning (the two spin opposite ways; C#'s +2 and -2 rad/s, negated).
+const fn railgun_trail(spin: f32) -> Style {
+    Style {
+        begin: State {
+            speed: 0.0,
+            scale: Vec2::new(2.0, 1.0),
+            view_rotation: 0.0,
+            rotation: 0.0,
+            color: [1.0; 4],
+            height: SMOKE_FLY_TRAIL_START,
+        },
+        end: State {
+            speed: 1.5,
+            scale: Vec2::new(0.0, 1.0),
+            view_rotation: spin,
+            rotation: 0.0,
+            color: YELLOW,
+            height: SMOKE_FLY_TRAIL_START,
+        },
+        lifetime: 0.5,
+        texture: "Particles\\SmallLine",
+        additive: true,
+        random_frame: false,
+        origin: CENTRE,
+    }
+}
+
+pub static RAILGUN_TRAIL: [Style; 2] = [railgun_trail(-2.0), railgun_trail(2.0)];
+
+/// A trail spark's spacing along the beam: the texture's 16 pixels × 2.5.
+pub const RAILGUN_TRAIL_SPACING: f32 = 16.0 / 32.0 * 2.5;
+
+/// `_railgunSplash`: a white flash at the muzzle and where the beam ends,
+/// turning yellow and shrinking away in 0.2 s.
+pub static RAILGUN_SPLASH: Style = Style {
+    begin: State {
+        speed: 0.0,
+        scale: Vec2::new(2.0, 2.0),
+        view_rotation: 0.0,
+        rotation: 0.0,
+        color: [1.0; 4],
+        height: SMOKE_FLY_TRAIL_START,
+    },
+    end: State {
+        speed: 1.5,
+        scale: Vec2::new(0.0, 0.0),
+        view_rotation: 0.0,
+        rotation: 0.0,
+        color: YELLOW,
+        height: SMOKE_FLY_TRAIL_START,
+    },
+    lifetime: 0.2,
+    texture: "Particles\\flash2",
+    additive: true,
+    random_frame: false,
+    origin: CENTRE,
+};
+
 /// Every texture a style here draws with, to load with the map.
-pub const TEXTURES: [&str; 13] = [
+pub const TEXTURES: [&str; 15] = [
     WHEEL_TRAIL.texture,
     EXHAUST.texture,
     BOMB_BEEP.texture,
@@ -450,4 +513,6 @@ pub const TEXTURES: [&str; 13] = [
     BULLET_TRAIL.texture,
     BULLET_SPARK.texture,
     DAMAGE_GLOW.texture,
+    RAILGUN_TRAIL[0].texture,
+    RAILGUN_SPLASH.texture,
 ];

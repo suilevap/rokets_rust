@@ -6,7 +6,8 @@
 //! (y up), e.g. `1,0:2;0,1:1;0,0:1` (right for 2 s, up for 1 s, let go).
 //! Values after the stick hold buttons meanwhile: `g` the gadget, aimed
 //! ahead of the car (`0,0,g:1` shoots the magnet out for a second), `f`
-//! the trigger, the gun firing where it points (`1,0,f:2`).
+//! the trigger, the gun firing where it points (`1,0,f:2`); the Railgun
+//! fires on the first step of it, as on the fire key's press.
 
 use bevy::prelude::*;
 
@@ -26,6 +27,9 @@ pub struct DriveScript {
     /// Stick, buttons held, steps.
     steps: Vec<(Vec2, Buttons, u32)>,
     tick: u32,
+    /// The trigger was held at the last step (an accurate shot is asked
+    /// for when it was not).
+    fire_held: bool,
     /// Map ids to log every 0.1 s (`--trace`), as the C# game's `/trace`.
     pub trace: Vec<i64>,
 }
@@ -52,7 +56,7 @@ impl DriveScript {
                 Some((v.clamp_length_max(1.0), buttons, (secs * 60.0).round() as u32))
             })
             .collect::<Option<Vec<_>>>()?;
-        Some(DriveScript { steps, tick: 0, trace: Vec::new() })
+        Some(DriveScript { steps, tick: 0, fire_held: false, trace: Vec::new() })
     }
 
     /// The stick and the buttons at the current tick; `None` once the
@@ -111,6 +115,10 @@ fn run_script(
             );
         }
     }
+    // As the fire key: held, and accurate on the press
+    // (`ScriptedCarControl`).
+    let pulse = buttons.fire && !script.fire_held;
+    script.fire_held = buttons.fire;
     for (mut intent, t, v, off) in &mut cars {
         // The script is the player: not while the car is not theirs.
         intent.move_dir = if off { Vec2::ZERO } else { stick };
@@ -118,6 +126,9 @@ fn run_script(
         intent.gadget_at = None;
         intent.gadget_dir = None;
         intent.fire = !off && buttons.fire;
+        if !off && pulse {
+            intent.fire_accurate = true;
+        }
         intent.aim_dir = Vec2::ZERO;
         intent.look = Vec2::ZERO;
         if script.tick.is_multiple_of(6) {
