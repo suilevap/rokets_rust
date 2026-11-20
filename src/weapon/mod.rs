@@ -1,4 +1,4 @@
-//! The car's gun: the Minigun, the Railgun and the Hammer so far.
+//! The car's gun: the Minigun, the Railgun, the Hammer and the Zombie's so far.
 //!
 //! C# origin: `BaseWeapon`, `BaseComplexWeapon`, `MinigunWeapon`,
 //! `RailgunWeapon`, `HammerWeapon`, `WeaponHelper.SimulateMinigunBullet` /
@@ -28,6 +28,12 @@
 //!   with it hurts and is shoved. Only the player's fire keys do anything,
 //!   and that is to spend 0.1 of the energy a press (`BaseWeapon.TryShoot`
 //!   with an empty `OnShoot`). It spares its own team.
+//! - The Zombie's weapon ([`zombie`]) has no barrel and nothing to aim: it
+//!   drags the first enemy within its reach towards itself (a force of 36),
+//!   bites it for 2 every half second it stays near, and its trigger sends
+//!   out a wave that stuns every enemy within twice the reach for two
+//!   seconds ([`crate::stun`]), a wave a reload (2 s for the player, 10 s
+//!   for the enemies) that costs the player's whole energy store.
 //! - The gun rides the swaying cabin (`DrawCabina` updated it a second
 //!   time with the cabin's offset, which also doubled the speed of its
 //!   eases; [`Aim::step`] runs twice for cars with a cabin, as there).
@@ -81,6 +87,7 @@ pub mod hammer;
 pub mod max_angle;
 pub mod model;
 mod view;
+pub mod zombie;
 
 use avian2d::prelude::*;
 use bevy::prelude::*;
@@ -99,7 +106,7 @@ use crate::particles::styles::{
 use crate::render::particles::Particles;
 use crate::sound::{CarSounds, LoopCue, PlaySound};
 use crate::units::PX_PER_UNIT;
-use model::{AimLook, Aim, Energy, Hammer, Kind, Minigun, Options, Railgun, Shot, Tracking};
+use model::{AimLook, Aim, Energy, Hammer, Kind, Minigun, Options, Railgun, Shot, Tracking, Zombie};
 
 pub use view::{AIM_LINE_TEXTURES, energy_bar_alpha};
 
@@ -132,19 +139,21 @@ pub const HAMMER_SPRITE: GunSprite = GunSprite {
     origin: Vec2::new(64.0, 64.0),
 };
 
-/// The sprite of a kind of gun.
-pub fn sprite_of(kind: Kind) -> GunSprite {
+/// The sprite of a kind of gun; the Zombie's has none (`ZombieWeapon.Draw`
+/// only draws its pull).
+pub fn sprite_of(kind: Kind) -> Option<GunSprite> {
     match kind {
-        Kind::Minigun => MINIGUN_SPRITE,
-        Kind::Railgun => RAILGUN_SPRITE,
-        Kind::Hammer => HAMMER_SPRITE,
+        Kind::Minigun => Some(MINIGUN_SPRITE),
+        Kind::Railgun => Some(RAILGUN_SPRITE),
+        Kind::Hammer => Some(HAMMER_SPRITE),
+        Kind::Zombie => None,
     }
 }
 
-/// Whether the gun shows an aim line (`BaseComplexWeapon`; the Hammer is
-/// a plain `BaseWeapon`).
+/// Whether the gun shows an aim line (`BaseComplexWeapon`; the Hammer and
+/// the Zombie's are plain `BaseWeapon`s).
 pub fn has_aim_line(kind: Kind) -> bool {
-    kind != Kind::Hammer
+    kind.is_complex()
 }
 
 /// How far a bullet flies (`SimulateBullet`: 1024 pixels).
@@ -169,6 +178,8 @@ pub struct Weapon {
     /// keeps hurting.
     pub hammer: Hammer,
     pub tracking: Tracking<Entity>,
+    /// The Zombie's reload and its target ([`Kind::Zombie`]).
+    pub zombie: Zombie<Entity>,
     /// The saw is turning and hurts (`_isWorking`): its car is alive and
     /// someone drives it.
     pub working: bool,
@@ -189,22 +200,22 @@ impl Weapon {
     /// The gun a `Cars.xml` weapon type names, at `mount` (car frame), on a
     /// car of `car` size (the Hammer sits by it, not by `WeaponPositon`).
     pub fn new(kind: Kind, options: Options, mount: Vec2, car: Vec2, local: bool, rng: &mut impl Rng) -> Weapon {
-        let sprite = sprite_of(kind);
+        // The Hammer's sprite is the only one its size depends on; the
+        // Zombie has none, and no barrel.
+        let sprite = sprite_of(kind).unwrap_or(HAMMER_SPRITE);
         let hammer = Hammer::new(car, sprite.size.x / sprite.size.y);
         let mount = if kind == Kind::Hammer { hammer.mount } else { mount };
         Weapon {
             kind,
             options,
             mount,
-            length: {
-                let sprite = sprite_of(kind);
-                (sprite.size.x - sprite.origin.x) / PX_PER_UNIT
-            },
+            length: sprite_of(kind).map_or(0.0, |s| (s.size.x - s.origin.x) / PX_PER_UNIT),
             aim: Aim::new(options.max_angle, local),
             minigun: Minigun::new(&options, rng.random()),
             railgun: Railgun::new(&options, rng.random()),
             hammer,
             tracking: Tracking::default(),
+            zombie: Zombie::new(&options, rng.random()),
             working: false,
             local: mount,
             local_angle: 0.0,
@@ -229,7 +240,7 @@ impl Weapon {
             }
             Kind::Railgun => self.railgun.look(&self.options, energy),
             // No aim line; never asked.
-            Kind::Hammer => AimLook::Normal,
+            Kind::Hammer | Kind::Zombie => AimLook::Normal,
         }
     }
 
@@ -312,7 +323,7 @@ impl Plugin for WeaponPlugin {
                     .run_if(in_state(GameState::Playing)),
             )
             .add_systems(Update, gun_sounds.run_if(in_state(GameState::Playing)))
-            .add_plugins((view::WeaponViewPlugin, max_angle::MaxAnglePlugin));
+            .add_plugins((view::WeaponViewPlugin, max_angle::MaxAnglePlugin, zombie::ZombiePlugin));
     }
 }
 
@@ -349,6 +360,7 @@ fn fire_weapons(
     mut particles: ResMut<Particles>,
     mut hits: MessageWriter<Hit>,
     mut play: MessageWriter<PlaySound>,
+    mut waves: MessageWriter<zombie::ZombieWave>,
 ) {
     let dt = time.delta_secs();
     if physics.is_paused() || dt <= 0.0 {
@@ -366,8 +378,8 @@ fn fire_weapons(
         if let Some(e) = energy.as_mut() {
             e.0.step(dt);
         }
-        // The Hammer does not aim (`HammerWeapon.Aim` is empty).
-        gun.aiming = gun.kind != Kind::Hammer && intent.aim_dir != Vec2::ZERO;
+        // The Hammer and the Zombie do not aim (`Aim` is empty).
+        gun.aiming = gun.kind.is_complex() && intent.aim_dir != Vec2::ZERO;
         if gun.aiming {
             // The aim help leans the aim towards its candidate (`Aim`).
             gun.magnet.source = intent.aim_dir;
@@ -443,6 +455,14 @@ fn fire_weapons(
                     && let Some(e) = energy.as_mut()
                 {
                     e.0.try_spend(options.energy);
+                }
+            }
+            // The same `TryShoot`, a reload and all; its `OnShoot` is the
+            // wave ([`zombie::zombie_waves`]).
+            Kind::Zombie => {
+                gun.zombie.tick(dt);
+                if (intent.fire || accurate) && gun.zombie.pull(&options, energy.as_mut().map(|e| &mut e.0)) {
+                    waves.write(zombie::ZombieWave { car });
                 }
             }
         }

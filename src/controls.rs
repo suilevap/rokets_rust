@@ -49,6 +49,12 @@ pub struct PlayerIntent {
     pub gadget_dir: Option<Vec2>,
 }
 
+/// What writes a car's [`PlayerIntent`] in the fixed step, before the cars
+/// drive and the guns fire (the enemies' controls); what takes it away
+/// (the stun) runs after.
+#[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
+pub struct IntentSystems;
+
 /// Marks the car the local player drives.
 #[derive(Component, Debug, Default)]
 pub struct LocalPlayer;

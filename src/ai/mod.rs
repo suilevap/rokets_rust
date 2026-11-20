@@ -175,7 +175,6 @@ use crate::controls::PlayerIntent;
 use crate::explosion::{Damaged, ExplosionSystems, Health};
 use crate::game::{GameState, LoadedMap, MapId};
 use crate::weapon::Weapon;
-use crate::weapon::model::Kind;
 pub use fire::{AlwaysShoot, ShootPattern};
 pub use blackboard::{AiBlackboard, Body, Foe, Gun};
 pub use navigation::{Navigation, SharedTerrain};
@@ -207,8 +206,10 @@ impl Plugin for AiPlugin {
             FixedUpdate,
             (
                 gather_blackboards.before(BehaviorSystems),
-                (carry_out, send_trigger_actions).after(BehaviorSystems).run_if(stepping),
-                (run_always_shoot, run_shoot_patterns),
+                (carry_out.in_set(crate::controls::IntentSystems), send_trigger_actions)
+                    .after(BehaviorSystems)
+                    .run_if(stepping),
+                (run_always_shoot, run_shoot_patterns).in_set(crate::controls::IntentSystems),
             )
                 .before(crate::car::drive_cars)
                 .run_if(in_state(GameState::Playing)),
@@ -388,7 +389,7 @@ fn gather_blackboards(
             heading: rotation.as_radians(),
             team: team.0,
             gun: weapon.map(|w| Gun {
-                complex: w.kind != Kind::Hammer,
+                complex: w.kind.is_complex(),
                 max_angle: w.aim.max_angle,
                 range: w.fire_range(),
                 immediate: w.kind.is_immediate(),

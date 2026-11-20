@@ -365,6 +365,43 @@ pub fn ring_rate(range: f32, texture_width: f32) -> f32 {
     range / (texture_width / 2.0 / 32.0) - growth
 }
 
+/// `_zombieCircleStartEffect`: the flash of the Zombie's wave, a white ring
+/// swelling by half and fading in a quarter second (start it with
+/// [`crate::weapon::model::zombie_circle_rate`]).
+pub static ZOMBIE_CIRCLE_START: Style = Style {
+    begin: still(1.0, 0.0, color(1.0, 1.0, 1.0), OVER_BOMB),
+    end: still(1.5, 0.0, TRANSPARENT, OVER_BOMB),
+    lifetime: 0.25,
+    texture: "UI\\BigCircle",
+    additive: true,
+    random_frame: false,
+    origin: CENTRE,
+};
+
+/// `_zombieCircleEffect`: the dark ring the wave leaves, fading in three
+/// quarters of a second, as big as it.
+pub static ZOMBIE_CIRCLE: Style = Style {
+    begin: still(1.0, 0.0, color(0.0, 0.0, 0.0), OVER_BOMB),
+    end: still(1.0, 0.0, TRANSPARENT, OVER_BOMB),
+    lifetime: 0.75,
+    texture: "UI\\BigCircle",
+    additive: false,
+    random_frame: false,
+    origin: CENTRE,
+};
+
+/// `_stunEffect`: the stun's star flying in as it spins up, from four
+/// times its size to its own, in a quarter second, when a car is stunned.
+pub static STUN_FLASH: Style = Style {
+    begin: still(4.0, -std::f32::consts::PI, TRANSPARENT, SMOKE_END - 0.01),
+    end: still(1.0, -8.0 * std::f32::consts::PI, [1.0; 4], SMOKE_END - 0.01),
+    lifetime: 0.25,
+    texture: "Particles\\Stun",
+    additive: true,
+    random_frame: false,
+    origin: CENTRE,
+};
+
 /// `Color.Yellow`.
 const YELLOW: [f32; 4] = color(1.0, 1.0, 0.0);
 
@@ -526,7 +563,7 @@ pub static RAILGUN_SPLASH: Style = Style {
 };
 
 /// Every texture a style here draws with, to load with the map.
-pub const TEXTURES: [&str; 15] = [
+pub const TEXTURES: [&str; 18] = [
     WHEEL_TRAIL.texture,
     EXHAUST.texture,
     BOMB_BEEP.texture,
@@ -542,4 +579,7 @@ pub const TEXTURES: [&str; 15] = [
     DAMAGE_GLOW.texture,
     RAILGUN_TRAIL[0].texture,
     RAILGUN_SPLASH.texture,
+    ZOMBIE_CIRCLE.texture,
+    STUN_FLASH.texture,
+    ZOMBIE_CIRCLE_START.texture,
 ];

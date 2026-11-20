@@ -52,7 +52,7 @@ use crate::pickups::CoinCollected;
 pub const HEARING: f32 = 32.0;
 
 /// Every sound a cue names (`Sounds/<name>.wav` in the C# content).
-pub const NAMES: [&str; 34] = [
+pub const NAMES: [&str; 35] = [
     "Engine",
     "EngineHover",
     "EngineTruck",
@@ -80,6 +80,8 @@ pub const NAMES: [&str; 34] = [
     "Ricochet1",
     // The Railgun.
     "Railgun",
+    // The Zombie's wave.
+    "ZombieWave",
     // The magnet.
     "ChainStart",
     "ChainConnect",

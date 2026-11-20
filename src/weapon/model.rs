@@ -4,7 +4,9 @@
 //! (`EnergyComponent`), the Minigun's firing rhythm (`MinigunWeapon`), the
 //! Railgun's (`RailgunWeapon`, one shot a reload), the bounce of its
 //! bullet ([`reflect`]) and the Hammer's saw: its place, reach, damage
-//! and the list of enemies it keeps hurting ([`Hammer`], [`Tracking`]).
+//! and the list of enemies it keeps hurting ([`Hammer`], [`Tracking`]) and
+//! the Zombie's reload and its choice of the one it drags and bites
+//! ([`Zombie`]).
 //!
 //! Timers count seconds down while the game runs (C#'s `PeriodicUpdate`
 //! compared absolute game times; the same while nothing pauses). One is
@@ -28,6 +30,8 @@ pub enum Kind {
     Railgun,
     /// The saw on the car's nose (`HammerWeapon`).
     Hammer,
+    /// The zombie's pull and bite, and its stunning wave (`ZombieWeapon`).
+    Zombie,
 }
 
 impl Kind {
@@ -36,6 +40,14 @@ impl Kind {
     /// gamepad neither fire nor aim it: `_hasControllableWeapon`).
     pub fn auto_fire(self) -> bool {
         self == Kind::Hammer
+    }
+
+    /// Whether it is a `BaseComplexWeapon`: it has a barrel to aim, with an
+    /// aim line, recoil and a bounded `MaxAngle` (the Minigun and the
+    /// Railgun). The Hammer and the Zombie's are plain `BaseWeapon`s with an
+    /// empty `Aim`.
+    pub fn is_complex(self) -> bool {
+        matches!(self, Kind::Minigun | Kind::Railgun)
     }
 
     /// `IBaseWeapon.IsImmidiate`: the shot arrives the moment it is fired
@@ -159,6 +171,30 @@ pub const HAMMER: Options = Options {
     reflections: 0,
 };
 
+/// `WeaponOptions.ZombieDefaultOptions`: the enemy zombies'. A drag of 36
+/// (`BulletImpulse`, negative: a force towards the zombie) on the one it
+/// has chosen, a bite of 2 every half second (`ShootTime`), a wave every
+/// 10 s that costs a whole energy store. `range` is `FireDistance`: how
+/// near (on both axes) the one it drags and bites must be; the wave
+/// stuns twice as far. `dispersion` is the default 0, `max_angle` too (the
+/// Zombie does not aim).
+pub const ZOMBIE: Options = Options {
+    damage: 2,
+    damage_max: 2,
+    impulse: -36.0,
+    dispersion: 0.0,
+    bullets: 0,
+    shoot_time: 0.5,
+    reload: 10.0,
+    energy: 1.0,
+    max_angle: PI / 3.0,
+    range: 4.0,
+    reflections: 0,
+};
+
+/// `ZombieDefaultOptionsPlayer`: the same, a wave every 2 s.
+pub const ZOMBIE_PLAYER: Options = Options { reload: 2.0, ..ZOMBIE };
+
 /// `RailgunMinReflectionAngle` (`RailgunWeapon._reflectionMinAngle`): a
 /// bullet bounces only when it comes in more than this off the surface's
 /// normal; closer to head-on it stops.
@@ -184,6 +220,7 @@ pub fn for_type(name: &str, local: bool) -> Option<(Kind, Options)> {
         },
         "Railgun" => RAILGUN,
         "Hammer" => HAMMER,
+        "ZombieWeapon" => pick(ZOMBIE, ZOMBIE_PLAYER),
         // The energy left at the default 0.1.
         "RailgunNoReflection" => Options { energy: 0.1, reflections: 0, ..RAILGUN },
         "RailgunAngle5" => Options { energy: 0.1, max_angle: PI / 36.0, ..RAILGUN },
@@ -193,6 +230,8 @@ pub fn for_type(name: &str, local: bool) -> Option<(Kind, Options)> {
         Kind::Railgun
     } else if name == "Hammer" {
         Kind::Hammer
+    } else if name == "ZombieWeapon" {
+        Kind::Zombie
     } else {
         Kind::Minigun
     };
@@ -771,4 +810,137 @@ impl<T: Copy> Tracking<T> {
         self.tracked.retain(|&e| near(e));
         self.tracked.clone()
     }
+}
+
+/// `ZombieWeapon._checkEnemy`: seconds between the looks for someone to
+/// drag and bite.
+pub const ZOMBIE_CHECK_PERIOD: f32 = 0.5;
+/// What `OnShoot` stuns for (`StunComponent(TimeSpan.FromSeconds(2))`).
+pub const STUN_TIME: f32 = 2.0;
+/// `IsCandidate(x, 2.0)`: the wave reaches this many times as far as the
+/// bite.
+pub const ZOMBIE_WAVE_REACH: f32 = 2.0;
+/// The bite is only done within the two radii plus this (`ZombieWeapon.Update`:
+/// `Radius + Radius + 1`).
+pub const ZOMBIE_BITE_SLACK: f32 = 1.0;
+
+/// The Zombie's rhythm (`ZombieWeapon`): the reload of its wave, and the
+/// one it drags and bites, chosen every half second. `T` is how a target
+/// is told apart (the entity).
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Zombie<T> {
+    /// Seconds before the next wave (`_reload`).
+    reload_in: f32,
+    /// Seconds before the next look for a target (`_checkEnemy`).
+    check_in: f32,
+    /// Who is dragged and bitten now (`_currenTarget`): kept until the
+    /// next look, whether it moved away or died.
+    pub target: Option<T>,
+    /// Looks in a row it has been near the same target, less the bite
+    /// (`_time`).
+    near_for: i32,
+}
+
+impl<T: Copy + PartialEq> Zombie<T> {
+    /// The first wave waits a random part of the reload
+    /// (`PeriodicUpdate.Sparse`); `offset` is 0..1. The first look is at once
+    /// (`PeriodicUpdate` starts invalidated at 0).
+    pub fn new(options: &Options, offset: f32) -> Zombie<T> {
+        Zombie {
+            reload_in: options.reload * offset,
+            check_in: 0.0,
+            target: None,
+            near_for: 0,
+        }
+    }
+
+    /// Time passes: the reload and the look's timer.
+    pub fn tick(&mut self, dt: f32) {
+        self.reload_in -= dt;
+        self.check_in -= dt;
+    }
+
+    /// `TryShoot` (`BaseWeapon`): the wave goes off, if the reload is over
+    /// and the energy pays (a reload that is not over spends nothing).
+    pub fn pull(&mut self, options: &Options, mut energy: Option<&mut Energy>) -> bool {
+        if due(self.reload_in) && spend(&mut energy, options.energy) {
+            self.reload_in = options.reload;
+            true
+        } else {
+            false
+        }
+    }
+
+    /// `_checkEnemy.NeedUpdate`: whether it is time to look again (asked once
+    /// a step; true at once, then every [`ZOMBIE_CHECK_PERIOD`]).
+    pub fn needs_check(&mut self) -> bool {
+        if due(self.check_in) {
+            self.check_in = ZOMBIE_CHECK_PERIOD;
+            true
+        } else {
+            false
+        }
+    }
+
+    /// `_damageTime`: how many looks at the same target near it make a bite
+    /// (`ShootTime / _checkEnemy.DeltaTime` in ticks, whole: 1 for the
+    /// presets, a bite at every look).
+    pub fn looks_per_bite(options: &Options) -> i32 {
+        const TICKS: f32 = 10_000_000.0;
+        ((options.shoot_time * TICKS).round() as i64 / (ZOMBIE_CHECK_PERIOD * TICKS).round() as i64) as i32
+    }
+
+    /// `Update`'s look: `candidate` is the first whom the weapon can drag
+    /// (`IsCandidate(x, 1)`), `near` whether it is within the bite's reach
+    /// ([`bite_reach`]). Returns whether it bites now: the same target as
+    /// the last look and near it for [`Zombie::looks_per_bite`] looks. A new target
+    /// starts the count over, none leaves it as it is; the target is
+    /// what was found.
+    pub fn look(&mut self, options: &Options, candidate: Option<T>, near: impl FnOnce(T) -> bool) -> bool {
+        let mut bite = false;
+        if let Some(c) = candidate {
+            if self.target == Some(c) {
+                if near(c) {
+                    self.near_for += 1;
+                    if self.near_for >= Self::looks_per_bite(options) {
+                        bite = true;
+                        self.near_for = 0;
+                    }
+                }
+            } else {
+                self.near_for = 0;
+            }
+        }
+        self.target = candidate;
+        bite
+    }
+}
+
+/// `ZombieWeapon.IsCandidate`'s distance: `other` is within `range` of the
+/// zombie on both axes (`CloserThanByChebyshev`), `rate` x the weapon's
+/// reach (1 for the drag and bite, [`ZOMBIE_WAVE_REACH`] for the wave).
+pub fn zombie_reaches(zombie: Vec2, other: Vec2, options: &Options, rate: f32) -> bool {
+    closer_by_chebyshev(other, zombie, options.range * rate)
+}
+
+/// `ZombieWeapon.Update`'s bite test: within the two radii and one more
+/// (a circle).
+pub fn bite_reach(zombie: Vec2, other: Vec2, zombie_radius: f32, other_radius: f32) -> bool {
+    let d = other_radius + zombie_radius + ZOMBIE_BITE_SLACK;
+    (other - zombie).length_squared() < d * d
+}
+
+/// The force on the one dragged (`delta * BulletImpulse`, `delta` the unit
+/// vector from the zombie to it, none when they are at one point,
+/// `SafeNormalize`): the impulse is negative, so it points at the zombie.
+pub fn zombie_pull(zombie: Vec2, other: Vec2, options: &Options) -> Vec2 {
+    (other - zombie).normalize_or_zero() * options.impulse
+}
+
+/// The wave's circle: how many times its begin size the effect starts at,
+/// for a `BigCircle` texture `texture_width` pixels wide and `radius` world
+/// units to cover (`CreateZombieCircleEffect`:
+/// `size / (width / 2 * SimUnitRation)`, `size` being `FireDistance * 2`).
+pub fn zombie_circle_rate(radius: f32, texture_width: f32) -> f32 {
+    radius / (texture_width / 2.0 / 32.0)
 }

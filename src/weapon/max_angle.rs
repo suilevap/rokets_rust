@@ -28,7 +28,6 @@ use std::f32::consts::PI;
 use avian2d::prelude::*;
 use bevy::prelude::*;
 
-use super::model::Kind;
 use super::Weapon;
 use crate::actions::{AddMapAction, MapIds, Run};
 use crate::content::actions::defs::AdjustWepaonMaxAngle;
@@ -60,7 +59,7 @@ pub fn free_angle(max_angle: f32, blocked: impl Fn(f32) -> bool) -> f32 {
 /// heading `heading`: the gun's `MaxAngle` is set. Does nothing for a gun
 /// that does not aim.
 pub fn adjust(gun: &mut Weapon, grid: &MapGrid, cell: f32, at: Vec2, heading: f32, min_distance: f32) {
-    if gun.kind == Kind::Hammer {
+    if !gun.kind.is_complex() {
         return;
     }
     let from = [at.x, -at.y];
