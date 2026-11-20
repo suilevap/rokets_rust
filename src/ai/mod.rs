@@ -33,6 +33,8 @@
 //! | `SimpleAttackNearestEnemy` | `SimpleAttack` (the turret's attack, `ScanDistance` 20), else idle |
 //! | `SimpleFollowByEnemyAi` | finds an enemy (`ScanDistance` 20) and steers at where it will be, no firing; else idle |
 //! | `MoveAndFireInInitDirection` | stick and gun along the way the car faced when its tree started, the trigger down |
+//! | `ZombieFlocking`, `ZombieFlockingFriend` | `BTActionFactory.ZombieFlocking` (`ScanDistance` 12): alone near its target with its wave ready, stands 2 s and fires it; hurt with nobody to fight, tells its idle friends who did it; flocks at the nearest enemy; else follows a leader (the player first: runs `ActionOnBTTrigger` once, follows by a path when out of sight) or wanders with its flock ([`trees::zombie_flocking`]) |
+//! | `SimpleFlocking` | `BTActionFactory.SimpleFlocking`: flocks at half speed with an enemy near, else at a tenth |
 //! | `AlwaysShoot` | [`AlwaysShoot`]: the trigger always down, the gun where the car points |
 //! | `ShootPattern` | [`ShootPattern`]: a random pattern of quarter-second silences and bursts |
 //! | `NoneLocal`, `NoneEnemy`, `NoneFriend` | nothing (`AINone`; see `car::control`) |
@@ -131,8 +133,7 @@
 //!
 //! Everything else that is an `AIBTBaseControl` waits for the trees that use
 //! the nodes not yet ported (`docs/BACKLOG.md` says which node each needs):
-//! `Ai`, `AiFriend`, `AiSimpleTurretFriendFireAvailableTarget`,
-//! `SimpleFlocking`, `ZombieFlocking*`, `GuardAi`,
+//! `Ai`, `AiFriend`, `AiSimpleTurretFriendFireAvailableTarget`, `GuardAi`,
 //! `SupportAi*`, `OrderExecutor*`, `CaptureTheBox*`, `AttackAi`,
 //! `AttackAiFriend`, `HammerAi*`, `ChickenAi`, `ChaserTargetFromLocalVariable`. Cars with those stand idle, as
 //! before, and `AIAdjustment` sets only their team. `AITurret` and
@@ -143,7 +144,15 @@
 //! game modes the port does not have: not ported.
 //!
 //! [`Foe`]s are the cars alive (`Health` above 0) and not deactivated; the
-//! team decides who is an enemy. What a turret remembers of who hurt it
+//! team decides who is an enemy. For the flocking trees the same cars are
+//! also gathered as [`Mate`]s (with the player's car marked as
+//! `LocalDevice`: [`LocalPlayer`], and what each AI car's blackboard says, a
+//! [`Mind`]), in the map's order (map id, as `ControlableEntities` kept
+//! them). What those trees do to others is applied after the trees run:
+//! `Uii`'s alarms ([`alert_friends`]: a friend still idle takes the damager,
+//! with the red ping of `CreateBip2` when the camera sees it) and the
+//! `Power` streaks ([`draw_effects`]); the trigger pulled in a thinking pass
+//! (`Fire!`) is pulled by [`carry_out`] for that step. What a turret remembers of who hurt it
 //! ([`remember_damagers`]) comes from the [`Damaged`] messages, the `by` of a
 //! blow being whoever dealt it.
 //!
@@ -171,12 +180,16 @@ use crate::car::CarRadius;
 use crate::car::control::Team;
 use crate::car::shield::Shield;
 use crate::car::simple::SimpleDrive;
-use crate::controls::PlayerIntent;
+use crate::controls::{LocalPlayer, PlayerIntent};
+use crate::particles::styles::{BOMB_BEEP, TELEPORT_STREAK};
+use crate::render::camera::MainCamera;
+use crate::render::particles::Particles;
+use crate::weapon::aim_help::in_view;
 use crate::explosion::{Damaged, ExplosionSystems, Health};
 use crate::game::{GameState, LoadedMap, MapId};
 use crate::weapon::Weapon;
 pub use fire::{AlwaysShoot, ShootPattern};
-pub use blackboard::{AiBlackboard, Body, Foe, Gun};
+pub use blackboard::{AiBlackboard, Alert, Body, Effect, Foe, Gun, Mate, Mind};
 pub use navigation::{Navigation, SharedTerrain};
 pub use orders::Orders;
 
@@ -196,6 +209,8 @@ impl Plugin for AiPlugin {
             BehaviorPlugin::for_tree(trees::simple_attack_nearest_enemy).in_schedule(FixedUpdate).tick_mode(tick_mode),
             BehaviorPlugin::for_tree(trees::simple_follow_by_enemy_ai).in_schedule(FixedUpdate).tick_mode(tick_mode),
             BehaviorPlugin::for_tree(trees::move_in_one_direction_ai).in_schedule(FixedUpdate).tick_mode(tick_mode),
+            BehaviorPlugin::for_tree(trees::zombie_flocking).in_schedule(FixedUpdate).tick_mode(tick_mode),
+            BehaviorPlugin::for_tree(trees::simple_flocking).in_schedule(FixedUpdate).tick_mode(tick_mode),
             navigation::NavigationPlugin,
         ))
         .configure_sets(
@@ -206,7 +221,7 @@ impl Plugin for AiPlugin {
             FixedUpdate,
             (
                 gather_blackboards.before(BehaviorSystems),
-                (carry_out.in_set(crate::controls::IntentSystems), send_trigger_actions)
+                (carry_out.in_set(crate::controls::IntentSystems), send_trigger_actions, (alert_friends, draw_effects).chain())
                     .after(BehaviorSystems)
                     .run_if(stepping),
                 (run_always_shoot, run_shoot_patterns).in_set(crate::controls::IntentSystems),
@@ -239,7 +254,9 @@ pub fn set_control(car: &mut EntityCommands, control: &str, seed: u64) {
         .stop_behavior(trees::attacker_ai_ver2)
         .stop_behavior(trees::simple_attack_nearest_enemy)
         .stop_behavior(trees::simple_follow_by_enemy_ai)
-        .stop_behavior(trees::move_in_one_direction_ai);
+        .stop_behavior(trees::move_in_one_direction_ai)
+        .stop_behavior(trees::zombie_flocking)
+        .stop_behavior(trees::simple_flocking);
     #[cfg(debug_assertions)]
     car.remove::<DebugBehavior>();
     let mut brain = AiBlackboard::new(seed);
@@ -278,6 +295,16 @@ pub fn set_control(car: &mut EntityCommands, control: &str, seed: u64) {
         "MoveAndFireInInitDirection" => {
             car.insert((brain, Behavior::for_tree(trees::move_in_one_direction_ai)));
         }
+        // `ScanDistance = 12`; the team is the control's (`car::control`).
+        "ZombieFlocking" | "ZombieFlockingFriend" => {
+            brain.scan_distance = trees::ZOMBIE_SCAN_DISTANCE;
+            brain.watch_friends = true;
+            car.insert((brain, Behavior::for_tree(trees::zombie_flocking)));
+        }
+        "SimpleFlocking" => {
+            brain.watch_friends = true;
+            car.insert((brain, Behavior::for_tree(trees::simple_flocking)));
+        }
         "AlwaysShoot" => {
             car.insert(AlwaysShoot);
             return;
@@ -309,6 +336,9 @@ pub fn is_live(control: &str) -> bool {
             | "SimpleAttackNearestEnemy"
             | "SimpleFollowByEnemyAi"
             | "MoveAndFireInInitDirection"
+            | "ZombieFlocking"
+            | "ZombieFlockingFriend"
+            | "SimpleFlocking"
             | "AlwaysShoot"
             | "ShootPattern"
     )
@@ -341,8 +371,12 @@ fn gather_blackboards(
     time: Res<Time>,
     physics: Res<Time<Physics>>,
     map: Res<LoadedMap>,
-    cars: Query<(Entity, &Team, &Position, Option<&LinearVelocity>, &CarRadius, &Health, Option<&Weapon>), Without<Inactive>>,
+    cars: Query<
+        (Entity, &Team, &Position, Option<&LinearVelocity>, &CarRadius, &Health, Option<&Weapon>, &PlayerIntent, Has<LocalPlayer>, Option<&MapId>),
+        Without<Inactive>,
+    >,
     mut brains: Query<(
+        Entity,
         &mut AiBlackboard,
         Has<Orders>,
         &Position,
@@ -360,13 +394,14 @@ fn gather_blackboards(
     navigation: Option<Res<Navigation>>,
     terrain: Option<Res<SharedTerrain>>,
     mut foes: Local<Vec<Foe>>,
+    mut mates: Local<Vec<Mate>>,
 ) {
     let dt = time.delta_secs();
     if physics.is_paused() || dt <= 0.0 {
         return;
     }
     foes.clear();
-    foes.extend(cars.iter().filter(|c| c.5.hp > 0).map(|(entity, team, pos, vel, radius, _, weapon)| Foe {
+    foes.extend(cars.iter().filter(|c| c.5.hp > 0).map(|(entity, team, pos, vel, radius, _, weapon, ..)| Foe {
         entity,
         team: team.0,
         pos: pos.0,
@@ -374,8 +409,40 @@ fn gather_blackboards(
         radius: radius.0,
         weapon_range: weapon.map(|w| w.options.range),
     }));
+    // The flocking trees' friends (`GetFriends`), with what their
+    // blackboards say, in the map's order (`EntitiesManager.ControlableEntities`).
+    mates.clear();
+    if brains.iter().any(|b| b.1.watch_friends) {
+        let local = |e: Entity| cars.get(e).is_ok_and(|c| c.8);
+        let minds: Vec<(Entity, Mind)> = brains
+            .iter()
+            .map(|b| {
+                let mind = b.1.mind();
+                (b.0, Mind { leader_local: mind.leader.is_some_and(local), ..mind })
+            })
+            .collect();
+        let mut keyed: Vec<(u64, Mate)> = cars
+            .iter()
+            .filter(|c| c.5.hp > 0)
+            .map(|(entity, team, pos, vel, _, _, _, intent, local, id)| {
+                let key = id.map_or(u64::MAX, |i| i.0 as u64);
+                let mate = Mate {
+                    entity,
+                    team: team.0,
+                    pos: pos.0,
+                    vel: vel.map_or(Vec2::ZERO, |v| v.0),
+                    stick: intent.move_dir,
+                    local,
+                    mind: minds.iter().find(|m| m.0 == entity).map(|m| m.1),
+                };
+                (key, mate)
+            })
+            .collect();
+        keyed.sort_by_key(|(key, mate)| (*key, mate.entity));
+        mates.extend(keyed.into_iter().map(|k| k.1));
+    }
     let blocked = |a: Vec2, b: Vec2| map.line_collides(a, b);
-    for (mut blackboard, running, position, rotation, team, health, weapon, inactive, velocity, radius, can_move, intent, shield) in
+    for (own, mut blackboard, running, position, rotation, team, health, weapon, inactive, velocity, radius, can_move, intent, shield) in
         &mut brains
     {
         // `ControlableEntity.Update`: nothing for a car that is inactive
@@ -409,6 +476,10 @@ fn gather_blackboards(
             blackboard.terrain = terrain.as_deref().map(|t| t.0.clone());
         }
         blackboard.gather(dt, running, body, &foes, &blocked);
+        blackboard.gun_ready = weapon.is_some_and(Weapon::can_shoot);
+        if blackboard.watch_friends {
+            blackboard.gather_mates(own, &mates);
+        }
     }
 }
 
@@ -426,8 +497,10 @@ fn carry_out(mut brains: Query<(&mut PlayerIntent, Option<&Orders>, &Health, Has
         };
         // The trigger is pulled for the step it was ticked
         // (`Control.Fire &= ~FireType.Shoot` takes it after).
-        set(&mut intent.fire, orders.fire);
-        set(&mut intent.fire_accurate, orders.fire);
+        // `Fire = Shoot` from a thinking pass (`Fire!`).
+        let pulled = blackboard.bypass_change_detection().take_trigger() && health.hp > 0 && !inactive;
+        set(&mut intent.fire, orders.fire || pulled);
+        set(&mut intent.fire_accurate, orders.fire || pulled);
         // An action that ended let the stick go (`Control.ClearAxis`); what a
         // tick wrote after that stands.
         let cleared = blackboard.bypass_change_detection().take_stick_cleared();
@@ -449,6 +522,53 @@ fn send_trigger_actions(mut brains: Query<(&mut AiBlackboard, Option<&MapId>)>, 
         if blackboard.has_actions() {
             for name in blackboard.take_actions() {
                 run.write(RunAction { name, actor: id.map(|i| i.0) });
+            }
+        }
+    }
+}
+
+/// `ZombieFlocking`'s `Uii`: each friend told of who hurt a car takes the
+/// damager if it still has nobody to fight, and a red ping flashes on it
+/// (`CreateBip2`, only when the camera sees it).
+#[allow(clippy::type_complexity)]
+fn alert_friends(
+    mut brains: Query<(Entity, &mut AiBlackboard, &Position)>,
+    cameras: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
+    mut particles: Option<ResMut<Particles>>,
+    mut alerts: Local<Vec<Alert>>,
+) {
+    alerts.clear();
+    for (_, mut blackboard, _) in &mut brains {
+        if blackboard.has_news() {
+            alerts.extend(blackboard.take_alerts());
+        }
+    }
+    let camera = cameras.single().ok();
+    for alert in alerts.drain(..) {
+        let Ok((_, mut friend, at)) = brains.get_mut(alert.friend) else {
+            continue;
+        };
+        if friend.alerted(alert.damager, alert.left)
+            && camera.is_none_or(|(c, t)| in_view(c, t, at.0, 0.0))
+            && let Some(particles) = particles.as_mut()
+        {
+            particles.try_add(&BOMB_BEEP, at.0, 0.0, 0.0);
+        }
+    }
+}
+
+/// The effects the trees asked for (`Power`'s streaks).
+fn draw_effects(mut brains: Query<&mut AiBlackboard>, mut particles: Option<ResMut<Particles>>) {
+    for mut blackboard in &mut brains {
+        if !blackboard.has_news() {
+            continue;
+        }
+        for effect in blackboard.take_effects() {
+            match (effect, particles.as_mut()) {
+                (Effect::Teleport { at, direction }, Some(particles)) => {
+                    particles.try_add(&TELEPORT_STREAK, at, direction, direction)
+                }
+                (_, None) => {}
             }
         }
     }

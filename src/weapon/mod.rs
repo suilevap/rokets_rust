@@ -244,6 +244,17 @@ impl Weapon {
         }
     }
 
+    /// `CanShoot` of a gun with no energy store (the AI's): the trigger
+    /// would take now. The Hammer has no reload (`_reload` null).
+    pub fn can_shoot(&self) -> bool {
+        match self.kind {
+            Kind::Minigun => self.minigun.can_pull(None),
+            Kind::Railgun => self.railgun.can_fire(&self.options, None),
+            Kind::Hammer => true,
+            Kind::Zombie => self.zombie.reloaded(),
+        }
+    }
+
     /// The muzzle in the world (`PiuPosition`).
     pub fn muzzle(&self) -> Vec2 {
         self.at + Vec2::from_angle(self.direction) * self.length

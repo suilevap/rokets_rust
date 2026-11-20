@@ -2,7 +2,8 @@
 //! point, whether a wall is in the way, and picks of random places.
 //!
 //! C# origin: `MapManager` (2013–2016): `DistanceField`,
-//! `GetDistanceFieldValue`, `IsPointFree`, `LineCollide`, `FreePoints`
+//! `GetDistanceFieldValue`, `GetGradientDistancefieldValue`, `IsPointFree`,
+//! `GetNearestFreePoint(pos, count)`, `LineCollide`, `FreePoints`
 //! (`GetFreePoints`), `GetRandomFreePoint`, `GetRandomFreeVisiblePoint`,
 //! `GetRandomFreeNonVisiblePoint`; `RandomHelper.NextVector2Fake`,
 //! `IEnumerableHelper.Random(predicate, estimatedCount)`.
@@ -22,8 +23,8 @@
 //! 256 numbers drawn in turn, shared by every car, used so the picks would be
 //! cheap: each car's own stream is used, the same distribution); the other
 //! `MapManager` pickers (`GetRandomFreePoint()`, `GetRandomPoint`,
-//! `GetNearestFreePoint`, `GetFarestFreePoint`: no tree of the port calls
-//! them yet).
+//! `GetNearestFreePoint(pos)` and `(pos, count, rand)`,
+//! `GetFarestFreePoint`: no tree of the port calls them yet).
 
 use bevy::math::Vec2;
 
@@ -109,6 +110,37 @@ impl Terrain {
     /// `IsPointFree`: room enough for a car.
     pub fn is_point_free(&self, p: Vec2) -> bool {
         self.distance_at(p) > FREE_THRESHOLD
+    }
+
+    /// `GetGradientDistancefieldValue`: which way the room grows, from the
+    /// cells on either side of `p`'s (their difference over two cells, so
+    /// about a unit vector in the open and away from the nearest wall); zero
+    /// at and past the map's outer ring. C# took the cells below as `y + 1`;
+    /// the world's y is up, so the y difference is turned over here.
+    pub fn gradient_at(&self, p: Vec2) -> Vec2 {
+        let (x, y) = self.at(p);
+        if x <= 0 || y <= 0 || x >= self.width as i32 - 2 || y >= self.height as i32 - 2 {
+            return Vec2::ZERO;
+        }
+        let d = |x: i32, y: i32| self.distance[y as usize * self.width + x as usize];
+        let along_rows = (d(x + 1, y) - d(x - 1, y)) / (self.cell * 2.0);
+        let down = (d(x, y + 1) - d(x, y - 1)) / (self.cell * 2.0);
+        Vec2::new(along_rows, -down)
+    }
+
+    /// `GetNearestFreePoint(pos, count)`: of the first `count` free points
+    /// (the roomiest), the nearest to `pos`; the origin ("no point") when
+    /// the map has none.
+    pub fn nearest_free_point(&self, pos: Vec2, count: usize) -> Vec2 {
+        // `OrderBy` is stable: the first of equals.
+        let mut best: Option<(f32, Vec2)> = None;
+        for &p in self.free_points.iter().take(count) {
+            let d = p.distance_squared(pos);
+            if best.is_none_or(|b| d < b.0) {
+                best = Some((d, p));
+            }
+        }
+        best.map_or(Vec2::ZERO, |b| b.1)
     }
 
     /// `MapManager.LineCollide`: walks from `a` towards `b` a unit at a time

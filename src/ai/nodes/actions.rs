@@ -10,7 +10,7 @@ use crate::ai::orders::Orders;
 /// `BTActions/FindNearestEnemy`: picks the target. Whoever last hurt the car
 /// (of another team, whatever the distance or walls) is the one; else the
 /// current target while it stays within `ScanDistance` and is in sight (or
-/// will be in 0.5 s); else the nearest by `|dx| + |dy|` of those within
+/// will be in 0.5 s, or its leader sees it: `LeaderSeeTarget`); else the nearest by `|dx| + |dy|` of those within
 /// `ScanDistance` on both axes, other team, alive, active. A current target
 /// that is within range but out of sight is not kept: any *other* enemy is
 /// chosen, and when there is none this finds nothing (the old target is kept
@@ -60,7 +60,8 @@ fn nearest_enemy(bb: &AiBlackboard) -> Option<Entity> {
     };
     match bb.live_target() {
         Some(last) if last.team != bb.team && last.pos.distance_squared(bb.pos) < scan * scan => {
-            if bb.can_see_target() { Some(last.entity) } else { best(Some(last.entity)) }
+            // `SeeTarget | WillSeeTarget | LeaderSeeTarget`.
+            if bb.can_see_target() || bb.leader_sees_target() { Some(last.entity) } else { best(Some(last.entity)) }
         }
         _ => best(None),
     }

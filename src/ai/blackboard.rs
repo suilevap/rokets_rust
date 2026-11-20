@@ -45,12 +45,33 @@
 //! blackboard's methods over the navigation graph and the floor plan
 //! ([`Terrain`]), drawing on the car's own random stream.
 //!
-//! Not ported: `AiBlackboard`'s other states (`SeeTargetForward`,
-//! `LeaderSeeTarget` (always off for a turret: no leader)), its
-//! `Leader`, `Orders`, `Traits`, `AdditionalTargetPosition`, `ActionData`
+//! The flocking trees (`ZombieFlocking`, `SimpleFlocking`) add the car's
+//! friends (`GetFriends`: the cars of its team near it, alive, with what
+//! the trees read of them: position, speed, stick, whether the player
+//! drives it, and for an AI car what its blackboard says, a [`Mind`]),
+//! copied in every step ([`AiBlackboard::gather_mates`]) for a blackboard
+//! that watches them; its `Leader` (kept wherever it goes) and `Traits`
+//! (ten random numbers of the car's own, drawn when it is made: how fast
+//! it flocks, how it weighs the flock's rules, whether it may lead). What
+//! a tree does to the world beyond its own car is queued, as the map
+//! actions are: an alarm to a friend (`Uii`: [`Alert`], applied by
+//! `ai::alert_friends`), an effect ([`Effect`]), and the trigger pulled in a
+//! thinking pass ([`AiBlackboard::pull_trigger`]). `Weapon.CanShoot` is
+//! [`AiBlackboard::gun_ready`], set by the gather.
+//!
+//! `LeaderSeeTarget` (the leader, alive, has no wall between it and the
+//! target) is looked at with the target, against the floor plan.
+//!
+//! Not ported: `AiBlackboard`'s other states (`SeeTargetForward`: no tree
+//! reads it), its `Orders`,
+//! `AdditionalTargetPosition`, `LastDamagerPosition` (copied by `Uii` in C#,
+//! read by no tree), `ActionData`
 //! (the one slot every action shared: an action keeps its own state), the
 //! custom data: the trees so far read none of them (they come with the trees
-//! that do). `Draw`'s debug overlay (the path and the line to the target). A target that is deactivated (`IsActive` false)
+//! that do). A friend that is deactivated (`IsActive` false) is not gathered
+//! (C#'s `GetFriends` did not ask), nor one further than its reach (twice
+//! `ScanDistance`, at least 8 and twice the gun's range: the farthest any
+//! tree asks), except the leader. `Draw`'s debug overlay (the path and the line to the target). A target that is deactivated (`IsActive` false)
 //! counts as gone at once; C# keeps it (alive) as the target until it is out
 //! of sight. `GetPredictionPosition`'s correction of a prediction that lands
 //! inside a wall (it picks one of the first 16 of the map's free points, an
@@ -80,6 +101,65 @@ pub const WILL_SEE_AHEAD: f32 = 0.5;
 pub const DAMAGER_MEMORY: f32 = 5.0;
 /// `AiBlackboard.PathPeriodControl = new PeriodicUpdate(2.0f)`, s.
 pub const PATH_PERIOD: f64 = 2.0;
+/// `AiBlackboard.Traits = new float[10]`.
+pub const TRAITS: usize = 10;
+/// `GetPredictionPosition`: a prediction in a wall is moved to the nearest
+/// of the map's first this many free points (`GetNearestFreePoint(pos, 16)`).
+pub const PREDICTION_FREE_POINTS: usize = 16;
+/// The least reach of the friends gathered: `Flocking(…, 8.0f)`'s
+/// neighbours.
+const MIN_FRIEND_REACH: f32 = 8.0;
+
+/// A car of the same team, as the flocking trees see it (`GetFriends`),
+/// or the leader.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Mate {
+    pub entity: Entity,
+    pub team: u8,
+    pub pos: Vec2,
+    /// `Speed`, world units a second.
+    pub vel: Vec2,
+    /// `Control.CurrentAxisControl`, at the start of the step.
+    pub stick: Vec2,
+    /// `Control.LocalDevice`: the player drives it.
+    pub local: bool,
+    /// `Control as AIBTBaseControl`: what its blackboard says; `None` for a
+    /// car with no behaviour tree.
+    pub mind: Option<Mind>,
+}
+
+/// What a tree reads of another AI car's blackboard (`Blackboard.Traits`,
+/// `Blackboard.Leader`, `Target`, `LastDamager`).
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Mind {
+    /// `Traits[0]` (over 0.9: it may lead) and `Traits[1]` (the leaders'
+    /// rank, the least first).
+    pub traits: [f32; 2],
+    /// `Blackboard.Leader`.
+    pub leader: Option<Entity>,
+    /// `Blackboard.Leader.Control.LocalDevice`.
+    pub leader_local: bool,
+    /// `Target == null && LastDamager == null`: nobody to fight.
+    pub idle: bool,
+}
+
+/// `Uii`: a friend is told who hurt this car (`LastDamager`,
+/// `LastDamagerTime`), applied after the trees by `ai::alert_friends`.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Alert {
+    pub friend: Entity,
+    pub damager: Option<Entity>,
+    /// Seconds before the friend forgets the damager.
+    pub left: f32,
+}
+
+/// An effect a tree asks for, drawn by `ai::draw_effects`.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum Effect {
+    /// `SmallTeleportParticle`: a streak at `at` flying along `direction`
+    /// (world radians).
+    Teleport { at: Vec2, direction: f32 },
+}
 
 /// A car the trees may look at: alive and active, with what they need to
 /// tell (`ControlableEntity`).
@@ -187,6 +267,15 @@ pub struct AiBlackboard {
     /// `FireAccuracy`: 1 fires at what is in the line, more at what is near
     /// it.
     pub fire_accuracy: f32,
+    /// Whether the friends near are gathered every step
+    /// ([`gather_mates`](Self::gather_mates)): for the flocking trees.
+    pub watch_friends: bool,
+    /// `Entity.Weapon.CanShoot`, at the start of the step (the gather sets
+    /// it; false with no gun).
+    pub gun_ready: bool,
+    /// `Traits`: ten random numbers 0 up to 1, the car's own (drawn from a
+    /// stream of their own, so the tree's random picks stay as they were).
+    pub traits: [f32; TRAITS],
     /// Whether the enemies within `ScanDistance` are gathered every step, not
     /// only when the tree thinks: for a tree whose action asks `GetEnemies`
     /// while it ticks (`TryFireToAnyone`).
@@ -254,6 +343,8 @@ pub struct AiBlackboard {
     sees: bool,
     /// `States.WillSeeTarget`.
     will_see: bool,
+    /// `States.LeaderSeeTarget`.
+    leader_sees: bool,
     /// `States.TakeDamage`: at the last [`update`](Self::update) the car's
     /// health and shield together were less than at the one before.
     took_damage: bool,
@@ -276,6 +367,19 @@ pub struct AiBlackboard {
     pub tick: Tick,
     /// `RandomHelper`: this car's own stream.
     rng: SmallRng,
+    /// `Leader`: whom it follows.
+    leader: Option<Entity>,
+    /// The leader's position when it was last gathered (`SafePosition`).
+    leader_at: Vec2,
+    /// The friends gathered (and the leader), in the map's order.
+    mates: Vec<Mate>,
+    /// `Uii`'s alarms, sent by `ai::alert_friends`.
+    alerts: Vec<Alert>,
+    /// Effects to draw.
+    effects: Vec<Effect>,
+    /// `Control.Fire = FireType.Shoot` in a thinking pass: `ai::carry_out`
+    /// takes it.
+    trigger: bool,
 }
 
 impl AiBlackboard {
@@ -285,9 +389,13 @@ impl AiBlackboard {
     pub fn new(seed: u64) -> AiBlackboard {
         let mut rng = SmallRng::seed_from_u64(seed);
         let think_in = rng.random::<f32>() * THINK_PERIOD;
+        let mut traits_rng = SmallRng::seed_from_u64(seed ^ 0x7472_6169_7473);
         AiBlackboard {
             scan_distance: SCAN_DISTANCE,
             fire_accuracy: 1.0,
+            watch_friends: false,
+            gun_ready: false,
+            traits: std::array::from_fn(|_| traits_rng.random()),
             watch_enemies: false,
             pos: Vec2::ZERO,
             heading: 0.0,
@@ -317,6 +425,7 @@ impl AiBlackboard {
             target: None,
             sees: false,
             will_see: false,
+            leader_sees: false,
             took_damage: false,
             previous_total_health: None,
             total_health: 0,
@@ -328,6 +437,12 @@ impl AiBlackboard {
             // Not entered until gathered.
             tick: Tick::Skip,
             rng,
+            leader: None,
+            leader_at: Vec2::ZERO,
+            mates: Vec::new(),
+            alerts: Vec::new(),
+            effects: Vec::new(),
+            trigger: false,
         }
     }
 
@@ -397,6 +512,161 @@ impl AiBlackboard {
     /// `Time.TotalGameTime`, s.
     pub fn now(&self) -> f64 {
         self.now
+    }
+
+    /// The friends a flocking tree asks about, copied in after
+    /// [`gather`](Self::gather): of `cars` (every car alive and active, in the
+    /// map's order, `own` being this one), those of its team other than it
+    /// within its reach on both axes, and its leader wherever it is.
+    pub fn gather_mates(&mut self, own: Entity, cars: &[Mate]) {
+        let reach = (self.scan_distance * 2.0)
+            .max(MIN_FRIEND_REACH)
+            .max(self.gun.map_or(0.0, |g| g.range.range * 2.0));
+        let (pos, team, leader) = (self.pos, self.team, self.leader);
+        self.mates.clear();
+        self.mates.extend(cars.iter().filter(|m| {
+            m.entity != own && (Some(m.entity) == leader || (m.team == team && closer_by_chebyshev(m.pos, pos, reach)))
+        }));
+        if let Some(at) = self.leader().map(|l| l.pos) {
+            self.leader_at = at;
+        }
+    }
+
+    /// `GetFriends(distance)`: the friends gathered within `distance` on
+    /// both axes, in the map's order.
+    pub fn friends(&self, distance: f32) -> impl Iterator<Item = &Mate> {
+        let (pos, team) = (self.pos, self.team);
+        self.mates.iter().filter(move |m| m.team == team && closer_by_chebyshev(m.pos, pos, distance))
+    }
+
+    /// A gathered friend (or the leader), alive.
+    pub fn mate(&self, e: Entity) -> Option<&Mate> {
+        self.mates.iter().find(|m| m.entity == e)
+    }
+
+    /// `Leader`, whether or not it lives.
+    pub fn leader_entity(&self) -> Option<Entity> {
+        self.leader
+    }
+
+    /// `Leader = …`.
+    pub fn set_leader(&mut self, leader: Entity) {
+        self.leader = Some(leader);
+        if let Some(at) = self.mate(leader).map(|m| m.pos) {
+            self.leader_at = at;
+        }
+    }
+
+    /// The leader, if it is alive (`Leader != null && Leader.Alive`).
+    pub fn leader(&self) -> Option<&Mate> {
+        self.leader.and_then(|l| self.mate(l))
+    }
+
+    /// `Leader != null && Leader.Alive && Leader.Control.LocalDevice`: the
+    /// player leads it.
+    pub fn player_leads(&self) -> bool {
+        self.leader().is_some_and(|l| l.local)
+    }
+
+    /// `IsVisible(Leader.Position)`: no wall between the car and its leader
+    /// (as last gathered). With no floor plan nothing is in the way.
+    pub fn leader_visible(&self) -> bool {
+        let at = self.leader().map_or(self.leader_at, |l| l.pos);
+        self.terrain.as_ref().is_none_or(|t| !t.line_collides(self.pos, at))
+    }
+
+    /// `Leader.GetPredictionPosition(sec)`; where it last was when it is
+    /// gone (`SafePosition`).
+    pub fn leader_prediction(&self, sec: f32) -> Vec2 {
+        match self.leader() {
+            Some(l) => self.prediction_position(l.pos, l.vel, sec),
+            None => self.leader_at,
+        }
+    }
+
+    /// `PhysicEntity.GetPredictionPosition`: where something at `pos` going
+    /// at `vel` will be in `sec` seconds; a place in a wall (not
+    /// `IsPointFree`) is moved to the nearest of the map's first 16 free
+    /// points (`GetNearestFreePoint(pos, 16)`, which may be far off).
+    pub fn prediction_position(&self, pos: Vec2, vel: Vec2, sec: f32) -> Vec2 {
+        let at = pos + vel * sec;
+        match &self.terrain {
+            Some(t) if !t.is_point_free(at) => t.nearest_free_point(at, PREDICTION_FREE_POINTS),
+            _ => at,
+        }
+    }
+
+    /// `MapManager.GetDistanceFieldValue` and `GetGradientDistancefieldValue`
+    /// at a point (0 and zero with no floor plan).
+    pub fn room_at(&self, p: Vec2) -> (f32, Vec2) {
+        self.terrain.as_ref().map_or((0.0, Vec2::ZERO), |t| (t.distance_at(p), t.gradient_at(p)))
+    }
+
+    /// What another tree reads of this blackboard (its leader's
+    /// `LocalDevice` is the caller's to fill in).
+    pub fn mind(&self) -> Mind {
+        Mind {
+            traits: [self.traits[0], self.traits[1]],
+            leader: self.leader,
+            leader_local: false,
+            idle: self.live_target().is_none() && self.damager.is_none(),
+        }
+    }
+
+    /// `LastDamager`, alive or not, until it is forgotten.
+    pub fn damager_entity(&self) -> Option<Entity> {
+        self.damager
+    }
+
+    /// Seconds before the damager is forgotten.
+    pub fn damager_left(&self) -> f32 {
+        self.damager_left
+    }
+
+    /// `Uii` told this car who hurt a friend: taken if it has nobody to
+    /// fight (`Target == null && LastDamager == null`). Whether it was.
+    pub fn alerted(&mut self, damager: Option<Entity>, left: f32) -> bool {
+        if self.live_target().is_some() || self.damager.is_some() {
+            return false;
+        }
+        self.damager = damager;
+        self.damager_left = left;
+        true
+    }
+
+    /// Queues an alarm to a friend (`Uii`).
+    pub fn alert(&mut self, alert: Alert) {
+        self.alerts.push(alert);
+    }
+
+    /// The alarms queued, in order.
+    pub fn take_alerts(&mut self) -> Vec<Alert> {
+        std::mem::take(&mut self.alerts)
+    }
+
+    /// Whether an alarm or an effect waits to be sent.
+    pub fn has_news(&self) -> bool {
+        !self.alerts.is_empty() || !self.effects.is_empty()
+    }
+
+    /// Queues an effect.
+    pub fn effect(&mut self, effect: Effect) {
+        self.effects.push(effect);
+    }
+
+    /// The effects queued, in order.
+    pub fn take_effects(&mut self) -> Vec<Effect> {
+        std::mem::take(&mut self.effects)
+    }
+
+    /// `Control.Fire = FireType.Shoot` from a thinking pass.
+    pub fn pull_trigger(&mut self) {
+        self.trigger = true;
+    }
+
+    /// Whether the trigger was pulled in a thinking pass, and forgets it.
+    pub fn take_trigger(&mut self) -> bool {
+        std::mem::take(&mut self.trigger)
     }
 
     /// `AIBTBaseControl.Sleep(sec)`: the next forced think is `sec` seconds
@@ -496,6 +766,11 @@ impl AiBlackboard {
         self.sees || self.will_see
     }
 
+    /// `CheckState(LeaderSeeTarget)`: the leader, alive, sees the target.
+    pub fn leader_sees_target(&self) -> bool {
+        self.leader_sees
+    }
+
     /// `CheckState(SeeTarget)`: in sight now.
     pub fn sees_target(&self) -> bool {
         self.sees
@@ -548,9 +823,11 @@ impl AiBlackboard {
     pub fn reset(&mut self) {
         self.sees = false;
         self.will_see = false;
+        self.leader_sees = false;
         self.took_damage = false;
         self.target = None;
         self.path = None;
+        self.leader = None;
     }
 
     /// Every car gathered that is an enemy within `ScanDistance` on both
@@ -595,6 +872,10 @@ impl AiBlackboard {
         };
         let (visible, soon, at) = (seen.visible, seen.visible_soon, seen.foe.pos);
         (self.sees, self.will_see) = (visible, soon);
+        // `!MapManager.LineCollide(Leader.Position, Target.Position)`.
+        self.leader_sees = self
+            .leader()
+            .is_some_and(|l| self.terrain.as_ref().is_none_or(|t| !t.line_collides(l.pos, at)));
         if visible {
             self.last_known_target_position = at;
         }
@@ -607,6 +888,7 @@ impl AiBlackboard {
     fn update(&mut self) {
         self.sees = false;
         self.will_see = false;
+        self.leader_sees = false;
         self.took_damage = false;
         self.look_at_target();
         self.took_damage = self.previous_total_health.is_some_and(|before| self.total_health < before);

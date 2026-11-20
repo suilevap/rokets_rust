@@ -204,6 +204,94 @@
 //! Where a `Sequence` or `Selector` has one child C#'s `BTBuilder` returns the
 //! child: `SmartAttackTargetVer2`'s `Follow` is the `FollowBy` itself.
 //!
+//! The flocking trees (`SimpleFlocking`; `ZombieFlocking`, for
+//! `ZombieFlocking` and `ZombieFlockingFriend`), over [`Flocking`] and
+//! [`FindNearestLeader`]:
+//!
+//! ```text
+//! C#                                              Rust
+//! SimpleFlocking =                                simple_flocking() =
+//!   bt.Selector("FlockingBrain",                    select((
+//!     bt.Sequence("Attack",                           seq((action(FindNearestEnemy),
+//!       FindNearestEnemy, Flocking(.5f, 4.0f)),             action(Flocking(0.5, 4)))),
+//!     Flocking(0.1f, 4.0f))                           action(Flocking(0.1, 4)),
+//!                                                   ))
+//! ZombieFlocking =                                zombie_flocking() =
+//!   bt.Selector("ZombieFlocking",                   select((
+//!     bt.Sequence("Super attack",                     seq((
+//!       bt.Condition("Check", Target alive &&           check(target alive, in sight now, gun
+//!         SeeTarget && Weapon.CanShoot &&                     ready, within 4 gun ranges on both
+//!         CloserThanByChebyshev(.., Range * 4) &&             axes, no friend within 2 ranges),
+//!         !GetFriends(Range * 2).Any()),
+//!       Timer(2.0f, bt.Action("Power", …)),             timer(2, action(Power)),
+//!       bt.Action("Fire!", Fire = Shoot)),              action(FireNow))),
+//!     bt.Sequence("Attack",                           seq((
+//!       bt.Condition("Agr", TakeDamage &&               check(took damage, no live target),
+//!         (Target == null || !Target.Alive)),
+//!       bt.Action("Uii", … return false)),              action(AlertFriends))),
+//!     bt.Sequence("ChangeTarget",                     seq((
+//!       bt.Condition("Agr", TakeDamage &&               check(took damage, target is the damager),
+//!         Target == LastDamager),
+//!       FindNearestEnemy),                              action(FindNearestEnemy))),
+//!     bt.Sequence("Attack",                           seq((
+//!       FindNearestEnemy,                               action(FindNearestEnemy),
+//!       WhileTargetAlive(                               while_target_alive(
+//!         Flocking(1, 8, 1, LastKnowTargetPosition))),    action(Flocking(1, 8, 1, last known)))))),
+//!     bt.Sequence("FollowLeader",                     seq((
+//!       FindNearestLeader,                              action(FindNearestLeader),
+//!       bt.Selector("TriggerPlayerLeader",              select((
+//!         bt.Condition("CheckLeader", Leader            check(no player leader or no action),
+//!           == null || !Alive || !LocalDevice ||
+//!           MapActionOnTirgger == null),
+//!         bt.Optional(TriggerMapAction(true))),           action(optional(TriggerMapAction(once))))),
+//!       bt.Selector("Follow",                           select((
+//!         bt.Sequence("FollowPlayerLeader",               seq((
+//!           bt.Condition("CheckLeader", player              check(player leads, out of sight),
+//!             leads && !IsVisible(Leader.Position)),
+//!           FollowBy("Follow leader",                       action(FollowBy(leader in 1 s, 1, 10)))),
+//!             Leader.GetPredictionPosition(1), 1, 10)),
+//!         bt.While("LeaderAlive", StartTimer,             decorator_condition(start timer,
+//!           Leader.Alive && Timer < 5 ? Running : Fail,     leader alive and under 5 s,
+//!           Flocking(1, 8, 4, Leader alive ?                action(Flocking(1, 8, 4, leader in 4 s,
+//!             Leader.GetPredictionPosition(4) :               or its own position)))),
+//!             Entity.Position)))),                        )),
+//!     Flocking(0.25f, 4.0f))                          action(Flocking(0.25, 4)),
+//!                                                   ))
+//! ```
+//!
+//! What it comes to: a zombie that has its target in sight and near (16
+//! for the Zombie's 4-unit range), its wave ready and no friend within 8,
+//! stands 2 s gathering it (the streaks) and lets it go (it stuns every
+//! enemy within 8). A zombie hurt with nobody to fight alarms its idle
+//! friends within 24 with whoever hurt it (they then pick the damager as
+//! their target: `FindNearestEnemy` takes the damager first) and goes on;
+//! hurt by its own target, it looks again (the damager); otherwise it finds
+//! the nearest enemy within 12 and flocks at full speed to where it last saw
+//! it while it lives. With no enemy, it finds a leader (the player's car
+//! near, or a slow friend) and, when the player leads, runs the map's
+//! `ActionOnBTTrigger` once (`Swarm` counts the friends that joined);
+//! the player out of sight, it follows by a path to where the player will
+//! be in a second (within 10 is near enough); otherwise it flocks towards
+//! where the leader will be in 4 s for 5 s at a time. With no leader it
+//! wanders with its flock at a quarter speed. `Flocking`'s pull holds the
+//! flock together whatever it heads for.
+//!
+//! As in C#, a target found but never seen leaves `LastKnowTargetPosition`
+//! where the last one was seen, or at the origin (the map's top-left corner)
+//! if none ever was: the attack flocks there. The `Fire!` trigger is pulled
+//! in the thinking pass that starts it (`ai::carry_out` takes it for that
+//! step), as `Control.Fire = FireType.Shoot` in C#'s `Start` was.
+//!
+//! Differences from C# in `ZombieFlocking`: `Weapon.CanShoot` asks the
+//! reload only (the AI cars have no energy store); `LeaderAlive` with no
+//! leader fails (C# would throw), and `Follow leader` with its leader gone
+//! heads for where it was last gathered (`SafePosition`); `Uii`'s alarms
+//! reach the friends after every tree of the step has run (C# set them at
+//! once, so a friend ticked later in the same frame saw it a step sooner),
+//! and the ping's view check is the camera's picture with no margin
+//! (`IsInView(pos, 0)`). The commented-out `RandomHelper.RandomEvent(0.2f)`
+//! of `Check` is not there in C# either.
+//!
 //! Not ported here: every other tree of `BTActionFactory` (`SimpleAttackDelayPos`,
 //! `Attack`, `SimpleAi`, `GuardAi`, `SmartAttack` (`AttackAi`'s: the
 //! first version of the smart attack, which `AttackAiVer2` replaced), … the
@@ -216,9 +304,10 @@ use flatbt_bevy::prelude::*;
 
 use super::blackboard::AiBlackboard;
 use super::nodes::{
-    AimToTarget, FindNearestEnemy, FireToTarget, FollowBy, Idle, MoveBase, MoveInInitDirection, MoveTowardsTargetNoPath,
-    MoveToPoint, MoveToRandomVisiblePosition, Runaway, Scanning, SimpleFollowByTarget, Sleep, Stop, TriggerMapAction,
-    TryFireToAnyone, all, optional, quiet_start, timer, while_target_alive,
+    AimToTarget, AlertFriends, FindNearestEnemy, FindNearestLeader, FireNow, FireToTarget, Flocking, FollowBy, Idle,
+    MoveBase, MoveInInitDirection, MoveTowardsTargetNoPath, MoveToPoint, MoveToRandomVisiblePosition, Power, Runaway,
+    Scanning, SimpleFollowByTarget, Sleep, Stop, TriggerMapAction, TryFireToAnyone, all, decorator_condition, optional,
+    quiet_start, timer, while_target_alive,
 };
 use crate::weapon::model::closer_by_chebyshev;
 use super::orders::Orders;
@@ -255,6 +344,26 @@ pub const RANDOM_MOVE_MIN_DIST: f32 = 4.0;
 pub const RANDOM_MOVE_RANGE_RATE: f32 = 4.0;
 /// `AttackerAiVer2`'s `Timer(2.0f, bt.Idle)`, s.
 pub const RANDOM_MOVE_REST: f32 = 2.0;
+/// `AiControlFactory`'s `ZombieFlocking` and `ZombieFlockingFriend`:
+/// `ScanDistance = 12`.
+pub const ZOMBIE_SCAN_DISTANCE: f32 = 12.0;
+/// `ZombieFlocking`'s super attack: the target within this many gun ranges
+/// on both axes (`Weapon.Range * 4`), no friend within this many
+/// (`Weapon.Range * 2`), and the wave gathered this long (`Timer(2.0f,
+/// Power)`), s.
+pub const SUPER_ATTACK_RANGE_RATE: f32 = 4.0;
+pub const SUPER_ATTACK_ALONE_RATE: f32 = 2.0;
+pub const SUPER_ATTACK_POWER_TIME: f32 = 2.0;
+/// `FollowPlayerLeader`'s `FollowBy(…, b => Leader.GetPredictionPosition(1.0f),
+/// 1.0f, 10)`: how far ahead of the leader it heads, s, its speed rate, and
+/// how near is near enough.
+pub const FOLLOW_LEADER_AHEAD: f32 = 1.0;
+pub const FOLLOW_LEADER_MIN_DIST: f32 = 10.0;
+/// `LeaderAlive`: flock with the leader this long at a time
+/// (`Timer.TotalSeconds < 5`), s, towards where it will be this far ahead
+/// (`GetPredictionPosition(4.0f)`), s.
+pub const LEADER_FLOCK_TIME: f32 = 5.0;
+pub const LEADER_FLOCK_AHEAD: f32 = 4.0;
 
 /// `BTActionFactory.SimpleAttackTarget`: fires at the target while steering
 /// at it, with the gun's aim `predict_sec` ahead of it.
@@ -497,5 +606,86 @@ pub fn attacker_ai_ver2() -> impl BehaviorNode<AiBlackboard, Orders> {
             )))),
             named("Timer_2s", timer(RANDOM_MOVE_REST, named("Idle", action(quiet_start(Idle))))),
         ))),
+    )))
+}
+
+/// `BTActionFactory.SimpleFlocking` (`SimpleFlocking`): flock at half speed
+/// while there is an enemy within `ScanDistance` (the flock not steered at
+/// it), else at a tenth.
+pub fn simple_flocking() -> impl BehaviorNode<AiBlackboard, Orders> {
+    named("FlockingBrain", select((
+        named("Attack", seq((action(FindNearestEnemy), named("Flocking", action(quiet_start(Flocking::new(0.5, 4.0))))))),
+        named("Flocking", action(quiet_start(Flocking::new(0.1, 4.0)))),
+    )))
+}
+
+/// `Super attack`'s `Check`: the target alive and in sight now, the gun
+/// ready (`CanShoot`), the target within 4 gun ranges on both axes and no
+/// friend within 2.
+fn super_attack_ready(bb: &AiBlackboard) -> bool {
+    let (Some(target), Some(gun)) = (bb.live_target(), bb.gun) else {
+        return false;
+    };
+    let range = gun.range.range;
+    bb.sees_target()
+        && bb.gun_ready
+        && closer_by_chebyshev(bb.pos, target.pos, range * SUPER_ATTACK_RANGE_RATE)
+        && bb.friends(range * SUPER_ATTACK_ALONE_RATE).next().is_none()
+}
+
+/// `BTActionFactory.ZombieFlocking` (`ZombieFlocking`, `ZombieFlockingFriend`):
+/// see the module docs.
+pub fn zombie_flocking() -> impl BehaviorNode<AiBlackboard, Orders> {
+    named("ZombieFlocking", select((
+        named("Super attack", seq((
+            named("Check", check(super_attack_ready)),
+            named("Timer_2s", timer(SUPER_ATTACK_POWER_TIME, named("Power", action(quiet_start(Power))))),
+            named("Fire!", action(FireNow)),
+        ))),
+        named("Attack", seq((
+            named("Agr", check(|bb: &AiBlackboard| bb.took_damage() && bb.live_target().is_none())),
+            named("Uii", action(AlertFriends)),
+        ))),
+        named("ChangeTarget", seq((
+            named("Agr", check(|bb: &AiBlackboard| bb.took_damage() && bb.target() == bb.damager_entity())),
+            action(FindNearestEnemy),
+        ))),
+        named("Attack", seq((
+            action(FindNearestEnemy),
+            while_target_alive(named("Flocking", action(quiet_start(Flocking::toward(1.0, 8.0, 1.0, |bb| {
+                bb.last_known_target_position
+            }))))),
+        ))),
+        named("FollowLeader", seq((
+            action(FindNearestLeader),
+            named("TriggerPlayerLeader", select((
+                named("CheckLeader", check(|bb: &AiBlackboard| !bb.player_leads() || bb.map_action_on_trigger.is_none())),
+                named("Trigger", action(quiet_start(optional(TriggerMapAction::new(true))))),
+            ))),
+            named("Follow", select((
+                named("FollowPlayerLeader", seq((
+                    named("CheckLeader", check(|bb: &AiBlackboard| bb.player_leads() && !bb.leader_visible())),
+                    named("FollowBy_Follow leader", action(quiet_start(FollowBy::with_params(
+                        |bb| bb.leader_prediction(FOLLOW_LEADER_AHEAD),
+                        1.0,
+                        FOLLOW_LEADER_MIN_DIST,
+                    )))),
+                ))),
+                named("LeaderAlive", decorator_condition(
+                    |bb: &mut AiBlackboard| bb.start_timer(),
+                    |bb: &mut AiBlackboard| {
+                        if bb.leader().is_some() && bb.timer() < LEADER_FLOCK_TIME - 1e-6 {
+                            NodeResult::RUNNING
+                        } else {
+                            NodeResult::Failure
+                        }
+                    },
+                    named("Flocking", action(quiet_start(Flocking::toward(1.0, 8.0, 4.0, |bb| {
+                        if bb.leader().is_some() { bb.leader_prediction(LEADER_FLOCK_AHEAD) } else { bb.pos }
+                    })))),
+                )),
+            ))),
+        ))),
+        named("Flocking", action(quiet_start(Flocking::new(0.25, 4.0)))),
     )))
 }

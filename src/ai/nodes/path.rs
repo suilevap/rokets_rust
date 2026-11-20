@@ -292,6 +292,11 @@ impl FollowBy {
     pub fn new(position: PositionFn) -> FollowBy {
         FollowBy(MoveToPoint::new(position))
     }
+
+    /// `FollowBy(…, speedRate, minDist)`.
+    pub fn with_params(position: PositionFn, speed_rate: f32, min_dist: f32) -> FollowBy {
+        FollowBy(MoveToPoint::with_params(position, speed_rate, min_dist))
+    }
 }
 
 /// `FollowBy.FollowToPosition`: `d` (6 × 6): how far the point may have gone
