@@ -407,3 +407,123 @@ impl BtAction<AiBlackboard, Orders> for Runaway {
         Orders { move_dir: Some(stick), ..Orders::default() }
     }
 }
+
+/// `BTActions/AimToTarget(predictSec, minTimeSec)`: turns the gun on where
+/// the target will be `predict` seconds from now and, while the car is not
+/// facing that way, turns the car: more than 60° off (the dot of the two
+/// directions under 0.5) the stick is written at a quarter of the way to the
+/// target, and when it faces more than 120° away (the dot under -0.5), a
+/// unit stick a quarter turn to the side, to swing it round; within 60° the
+/// stick is left as it was. It goes on until the gun is within the weapon's
+/// `TargetInFireRange` and at least `min_time` seconds have passed.
+///
+/// Starts when the target lives and is in sight now or in 0.5 s, and starts
+/// the blackboard's timer; goes on while that holds, the car has a gun, and
+/// the time is not up or the gun is not on target; completes `Ok` when the
+/// target is alive, in sight (as above) and in the gun's range, `Fail`
+/// otherwise.
+///
+/// `RotateLeft90` of C# turned a y-down vector a quarter to the screen's
+/// right (`(x, y)` to `(-y, x)`): in our y-up plane that is `(y, -x)`.
+#[derive(Clone, Copy, Debug)]
+pub struct AimToTarget {
+    /// `_predictSec`.
+    pub predict: f32,
+    /// `_minTimeSec`.
+    pub min_time: f32,
+}
+
+impl AimToTarget {
+    pub fn new(predict: f32, min_time: f32) -> AimToTarget {
+        AimToTarget { predict, min_time }
+    }
+}
+
+impl BtAction<AiBlackboard, Orders> for AimToTarget {
+    type State = ();
+
+    fn start(&self, ctx: &mut AiBlackboard, _: ()) -> Option<()> {
+        let result = ctx.live_target().is_some() && ctx.can_see_target();
+        if result {
+            ctx.start_timer();
+        }
+        result.then_some(())
+    }
+
+    fn is_in_progress(&self, _: &(), ctx: &AiBlackboard, _: ()) -> bool {
+        let (Some(foe), Some(gun)) = (ctx.live_target(), ctx.gun) else {
+            return false;
+        };
+        ctx.can_see_target()
+            && (ctx.timer() < self.min_time || !gun.range.contains(foe.pos, foe.radius * ctx.fire_accuracy))
+    }
+
+    fn tick(&self, _: &mut (), ctx: &mut AiBlackboard, _: ()) -> Orders {
+        let Some(foe) = ctx.live_target() else {
+            return Orders::default();
+        };
+        let aim = direction_to(foe, ctx.pos, self.predict);
+        let dot = Vec2::from_angle(ctx.heading).dot(aim);
+        let move_dir = if dot < 0.5 {
+            Some(if dot > -0.5 { aim * 0.25 } else { Vec2::new(aim.y, -aim.x) })
+        } else {
+            None
+        };
+        Orders { move_dir, aim_dir: Some(aim), fire: false }
+    }
+
+    fn complete(&self, _: &mut (), ctx: &mut AiBlackboard, _: ()) -> bool {
+        match (ctx.live_target(), ctx.gun) {
+            (Some(foe), Some(gun)) => {
+                ctx.can_see_target() && gun.range.contains(foe.pos, foe.radius * ctx.fire_accuracy)
+            }
+            _ => false,
+        }
+    }
+}
+
+/// `BTActionFactory.StopAction`: drops the path and lets the stick go; over
+/// at once, `Ok`.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct Stop;
+
+impl BtAction<AiBlackboard, Orders> for Stop {
+    type State = ();
+
+    fn start(&self, ctx: &mut AiBlackboard, _: ()) -> Option<()> {
+        ctx.path = None;
+        ctx.clear_stick();
+        Some(())
+    }
+
+    fn is_in_progress(&self, _: &(), _: &AiBlackboard, _: ()) -> bool {
+        false
+    }
+
+    fn tick(&self, _: &mut (), _: &mut AiBlackboard, _: ()) -> Orders {
+        Orders::default()
+    }
+}
+
+/// `BTActionFactory.MoveInOneDirectionAi`'s action (`MoveToInitDirection`):
+/// remembers the way the car faces when it starts, then keeps the stick and
+/// the gun that way with the trigger down, for ever.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct MoveInInitDirection;
+
+impl BtAction<AiBlackboard, Orders> for MoveInInitDirection {
+    /// `ActionData`: the direction the car faced at the start.
+    type State = Vec2;
+
+    fn start(&self, ctx: &mut AiBlackboard, _: ()) -> Option<Vec2> {
+        Some(Vec2::from_angle(ctx.heading))
+    }
+
+    fn is_in_progress(&self, _: &Vec2, _: &AiBlackboard, _: ()) -> bool {
+        true
+    }
+
+    fn tick(&self, direction: &mut Vec2, _: &mut AiBlackboard, _: ()) -> Orders {
+        Orders { move_dir: Some(*direction), aim_dir: Some(*direction), fire: true }
+    }
+}

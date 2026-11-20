@@ -17,7 +17,10 @@
 //! | [`FireToTarget`] | `BTActions/FireToTarget` |
 //! | [`SimpleFollowByTarget`] | `BTActions/SimpleFollowByTarget` |
 //! | [`MoveTowardsTargetNoPath`] | `BTActions/MoveTowardsTargetNoPath` |
-//! | [`MoveBase`], [`MoveToPoint`], [`FollowBy`] | `BTActions/MoveBase`, `MoveToPoint`, `FollowBy`: drive along a [`NavPath`](crate::map::nav::NavPath) |
+//! | [`MoveBase`], [`MoveToPoint`], [`FollowBy`], [`MoveToRandomVisiblePosition`] | `BTActions/MoveBase`, `MoveToPoint`, `FollowBy`, `MoveToRandomVisiblePosition`: drive along a [`NavPath`](crate::map::nav::NavPath) |
+//! | [`AimToTarget`] | `BTActions/AimToTarget` (in `FireToTarget.cs`) |
+//! | [`Stop`] | `BTActionFactory.StopAction` |
+//! | [`MoveInInitDirection`] | `BTActionFactory.MoveInOneDirectionAi`'s action |
 //! | [`TryFireToAnyone`] | `BTActions/TryFireToAnyone` |
 //! | [`TriggerMapAction`] | `BTActions/TriggerMapAction` |
 //! | [`Sleep`] | `BTActionFactory.Sleep2Sec` |
@@ -25,8 +28,7 @@
 //! | [`Idle`] | `BTBuilder.Idle` |
 //! | [`Scanning`] | the `Scanning` action of `BTActionFactory.SimpleScanning` |
 //!
-//! The rest of `BTActions/` (`Flocking`, `ExecuteOrders`, `AimToTarget`,
-//! `MoveToRandomVisiblePosition`, `FindAngleNearestEnemy`,
+//! The rest of `BTActions/` (`Flocking`, `ExecuteOrders`, `FindAngleNearestEnemy`,
 //! `FindNearestLeader`, `GetTargetFromVariables`, the chain gadget ones, …)
 //! comes with the trees that use it (`docs/BACKLOG.md` lists which).
 
@@ -38,11 +40,13 @@ mod path;
 mod quiet;
 
 pub use actions::{
-    FindNearestEnemy, FireToTarget, Idle, MoveTowardsTargetNoPath, Runaway, Scanning, SimpleFollowByTarget, Sleep,
-    TriggerMapAction, TryFireToAnyone,
+    AimToTarget, FindNearestEnemy, FireToTarget, Idle, MoveInInitDirection, MoveTowardsTargetNoPath, Runaway, Scanning,
+    SimpleFollowByTarget, Sleep, Stop, TriggerMapAction, TryFireToAnyone,
 };
 pub use condition::{DecoratorCondition, WhileState, decorator_condition, timer, while_target_alive};
 pub use optional::{Optional, optional, optional_required};
 pub use parallel::{All, all};
-pub use path::{FollowBy, MoveBase, MoveParams, MoveToPoint, PositionFn, go_to_position, to_go_world};
+pub use path::{
+    FollowBy, MoveBase, MoveParams, MoveToPoint, MoveToRandomVisiblePosition, PositionFn, go_to_position, to_go_world,
+};
 pub use quiet::{QuietStart, quiet_start};

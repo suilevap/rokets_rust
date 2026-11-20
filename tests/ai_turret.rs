@@ -27,6 +27,7 @@ fn foe(n: u32, x: f32, y: f32) -> Foe {
         pos: Vec2::new(x, y),
         vel: Vec2::ZERO,
         radius: 1.0,
+        weapon_range: None,
     }
 }
 
@@ -119,11 +120,15 @@ impl Setup {
                 complex: true,
                 max_angle: self.max_angle,
                 range: FireRange { from: Vec2::ZERO, direction: barrel, range: MINIGUN.range, dispersion: MINIGUN.dispersion },
+                immediate: true,
             }),
             velocity: Vec2::ZERO,
             radius: 1.0,
             can_move: true,
             stick: Vec2::ZERO,
+            health: 12,
+            max_health: 12,
+            shield: 0,
         };
         rig.bb.gather(DT, rig.act.is_some(), body, &self.cars, &blocked);
         // `flatbt_bevy`'s tick for one agent.

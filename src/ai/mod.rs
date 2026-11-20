@@ -29,6 +29,10 @@
 //! | `MoveByPath`, `MoveByPathFriend` | `BTActionFactory.FollowPathAi`: follows the `Path` that `SetPath` gave it (`MoveBase`), firing at anyone in the gun's line at most every 3 s (`TryFireToAnyone`); with no path (or when an open one is done) it runs the action `AIAdjustment` gave it (`ActionOnBTTrigger`) once |
 //! | `MoveByPathSafelyFriend` | `FollowPathAiSafe`: the same, but runs from an enemy in sight |
 //! | `GoToEnemySimplePredictionPosition` | finds an enemy and goes straight at where it will be (`MoveTowardsTargetNoPath`) |
+//! | `AttackAiVer2` | `BTActionFactory.AttackerAiVer2`: under half health and hit, hides from the enemy (`PanicBehaviour`); else finds an enemy within `ScanDistance` and, in range and in sight, stands, turns to it (`AimToTarget`), fires 1.5 s and goes to a random place in sight of where it was last seen (`Maneur`; a hit car does so at once), or follows to that place when out of range; with nobody near, walks to a random navigation node and rests 2 s |
+//! | `SimpleAttackNearestEnemy` | `SimpleAttack` (the turret's attack, `ScanDistance` 20), else idle |
+//! | `SimpleFollowByEnemyAi` | finds an enemy (`ScanDistance` 20) and steers at where it will be, no firing; else idle |
+//! | `MoveAndFireInInitDirection` | stick and gun along the way the car faced when its tree started, the trigger down |
 //! | `AlwaysShoot` | [`AlwaysShoot`]: the trigger always down, the gun where the car points |
 //! | `ShootPattern` | [`ShootPattern`]: a random pattern of quarter-second silences and bursts |
 //! | `NoneLocal`, `NoneEnemy`, `NoneFriend` | nothing (`AINone`; see `car::control`) |
@@ -128,10 +132,9 @@
 //! Everything else that is an `AIBTBaseControl` waits for the trees that use
 //! the nodes not yet ported (`docs/BACKLOG.md` says which node each needs):
 //! `Ai`, `AiFriend`, `AiSimpleTurretFriendFireAvailableTarget`,
-//! `SimpleFlocking`, `ZombieFlocking*`, `SimpleAttackNearestEnemy`,
-//! `SimpleFollowByEnemyAi`, `MoveAndFireInInitDirection`, `GuardAi`,
-//! `SupportAi*`, `OrderExecutor*`, `CaptureTheBox*`, `AttackAi*`, `HammerAi*`,
-//! `ChickenAi`, `ChaserTargetFromLocalVariable`. Cars with those stand idle, as
+//! `SimpleFlocking`, `ZombieFlocking*`, `GuardAi`,
+//! `SupportAi*`, `OrderExecutor*`, `CaptureTheBox*`, `AttackAi`,
+//! `AttackAiFriend`, `HammerAi*`, `ChickenAi`, `ChaserTargetFromLocalVariable`. Cars with those stand idle, as
 //! before, and `AIAdjustment` sets only their team. `AITurret` and
 //! `AISimpleCarControl` are not reached by any `ControlType`;
 //! `AIPathCarControl` (the base of `AISimpleCarControl`,
@@ -166,6 +169,7 @@ use flatbt_bevy::prelude::*;
 use crate::actions::{Inactive, RunAction};
 use crate::car::CarRadius;
 use crate::car::control::Team;
+use crate::car::shield::Shield;
 use crate::car::simple::SimpleDrive;
 use crate::controls::PlayerIntent;
 use crate::explosion::{Damaged, ExplosionSystems, Health};
@@ -174,7 +178,7 @@ use crate::weapon::Weapon;
 use crate::weapon::model::Kind;
 pub use fire::{AlwaysShoot, ShootPattern};
 pub use blackboard::{AiBlackboard, Body, Foe, Gun};
-pub use navigation::Navigation;
+pub use navigation::{Navigation, SharedTerrain};
 pub use orders::Orders;
 
 pub struct AiPlugin;
@@ -189,6 +193,10 @@ impl Plugin for AiPlugin {
             BehaviorPlugin::for_tree(trees::go_to_enemy_simple_prediction_position)
                 .in_schedule(FixedUpdate)
                 .tick_mode(tick_mode),
+            BehaviorPlugin::for_tree(trees::attacker_ai_ver2).in_schedule(FixedUpdate).tick_mode(tick_mode),
+            BehaviorPlugin::for_tree(trees::simple_attack_nearest_enemy).in_schedule(FixedUpdate).tick_mode(tick_mode),
+            BehaviorPlugin::for_tree(trees::simple_follow_by_enemy_ai).in_schedule(FixedUpdate).tick_mode(tick_mode),
+            BehaviorPlugin::for_tree(trees::move_in_one_direction_ai).in_schedule(FixedUpdate).tick_mode(tick_mode),
             navigation::NavigationPlugin,
         ))
         .configure_sets(
@@ -226,7 +234,11 @@ pub fn set_control(car: &mut EntityCommands, control: &str, seed: u64) {
         .stop_behavior(trees::chaser_ai)
         .stop_behavior(trees::follow_path_ai)
         .stop_behavior(trees::follow_path_ai_safe)
-        .stop_behavior(trees::go_to_enemy_simple_prediction_position);
+        .stop_behavior(trees::go_to_enemy_simple_prediction_position)
+        .stop_behavior(trees::attacker_ai_ver2)
+        .stop_behavior(trees::simple_attack_nearest_enemy)
+        .stop_behavior(trees::simple_follow_by_enemy_ai)
+        .stop_behavior(trees::move_in_one_direction_ai);
     #[cfg(debug_assertions)]
     car.remove::<DebugBehavior>();
     let mut brain = AiBlackboard::new(seed);
@@ -250,6 +262,20 @@ pub fn set_control(car: &mut EntityCommands, control: &str, seed: u64) {
         }
         "GoToEnemySimplePredictionPosition" => {
             car.insert((brain, Behavior::for_tree(trees::go_to_enemy_simple_prediction_position)));
+        }
+        "AttackAiVer2" => {
+            car.insert((brain, Behavior::for_tree(trees::attacker_ai_ver2)));
+        }
+        "SimpleAttackNearestEnemy" => {
+            brain.scan_distance = trees::SIMPLE_SCAN_DISTANCE;
+            car.insert((brain, Behavior::for_tree(trees::simple_attack_nearest_enemy)));
+        }
+        "SimpleFollowByEnemyAi" => {
+            brain.scan_distance = trees::SIMPLE_SCAN_DISTANCE;
+            car.insert((brain, Behavior::for_tree(trees::simple_follow_by_enemy_ai)));
+        }
+        "MoveAndFireInInitDirection" => {
+            car.insert((brain, Behavior::for_tree(trees::move_in_one_direction_ai)));
         }
         "AlwaysShoot" => {
             car.insert(AlwaysShoot);
@@ -278,6 +304,10 @@ pub fn is_live(control: &str) -> bool {
             | "MoveByPathFriend"
             | "MoveByPathSafelyFriend"
             | "GoToEnemySimplePredictionPosition"
+            | "AttackAiVer2"
+            | "SimpleAttackNearestEnemy"
+            | "SimpleFollowByEnemyAi"
+            | "MoveAndFireInInitDirection"
             | "AlwaysShoot"
             | "ShootPattern"
     )
@@ -305,12 +335,12 @@ fn stepping(time: Res<Time>, physics: Res<Time<Physics>>) -> bool {
 /// `AIBTBaseControl.UpdateControl`, its first half: copies what each AI car's
 /// blackboard reads of the world into it, and decides how its tree is
 /// entered ([`AiBlackboard::gather`]).
-#[allow(clippy::type_complexity)]
+#[allow(clippy::type_complexity, clippy::too_many_arguments)]
 fn gather_blackboards(
     time: Res<Time>,
     physics: Res<Time<Physics>>,
     map: Res<LoadedMap>,
-    cars: Query<(Entity, &Team, &Position, Option<&LinearVelocity>, &CarRadius, &Health), Without<Inactive>>,
+    cars: Query<(Entity, &Team, &Position, Option<&LinearVelocity>, &CarRadius, &Health, Option<&Weapon>), Without<Inactive>>,
     mut brains: Query<(
         &mut AiBlackboard,
         Has<Orders>,
@@ -324,8 +354,10 @@ fn gather_blackboards(
         &CarRadius,
         Has<SimpleDrive>,
         &PlayerIntent,
+        Option<&Shield>,
     )>,
     navigation: Option<Res<Navigation>>,
+    terrain: Option<Res<SharedTerrain>>,
     mut foes: Local<Vec<Foe>>,
 ) {
     let dt = time.delta_secs();
@@ -333,15 +365,16 @@ fn gather_blackboards(
         return;
     }
     foes.clear();
-    foes.extend(cars.iter().filter(|c| c.5.hp > 0).map(|(entity, team, pos, vel, radius, _)| Foe {
+    foes.extend(cars.iter().filter(|c| c.5.hp > 0).map(|(entity, team, pos, vel, radius, _, weapon)| Foe {
         entity,
         team: team.0,
         pos: pos.0,
         vel: vel.map_or(Vec2::ZERO, |v| v.0),
         radius: radius.0,
+        weapon_range: weapon.map(|w| w.options.range),
     }));
     let blocked = |a: Vec2, b: Vec2| map.line_collides(a, b);
-    for (mut blackboard, running, position, rotation, team, health, weapon, inactive, velocity, radius, can_move, intent) in
+    for (mut blackboard, running, position, rotation, team, health, weapon, inactive, velocity, radius, can_move, intent, shield) in
         &mut brains
     {
         // `ControlableEntity.Update`: nothing for a car that is inactive
@@ -354,14 +387,25 @@ fn gather_blackboards(
             pos: position.0,
             heading: rotation.as_radians(),
             team: team.0,
-            gun: weapon.map(|w| Gun { complex: w.kind != Kind::Hammer, max_angle: w.aim.max_angle, range: w.fire_range() }),
+            gun: weapon.map(|w| Gun {
+                complex: w.kind != Kind::Hammer,
+                max_angle: w.aim.max_angle,
+                range: w.fire_range(),
+                immediate: w.kind.is_immediate(),
+            }),
             velocity: velocity.map_or(Vec2::ZERO, |v| v.0),
             radius: radius.0,
             can_move,
             stick: intent.move_dir,
+            health: health.hp,
+            max_health: health.max,
+            shield: shield.map_or(0, |s| s.points() as i32),
         };
         if blackboard.nav.is_none() {
             blackboard.nav = navigation.as_deref().cloned();
+        }
+        if blackboard.terrain.is_none() {
+            blackboard.terrain = terrain.as_deref().map(|t| t.0.clone());
         }
         blackboard.gather(dt, running, body, &foes, &blocked);
     }

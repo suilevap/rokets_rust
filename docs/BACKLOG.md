@@ -12,7 +12,9 @@ their health, shield, team, weapon and wreck. Their controls (`ai`) are live
 for `AiSimpleTurret` / `AiSimpleTurretFriend` (`TurretAi`), `AiChaser`
 (`ChaserAi`), `MoveByPath` / `MoveByPathFriend` / `MoveByPathSafelyFriend`
 (`FollowPathAi`, `FollowPathAiSafe`), `GoToEnemySimplePredictionPosition`
-(all flatbt trees), `AlwaysShoot` and `ShootPattern`; every other
+(all flatbt trees), `AttackAiVer2`, `SimpleAttackNearestEnemy`,
+`SimpleFollowByEnemyAi`, `MoveAndFireInInitDirection`, `AlwaysShoot` and
+`ShootPattern`; every other
 `ControlType` that is an `AIBTBaseControl` stands idle until the next slice.
 The navigation (`map/nav`: `NavGraph`, `NavPath`) and the nodes that drive
 along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
@@ -23,12 +25,6 @@ along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
    - `Ai` / `AiFriend` (`GameMode.GetAi`: check which tree the single-player
      mode gives; `SimpleAi` = `Selector(Attack, MoveBase, SimpleScanning)`
      would need only ported nodes);
-   - `SimpleAttackNearestEnemy` = `Selector(SimpleAttack, Idle)`,
-     `SimpleFollowByEnemyAi` = `Selector(Sequence(FindNearestEnemy,
-     SimpleFollowByTarget(0.2)), Idle)` (`ScanDistance` 20) and
-     `MoveAndFireInInitDirection` (`MoveInOneDirectionAi`: the stick and aim
-     along the car's initial direction, the trigger down): only ported nodes,
-     not registered yet;
    - `SimpleFlocking`, `ZombieFlocking*`: `Flocking` (the flocking steering,
      with `GetFriends`), `FindNearestLeader`, `Leader` and `Traits` on the
      blackboard, `ZombieWeapon`, `Weapon.CanShoot`, `GetFriends`, the
@@ -42,14 +38,15 @@ along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
    - `SupportAi*`, `OrderExecutor*`: `ExecuteOrders`, `OrdersManager`,
      `FollowLeader`, `FindNearestLeader`, `Leader.Control.LocalDevice`,
      `SmartAttack` (below);
-   - `AttackAi`, `AttackAiVer2`, `HammerAi*`, `ChickenAi` (= `PanicBehaviour`):
-     `SmartAttack` / `SmartAttackVer2` (`AimToTarget`, `StopAction`, `Timer`s,
-     `Maneur` with `MoveToRandomVisiblePosition`,
-     `Weapon.IsImmidiate` / `Range`), `MapManager.GetRandomNodePosition`
-     (`NavGraph::get_nodes` is ready; `RandomHelper.NextIntFakeRange`),
-     `GetRandomFreeNonVisiblePoint`, `GetRandomFreeVisiblePoint`,
-     `TakeDamage`, `Entity.MaxHealth`, `RemeberTargetPos`
-     (`GetPredictionPosition`);
+   - `AttackAi` (`AttackAiFriend`): `AttackerAi` = `Selector(SmartAttack,
+     Sequence(MoveToPoint("Rnd"), Timer(2, Idle)))`; `SmartAttack` /
+     `SmartAttackTarget` is the first version of `SmartAttackVer2` (it
+     stands, fires and manoeuvres with no style choice: `Timer`s and
+     `Maneur` are ported, add the tree). `ChickenAi` = `PanicBehaviour`
+     (`panic_behaviour()` is ported: register it). `HammerAi*`:
+     `RemeberTargetPos` (`GetPredictionPosition`) and the Hammer tree.
+     The Plasma gun and rocket launcher (`IsImmidiate` false) come with
+     the weapons (`Kind::is_immediate`);
    - `CaptureTheBox*` (`CustomAi`): the chain gadget actions
      (`GrabByChainGadget`, `DropByChainGadget`), `FixBlocker` (the path's
      `Blocker` is there), `MoveUntilPositionNonVisible`, custom data on the

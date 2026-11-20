@@ -83,6 +83,18 @@ impl Navigation {
     }
 }
 
+/// The map's floor plan ([`Terrain`](crate::map::terrain::Terrain)), shared
+/// with the trees' blackboards: the random places they pick.
+#[derive(Resource, Clone, Debug)]
+pub struct SharedTerrain(pub std::sync::Arc<crate::map::terrain::Terrain>);
+
+impl SharedTerrain {
+    /// The floor plan of a map.
+    pub fn build(grid: &MapGrid, cell: CellSize) -> SharedTerrain {
+        SharedTerrain(std::sync::Arc::new(crate::map::terrain::Terrain::from_grid(grid, cell.0)))
+    }
+}
+
 /// Present when the graph is to be drawn (`--nav`).
 #[derive(Resource, Default)]
 pub struct NavDebug;

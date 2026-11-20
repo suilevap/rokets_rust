@@ -37,6 +37,13 @@ impl Kind {
     pub fn auto_fire(self) -> bool {
         self == Kind::Hammer
     }
+
+    /// `IBaseWeapon.IsImmidiate`: the shot arrives the moment it is fired
+    /// (`BaseWeapon` sets it; only the Plasma gun and the rocket launcher,
+    /// not ported, clear it).
+    pub fn is_immediate(self) -> bool {
+        true
+    }
 }
 
 /// A weapon's numbers (`WeaponOptions`): world units, seconds, radians.

@@ -38,8 +38,15 @@
 //! the rest of its [`Body`]. `Target.SafePosition` (the target's position, or
 //! where it last was when it is gone) is [`AiBlackboard::target_position_safe`].
 //!
+//! `TakeDamage` is looked at on each thinking step ([`AiBlackboard::took_damage`]:
+//! the car's health and shield together against what they were at the step
+//! before). The places the trees pick at random (`GetRandomNodePosition`,
+//! `GetRandomFreeVisiblePoint`, `GetRandomFreeNonVisiblePoint`) are the
+//! blackboard's methods over the navigation graph and the floor plan
+//! ([`Terrain`]), drawing on the car's own random stream.
+//!
 //! Not ported: `AiBlackboard`'s other states (`SeeTargetForward`,
-//! `LeaderSeeTarget` (always off for a turret: no leader), `TakeDamage`), its
+//! `LeaderSeeTarget` (always off for a turret: no leader)), its
 //! `Leader`, `Orders`, `Traits`, `AdditionalTargetPosition`, `ActionData`
 //! (the one slot every action shared: an action keeps its own state), the
 //! custom data: the trees so far read none of them (they come with the trees
@@ -49,7 +56,7 @@
 //! inside a wall (it picks one of the first 16 of the map's free points, an
 //! arbitrary place far off): `WillSeeTarget` looks at the plain prediction.
 
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
 use bevy::math::Vec2;
 use bevy::prelude::{Component, Entity};
@@ -60,6 +67,7 @@ use flatbt_bevy::Tick;
 
 use super::navigation::Navigation;
 use crate::map::nav::{Blocker, NavPath};
+use crate::map::terrain::Terrain;
 use crate::weapon::model::{FireRange, closer_by_chebyshev, due};
 
 /// `AIBTBaseControl._aiUpdateTime`: how often the tree is thought over, s.
@@ -83,6 +91,9 @@ pub struct Foe {
     pub vel: Vec2,
     /// `Entity.Radius`.
     pub radius: f32,
+    /// `Entity.Weapon.Range` (`None` for a car with no gun): what
+    /// `PanicBehaviour` keeps out of.
+    pub weapon_range: Option<f32>,
 }
 
 /// The car's gun, as the trees need it (`Entity.Weapon`).
@@ -94,6 +105,9 @@ pub struct Gun {
     pub max_angle: f32,
     /// What `TargetInFireRange` asks.
     pub range: FireRange,
+    /// `IBaseWeapon.IsImmidiate`: its shot arrives at once (false for the
+    /// Plasma gun and the rocket launcher, whose shots fly).
+    pub immediate: bool,
 }
 
 /// A car in sight of the blackboard's, as of the last time the tree thought.
@@ -126,6 +140,12 @@ pub struct Body {
     /// `Entity.Control.CurrentAxisControl`: the stick, as the tree last wrote
     /// it.
     pub stick: Vec2,
+    /// `Entity.Health`.
+    pub health: i32,
+    /// `Entity.MaxHealth`.
+    pub max_health: i32,
+    /// `Entity.Shield.Value`, 0 for a car with no shield.
+    pub shield: i32,
 }
 
 /// `PathPeriodControl` and `EntityPreviousPeriodPosition`: every two seconds
@@ -193,6 +213,13 @@ pub struct AiBlackboard {
     /// The map's navigation graph (`MapManager.Navigation`), once the gather
     /// has handed it over.
     pub nav: Option<Navigation>,
+    /// The map's floor plan (`MapManager`'s distance field and free points),
+    /// handed over by the gather.
+    pub terrain: Option<Arc<Terrain>>,
+    /// `Entity.Health`.
+    pub health: i32,
+    /// `Entity.MaxHealth`.
+    pub max_health: i32,
     /// `Path`: the way `MoveBase` follows.
     pub path: Option<NavPath>,
     /// `PatrolPath`: where a patrolling tree goes (set by `SetPath`; no tree
@@ -227,6 +254,13 @@ pub struct AiBlackboard {
     sees: bool,
     /// `States.WillSeeTarget`.
     will_see: bool,
+    /// `States.TakeDamage`: at the last [`update`](Self::update) the car's
+    /// health and shield together were less than at the one before.
+    took_damage: bool,
+    /// `_previousTotalHealth`; before the first look, the car's health.
+    previous_total_health: Option<i32>,
+    /// `Entity.Health + Entity.Shield.Value`.
+    total_health: i32,
     /// `LastDamager`.
     damager: Option<Entity>,
     /// Seconds until the damager is forgotten (`LastDamagerTime` against
@@ -265,6 +299,9 @@ impl AiBlackboard {
             stick: Vec2::ZERO,
             step: 0.0,
             nav: None,
+            terrain: None,
+            health: 0,
+            max_health: 0,
             path: None,
             patrol_path: None,
             target_position: Vec2::ZERO,
@@ -280,6 +317,9 @@ impl AiBlackboard {
             target: None,
             sees: false,
             will_see: false,
+            took_damage: false,
+            previous_total_health: None,
+            total_health: 0,
             damager: None,
             damager_left: 0.0,
             now: 0.0,
@@ -315,6 +355,11 @@ impl AiBlackboard {
         self.radius = body.radius;
         self.can_move = body.can_move;
         self.stick = body.stick;
+        self.health = body.health;
+        self.max_health = body.max_health;
+        // `_previousTotalHealth = Entity.Health` when the control is made.
+        self.previous_total_health.get_or_insert(body.health);
+        self.total_health = body.health + body.shield;
         self.think_in -= dt;
         let forced = due(self.think_in);
         if forced {
@@ -451,10 +496,59 @@ impl AiBlackboard {
         self.sees || self.will_see
     }
 
+    /// `CheckState(SeeTarget)`: in sight now.
+    pub fn sees_target(&self) -> bool {
+        self.sees
+    }
+
+    /// `CheckState(TakeDamage)`: as of the last time the tree thought, the
+    /// car had lost health or shield since the time before.
+    pub fn took_damage(&self) -> bool {
+        self.took_damage
+    }
+
+    /// `MapManager.GetRandomNodePosition(pos, distance)`: the position of
+    /// one of the navigation nodes within `distance` of `pos` on both axes
+    /// (`RandomHelper.NextIntFakeRange(0, count - 1)`: never the last of
+    /// them, unless it is the only one); `pos` itself when there are none or
+    /// the map has no graph.
+    pub fn random_node_position(&mut self, pos: Vec2, distance: f32) -> Vec2 {
+        let Some(nav) = self.nav.clone() else {
+            return pos;
+        };
+        let rand = self.random();
+        nav.read(|graph| {
+            let nodes: Vec<Vec2> = graph.get_nodes(pos, distance).map(|n| n.pos).collect();
+            match nodes.len() {
+                0 => pos,
+                count => nodes[((count - 1) as f32 * rand) as usize],
+            }
+        })
+    }
+
+    /// `MapManager.GetRandomFreeVisiblePoint(pos, maxDistance)`; the origin
+    /// (no point) with no floor plan.
+    pub fn random_free_visible_point(&mut self, pos: Vec2, max_distance: f32) -> Vec2 {
+        let Some(terrain) = self.terrain.clone() else {
+            return Vec2::ZERO;
+        };
+        terrain.random_free_visible_point(pos, 0.0, max_distance, &mut || self.rng.random())
+    }
+
+    /// `MapManager.GetRandomFreeNonVisiblePoint(pos, from, maxDistance)`; the
+    /// origin (no point) with no floor plan.
+    pub fn random_free_non_visible_point(&mut self, pos: Vec2, from: Vec2, max_distance: f32) -> Vec2 {
+        let Some(terrain) = self.terrain.clone() else {
+            return Vec2::ZERO;
+        };
+        terrain.random_free_non_visible_point(pos, from, max_distance, &mut || self.rng.random())
+    }
+
     /// `AiBlackboard.Reset`.
     pub fn reset(&mut self) {
         self.sees = false;
         self.will_see = false;
+        self.took_damage = false;
         self.target = None;
         self.path = None;
     }
@@ -507,11 +601,16 @@ impl AiBlackboard {
     }
 
     /// `AiBlackboard.Update`: the flags start afresh and the target is looked
-    /// at again; a damager that is gone, or hurt it 5 s ago, is forgotten.
+    /// at again; the car's health and shield are compared with the last time
+    /// (`TakeDamage`); a damager that is gone, or hurt it 5 s ago, is
+    /// forgotten.
     fn update(&mut self) {
         self.sees = false;
         self.will_see = false;
+        self.took_damage = false;
         self.look_at_target();
+        self.took_damage = self.previous_total_health.is_some_and(|before| self.total_health < before);
+        self.previous_total_health = Some(self.total_health);
         if let Some(d) = self.damager
             && (self.damager_left <= 0.0 || self.foe(d).is_none())
         {
