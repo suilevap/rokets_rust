@@ -11,7 +11,7 @@
 
 use bevy::prelude::*;
 
-use crate::car::{Car, drive_cars};
+use crate::car::drive_cars;
 use crate::controls::{LocalPlayer, NoInput, PlayerIntent};
 use crate::game::GameState;
 
@@ -93,7 +93,7 @@ type ScriptedCar<'a> = (&'a mut PlayerIntent, &'a Transform, &'a avian2d::prelud
 
 fn run_script(
     mut script: ResMut<DriveScript>,
-    mut cars: Query<ScriptedCar, (With<LocalPlayer>, With<Car>)>,
+    mut cars: Query<ScriptedCar, With<LocalPlayer>>,
     traced: Query<(&crate::game::MapId, &Transform, Option<&avian2d::prelude::LinearVelocity>, Option<&crate::explosion::Health>)>,
 ) {
     let Some((stick, buttons)) = script.now() else {

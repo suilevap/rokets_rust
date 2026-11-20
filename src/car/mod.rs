@@ -16,6 +16,14 @@
 //!   (`cabin`); smoke (`smoke`), sparks when it hits something (`impact`),
 //!   engine and tyre sounds; the camera, the devices, the energy store and
 //!   the magnet. It is the one with `LocalPlayer`.
+//! - **The player's simple car** ([`Role::LocalSimple`]): a `SimpleCars`
+//!   car with the `Local` control (`Swarm`, `DoorsDream1`, `TheLastStand`):
+//!   a simple car in all but that the devices drive it, the camera follows
+//!   it, its gun has the player's preset and energy store
+//!   (`SetLocalControlPreferences`, `WeaponFactory`'s `LocalDevice`
+//!   options), and it is the one with `LocalPlayer`. It is the player when
+//!   no `Players` car is `Local` (C# made both, and the camera followed
+//!   whichever had a local device; no map has both).
 //! - **A simple car** ([`Role::Simple`], `SimpleCars`): its `Base` sprite
 //!   only, angular damping 3, driven by [`simple`] (when it can move), no
 //!   smoke, impact sparks or engine (`Car` alone had them); a collider
@@ -32,8 +40,9 @@
 //! (`HighlightEnemy`, `HighlightDeadEnemy`), a `NoneLocal` simple car's immunity out of the camera's view
 //! (`Control.LocalDevice && !IsInView` in `TakeDamage`), the magnet on a
 //! static car (`OnLinkTo`), the `EnergyComponent` of enemies (it spends
-//! nothing for a car the player does not drive: no store is made), and giving a simple car the player's devices (a `Local` control on a
-//! simple car, as `DoorsDream1` has).
+//! nothing for a car the player does not drive: no store is made), and a
+//! second `Local` simple car on a map (the first is the player's; no map
+//! has two).
 
 pub mod cabin;
 pub mod control;
@@ -49,7 +58,7 @@ use avian2d::prelude::*;
 use bevy::prelude::*;
 
 use crate::content::cars::CarData;
-use crate::content::map::SimpleCarData;
+use crate::content::map::{MapData, SimpleCarData};
 use crate::controls::{LocalPlayer, PlayerIntent};
 use crate::game::{GameState, LoadedMap, MapEntity, MapId};
 use crate::render::camera::CameraTarget;
@@ -136,7 +145,9 @@ pub fn spawn_simple_cars(
     quad: Res<UnitQuad>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    for data in map.data.simple_cars.iter().filter(|c| !c.is_prototype) {
+    let local = local_simple_car(&map.data).map(|c| c.id);
+    // The player's simple car comes with the player ([`spawn_local_car`]).
+    for data in map.data.simple_cars.iter().filter(|c| !c.is_prototype && Some(c.id) != local) {
         let at = map.world(data.position.x, data.position.y);
         spawn_simple_car(&mut commands, &map, &quad, &mut materials, data, data.id, at, map_degrees_to_world(data.direction_deg));
     }
@@ -168,13 +179,25 @@ pub fn spawn_simple_car(
         angle,
         control: &data.control,
         weapon: data.weapon_override(),
-        role: Role::Simple,
+        role: if Some(data.id) == local_simple_car(&map.data).map(|c| c.id) && id == data.id { Role::LocalSimple } else { Role::Simple },
     };
     spawn_car(commands, map, quad, materials, spec)
 }
 
+/// The `SimpleCars` car the player drives: the first with the `Local`
+/// control, when no `Players` car has it.
+pub fn local_simple_car(data: &MapData) -> Option<&SimpleCarData> {
+    let players = &data.players.items;
+    if players.iter().any(|p| p.control == "Local" && !p.is_prototype) {
+        return None;
+    }
+    data.simple_cars.iter().find(|c| c.control.trim() == "Local" && !c.is_prototype)
+}
+
 /// The player's car: at its place on the map, or at `at` (world) with its
-/// own heading or the one given (world radians).
+/// own heading or the one given (world radians). The `Players` car with the
+/// `Local` control, else the `SimpleCars` one ([`local_simple_car`]), else
+/// the first of `Players`.
 pub fn spawn_local_car(
     commands: &mut Commands,
     map: &LoadedMap,
@@ -182,6 +205,13 @@ pub fn spawn_local_car(
     materials: &mut Assets<StandardMaterial>,
     at: Option<(Vec2, Option<f32>)>,
 ) -> Option<Entity> {
+    if let Some(data) = local_simple_car(&map.data) {
+        let (position, angle) = match at {
+            Some((p, heading)) => (p, heading.unwrap_or_else(|| map_degrees_to_world(data.direction_deg))),
+            None => (map.world(data.position.x, data.position.y), map_degrees_to_world(data.direction_deg)),
+        };
+        return spawn_simple_car(commands, map, quad, materials, data, data.id, position, angle);
+    }
     let players = &map.data.players.items;
     let Some(player) = players
         .iter()
@@ -219,6 +249,9 @@ pub enum Role {
     /// A car of the map's `SimpleCars` (`ControlableEntity`): one sprite,
     /// its own simple driving ([`simple`]), a health bar when hurt.
     Simple,
+    /// A `SimpleCars` car with the `Local` control: a simple car that the
+    /// devices drive and the camera follows, with the player's gun.
+    LocalSimple,
 }
 
 /// What a car is made from.
@@ -263,13 +296,15 @@ pub fn spawn_car(
         return None;
     };
     let player = role == Role::Player;
+    // The devices drive it and the camera follows it.
+    let local = role != Role::Simple;
     let kind = control::control_kind(control);
     let size = base.size * px(1.0) * car.scale;
     let radius = size.max_element() / 2.0;
     let friction = map.data.friction.unwrap_or(1.0);
 
     let mut entity = commands.spawn((
-        Name::new(format!("{} {} {id}", if player { "Player car" } else { "Car" }, car.name)),
+        Name::new(format!("{} {} {id}", if local { "Player car" } else { "Car" }, car.name)),
         MapEntity,
         MapId(id),
         control::Team(kind.team),
@@ -322,19 +357,20 @@ pub fn spawn_car(
     // `WeaponFactory`: a weapon of the car's own type or the map's, at
     // `WeaponPositon` (pixels, y down; the gun itself is drawn unscaled).
     // The player's preset for the player, the others' for the rest.
-    if let Some((kind, options)) = weapon_type(weapon, car.weapon.as_deref()).and_then(|w| crate::weapon::model::for_type(w, player)) {
+    if let Some((kind, options)) = weapon_type(weapon, car.weapon.as_deref()).and_then(|w| crate::weapon::model::for_type(w, local)) {
         let at = car.weapon_positon.map_or(Vec2::ZERO, |p| Vec2::new(p.x, -p.y) * px(1.0) * car.scale);
         let mut rng = <rand::rngs::SmallRng as rand::SeedableRng>::seed_from_u64(id as u64);
-        let mut gun = crate::weapon::Weapon::new(kind, options, at, size, player, &mut rng);
+        let mut gun = crate::weapon::Weapon::new(kind, options, at, size, local, &mut rng);
         // `CreateSimpleCar`: a static car with a gun the map names does not
         // aim into the walls beside it (`AdjustWeaponMaxAngle`).
         if static_body && weapon.is_some_and(|w| w != "None") {
             crate::weapon::max_angle::adjust(&mut gun, &map.grid, map.cell.0, position, angle, map.cell.0 * 2.5);
         }
         entity.insert(gun);
-        if player {
+        if local {
             entity.insert(crate::weapon::PlayerEnergy::default());
-        } else {
+        }
+        if !player {
             // The gun's loop (a Minigun's) sounds on the car.
             entity.insert(CarSounds::new(None, 0.0));
         }
@@ -344,6 +380,10 @@ pub fn spawn_car(
     } else {
         insert_simple_parts(&mut entity, car, radius, kind);
         crate::ai::set_control(&mut entity, control, id as u64);
+        if local {
+            let max_speed = if car.can_move { simple::SimpleDrive::new(car.speed, car.acceleration, car.controllability, radius).max_speed } else { 0.0 };
+            entity.insert((LocalPlayer, CameraTarget { radius, max_speed }));
+        }
     }
     entity.with_children(|parent| {
         if player {
