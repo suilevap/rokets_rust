@@ -80,8 +80,7 @@ along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
    gun, not only the player's, with the Railgun's bounces), `SetImmortal`
    and the `Immortal` shield, `HighlightEnemy` / `HighlightDeadEnemy`.
 3. Other `Players` of a map (AI-driven `Car`s: only the first is spawned),
-   their clones, `Local` simple cars (`DoorsDream1`, `MyGalaxy`: the player
-   drives a `SimpleCar`), `NoneLocal` cars' immunity out of the view, an AI
+   their clones, `NoneLocal` cars' immunity out of the view, an AI
    control on the player's own car (`SetControl(player, AiChaser)`).
 4. Check C#'s friction on cars: `ControlableEntity` sets
    `PhysicBody.Friction = 0` (`LinearDragCoefficientDefault`) after the

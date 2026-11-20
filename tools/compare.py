@@ -49,12 +49,14 @@ def total_seconds(script):
 def player(map_name):
     """The local player's id and heading, from the map."""
     xml = (ROOT / "assets/Maps/Singleplayer" / f"{map_name}.xml").read_text(encoding="utf-8-sig")
-    players = xml[xml.find("<Players>"):xml.find("</Players>")]
-    for item in re.findall(r"<Item>(.*?)</Item>", players, re.S):
-        if "<Control>Local</Control>" in item:
-            pid = int(re.search(r"<Id>(\d+)</Id>", item).group(1))
-            d = re.search(r"<DirectionDeg>([^<]+)</DirectionDeg>", item)
-            return pid, float(d.group(1)) if d else 0.0
+    # The `Players` car with the `Local` control, else the `SimpleCars` one.
+    for section in ("Players", "SimpleCars"):
+        cars = xml[xml.find(f"<{section}>"):xml.find(f"</{section}>")]
+        for item in re.findall(r"<Item>(.*?)</Item>", cars, re.S):
+            if "<Control>Local</Control>" in item and "<IsPrototype>true</IsPrototype>" not in item:
+                pid = int(re.search(r"<Id>(\d+)</Id>", item).group(1))
+                d = re.search(r"<DirectionDeg>([^<]+)</DirectionDeg>", item)
+                return pid, float(d.group(1)) if d else 0.0
     sys.exit(f"{map_name}: no local player")
 
 
