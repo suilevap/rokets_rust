@@ -125,7 +125,10 @@ fn spawn_gun_views(
         if children.is_some_and(|c| c.iter().any(|e| views.contains(e))) {
             continue;
         }
-        let def = sprite_of(gun.kind);
+        // The Zombie has no sprite.
+        let Some(def) = sprite_of(gun.kind) else {
+            continue;
+        };
         let Some(info) = map.sprites.get(def.name) else {
             continue;
         };

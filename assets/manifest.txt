@@ -388,6 +388,7 @@ Sprites/Particles/minigunTrail.png
 Sprites/Special/LaserLine.png
 Sprites/Special/LaserLine2.png
 Sprites/UI/AddealsButton.png
+Sprites/UI/BigCircle.png
 Sprites/UI/BigCircleAccelerator.png
 Sprites/UI/DottedCircle.png
 Sprites/UI/Equal.png

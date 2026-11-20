@@ -29,6 +29,8 @@ ITEMS = [
     # The aim line's strips.
     ("Sprites/Special", "LaserLine*.png", "Sprites/Special"),
     ("Sprites/Minimap", "*.png", "Sprites/Minimap"),
+    # The Zombie's wave ring (`CreateZombieCircleEffect`).
+    ("Sprites/UI", "BigCircle.png", "Sprites/UI"),
     ("Sprites", "Gradient*.png", "Sprites"),
     ("Sprites", "WhitePixel.png", "Sprites"),
     ("Sounds", "*.wav", "Sounds"),

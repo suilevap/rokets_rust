@@ -37,7 +37,6 @@ use crate::car::control::AutoAimVisible;
 use crate::content::actions::defs::{AIAdjustment, BoolSetterType, ControlType, SetControl};
 use crate::controls::{LocalPlayer, NoInput, PlayerIntent, is_players};
 use crate::weapon::Weapon;
-use crate::weapon::model::Kind;
 
 pub struct ControlActionsPlugin;
 
@@ -104,7 +103,7 @@ fn ai_adjustment(
         }
         if data.weapon_max_angle_deg >= 0.0
             && let Ok(mut gun) = guns.get_mut(e)
-            && gun.kind != Kind::Hammer
+            && gun.kind.is_complex()
         {
             gun.aim.max_angle = data.weapon_max_angle_deg.to_radians();
         }

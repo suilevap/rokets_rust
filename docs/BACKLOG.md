@@ -27,7 +27,7 @@ along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
      would need only ported nodes);
    - `SimpleFlocking`, `ZombieFlocking*`: `Flocking` (the flocking steering,
      with `GetFriends`), `FindNearestLeader`, `Leader` and `Traits` on the
-     blackboard, `ZombieWeapon`, `Weapon.CanShoot`, `GetFriends`, the
+     blackboard, `Weapon.CanShoot`, `GetFriends`, the
      `TakeDamage` state, `Drawer.Particles.CreateBip2` / the small teleport
      particle, a friend's blackboard reached from a tree (`Uii`);
    - `GuardAi`: `Emotion` (the `?` / `!` bubbles), `SeeTargetForward`,
@@ -74,11 +74,15 @@ along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
    `AITouchAndRunCarControl`, `PlayerCarControlPath`: no `ControlType`
    reaches them); a debug view of each car's path (`AiBlackboard.Draw`).
 2. **Weapons and enemy extras.** The other weapons (`PlasmaGun`, `Laser`,
-   `Tesla`, `Shotgun`, `Rocketlauncher*`, `ZombieWeapon`, `LaserWithDelay`:
+   `Tesla`, `Shotgun`, `Rocketlauncher*`, `LaserWithDelay`:
    `PeriodicFireControl`'s pre-fire uses its `ChargeTime`), the red aim
    line of a static or enemy gun (`LaserVisiblityUpdate`: drawn for every
    gun, not only the player's, with the Railgun's bounces), `SetImmortal`
    and the `Immortal` shield, `HighlightEnemy` / `HighlightDeadEnemy`.
+   The `ZombieWeapon` is in (`weapon/zombie.rs`, `stun`) but no control
+   fires it for an enemy yet: `ZombieFlocking*` stand idle, so only the
+   player's zombie (`Swarm`) waves, and a map's zombies drag and bite what is
+   near but do not hunt.
 3. Other `Players` of a map (AI-driven `Car`s: only the first is spawned),
    their clones, `NoneLocal` cars' immunity out of the view, an AI
    control on the player's own car (`SetControl(player, AiChaser)`).
