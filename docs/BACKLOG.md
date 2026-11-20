@@ -38,8 +38,7 @@ along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
      Sequence(MoveToPoint("Rnd"), Timer(2, Idle)))`; `SmartAttack` /
      `SmartAttackTarget` is the first version of `SmartAttackVer2` (it
      stands, fires and manoeuvres with no style choice: `Timer`s and
-     `Maneur` are ported, add the tree). `ChickenAi` = `PanicBehaviour`
-     (`panic_behaviour()` is ported: register it). `HammerAi*`:
+     `Maneur` are ported, add the tree). `HammerAi*`:
      `RemeberTargetPos` (`GetPredictionPosition`) and the Hammer tree.
      The Plasma gun and rocket launcher (`IsImmidiate` false) come with
      the weapons (`Kind::is_immediate`);

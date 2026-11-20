@@ -10,7 +10,7 @@ use bevy::math::Vec2;
 use bevy::prelude::Entity;
 use flatbt_bevy::prelude::*;
 use tilerider::ai::trees::{
-    SIMPLE_SCAN_DISTANCE, attacker_ai_ver2, move_in_one_direction_ai, simple_attack_nearest_enemy, simple_follow_by_enemy_ai,
+    SIMPLE_SCAN_DISTANCE, attacker_ai_ver2, move_in_one_direction_ai, panic_behaviour, simple_attack_nearest_enemy, simple_follow_by_enemy_ai,
 };
 use tilerider::ai::{AiBlackboard, Body, Foe, Gun, Navigation, Orders, tick_mode};
 use tilerider::content::map::MapData;
@@ -358,4 +358,17 @@ fn move_and_fire_in_init_direction_keeps_the_stick_and_gun_where_it_faced_and_fi
     assert!(car.orders.iter().skip(2).all(|o| o.move_dir == Some(Vec2::X) && o.aim_dir == Some(Vec2::X) && o.fire));
     // The first step gives no orders (the thinking pass starts the action).
     assert_eq!(car.orders[0], Orders::default());
+}
+
+#[test]
+fn a_chicken_hides_from_an_enemy_in_sight_unhurt() {
+    // `ChickenAi` is `PanicBehaviour` alone: no health check.
+    assert!(tilerider::ai::is_live("ChickenAi"));
+    let mut car = Car::new(panic_behaviour, World::new(TWO_ROOMS), at(1.0, 1.0));
+    car.others = vec![enemy(1, at(3.0, 3.0))];
+    car.run(1.0);
+    assert!(car.path().contains("Hide"), "{}", car.path());
+    car.run(4.0);
+    assert!(car.pos.distance(at(1.0, 1.0)) > 3.0, "{}", car.pos);
+    assert!(car.orders.iter().all(|o| !o.fire));
 }

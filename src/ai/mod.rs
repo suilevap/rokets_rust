@@ -135,7 +135,7 @@
 //! the nodes not yet ported (`docs/BACKLOG.md` says which node each needs):
 //! `Ai`, `AiFriend`, `AiSimpleTurretFriendFireAvailableTarget`, `GuardAi`,
 //! `SupportAi*`, `OrderExecutor*`, `CaptureTheBox*`, `AttackAi`,
-//! `AttackAiFriend`, `HammerAi*`, `ChickenAi`, `ChaserTargetFromLocalVariable`. Cars with those stand idle, as
+//! `AttackAiFriend`, `HammerAi*`, `ChaserTargetFromLocalVariable`. Cars with those stand idle, as
 //! before, and `AIAdjustment` sets only their team. `AITurret` and
 //! `AISimpleCarControl` are not reached by any `ControlType`;
 //! `AIPathCarControl` (the base of `AISimpleCarControl`,
@@ -252,6 +252,7 @@ pub fn set_control(car: &mut EntityCommands, control: &str, seed: u64) {
         .stop_behavior(trees::follow_path_ai_safe)
         .stop_behavior(trees::go_to_enemy_simple_prediction_position)
         .stop_behavior(trees::attacker_ai_ver2)
+        .stop_behavior(trees::panic_behaviour)
         .stop_behavior(trees::simple_attack_nearest_enemy)
         .stop_behavior(trees::simple_follow_by_enemy_ai)
         .stop_behavior(trees::move_in_one_direction_ai)
@@ -283,6 +284,10 @@ pub fn set_control(car: &mut EntityCommands, control: &str, seed: u64) {
         }
         "AttackAiVer2" => {
             car.insert((brain, Behavior::for_tree(trees::attacker_ai_ver2)));
+        }
+        // `ChickenAi` is `PanicBehaviour` alone: hide from an enemy in sight.
+        "ChickenAi" => {
+            car.insert((brain, Behavior::for_tree(trees::panic_behaviour)));
         }
         "SimpleAttackNearestEnemy" => {
             brain.scan_distance = trees::SIMPLE_SCAN_DISTANCE;
@@ -333,6 +338,7 @@ pub fn is_live(control: &str) -> bool {
             | "MoveByPathSafelyFriend"
             | "GoToEnemySimplePredictionPosition"
             | "AttackAiVer2"
+            | "ChickenAi"
             | "SimpleAttackNearestEnemy"
             | "SimpleFollowByEnemyAi"
             | "MoveAndFireInInitDirection"
