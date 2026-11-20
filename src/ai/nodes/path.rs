@@ -12,6 +12,8 @@
 //!   `MoveByPath`). Starts if there is one.
 //! - [`MoveToPoint`]: asks the navigation for a path to a point the tree names
 //!   (`GoToPosition`) when it starts, then follows it as `MoveBase`.
+//! - [`MoveToRandomVisiblePosition`]: the same, the point picked at random
+//!   near a place the tree names (`GetRandomFreeVisiblePoint`).
 //! - [`FollowBy`]: the same, and keeps the path up as the point moves: while
 //!   the path is under two seconds old and the point has gone less than 6
 //!   from its end, it is extended to the point once the point is more than
@@ -40,8 +42,10 @@ use flatbt::BtAction;
 use crate::ai::blackboard::AiBlackboard;
 use crate::ai::orders::Orders;
 
-/// What a position function reads off the blackboard.
-pub type PositionFn = fn(&AiBlackboard) -> Vec2;
+/// What a position function reads off the blackboard, and may pick at
+/// random from (`positionFunc`: `GetRandomNodePosition`,
+/// `GetRandomFreeNonVisiblePoint`, … draw on the car's random stream).
+pub type PositionFn = fn(&mut AiBlackboard) -> Vec2;
 
 /// `VectorExtension.CloserThan`.
 fn closer_than(a: Vec2, b: Vec2, distance: f32) -> bool {
@@ -205,6 +209,11 @@ impl MoveToPoint {
     pub fn new(position: PositionFn) -> MoveToPoint {
         MoveToPoint { position, params: MoveParams::default() }
     }
+
+    /// `MoveToPoint(…, speedRate, minDistanceToTarget)`.
+    pub fn with_params(position: PositionFn, speed_rate: f32, min_dist: f32) -> MoveToPoint {
+        MoveToPoint { position, params: MoveParams { speed_rate, min_dist } }
+    }
 }
 
 impl BtAction<AiBlackboard, Orders> for MoveToPoint {
@@ -212,6 +221,53 @@ impl BtAction<AiBlackboard, Orders> for MoveToPoint {
 
     fn start(&self, bb: &mut AiBlackboard, _: ()) -> Option<()> {
         let pos = (self.position)(bb);
+        go_to_position(bb, pos).then_some(())
+    }
+
+    fn is_in_progress(&self, _: &(), bb: &AiBlackboard, _: ()) -> bool {
+        in_progress(bb, self.params)
+    }
+
+    fn tick(&self, _: &mut (), bb: &mut AiBlackboard, _: ()) -> Orders {
+        tick(bb, self.params)
+    }
+
+    fn complete(&self, _: &mut (), bb: &mut AiBlackboard, _: ()) -> bool {
+        complete(bb, self.params)
+    }
+}
+
+/// `MoveToRandomVisiblePosition(posFunc, distanceFunc, speedRate,
+/// minDistanceToTarget)`: [`MoveToPoint`] to a spot picked when it starts, at
+/// most `distance` from `around` and in sight of it (or within the room
+/// there): `GetRandomFreeVisiblePoint(around, distance)`. It fails to start
+/// when no path leads to the spot, or the pick was no point (the origin).
+#[derive(Clone, Copy)]
+pub struct MoveToRandomVisiblePosition {
+    /// `posFunc`: the place the spot is picked near.
+    pub around: fn(&AiBlackboard) -> Vec2,
+    /// `distanceFunc`: how far from it at most.
+    pub distance: fn(&AiBlackboard) -> f32,
+    pub params: MoveParams,
+}
+
+impl MoveToRandomVisiblePosition {
+    pub fn new(
+        around: fn(&AiBlackboard) -> Vec2,
+        distance: fn(&AiBlackboard) -> f32,
+        speed_rate: f32,
+        min_dist: f32,
+    ) -> MoveToRandomVisiblePosition {
+        MoveToRandomVisiblePosition { around, distance, params: MoveParams { speed_rate, min_dist } }
+    }
+}
+
+impl BtAction<AiBlackboard, Orders> for MoveToRandomVisiblePosition {
+    type State = ();
+
+    fn start(&self, bb: &mut AiBlackboard, _: ()) -> Option<()> {
+        let (around, distance) = ((self.around)(bb), (self.distance)(bb));
+        let pos = bb.random_free_visible_point(around, distance);
         go_to_position(bb, pos).then_some(())
     }
 

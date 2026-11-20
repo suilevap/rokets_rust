@@ -5,4 +5,5 @@ pub mod colliders;
 pub mod grid;
 pub mod nav;
 pub mod spawn;
+pub mod terrain;
 pub mod templates;

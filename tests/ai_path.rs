@@ -124,6 +124,7 @@ impl<B: TreeBuilder<AiBlackboard, Orders> + Copy> Car<B> {
                 complex: true,
                 max_angle: 1.0,
                 range: FireRange { from: self.pos, direction: toward.to_angle(), range: MINIGUN.range, dispersion: MINIGUN.dispersion },
+                immediate: true,
             }
         });
         let body = Body {
@@ -135,6 +136,9 @@ impl<B: TreeBuilder<AiBlackboard, Orders> + Copy> Car<B> {
             radius: 1.0,
             can_move: true,
             stick: self.stick,
+            health: 12,
+            max_health: 12,
+            shield: 0,
         };
         self.bb.gather(DT, self.act.is_some(), body, &self.others, &blocked);
         let mode = self.bb.tick.entry_mode().expect("gathered");
@@ -240,7 +244,7 @@ fn a_car_with_no_path_only_runs_its_trigger_and_does_not_move_or_fire() {
 }
 
 fn foe(n: u32, team: u8, x: f32, y: f32) -> Foe {
-    Foe { entity: id(n), team, pos: Vec2::new(x, y), vel: Vec2::ZERO, radius: 1.0 }
+    Foe { entity: id(n), team, pos: Vec2::new(x, y), vel: Vec2::ZERO, radius: 1.0, weapon_range: None }
 }
 
 #[test]

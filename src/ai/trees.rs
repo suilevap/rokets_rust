@@ -92,10 +92,123 @@
 //! the selector stops at the first success. A car with no path therefore does
 //! nothing but run its trigger action (once), and does not even fire.
 //!
+//! The small trees of `AiControlFactory`'s other simple controls:
+//!
+//! ```text
+//! C#                                              Rust
+//! SimpleAttackNearestEnemy =                      simple_attack_nearest_enemy() =
+//!   bt.Selector(SimpleAttack, bt.Idle)              select((simple_attack(), action(Idle)))
+//!   (ScanDistance = 20)
+//! SimpleFollowByEnemyAi =                         simple_follow_by_enemy_ai() =
+//!   bt.Selector("SimpleFollowByEnemy",              select((
+//!     bt.Sequence("FindAndFollow",                    seq((action(FindNearestEnemy),
+//!       FindNearestEnemy,                                   action(SimpleFollowByTarget(0.2)))),
+//!       SimpleFollowByTarget(0.2f)),                  action(Idle),
+//!     bt.Idle)                                      ))
+//!   (ScanDistance = 20)
+//! MoveInOneDirectionAi =                          move_in_one_direction_ai() =
+//!   bt.Action("MoveToInitDirection",                action(MoveInInitDirection)
+//!     b => { ActionData = DirectionVector; true },    (start: the heading; tick: stick and
+//!     b => true,                                       gun that way, trigger down)
+//!     b => { axis = weapon axis = ActionData;
+//!            Fire = Shoot; })
+//! ```
+//!
+//! `AttackerAiVer2` (`AttackAiVer2`), with the subtrees it is made of:
+//!
+//! ```text
+//! C#                                              Rust
+//! StopAction =                                    stop() = action(Stop)
+//!   bt.Action("Stop", b => { b.Path = null;         (the path dropped, the stick let go;
+//!     CurrentAxisControl = Zero; return true; })     over at once)
+//!
+//! Maneur(p) =                                     maneur(p) =
+//!   bt.All("Maneur",                                action(all((
+//!     MoveToRandomVisiblePosition(                    MoveToRandomVisiblePosition(
+//!       b => b.LastKnowTargetPosition,                  last known target position,
+//!       b => b.Entity.Weapon.Range * 0.8f,              gun range * 0.8,
+//!       1.0f, 2.0f),                                    1.0, 2.0),
+//!     bt.Optional(FireToTarget(p)))                   optional(FireToTarget(p)))))
+//! ManeurOnDamage(p) =                             maneur_on_damage(p) =
+//!   bt.Sequence(                                    seq((
+//!     bt.Condition(b => CheckState(TakeDamage)),      check(took damage),
+//!     Maneur(p))                                      maneur(p)))
+//!
+//! SmartAttackTargetImmidiateWeapon =              smart_attack_target_immediate_weapon() =
+//!   bt.Selector("ImmidiateWeapon",                  select((
+//!     ManeurOnDamage(-1f),                            maneur_on_damage(-1),
+//!     bt.Sequence(                                    seq((
+//!       bt.Condition(Weapon.IsImmidiate),               check(gun is immediate),
+//!       StopAction,                                     stop(),
+//!       AimToTarget(0, 0),                              action(AimToTarget(0, 0)),
+//!       AimToTarget(0, 0.5f),                           action(AimToTarget(0, 0.5)),
+//!       Timer(1.0f, FireToTarget(-0.5f)),               timer(1, action(FireToTarget(-0.5))),
+//!       Timer(0.5f, FireToTarget(0.0f)),                timer(0.5, action(FireToTarget(0))),
+//!       Maneur(-1))))                                   maneur(-1),
+//! SmartAttackTargetSlowWeapon =                   smart_attack_target_slow_weapon() =
+//!   bt.Selector("SlowWeapon",                       select((
+//!     ManeurOnDamage(-0.5f),                          maneur_on_damage(-0.5),
+//!     bt.Sequence(                                    seq((
+//!       bt.Condition(!Weapon.IsImmidiate),              check(gun is not immediate),
+//!       StopAction,                                     stop(),
+//!       Timer(1.0f, FireToTarget(-0.5f)),               timer(1, action(FireToTarget(-0.5))),
+//!       Timer(0.5f, FireToTarget(0.0f)),                timer(0.5, action(FireToTarget(0))),
+//!       Maneur(-0.5f))))                                maneur(-0.5),
+//! SmartAttackTargetVer2 =                         smart_attack_target_ver2() =
+//!   bt.Selector("A",                                select((
+//!     bt.Sequence("Fire",                             seq((
+//!       bt.Condition("DistAndVis",                      check(target alive and in sight now and
+//!         Target != null && Weapon != null &&                 within the gun's range),
+//!         Target.Alive && SeeTarget &&                  select((immediate, slow)),
+//!         CloserThanByChebyshev(Target.Position,      )),
+//!           Entity.Position, Weapon.Range)),          action(FollowBy(last known target position)),
+//!       bt.Selector(Immidiate, Slow)),                ))
+//!     bt.Sequence("Follow",
+//!       FollowBy(b => b.LastKnowTargetPosition)))     (a Sequence of one child is the child)
+//! SmartAttackVer2 =                               smart_attack_ver2() =
+//!   bt.Sequence("Attack",                           seq((action(FindNearestEnemy),
+//!     FindNearestEnemy, SmartAttackTargetVer2)        smart_attack_target_ver2()))
+//!
+//! HideMove =                                      hide_move() =
+//!   MoveToPoint("Hide", b =>                        action(MoveToPoint(
+//!     GetRandomFreeNonVisiblePoint(                   random free non visible point(
+//!       Entity.Position, Target.Position,               own position, target's position,
+//!       Target.Weapon != null                           target's gun range * 1.25, or 32
+//!         ? Target.Weapon.Range * 1.25f : 32))          without a gun)))
+//! PanicBehaviour =                                panic_behaviour() =
+//!   bt.Sequence("PanicBehaviour",                   seq((
+//!     FindNearestEnemy,                               action(FindNearestEnemy),
+//!     bt.Condition("EnemyVisible", Target != null     check(target alive, in sight now or in 0.5 s),
+//!       && Target.Alive &&                            hide_move(),
+//!       CheckState(SeeTarget | WillSeeTarget)),       stop(),
+//!     HideMove, StopAction)                         ))
+//!
+//! AttackerAiVer2 =                                attacker_ai_ver2() =
+//!   bt.Selector("AttackerAiVer2",                   select((
+//!     bt.Sequence("Panic",                            seq((
+//!       bt.Condition("CheckHelath",                     check(health < max health / 2 (whole
+//!         Health < MaxHealth / 2 &&                           numbers) and took damage and
+//!         CheckState(TakeDamage) &&                           the target is alive),
+//!         Target != null && Target.Alive),              panic_behaviour(),
+//!       PanicBehaviour),                              )),
+//!     SmartAttackVer2,                                smart_attack_ver2(),
+//!     bt.Sequence("MoveToRandom",                     seq((
+//!       MoveToPoint("Rnd",                              action(MoveToPoint(
+//!         GetRandomNodePosition(                          random node position(own position,
+//!           Entity.Position, ScanDistance * 4),             ScanDistance * 4), 0.5, 4)),
+//!         0.5f, 4),                                     timer(2, action(Idle)),
+//!       Timer(2.0f, bt.Idle)))                        )),
+//!                                                   ))
+//! ```
+//!
+//! Where a `Sequence` or `Selector` has one child C#'s `BTBuilder` returns the
+//! child: `SmartAttackTargetVer2`'s `Follow` is the `FollowBy` itself.
+//!
 //! Not ported here: every other tree of `BTActionFactory` (`SimpleAttackDelayPos`,
-//! `Attack`, `SimpleAi`, `GuardAi`, … the ones with the nodes not
-//! yet ported: see `docs/BACKLOG.md`), and `TurretAiFireToAnyone`
-//! (`AiSimpleTurretFriendFireAvailableTarget`:
+//! `Attack`, `SimpleAi`, `GuardAi`, `SmartAttack` (`AttackAi`'s: the
+//! first version of the smart attack, which `AttackAiVer2` replaced), … the
+//! ones with the nodes not yet ported: see `docs/BACKLOG.md`), and
+//! `TurretAiFireToAnyone` (`AiSimpleTurretFriendFireAvailableTarget`:
 //! `SimpleAttackByAngle`, `FindAngleNearestEnemy`, `TryFireToAnyone`), which no
 //! map uses.
 
@@ -103,9 +216,11 @@ use flatbt_bevy::prelude::*;
 
 use super::blackboard::AiBlackboard;
 use super::nodes::{
-    FindNearestEnemy, FireToTarget, FollowBy, Idle, MoveBase, MoveTowardsTargetNoPath, MoveToPoint, Runaway, Scanning,
-    SimpleFollowByTarget, Sleep, TriggerMapAction, TryFireToAnyone, all, optional, quiet_start, timer, while_target_alive,
+    AimToTarget, FindNearestEnemy, FireToTarget, FollowBy, Idle, MoveBase, MoveInInitDirection, MoveTowardsTargetNoPath,
+    MoveToPoint, MoveToRandomVisiblePosition, Runaway, Scanning, SimpleFollowByTarget, Sleep, Stop, TriggerMapAction,
+    TryFireToAnyone, all, optional, quiet_start, timer, while_target_alive,
 };
+use crate::weapon::model::closer_by_chebyshev;
 use super::orders::Orders;
 
 /// `SimpleAttackTarget(0.2f)`: how far ahead of the target the turret aims, s.
@@ -122,6 +237,24 @@ pub const GO_TO_ENEMY_PREDICT: f32 = 0.6;
 /// `AiControlFactory`'s `AiChaser`: `ScanDistance = World.RoomSize.Width +
 /// World.RoomSize.Height` (800 × 4 and 480 × 4 sim units): the whole map.
 pub const CHASER_SCAN_DISTANCE: f32 = 800.0 * 4.0 + 480.0 * 4.0;
+
+/// `AiControlFactory`'s `SimpleAttackNearestEnemy` and `SimpleFollowByEnemyAi`:
+/// `ScanDistance = 20`.
+pub const SIMPLE_SCAN_DISTANCE: f32 = 20.0;
+/// `Maneur`: how far from where the target was last seen the car goes, in
+/// gun ranges (`Weapon.Range * 0.8f`).
+pub const MANEUR_RANGE_RATE: f32 = 0.8;
+/// `HideMove`: how far from the target's gun the car hides, in its ranges
+/// (`Target.Weapon.Range * 1.25f`), and how far when it has none.
+pub const HIDE_RANGE_RATE: f32 = 1.25;
+pub const HIDE_RANGE_NO_GUN: f32 = 32.0;
+/// `AttackerAiVer2`'s `MoveToPoint("Rnd", …, 0.5f, 4)`: the speed rate, how
+/// near is near enough, and how far a random node may be, in `ScanDistance`s.
+pub const RANDOM_MOVE_SPEED_RATE: f32 = 0.5;
+pub const RANDOM_MOVE_MIN_DIST: f32 = 4.0;
+pub const RANDOM_MOVE_RANGE_RATE: f32 = 4.0;
+/// `AttackerAiVer2`'s `Timer(2.0f, bt.Idle)`, s.
+pub const RANDOM_MOVE_REST: f32 = 2.0;
 
 /// `BTActionFactory.SimpleAttackTarget`: fires at the target while steering
 /// at it, with the gun's aim `predict_sec` ahead of it.
@@ -215,4 +348,177 @@ pub fn follow_path_ai_safe() -> impl BehaviorNode<AiBlackboard, Orders> {
 /// straight at where it will be.
 pub fn go_to_enemy_simple_prediction_position() -> impl BehaviorNode<AiBlackboard, Orders> {
     seq((action(FindNearestEnemy), action(quiet_start(MoveTowardsTargetNoPath::new(GO_TO_ENEMY_PREDICT))))).named("FindAndFollow")
+}
+
+/// `BTActionFactory.SimpleAttackNearestEnemy`: attack, else idle.
+pub fn simple_attack_nearest_enemy() -> impl BehaviorNode<AiBlackboard, Orders> {
+    select((simple_attack(), action(quiet_start(Idle)).named("Idle"))).named("SimpleAttackNearestEnemy")
+}
+
+/// `BTActionFactory.SimpleFollowByEnemyAi`: find an enemy and follow it (no
+/// path, no fire), else idle.
+pub fn simple_follow_by_enemy_ai() -> impl BehaviorNode<AiBlackboard, Orders> {
+    select((
+        seq((action(FindNearestEnemy), action(quiet_start(SimpleFollowByTarget::new(AIM_AHEAD))))).named("FindAndFollow"),
+        action(quiet_start(Idle)).named("Idle"),
+    ))
+    .named("SimpleFollowByEnemy")
+}
+
+/// `BTActionFactory.MoveInOneDirectionAi`: the way the car faced at the start,
+/// the stick and the gun that way and the trigger down.
+pub fn move_in_one_direction_ai() -> impl BehaviorNode<AiBlackboard, Orders> {
+    action(quiet_start(MoveInInitDirection)).named("MoveToInitDirection")
+}
+
+/// `BTActionFactory.StopAction`.
+pub fn stop() -> impl BehaviorNode<AiBlackboard, Orders> {
+    action(Stop).named("Stop")
+}
+
+/// `BTActionFactory.Maneur(predictionSec)`: go to a random place in sight of
+/// where the target was last seen, within 0.8 gun ranges of it, firing at the
+/// target meanwhile if it can be seen.
+pub fn maneur(predict_sec: f32) -> impl BehaviorNode<AiBlackboard, Orders> {
+    action(quiet_start(all((
+        MoveToRandomVisiblePosition::new(
+            |bb| bb.last_known_target_position,
+            |bb| bb.gun.map_or(0.0, |gun| gun.range.range * MANEUR_RANGE_RATE),
+            1.0,
+            2.0,
+        ),
+        optional(FireToTarget::new(predict_sec)),
+    ))))
+    .named("Maneur")
+}
+
+/// `BTActionFactory.ManeurOnDamage(predictionSec)`: [`maneur`], but only when
+/// the car lost health or shield since it last thought.
+pub fn maneur_on_damage(predict_sec: f32) -> impl BehaviorNode<AiBlackboard, Orders> {
+    seq((check(|bb: &AiBlackboard| bb.took_damage()).named("CheckDamage"), maneur(predict_sec))).named("ManeurOnDamage")
+}
+
+/// `BTActionFactory.SmartAttackTargetImmidiateWeapon`: for a gun whose shot
+/// arrives at once: stand, turn the car and the gun on the target, fire for
+/// a second at where the target was half a second ago (the prediction is
+/// negative: aimed behind it) and for half a second at where it is, then go
+/// to another place.
+pub fn smart_attack_target_immediate_weapon() -> impl BehaviorNode<AiBlackboard, Orders> {
+    select((
+        maneur_on_damage(-1.0),
+        seq((
+            check(|bb: &AiBlackboard| bb.gun.is_some_and(|gun| gun.immediate)).named("CheckWeaponType"),
+            stop(),
+            action(quiet_start(AimToTarget::new(0.0, 0.0))).named("AimToTarget"),
+            action(quiet_start(AimToTarget::new(0.0, 0.5))).named("AimToTarget"),
+            timer(1.0, action(quiet_start(FireToTarget::new(-0.5))).named("FireToTarget")).named("Timer_1s"),
+            timer(0.5, action(quiet_start(FireToTarget::new(0.0))).named("FireToTarget")).named("Timer_0.5s"),
+            maneur(-1.0),
+        ))
+        .named("SmartAttackTargetImmidiateWeapon"),
+    ))
+    .named("ImmidiateWeapon")
+}
+
+/// `BTActionFactory.SmartAttackTargetSlowWeapon`: for a gun whose shot flies:
+/// stand and fire (no aiming turn), then go to another place.
+pub fn smart_attack_target_slow_weapon() -> impl BehaviorNode<AiBlackboard, Orders> {
+    select((
+        maneur_on_damage(-0.5),
+        seq((
+            check(|bb: &AiBlackboard| bb.gun.is_some_and(|gun| !gun.immediate)).named("CheckWeaponType"),
+            stop(),
+            timer(1.0, action(quiet_start(FireToTarget::new(-0.5))).named("FireToTarget")).named("Timer_1s"),
+            timer(0.5, action(quiet_start(FireToTarget::new(0.0))).named("FireToTarget")).named("Timer_0.5s"),
+            maneur(-0.5),
+        ))
+        .named("SmartAttackTargetSlowWeapon"),
+    ))
+    .named("SlowWeapon")
+}
+
+/// `DistAndVis`: the target is alive, in sight now, and within the gun's
+/// range on both axes (a car with no gun never).
+fn target_in_range_and_sight(bb: &AiBlackboard) -> bool {
+    match (bb.live_target(), bb.gun) {
+        (Some(target), Some(gun)) => bb.sees_target() && closer_by_chebyshev(target.pos, bb.pos, gun.range.range),
+        _ => false,
+    }
+}
+
+/// `BTActionFactory.SmartAttackTargetVer2`: in range and in sight, attack in
+/// the style the gun asks for; otherwise go to where the target was last
+/// seen.
+pub fn smart_attack_target_ver2() -> impl BehaviorNode<AiBlackboard, Orders> {
+    select((
+        seq((
+            check(target_in_range_and_sight).named("DistAndVis"),
+            select((smart_attack_target_immediate_weapon(), smart_attack_target_slow_weapon())).named("ChooseAttackStyle"),
+        ))
+        .named("Fire"),
+        action(quiet_start(FollowBy::new(|bb| bb.last_known_target_position))).named("Follow"),
+    ))
+    .named("A")
+}
+
+/// `BTActionFactory.SmartAttackVer2`: find an enemy, then attack it smartly.
+pub fn smart_attack_ver2() -> impl BehaviorNode<AiBlackboard, Orders> {
+    seq((action(FindNearestEnemy), smart_attack_target_ver2())).named("Attack")
+}
+
+/// `BTActionFactory.HideMove`: go to a free place out of the target's sight,
+/// or out of reach of its gun (1.25 ranges).
+pub fn hide_move() -> impl BehaviorNode<AiBlackboard, Orders> {
+    action(quiet_start(MoveToPoint::new(|bb| {
+        let Some(target) = bb.live_target().copied() else {
+            return bevy::math::Vec2::ZERO;
+        };
+        let range = target.weapon_range.map_or(HIDE_RANGE_NO_GUN, |range| range * HIDE_RANGE_RATE);
+        let own = bb.pos;
+        bb.random_free_non_visible_point(own, target.pos, range)
+    })))
+    .named("Hide")
+}
+
+/// `BTActionFactory.PanicBehaviour` (`ChickenAi` is this alone): find an
+/// enemy and, if it can see the car (or will in 0.5 s), hide from it.
+pub fn panic_behaviour() -> impl BehaviorNode<AiBlackboard, Orders> {
+    seq((
+        action(FindNearestEnemy),
+        check(|bb: &AiBlackboard| bb.live_target().is_some() && bb.can_see_target()).named("EnemyVisible"),
+        hide_move(),
+        stop(),
+    ))
+    .named("PanicBehaviour")
+}
+
+/// `BTActionFactory.AttackerAiVer2` (`AttackAiVer2`): hide when under half
+/// health and being hit; otherwise attack the nearest enemy; with none, walk
+/// to a random place and rest there two seconds.
+pub fn attacker_ai_ver2() -> impl BehaviorNode<AiBlackboard, Orders> {
+    select((
+        seq((
+            check(|bb: &AiBlackboard| {
+                bb.health < bb.max_health / 2 && bb.took_damage() && bb.live_target().is_some()
+            })
+            .named("CheckHelath"),
+            panic_behaviour(),
+        ))
+        .named("Panic"),
+        smart_attack_ver2(),
+        seq((
+            action(quiet_start(MoveToPoint::with_params(
+                |bb| {
+                    let (own, range) = (bb.pos, bb.scan_distance * RANDOM_MOVE_RANGE_RATE);
+                    bb.random_node_position(own, range)
+                },
+                RANDOM_MOVE_SPEED_RATE,
+                RANDOM_MOVE_MIN_DIST,
+            )))
+            .named("Rnd"),
+            timer(RANDOM_MOVE_REST, action(quiet_start(Idle)).named("Idle")).named("Timer_2s"),
+        ))
+        .named("MoveToRandom"),
+    ))
+    .named("AttackerAiVer2")
 }
