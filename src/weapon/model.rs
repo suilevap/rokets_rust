@@ -871,6 +871,11 @@ impl<T: Copy + PartialEq> Zombie<T> {
         }
     }
 
+    /// `CanShoot`'s reload: the wave would go off now (the energy aside).
+    pub fn reloaded(&self) -> bool {
+        due(self.reload_in)
+    }
+
     /// `_checkEnemy.NeedUpdate`: whether it is time to look again (asked once
     /// a step; true at once, then every [`ZOMBIE_CHECK_PERIOD`]).
     pub fn needs_check(&mut self) -> bool {

@@ -13,7 +13,8 @@ for `AiSimpleTurret` / `AiSimpleTurretFriend` (`TurretAi`), `AiChaser`
 (`ChaserAi`), `MoveByPath` / `MoveByPathFriend` / `MoveByPathSafelyFriend`
 (`FollowPathAi`, `FollowPathAiSafe`), `GoToEnemySimplePredictionPosition`
 (all flatbt trees), `AttackAiVer2`, `SimpleAttackNearestEnemy`,
-`SimpleFollowByEnemyAi`, `MoveAndFireInInitDirection`, `AlwaysShoot` and
+`SimpleFollowByEnemyAi`, `MoveAndFireInInitDirection`, `ZombieFlocking`,
+`ZombieFlockingFriend`, `SimpleFlocking`, `AlwaysShoot` and
 `ShootPattern`; every other
 `ControlType` that is an `AIBTBaseControl` stands idle until the next slice.
 The navigation (`map/nav`: `NavGraph`, `NavPath`) and the nodes that drive
@@ -25,19 +26,14 @@ along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
    - `Ai` / `AiFriend` (`GameMode.GetAi`: check which tree the single-player
      mode gives; `SimpleAi` = `Selector(Attack, MoveBase, SimpleScanning)`
      would need only ported nodes);
-   - `SimpleFlocking`, `ZombieFlocking*`: `Flocking` (the flocking steering,
-     with `GetFriends`), `FindNearestLeader`, `Leader` and `Traits` on the
-     blackboard, `Weapon.CanShoot`, `GetFriends`, the
-     `TakeDamage` state, `Drawer.Particles.CreateBip2` / the small teleport
-     particle, a friend's blackboard reached from a tree (`Uii`);
    - `GuardAi`: `Emotion` (the `?` / `!` bubbles), `SeeTargetForward`,
      `PatrolAction` (`MoveToPoint` to `Entity.StartPosition` — the car's start
      — then `PatrolPath` as the `Path`; `SetPath` already stores it),
      `AlwaysTryShoot`, `MoveToRandomVisiblePosition`
      (`GetRandomFreeVisiblePoint`, `RandomHelper.NextVector2Fake`);
    - `SupportAi*`, `OrderExecutor*`: `ExecuteOrders`, `OrdersManager`,
-     `FollowLeader`, `FindNearestLeader`, `Leader.Control.LocalDevice`,
-     `SmartAttack` (below);
+     `FollowLeader`, `SmartAttack` (below); `FindNearestLeader`, the
+     `Leader` and the friends (`Mate`) are in with the zombies;
    - `AttackAi` (`AttackAiFriend`): `AttackerAi` = `Selector(SmartAttack,
      Sequence(MoveToPoint("Rnd"), Timer(2, Idle)))`; `SmartAttack` /
      `SmartAttackTarget` is the first version of `SmartAttackVer2` (it
@@ -64,8 +60,12 @@ along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
    `.parallel()` once the blackboard is the only thing a tree touches (the
    port runs single-threaded on the web).
    `GetPredictionPosition` corrects a prediction that lands in a wall
-   (`GetNearestFreePoint`: the first 16 of the map's free points): not ported,
-   decide it with the free points.
+   (`GetNearestFreePoint`: the first 16 of the map's free points): done for
+   the zombies' leader (`AiBlackboard::prediction_position`), not yet for
+   the targets (`SimpleFollowByTarget`, `WillSeeTarget`): use it there.
+   The `Boid` collision category (`Flocking` on a car under half a unit of
+   radius: such cars pass through each other) waits for collision layers
+   and a map with such a car.
    **Navigation, left open:** a door shoved open by a car does not open
    its navigation links (C# opened them from `OpenDoor()` only too);
    fake walls are free in C#'s distance field (the port has no fake walls
@@ -79,10 +79,6 @@ along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
    line of a static or enemy gun (`LaserVisiblityUpdate`: drawn for every
    gun, not only the player's, with the Railgun's bounces), `SetImmortal`
    and the `Immortal` shield, `HighlightEnemy` / `HighlightDeadEnemy`.
-   The `ZombieWeapon` is in (`weapon/zombie.rs`, `stun`) but no control
-   fires it for an enemy yet: `ZombieFlocking*` stand idle, so only the
-   player's zombie (`Swarm`) waves, and a map's zombies drag and bite what is
-   near but do not hunt.
 3. Other `Players` of a map (AI-driven `Car`s: only the first is spawned),
    their clones, `NoneLocal` cars' immunity out of the view, an AI
    control on the player's own car (`SetControl(player, AiChaser)`).

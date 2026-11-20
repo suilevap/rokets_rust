@@ -27,13 +27,17 @@
 //! | [`Runaway`] | the `Runaway` action of `BTActionFactory.FollowPathAiSafe` |
 //! | [`Idle`] | `BTBuilder.Idle` |
 //! | [`Scanning`] | the `Scanning` action of `BTActionFactory.SimpleScanning` |
+//! | [`Flocking`] | `BTActions/Flocking` |
+//! | [`FindNearestLeader`] | `BTActions/FindNearestLeader` |
+//! | [`Power`], [`FireNow`], [`AlertFriends`] | the `Power`, `Fire!` and `Uii` actions of `BTActionFactory.ZombieFlocking` |
 //!
-//! The rest of `BTActions/` (`Flocking`, `ExecuteOrders`, `FindAngleNearestEnemy`,
-//! `FindNearestLeader`, `GetTargetFromVariables`, the chain gadget ones, …)
+//! The rest of `BTActions/` (`ExecuteOrders`, `FindAngleNearestEnemy`,
+//! `GetTargetFromVariables`, the chain gadget ones, …)
 //! comes with the trees that use it (`docs/BACKLOG.md` lists which).
 
 mod actions;
 mod condition;
+mod flocking;
 mod optional;
 mod parallel;
 mod path;
@@ -43,6 +47,7 @@ pub use actions::{
     AimToTarget, FindNearestEnemy, FireToTarget, Idle, MoveInInitDirection, MoveTowardsTargetNoPath, Runaway, Scanning,
     SimpleFollowByTarget, Sleep, Stop, TriggerMapAction, TryFireToAnyone,
 };
+pub use flocking::{AlertFriends, FindNearestLeader, FireNow, FlockState, Flocking, Power, TargetFn};
 pub use condition::{DecoratorCondition, WhileState, decorator_condition, timer, while_target_alive};
 pub use optional::{Optional, optional, optional_required};
 pub use parallel::{All, all};
