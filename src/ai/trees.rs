@@ -259,63 +259,57 @@ pub const RANDOM_MOVE_REST: f32 = 2.0;
 /// `BTActionFactory.SimpleAttackTarget`: fires at the target while steering
 /// at it, with the gun's aim `predict_sec` ahead of it.
 pub fn simple_attack_target(predict_sec: f32) -> impl BehaviorNode<AiBlackboard, Orders> {
-    select((
-        action(quiet_start(all((FireToTarget::new(predict_sec), SimpleFollowByTarget::new(predict_sec))))).named("Fire"),
+    named("A", select((
+        named("Fire", action(quiet_start(all((FireToTarget::new(predict_sec), SimpleFollowByTarget::new(predict_sec)))))),
         action(quiet_start(FireToTarget::new(predict_sec))),
-    ))
-    .named("A")
+    )))
 }
 
 /// `BTActionFactory.SimpleAttack`: find an enemy, then attack it.
 pub fn simple_attack() -> impl BehaviorNode<AiBlackboard, Orders> {
-    seq((action(FindNearestEnemy), simple_attack_target(AIM_AHEAD))).named("Attack")
+    named("Attack", seq((action(FindNearestEnemy), simple_attack_target(AIM_AHEAD))))
 }
 
 /// `BTActionFactory.SimpleScanning`: stand still, then turn the gun to a
 /// random direction.
 pub fn simple_scanning() -> impl BehaviorNode<AiBlackboard, Orders> {
-    seq((
-        timer(IDLE_TIME, action(quiet_start(Idle)).named("Idle")).named("Timer_1s"),
-        timer(SCAN_TIME, action(quiet_start(Scanning)).named("Scanning")).named("Timer_1s"),
-    ))
-    .named("Idle")
+    named("Idle", seq((
+        named("Timer_1s", timer(IDLE_TIME, named("Idle", action(quiet_start(Idle))))),
+        named("Timer_1s", timer(SCAN_TIME, named("Scanning", action(quiet_start(Scanning))))),
+    )))
 }
 
 /// `BTActionFactory.TurretAi`: attack, else scan.
 pub fn turret_ai() -> impl BehaviorNode<AiBlackboard, Orders> {
-    select((simple_attack(), simple_scanning())).named("TurretBrain")
+    named("TurretBrain", select((simple_attack(), simple_scanning())))
 }
 
 /// `BTActionFactory.Chase`'s `MoveToLastKnownTargetPosition`: with a target
 /// (alive), go to where it was last seen.
 fn move_to_last_known_target_position() -> impl BehaviorNode<AiBlackboard, Orders> {
-    seq((
-        check(|bb: &AiBlackboard| bb.live_target().is_some()).named("HastTarget"),
-        action(quiet_start(MoveToPoint::new(|bb| bb.last_known_target_position))).named("MoveToLastKnownPos"),
-    ))
-    .named("MoveToLastKnownTargetPosition")
+    named("MoveToLastKnownTargetPosition", seq((
+        named("HastTarget", check(|bb: &AiBlackboard| bb.live_target().is_some())),
+        named("MoveToLastKnownPos", action(quiet_start(MoveToPoint::new(|bb| bb.last_known_target_position)))),
+    )))
 }
 
 /// `BTActionFactory.Chase` (`ChaserAi`): find an enemy and chase it, firing
 /// when the gun points at it; failing that, go to where it was last seen;
 /// failing that, sleep two seconds.
 pub fn chase() -> impl BehaviorNode<AiBlackboard, Orders> {
-    select((
-        seq((
+    named("ChaseAI", select((
+        named("Chase", seq((
             action(FindNearestEnemy),
             while_target_alive(
-                action(quiet_start(all((
+                named("Chase and fire", action(quiet_start(all((
                     optional(FireToTarget::new(0.0)),
                     FollowBy::new(|bb| bb.target_position_safe()),
-                ))))
-                .named("Chase and fire"),
+                ))))),
             ),
-        ))
-        .named("Chase"),
+        ))),
         move_to_last_known_target_position(),
-        seq((action(Sleep { secs: SLEEP_TIME }).named("Sleep2s"), action(quiet_start(Idle)).named("Idle"))).named("Sleep"),
-    ))
-    .named("ChaseAI")
+        named("Sleep", seq((named("Sleep2s", action(Sleep { secs: SLEEP_TIME })), named("Idle", action(quiet_start(Idle)))))),
+    )))
 }
 
 /// `BTActionFactory.ChaserAi`.
@@ -326,61 +320,58 @@ pub fn chaser_ai() -> impl BehaviorNode<AiBlackboard, Orders> {
 /// `BTActionFactory.FollowPathAi`: follow the path the map gave it, firing at
 /// anyone in the gun's line; with no path, run the map action it was given.
 pub fn follow_path_ai() -> impl BehaviorNode<AiBlackboard, Orders> {
-    select((
-        action(quiet_start(all((TryFireToAnyone::new(FIRE_TO_ANYONE_PERIOD), MoveBase::default())))).named("Fire"),
-        action(quiet_start(TriggerMapAction::new(true))).named("Trigger"),
+    named("Brain", select((
+        named("Fire", action(quiet_start(all((TryFireToAnyone::new(FIRE_TO_ANYONE_PERIOD), MoveBase::default()))))),
+        named("Trigger", action(quiet_start(TriggerMapAction::new(true)))),
         action(quiet_start(TryFireToAnyone::new(FIRE_TO_ANYONE_PERIOD))),
-    ))
-    .named("Brain")
+    )))
 }
 
 /// `BTActionFactory.FollowPathAiSafe`: follow the path, but run from an enemy
 /// in sight.
 pub fn follow_path_ai_safe() -> impl BehaviorNode<AiBlackboard, Orders> {
-    select((
-        seq((action(FindNearestEnemy), action(quiet_start(Runaway)).named("Runaway"))).named("Danger"),
-        action(quiet_start(all((TryFireToAnyone::new(FIRE_TO_ANYONE_PERIOD), MoveBase::default())))).named("Fire"),
-    ))
-    .named("Brain")
+    named("Brain", select((
+        named("Danger", seq((action(FindNearestEnemy), named("Runaway", action(quiet_start(Runaway)))))),
+        named("Fire", action(quiet_start(all((TryFireToAnyone::new(FIRE_TO_ANYONE_PERIOD), MoveBase::default()))))),
+    )))
 }
 
 /// `BTActionFactory.GoToEnemySimplePredictionPosition`: find an enemy and go
 /// straight at where it will be.
 pub fn go_to_enemy_simple_prediction_position() -> impl BehaviorNode<AiBlackboard, Orders> {
-    seq((action(FindNearestEnemy), action(quiet_start(MoveTowardsTargetNoPath::new(GO_TO_ENEMY_PREDICT))))).named("FindAndFollow")
+    named("FindAndFollow", seq((action(FindNearestEnemy), action(quiet_start(MoveTowardsTargetNoPath::new(GO_TO_ENEMY_PREDICT))))))
 }
 
 /// `BTActionFactory.SimpleAttackNearestEnemy`: attack, else idle.
 pub fn simple_attack_nearest_enemy() -> impl BehaviorNode<AiBlackboard, Orders> {
-    select((simple_attack(), action(quiet_start(Idle)).named("Idle"))).named("SimpleAttackNearestEnemy")
+    named("SimpleAttackNearestEnemy", select((simple_attack(), named("Idle", action(quiet_start(Idle))))))
 }
 
 /// `BTActionFactory.SimpleFollowByEnemyAi`: find an enemy and follow it (no
 /// path, no fire), else idle.
 pub fn simple_follow_by_enemy_ai() -> impl BehaviorNode<AiBlackboard, Orders> {
-    select((
-        seq((action(FindNearestEnemy), action(quiet_start(SimpleFollowByTarget::new(AIM_AHEAD))))).named("FindAndFollow"),
-        action(quiet_start(Idle)).named("Idle"),
-    ))
-    .named("SimpleFollowByEnemy")
+    named("SimpleFollowByEnemy", select((
+        named("FindAndFollow", seq((action(FindNearestEnemy), action(quiet_start(SimpleFollowByTarget::new(AIM_AHEAD)))))),
+        named("Idle", action(quiet_start(Idle))),
+    )))
 }
 
 /// `BTActionFactory.MoveInOneDirectionAi`: the way the car faced at the start,
 /// the stick and the gun that way and the trigger down.
 pub fn move_in_one_direction_ai() -> impl BehaviorNode<AiBlackboard, Orders> {
-    action(quiet_start(MoveInInitDirection)).named("MoveToInitDirection")
+    named("MoveToInitDirection", action(quiet_start(MoveInInitDirection)))
 }
 
 /// `BTActionFactory.StopAction`.
 pub fn stop() -> impl BehaviorNode<AiBlackboard, Orders> {
-    action(Stop).named("Stop")
+    named("Stop", action(Stop))
 }
 
 /// `BTActionFactory.Maneur(predictionSec)`: go to a random place in sight of
 /// where the target was last seen, within 0.8 gun ranges of it, firing at the
 /// target meanwhile if it can be seen.
 pub fn maneur(predict_sec: f32) -> impl BehaviorNode<AiBlackboard, Orders> {
-    action(quiet_start(all((
+    named("Maneur", action(quiet_start(all((
         MoveToRandomVisiblePosition::new(
             |bb| bb.last_known_target_position,
             |bb| bb.gun.map_or(0.0, |gun| gun.range.range * MANEUR_RANGE_RATE),
@@ -388,14 +379,13 @@ pub fn maneur(predict_sec: f32) -> impl BehaviorNode<AiBlackboard, Orders> {
             2.0,
         ),
         optional(FireToTarget::new(predict_sec)),
-    ))))
-    .named("Maneur")
+    )))))
 }
 
 /// `BTActionFactory.ManeurOnDamage(predictionSec)`: [`maneur`], but only when
 /// the car lost health or shield since it last thought.
 pub fn maneur_on_damage(predict_sec: f32) -> impl BehaviorNode<AiBlackboard, Orders> {
-    seq((check(|bb: &AiBlackboard| bb.took_damage()).named("CheckDamage"), maneur(predict_sec))).named("ManeurOnDamage")
+    named("ManeurOnDamage", seq((named("CheckDamage", check(|bb: &AiBlackboard| bb.took_damage())), maneur(predict_sec))))
 }
 
 /// `BTActionFactory.SmartAttackTargetImmidiateWeapon`: for a gun whose shot
@@ -404,37 +394,33 @@ pub fn maneur_on_damage(predict_sec: f32) -> impl BehaviorNode<AiBlackboard, Ord
 /// negative: aimed behind it) and for half a second at where it is, then go
 /// to another place.
 pub fn smart_attack_target_immediate_weapon() -> impl BehaviorNode<AiBlackboard, Orders> {
-    select((
+    named("ImmidiateWeapon", select((
         maneur_on_damage(-1.0),
-        seq((
-            check(|bb: &AiBlackboard| bb.gun.is_some_and(|gun| gun.immediate)).named("CheckWeaponType"),
+        named("SmartAttackTargetImmidiateWeapon", seq((
+            named("CheckWeaponType", check(|bb: &AiBlackboard| bb.gun.is_some_and(|gun| gun.immediate))),
             stop(),
-            action(quiet_start(AimToTarget::new(0.0, 0.0))).named("AimToTarget"),
-            action(quiet_start(AimToTarget::new(0.0, 0.5))).named("AimToTarget"),
-            timer(1.0, action(quiet_start(FireToTarget::new(-0.5))).named("FireToTarget")).named("Timer_1s"),
-            timer(0.5, action(quiet_start(FireToTarget::new(0.0))).named("FireToTarget")).named("Timer_0.5s"),
+            named("AimToTarget", action(quiet_start(AimToTarget::new(0.0, 0.0)))),
+            named("AimToTarget", action(quiet_start(AimToTarget::new(0.0, 0.5)))),
+            named("Timer_1s", timer(1.0, named("FireToTarget", action(quiet_start(FireToTarget::new(-0.5)))))),
+            named("Timer_0.5s", timer(0.5, named("FireToTarget", action(quiet_start(FireToTarget::new(0.0)))))),
             maneur(-1.0),
-        ))
-        .named("SmartAttackTargetImmidiateWeapon"),
-    ))
-    .named("ImmidiateWeapon")
+        ))),
+    )))
 }
 
 /// `BTActionFactory.SmartAttackTargetSlowWeapon`: for a gun whose shot flies:
 /// stand and fire (no aiming turn), then go to another place.
 pub fn smart_attack_target_slow_weapon() -> impl BehaviorNode<AiBlackboard, Orders> {
-    select((
+    named("SlowWeapon", select((
         maneur_on_damage(-0.5),
-        seq((
-            check(|bb: &AiBlackboard| bb.gun.is_some_and(|gun| !gun.immediate)).named("CheckWeaponType"),
+        named("SmartAttackTargetSlowWeapon", seq((
+            named("CheckWeaponType", check(|bb: &AiBlackboard| bb.gun.is_some_and(|gun| !gun.immediate))),
             stop(),
-            timer(1.0, action(quiet_start(FireToTarget::new(-0.5))).named("FireToTarget")).named("Timer_1s"),
-            timer(0.5, action(quiet_start(FireToTarget::new(0.0))).named("FireToTarget")).named("Timer_0.5s"),
+            named("Timer_1s", timer(1.0, named("FireToTarget", action(quiet_start(FireToTarget::new(-0.5)))))),
+            named("Timer_0.5s", timer(0.5, named("FireToTarget", action(quiet_start(FireToTarget::new(0.0)))))),
             maneur(-0.5),
-        ))
-        .named("SmartAttackTargetSlowWeapon"),
-    ))
-    .named("SlowWeapon")
+        ))),
+    )))
 }
 
 /// `DistAndVis`: the target is alive, in sight now, and within the gun's
@@ -450,75 +436,66 @@ fn target_in_range_and_sight(bb: &AiBlackboard) -> bool {
 /// the style the gun asks for; otherwise go to where the target was last
 /// seen.
 pub fn smart_attack_target_ver2() -> impl BehaviorNode<AiBlackboard, Orders> {
-    select((
-        seq((
-            check(target_in_range_and_sight).named("DistAndVis"),
-            select((smart_attack_target_immediate_weapon(), smart_attack_target_slow_weapon())).named("ChooseAttackStyle"),
-        ))
-        .named("Fire"),
-        action(quiet_start(FollowBy::new(|bb| bb.last_known_target_position))).named("Follow"),
-    ))
-    .named("A")
+    named("A", select((
+        named("Fire", seq((
+            named("DistAndVis", check(target_in_range_and_sight)),
+            named("ChooseAttackStyle", select((smart_attack_target_immediate_weapon(), smart_attack_target_slow_weapon()))),
+        ))),
+        named("Follow", action(quiet_start(FollowBy::new(|bb| bb.last_known_target_position)))),
+    )))
 }
 
 /// `BTActionFactory.SmartAttackVer2`: find an enemy, then attack it smartly.
 pub fn smart_attack_ver2() -> impl BehaviorNode<AiBlackboard, Orders> {
-    seq((action(FindNearestEnemy), smart_attack_target_ver2())).named("Attack")
+    named("Attack", seq((action(FindNearestEnemy), smart_attack_target_ver2())))
 }
 
 /// `BTActionFactory.HideMove`: go to a free place out of the target's sight,
 /// or out of reach of its gun (1.25 ranges).
 pub fn hide_move() -> impl BehaviorNode<AiBlackboard, Orders> {
-    action(quiet_start(MoveToPoint::new(|bb| {
+    named("Hide", action(quiet_start(MoveToPoint::new(|bb| {
         let Some(target) = bb.live_target().copied() else {
             return bevy::math::Vec2::ZERO;
         };
         let range = target.weapon_range.map_or(HIDE_RANGE_NO_GUN, |range| range * HIDE_RANGE_RATE);
         let own = bb.pos;
         bb.random_free_non_visible_point(own, target.pos, range)
-    })))
-    .named("Hide")
+    }))))
 }
 
 /// `BTActionFactory.PanicBehaviour` (`ChickenAi` is this alone): find an
 /// enemy and, if it can see the car (or will in 0.5 s), hide from it.
 pub fn panic_behaviour() -> impl BehaviorNode<AiBlackboard, Orders> {
-    seq((
+    named("PanicBehaviour", seq((
         action(FindNearestEnemy),
-        check(|bb: &AiBlackboard| bb.live_target().is_some() && bb.can_see_target()).named("EnemyVisible"),
+        named("EnemyVisible", check(|bb: &AiBlackboard| bb.live_target().is_some() && bb.can_see_target())),
         hide_move(),
         stop(),
-    ))
-    .named("PanicBehaviour")
+    )))
 }
 
 /// `BTActionFactory.AttackerAiVer2` (`AttackAiVer2`): hide when under half
 /// health and being hit; otherwise attack the nearest enemy; with none, walk
 /// to a random place and rest there two seconds.
 pub fn attacker_ai_ver2() -> impl BehaviorNode<AiBlackboard, Orders> {
-    select((
-        seq((
-            check(|bb: &AiBlackboard| {
+    named("AttackerAiVer2", select((
+        named("Panic", seq((
+            named("CheckHelath", check(|bb: &AiBlackboard| {
                 bb.health < bb.max_health / 2 && bb.took_damage() && bb.live_target().is_some()
-            })
-            .named("CheckHelath"),
+            })),
             panic_behaviour(),
-        ))
-        .named("Panic"),
+        ))),
         smart_attack_ver2(),
-        seq((
-            action(quiet_start(MoveToPoint::with_params(
+        named("MoveToRandom", seq((
+            named("Rnd", action(quiet_start(MoveToPoint::with_params(
                 |bb| {
                     let (own, range) = (bb.pos, bb.scan_distance * RANDOM_MOVE_RANGE_RATE);
                     bb.random_node_position(own, range)
                 },
                 RANDOM_MOVE_SPEED_RATE,
                 RANDOM_MOVE_MIN_DIST,
-            )))
-            .named("Rnd"),
-            timer(RANDOM_MOVE_REST, action(quiet_start(Idle)).named("Idle")).named("Timer_2s"),
-        ))
-        .named("MoveToRandom"),
-    ))
-    .named("AttackerAiVer2")
+            )))),
+            named("Timer_2s", timer(RANDOM_MOVE_REST, named("Idle", action(quiet_start(Idle))))),
+        ))),
+    )))
 }
