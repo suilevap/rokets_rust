@@ -1,4 +1,4 @@
-//! Cars: the player's, spawned from the map's `Players`, and the map's
+//! Cars: the map's `Players` (the player's and the AI's) and its
 //! `SimpleCars`, by one function ([`spawn_car`]).
 //!
 //! Every car (`ControlableEntity`, 2010–2016) has a body on an Avian
@@ -16,6 +16,29 @@
 //!   (`cabin`); smoke (`smoke`), sparks when it hits something (`impact`),
 //!   engine and tyre sounds; the camera, the devices, the energy store and
 //!   the magnet. It is the one with `LocalPlayer`.
+//! - **The other `Players` cars** ([`Role::AiCar`]): every one of the
+//!   map's `Players` that is not a prototype and not the player's
+//!   (`MapManager` makes each with `CreatePlayer`: `SendRequestForNewPlayer`
+//!   with the control `AiControlFactory` makes of its `Control`,
+//!   `EntitiesManager.CreateCar`), and their clones. A `Car` as the
+//!   player's is (body, driving, wheels, cabin, smoke, sparks, engine and
+//!   tyre sounds, the magnet), driven by its control ([`crate::ai`] writes
+//!   its intent, which [`drive_cars`] reads as it reads the player's).
+//!   Unlike the player's: no `LocalPlayer` (the devices do not drive it),
+//!   the gun's preset for others and no energy store (the control is set
+//!   after the gun, and an AI's or `AINone` is no reason for
+//!   `SetLocalControlPreferences`), quieter engine and tyres, a health bar
+//!   when it is hurt, a static body when it cannot move (`IsStatic`: the
+//!   `TurretLoaderStat` loaders) and its collider scaled as a simple car's
+//!   (`CreateCar` passes `GeometryScale`, 1 on every `Players` car), the
+//!   magnet may grab it when its car `CanLink`. With a control held for the
+//!   player's devices (`NoneLocal`: `Control.LocalDevice`) the camera
+//!   frames it too (`Camera2DOperatoAllInCadr.PlayerListUdpated` takes
+//!   every player's car with a local device) and it shows no health bar.
+//!   It dies as `GameModeSinglePlayer` has an AI `Car` die
+//!   (`SheduleDestroy`, `CreateDestroyedEntity`; [`death`]): it never comes
+//!   back. With a control that is not live yet it stands, as a simple car
+//!   does.
 //! - **The player's simple car** ([`Role::LocalSimple`]): a `SimpleCars`
 //!   car with the `Local` control (`Swarm`, `DoorsDream1`, `TheLastStand`):
 //!   a simple car in all but that the devices drive it, the camera follows
@@ -35,10 +58,31 @@
 //!   that is not live yet (the behaviour-tree ones) or `AINone` it stands
 //!   still, or shoved.
 //!
-//! Not ported: `GeometryScale`'s lift of the sprite's depth
+//! Not ported: the colour of each player's car (`PlayersManager`'s
+//! `_colorList`: blue, red, green, … by the order the players came, a
+//! quarter lighter, drawn as the car's `ColorMask` sprite over its cabin;
+//! the port draws no `ColorMask`, the player's car neither); the limit of
+//! twelve players (`_colorList.Length`: a thirteenth is not made; no map
+//! comes near, with clones); a player at the map's (0, 0) put on a random
+//! free point (`OnNewPlayerMessageReceived`; no map has one); the second
+//! `Local` (or hot-seat) car that a map with two, or a clone of the
+//! player's, would make (an AI car here, held for the devices but not
+//! driven by them; C# gave it the devices and the player's gun preset; no
+//! map has one); the death of a `NoneLocal` AI car the way of the
+//! player's (C#'s `GameModeSinglePlayer` asked `LocalDevice`, so it
+//! restarted the level or spent a life and came back; here it is wrecked
+//! as an AI car is: `CoverMap`, `EditorTest` and `Revenge` have one, none
+//! of them gets killed in play); the player's car, `Local` or not, stays
+//! dynamic when its car cannot move (2WeeksAgo's `TurretLoaderStat`, as
+//! before); the repair of a `Car` (`Car.RepairUpdate`: a point a second
+//! and the damaged smoke under half health; not the player's either);
+//! `IsInView` round a `Car`'s exhaust puffs (C# made them only where the
+//! camera looked; they are made everywhere, and unseen there); the
+//! `Player` object C# made with the car (its `Name`, score and info panel:
+//! multiplayer only);
+//! `GeometryScale`'s lift of the sprite's depth
 //! (`EntityWithGeometryScaleDelta`), the highlight border of enemies
-//! (`HighlightEnemy`, `HighlightDeadEnemy`), a `NoneLocal` simple car's immunity out of the camera's view
-//! (`Control.LocalDevice && !IsInView` in `TakeDamage`), the magnet on a
+//! (`HighlightEnemy`, `HighlightDeadEnemy`), the magnet on a
 //! static car (`OnLinkTo`), the `EnergyComponent` of enemies (it spends
 //! nothing for a car the player does not drive: no store is made), and a
 //! second `Local` simple car on a map (the first is the player's; no map
@@ -58,7 +102,7 @@ use avian2d::prelude::*;
 use bevy::prelude::*;
 
 use crate::content::cars::CarData;
-use crate::content::map::{MapData, SimpleCarData};
+use crate::content::map::{MapData, PlayerData, SimpleCarData};
 use crate::controls::{LocalPlayer, PlayerIntent};
 use crate::game::{GameState, LoadedMap, MapEntity, MapId};
 use crate::render::camera::CameraTarget;
@@ -104,7 +148,7 @@ pub struct CarPlugin;
 impl Plugin for CarPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(smoke::SmokeRng(rand::SeedableRng::seed_from_u64(7)))
-            .add_systems(OnEnter(GameState::Playing), (spawn_player_car, spawn_simple_cars))
+            .add_systems(OnEnter(GameState::Playing), (spawn_player_car, spawn_ai_players, spawn_simple_cars).chain())
             .add_plugins((shield::ShieldPlugin, health_bar::HealthBarPlugin, death::DeathPlugin))
             .add_message::<impact::CarImpact>()
             .add_systems(
@@ -135,6 +179,74 @@ pub fn spawn_player_car(
     commands.remove_resource::<StartOverride>();
     let at = at.map(|c| (map.world(c.x, c.y), None));
     spawn_local_car(&mut commands, &map, &quad, &mut materials, at);
+}
+
+/// The map's `Players` cars other than the player's ([`ai_players`]), each
+/// at its place, driven by its control (`MapManager.CreatePlayer`).
+pub fn spawn_ai_players(
+    mut commands: Commands,
+    map: Res<LoadedMap>,
+    quad: Res<UnitQuad>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
+    for data in ai_players(&map.data) {
+        // `MathHelper.DegToRad(-DirectionDeg)` in C#'s y-down space.
+        let (at, angle) = (map.world(data.position.x, data.position.y), map_degrees_to_world(data.direction_deg));
+        spawn_player(&mut commands, &map, &quad, &mut materials, data, data.id, at, angle, Role::AiCar);
+    }
+}
+
+/// The `Players` car the player drives: the first with the `Local`
+/// control, else the first that is not a prototype; none when a
+/// `SimpleCars` car is the player's ([`local_simple_car`]).
+pub fn local_player(data: &MapData) -> Option<&PlayerData> {
+    if local_simple_car(data).is_some() {
+        return None;
+    }
+    let players = &data.players.items;
+    players
+        .iter()
+        .find(|p| p.control == "Local" && !p.is_prototype)
+        .or_else(|| players.iter().find(|p| !p.is_prototype))
+}
+
+/// The map's `Players` cars that the AI drives (or nobody): every one
+/// that is not a prototype, but the player's ([`local_player`]), in the
+/// map's order (`MapManager`: `CreatePlayer` for each).
+pub fn ai_players(data: &MapData) -> impl Iterator<Item = &PlayerData> {
+    let local = local_player(data).map(|p| p.id);
+    data.players.items.iter().filter(move |p| !p.is_prototype && Some(p.id) != local)
+}
+
+/// One of the map's `Players` cars as `data` describes it, with map id
+/// `id`, at a world point and angle (its own place, or a clone's), as
+/// `role` says (the player's or the AI's).
+#[allow(clippy::too_many_arguments)]
+pub fn spawn_player(
+    commands: &mut Commands,
+    map: &LoadedMap,
+    quad: &UnitQuad,
+    materials: &mut Assets<StandardMaterial>,
+    data: &PlayerData,
+    id: i64,
+    at: Vec2,
+    angle: f32,
+    role: Role,
+) -> Option<Entity> {
+    let Some(car) = map.cars.get(&data.car_name) else {
+        warn!("car {:?} (id {id}) is not in Cars.xml", data.car_name);
+        return None;
+    };
+    let spec = CarSpec {
+        id,
+        car,
+        position: at,
+        angle,
+        control: &data.control,
+        weapon: None,
+        role,
+    };
+    spawn_car(commands, map, quad, materials, spec)
 }
 
 /// The map's `SimpleCars` (`MapManager` "Simple Cars": every one that is
@@ -212,30 +324,13 @@ pub fn spawn_local_car(
         };
         return spawn_simple_car(commands, map, quad, materials, data, data.id, position, angle);
     }
-    let players = &map.data.players.items;
-    let Some(player) = players
-        .iter()
-        .find(|p| p.control == "Local" && !p.is_prototype)
-        .or_else(|| players.iter().find(|p| !p.is_prototype))
-    else {
+    let Some(player) = local_player(&map.data) else {
         warn!("map {} has no player", map.data.name);
         return None;
     };
-    let Some(car) = map.cars.get(&player.car_name) else {
-        warn!("car {:?} is not in Cars.xml", player.car_name);
-        return None;
-    };
     let (position, heading) = at.unwrap_or((map.world(player.position.x, player.position.y), None));
-    let spec = CarSpec {
-        id: player.id,
-        car,
-        position,
-        angle: heading.unwrap_or_else(|| map_degrees_to_world(player.direction_deg)),
-        control: &player.control,
-        weapon: None,
-        role: Role::Player,
-    };
-    spawn_car(commands, map, quad, materials, spec)
+    let angle = heading.unwrap_or_else(|| map_degrees_to_world(player.direction_deg));
+    spawn_player(commands, map, quad, materials, player, player.id, position, angle, Role::Player)
 }
 
 /// Whose car it is: what it gets beyond the body, the sprite, the health,
@@ -252,6 +347,10 @@ pub enum Role {
     /// A `SimpleCars` car with the `Local` control: a simple car that the
     /// devices drive and the camera follows, with the player's gun.
     LocalSimple,
+    /// Another of the map's `Players` (`Car`): the player's body, wheels,
+    /// cabin, smoke and sounds, driven by its control ([`crate::ai`]),
+    /// with the others' gun and a health bar when hurt.
+    AiCar,
 }
 
 /// What a car is made from.
@@ -281,7 +380,7 @@ pub fn weapon_type<'a>(over: Option<&'a str>, own: Option<&'a str>) -> Option<&'
 }
 
 /// A car of any kind: `Entity`, `PhysicEntity`, `ControlableEntity` and
-/// (for the player's) `Car` in one place. Returns it, or `None` when its
+/// (for the `Players`) `Car` in one place. Returns it, or `None` when its
 /// data or sprites are missing.
 pub fn spawn_car(
     commands: &mut Commands,
@@ -296,8 +395,10 @@ pub fn spawn_car(
         return None;
     };
     let player = role == Role::Player;
+    // A `Car`: one of the map's `Players`, the player's or the AI's.
+    let full = matches!(role, Role::Player | Role::AiCar);
     // The devices drive it and the camera follows it.
-    let local = role != Role::Simple;
+    let local = matches!(role, Role::Player | Role::LocalSimple);
     let kind = control::control_kind(control);
     let size = base.size * px(1.0) * car.scale;
     let radius = size.max_element() / 2.0;
@@ -316,7 +417,7 @@ pub fn spawn_car(
         Wreckable {
             sprites: ["Destroyed1", "Destroyed2"].map(|d| car.part_sprite(d).unwrap_or_default()),
             scale: car.scale,
-            layer: if player { Layer::CarBase } else { Layer::CarBody },
+            layer: if full { Layer::CarBase } else { Layer::CarBody },
         },
         Transform::from_translation(position.extend(0.0)).with_rotation(Quat::from_rotation_z(angle)),
         Visibility::default(),
@@ -324,9 +425,12 @@ pub fn spawn_car(
     if car.shield > 0 {
         entity.insert(shield::Shield::new(car.shield));
     }
+    if kind.local_device {
+        entity.insert(control::LocalDevice);
+    }
     // `PhysicEntity`: a box of the sprite's size (a simple car's scaled by
-    // its `GeometryScale`, or a circle), `Entity`'s damping. The player's
-    // car turns less (`AngularDamping` 9; a simple car keeps 3).
+    // its `GeometryScale`, or a circle; an AI's `Car` too), `Entity`'s
+    // damping. A `Car` turns less (`AngularDamping` 9; a simple car keeps 3).
     let (collider, static_body) = if player {
         (Collider::rectangle(size.x, size.y), false)
     } else {
@@ -344,7 +448,7 @@ pub fn spawn_car(
         CollisionEventsEnabled,
         impact::LastVelocity::default(),
         LinearDamping(0.95 * friction),
-        AngularDamping(if player { 9.0 } else { 3.0 }),
+        AngularDamping(if full { 9.0 } else { 3.0 }),
         Friction::new(0.8).with_combine_rule(CoefficientCombine::GeometricMean),
         Restitution::new(0.5).with_combine_rule(CoefficientCombine::Max),
     ));
@@ -370,23 +474,37 @@ pub fn spawn_car(
         if local {
             entity.insert(crate::weapon::PlayerEnergy::default());
         }
-        if !player {
+        if !full {
             // The gun's loop (a Minigun's) sounds on the car.
             entity.insert(CarSounds::new(None, 0.0));
         }
     }
+    if full {
+        insert_car_parts(&mut entity, car, radius, friction, kind);
+    }
     if player {
         insert_player_parts(&mut entity, car, radius, friction, control);
     } else {
-        insert_simple_parts(&mut entity, car, radius, kind);
+        insert_simple_parts(&mut entity, car, radius, kind, !full);
         crate::ai::set_control(&mut entity, control, id as u64);
+        // The camera frames every player's car held for a local device
+        // (`PlayerListUdpated`): a `NoneLocal` one of the AI's too.
+        if local || (role == Role::AiCar && kind.local_device) {
+            let max_speed = if !car.can_move {
+                0.0
+            } else if full {
+                DriveParams::new(car, radius, friction).max_speed
+            } else {
+                simple::SimpleDrive::new(car.speed, car.acceleration, car.controllability, radius).max_speed
+            };
+            entity.insert(CameraTarget { radius, max_speed });
+        }
         if local {
-            let max_speed = if car.can_move { simple::SimpleDrive::new(car.speed, car.acceleration, car.controllability, radius).max_speed } else { 0.0 };
-            entity.insert((LocalPlayer, CameraTarget { radius, max_speed }));
+            entity.insert(LocalPlayer);
         }
     }
     entity.with_children(|parent| {
-        if player {
+        if full {
             spawn_car_sprites(parent, map, car, quad, materials);
         } else {
             parent.spawn(sprite_bundle(&base, car.scale, Layer::CarBody, SpriteTint { color: [1.0; 4], lit: true }, quad, materials));
@@ -395,14 +513,15 @@ pub fn spawn_car(
     Some(entity.id())
 }
 
-/// What only the player's `Car` has.
-fn insert_player_parts(entity: &mut EntityCommands, car: &CarData, radius: f32, friction: f32, control: &str) {
+/// What every `Car` has, the player's or the AI's: its driving, the
+/// swaying cabin, engine and tyre sounds (quieter for an AI's), smoke and
+/// the magnet.
+fn insert_car_parts(entity: &mut EntityCommands, car: &CarData, radius: f32, friction: f32, kind: control::ControlKind) {
     let params = DriveParams::new(car, radius, friction);
     entity.insert((
-        LocalPlayer,
-        CameraTarget { radius, max_speed: params.max_speed },
         cabin::CabinSway::new(car.body_elastic, radius),
-        CarSounds::new(Some(car.engine_sound.as_str()).filter(|e| !e.is_empty()), car.wheels_sound_pitch),
+        CarSounds::new(Some(car.engine_sound.as_str()).filter(|e| !e.is_empty()), car.wheels_sound_pitch)
+            .loudness(kind.local_device),
         smoke::SmokePoints {
             wheel: car
                 .left_wheel_position
@@ -416,22 +535,32 @@ fn insert_player_parts(entity: &mut EntityCommands, car: &CarData, radius: f32, 
         },
     ));
     // `GadgetFactory`: the magnet (`Link`), at `GadgetPosition` (pixels,
-    // y down).
+    // y down). An AI's waits for a tree that uses it (`CaptureTheBox`).
     if car.gadget.as_deref() == Some("Link") {
         let at = car.gadget_position.map_or(Vec2::ZERO, |p| Vec2::new(p.x, -p.y) * px(1.0) * car.scale);
         entity.insert(crate::gadget::Magnet::new(at));
     }
+}
+
+/// What only the player's `Car` has: the devices, the camera.
+fn insert_player_parts(entity: &mut EntityCommands, car: &CarData, radius: f32, friction: f32, control: &str) {
+    let params = DriveParams::new(car, radius, friction);
+    entity.insert((LocalPlayer, CameraTarget { radius, max_speed: params.max_speed }));
     // Waiting for `SetControl(id,Local)`, as on LetItSnow's intro.
     if !crate::controls::is_players(control) {
         entity.insert(crate::controls::NoInput);
     }
 }
 
-/// What only a simple car has: its driving, its health bar, whatever the
-/// magnet may do with it, and no hand on it when the control is `AINone`.
-fn insert_simple_parts(entity: &mut EntityCommands, car: &CarData, radius: f32, kind: control::ControlKind) {
+/// What a car the player does not drive has (a simple car, an AI's
+/// `Car`): the simple driving (a simple car's), its health bar,
+/// whatever the magnet may do with it, and no hand on it when the control
+/// is `AINone`.
+fn insert_simple_parts(entity: &mut EntityCommands, car: &CarData, radius: f32, kind: control::ControlKind, simple_drive: bool) {
     if car.can_move {
-        entity.insert(simple::SimpleDrive::new(car.speed, car.acceleration, car.controllability, radius));
+        if simple_drive {
+            entity.insert(simple::SimpleDrive::new(car.speed, car.acceleration, car.controllability, radius));
+        }
         // What the magnet may grab (`CanLink`); a static car it could not
         // pull (`OnLinkTo` made it dynamic while linked; not ported).
         if car.can_link {
@@ -478,8 +607,11 @@ fn spawn_car_sprites(
     }
 }
 
-pub fn drive_cars(mut cars: Query<(Forces, &mut Car, &PlayerIntent)>) {
-    for (mut forces, mut car, intent) in &mut cars {
+/// Every `Car` drives by its intent (`Car.MovementControl`), whoever
+/// writes it: the devices or the AI. A static one (a car that cannot move)
+/// works its wheels and engine but is not moved.
+pub fn drive_cars(mut cars: Query<(Forces, &mut Car, &PlayerIntent, &RigidBody)>) {
+    for (mut forces, mut car, intent, rigid_body) in &mut cars {
         let angle = forces.rotation().as_radians();
         let body = Body {
             angle,
@@ -488,6 +620,9 @@ pub fn drive_cars(mut cars: Query<(Forces, &mut Car, &PlayerIntent)>) {
         };
         let params = car.params;
         let out = drive_step(&params, &mut car.drive, body, intent.move_dir);
+        if *rigid_body == RigidBody::Static {
+            continue;
+        }
         *forces.linear_velocity_mut() = out.velocity;
         *forces.angular_velocity_mut() = out.angular_velocity.clamp(-MAX_ANGULAR_VELOCITY, MAX_ANGULAR_VELOCITY);
         let position = forces.position();

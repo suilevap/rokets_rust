@@ -10,7 +10,10 @@
 //! - [`Hit`]: a [`Health`] loses points (after its [`Shield`] has taken
 //!   what it can), is told of it by [`Damaged`] (sounds, health bar) and
 //!   sends [`Destroyed`] when it runs out (what then happens to a car is
-//!   the game mode's, for the player's, and `car::death`'s business); an
+//!   the game mode's, for the player's, and `car::death`'s business); a
+//!   car held for the player's devices ([`LocalDevice`]) takes no blow
+//!   while the camera does not see it (`TakeDamage`: `LocalDevice &&
+//!   !IsInView`, C#'s view of the last frame drawn); an
 //!   [`Explosive`] that blows up when hit lights its fuse.
 //! - An [`Explosive`] blows up on touch (bombs) or a moment after a hit
 //!   (red boxes, which so set each other off).
@@ -32,12 +35,15 @@ use rand::Rng;
 use rand::rngs::SmallRng;
 
 use crate::actions::{OnDestroy, RunAction, destroy_action};
-use crate::car::control::{Team, spares};
+use crate::car::CarRadius;
+use crate::car::control::{LocalDevice, Team, spares};
 use crate::car::shield::Shield;
 use crate::game::{GameState, LoadedMap, MapId};
 use crate::particles::styles::{BOMB_BEEP, BOOM_FIRE, BOOM_FLASH, BOOM_RING, BOOM_SMOKE, ring_rate};
+use crate::render::camera::MainCamera;
 use crate::render::particles::Particles;
 use crate::render::sprite::SpriteTint;
+use crate::weapon::aim_help::in_view;
 
 /// Hit points (`ControlableEntity.Health`, `MaxHealth`).
 #[derive(Component, Debug, Clone, Copy, PartialEq)]
@@ -286,16 +292,25 @@ fn boom(map: &LoadedMap, particles: &mut Particles, rng: &mut SmallRng, at: Vec2
     particles.try_add(&BOOM_SMOKE, at + jitter, d1, d2);
 }
 
+#[allow(clippy::too_many_arguments)]
 fn take_hits(
     mut commands: Commands,
     mut hits: MessageReader<Hit>,
     mut health: Query<(&mut Health, Option<&mut Shield>)>,
+    held: Query<(&GlobalTransform, Option<&CarRadius>), With<LocalDevice>>,
+    cameras: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     explosives: Query<(&Explosive, &Children), Without<Fuse>>,
     mut tints: Query<&mut SpriteTint>,
     mut damaged: MessageWriter<Damaged>,
     mut destroyed: MessageWriter<Destroyed>,
 ) {
+    let camera = cameras.single().ok();
     for hit in hits.read() {
+        if let (Ok((at, radius)), Some((camera, view))) = (held.get(hit.target), camera)
+            && !in_view(camera, view, at.translation().truncate(), radius.map_or(0.0, |r| r.0))
+        {
+            continue;
+        }
         if let Ok((mut h, shield)) = health.get_mut(hit.target)
             && h.hp > 0
         {

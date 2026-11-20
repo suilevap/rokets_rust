@@ -12,19 +12,24 @@
 //! the source take its clones too (`GetSourceCustomId`).
 //!
 //! A `SimpleCars` entry is cloned the same way (`CreateSimpleCarServer`
-//! with the source's car, control and weapon).
+//! with the source's car, control and weapon), and so is a `Players` one
+//! (`SendRequestForNewPlayer` with the source's car and a new control of
+//! its type, prototypes too: Revenge's and TestLab's attackers), as an
+//! AI's `Car` (`car::Role::AiCar`). C# looked the source up among the
+//! `Players` first, then the `SimpleCars`, then the entities; the ids of
+//! the three never meet.
 //!
-//! Not ported: clones of the players' cars (`SendRequestForNewPlayer`;
-//! the map's other `Players` are not spawned at all yet).
+//! Not ported: a clone of the player's own `Players` entry is an AI's car
+//! with the `Local` control, held for the devices but not driven by them
+//! (C# made a second car the devices drove; no map clones it).
 
 use bevy::prelude::*;
 use rand::rngs::SmallRng;
 use rand::{Rng, SeedableRng};
 
 use super::{AddMapAction, MapIds, Run};
-use crate::car::spawn_simple_car;
+use crate::car::{Role, spawn_player, spawn_simple_car};
 use crate::content::actions::defs::{CloneObject, CloneObjectByPath};
-use crate::content::map::SimpleCarData;
 use crate::content::xna::{XRect, XVec2};
 use crate::game::{LoadedMap, MapId};
 use crate::map::spawn::spawn_entity;
@@ -85,22 +90,24 @@ impl Cloning<'_, '_> {
         }
     }
 
-    /// A `SimpleCars` entry made again, one per free id.
-    fn clone_simple_cars(
+    /// A car made again, one per free id: a `SimpleCars` entry or a
+    /// `Players` one, as `spawn` makes it (at a world point and angle, with
+    /// an id).
+    fn clone_cars(
         &mut self,
-        car: &SimpleCarData,
         source: i64,
         targets: Vec<i64>,
         actor: Option<i64>,
         d: &CloneObject,
         mut place: impl FnMut(&mut Self, usize) -> Place,
+        spawn: impl Fn(&mut Commands, &LoadedMap, &UnitQuad, &mut Assets<StandardMaterial>, i64, Vec2, f32) -> Option<Entity>,
     ) {
         let around = self.around(d, actor);
         for (i, target) in targets.into_iter().enumerate() {
             let (at, angle) = place(self, i);
             let at = at + around;
             let (map, quad) = (&*self.map, &*self.quad);
-            if let Some(e) = spawn_simple_car(&mut self.commands, map, quad, &mut self.materials, car, target, at, angle) {
+            if let Some(e) = spawn(&mut self.commands, map, quad, &mut self.materials, target, at, angle) {
                 if target != source {
                     self.commands.entity(e).insert(CloneOf(source));
                 }
@@ -126,10 +133,15 @@ impl Cloning<'_, '_> {
         }
         let map = &self.map;
         let Some(data) = map.data.entities.iter().find(|e| e.id == source).cloned() else {
-            if let Some(car) = map.data.simple_cars.items.iter().find(|c| c.id == source).cloned() {
-                self.clone_simple_cars(&car, source, targets, actor, d, place);
-            } else if map.data.players.items.iter().any(|p| p.id == source) {
-                debug!("clones of player car {source} are not ported yet");
+            if let Some(player) = map.data.players.items.iter().find(|p| p.id == source).cloned() {
+                // An AI's car, whatever the source is.
+                self.clone_cars(source, targets, actor, d, place, |commands, map, quad, materials, id, at, angle| {
+                    spawn_player(commands, map, quad, materials, &player, id, at, angle, Role::AiCar)
+                });
+            } else if let Some(car) = map.data.simple_cars.items.iter().find(|c| c.id == source).cloned() {
+                self.clone_cars(source, targets, actor, d, place, |commands, map, quad, materials, id, at, angle| {
+                    spawn_simple_car(commands, map, quad, materials, &car, id, at, angle)
+                });
             }
             return;
         };

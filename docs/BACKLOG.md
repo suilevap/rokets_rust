@@ -78,9 +78,17 @@ along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
    line of a static or enemy gun (`LaserVisiblityUpdate`: drawn for every
    gun, not only the player's, with the Railgun's bounces), `SetImmortal`
    and the `Immortal` shield, `HighlightEnemy` / `HighlightDeadEnemy`.
-3. Other `Players` of a map (AI-driven `Car`s: only the first is spawned),
-   their clones, `NoneLocal` cars' immunity out of the view, an AI
-   control on the player's own car (`SetControl(player, AiChaser)`).
+3. Who drives which `Players` car: an AI control on the player's own car
+   (`SetControl(player, AiChaser)`), and `SetControl(id, Local)` handing
+   the devices (and the camera, the gun's preset, the energy store) to
+   another car, as Revenge does when its Scout dies
+   (`SetControl(4001,Local)`); with it, a `NoneLocal` car other than the
+   player's dying the player's way (`GameModeSinglePlayer` asks
+   `LocalDevice`: restart or a life). Also of every `Car`: the player's
+   colour on its `ColorMask` sprite (`PlayersManager._colorList`: blue for
+   the first, red, green, … for the others), the repair (`RepairUpdate`:
+   a point a second, damaged smoke under half health), and a static body
+   for the player's car that cannot move (2WeeksAgo's turret).
 4. Check C#'s friction on cars: `ControlableEntity` sets
    `PhysicBody.Friction = 0` (`LinearDragCoefficientDefault`) after the
    fixture exists, so cars may have no friction in C#, not 0.8 as boxes
