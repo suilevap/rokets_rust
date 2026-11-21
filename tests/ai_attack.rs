@@ -10,7 +10,7 @@ use bevy::math::Vec2;
 use bevy::prelude::Entity;
 use flatbt_bevy::prelude::*;
 use tilerider::ai::trees::{
-    SIMPLE_SCAN_DISTANCE, attacker_ai_ver2, move_in_one_direction_ai, panic_behaviour, simple_attack_nearest_enemy, simple_follow_by_enemy_ai,
+    SIMPLE_SCAN_DISTANCE, attacker_ai, attacker_ai_ver2, move_in_one_direction_ai, panic_behaviour, simple_attack_nearest_enemy, simple_follow_by_enemy_ai,
 };
 use tilerider::ai::{AiBlackboard, Body, Foe, Gun, Navigation, Orders, tick_mode};
 use tilerider::content::map::MapData;
@@ -371,4 +371,34 @@ fn a_chicken_hides_from_an_enemy_in_sight_unhurt() {
     car.run(4.0);
     assert!(car.pos.distance(at(1.0, 1.0)) > 3.0, "{}", car.pos);
     assert!(car.orders.iter().all(|o| !o.fire));
+}
+
+#[test]
+fn the_first_attacker_fires_in_rounds_without_aiming_first_or_hiding() {
+    assert!(tilerider::ai::is_live("AttackAi") && tilerider::ai::is_live("AttackAiFriend"));
+    let mut car = Car::new(attacker_ai, World::new(OPEN_ROOM), at(2.0, 2.0));
+    car.others = vec![enemy(1, at(6.0, 2.0))];
+    car.run(0.2);
+    // No aiming step (`AimToTarget`): it stands and fires at once.
+    assert_eq!(car.bb.target(), Some(id(1)));
+    assert!(car.path().contains("FireToTarget"), "{}", car.path());
+    assert!(!car.path().contains("AimToTarget"), "{}", car.path());
+    // Hurt below half, it does not hide (the first version has no panic).
+    car.health = 3;
+    car.run(14.0);
+    assert!(!car.path().contains("Panic") && !car.path().contains("Hide"), "{}", car.path());
+    assert!(car.pos.distance(at(2.0, 2.0)) > 5.0, "it manoeuvred: {}", car.pos);
+    let mut rounds = 0;
+    for pair in car.orders.windows(2) {
+        rounds += usize::from(pair[0].fire && !pair[1].fire);
+    }
+    assert!(rounds >= 3, "{rounds} rounds of fire");
+}
+
+#[test]
+fn the_first_attacker_with_no_enemy_walks_to_random_places() {
+    let mut car = Car::new(attacker_ai, World::new(OPEN_ROOM), at(2.0, 2.0));
+    car.run(3.0);
+    assert!(car.path().contains("MoveToRandom"), "{}", car.path());
+    assert_eq!(shots(&car.orders), 0);
 }
