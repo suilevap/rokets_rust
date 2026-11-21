@@ -583,6 +583,54 @@ pub fn panic_behaviour() -> impl BehaviorNode<AiBlackboard, Orders> {
     )))
 }
 
+/// `AttackerAi`'s and `AttackerAiVer2`'s last branch (`MoveToRandom`): walk
+/// at half speed to a random node within four scan distances, then rest two
+/// seconds.
+fn move_to_random() -> impl BehaviorNode<AiBlackboard, Orders> {
+    named("MoveToRandom", seq((
+        named("Rnd", action(quiet_start(MoveToPoint::with_params(
+            |bb| {
+                let (own, range) = (bb.pos, bb.scan_distance * RANDOM_MOVE_RANGE_RATE);
+                bb.random_node_position(own, range)
+            },
+            RANDOM_MOVE_SPEED_RATE,
+            RANDOM_MOVE_MIN_DIST,
+        )))),
+        named("Timer_2s", timer(RANDOM_MOVE_REST, named("Idle", action(quiet_start(Idle))))),
+    )))
+}
+
+/// `BTActionFactory.SmartAttackTarget`, the first version of
+/// [`smart_attack_target_ver2`]: in range and in sight, stop, fire a second
+/// aimed half a second behind the target and half a second at it, then go to
+/// a random place in sight of where it was ([`maneur`], firing at it);
+/// otherwise go to where it was last seen. Unlike the second version, it
+/// has no aiming turn, no manoeuvre when hit and no style for slow guns.
+pub fn smart_attack_target() -> impl BehaviorNode<AiBlackboard, Orders> {
+    named("A", select((
+        named("Fire", seq((
+            named("DistAndVis", check(target_in_range_and_sight)),
+            stop(),
+            named("Timer_1s", timer(1.0, named("FireToTarget", action(quiet_start(FireToTarget::new(-0.5)))))),
+            named("Timer_0.5s", timer(0.5, named("FireToTarget", action(quiet_start(FireToTarget::new(0.0)))))),
+            maneur(0.0),
+        ))),
+        named("Follow", action(quiet_start(FollowBy::new(|bb| bb.last_known_target_position)))),
+    )))
+}
+
+/// `BTActionFactory.SmartAttack`: find an enemy, then [`smart_attack_target`].
+pub fn smart_attack() -> impl BehaviorNode<AiBlackboard, Orders> {
+    named("Attack", seq((action(FindNearestEnemy), smart_attack_target())))
+}
+
+/// `BTActionFactory.AttackerAi` (`AttackAi`, and `AttackAiFriend` for the
+/// player's team): attack the nearest enemy; with none, walk to a random
+/// place and rest there two seconds.
+pub fn attacker_ai() -> impl BehaviorNode<AiBlackboard, Orders> {
+    named("AttackerAi", select((smart_attack(), move_to_random())))
+}
+
 /// `BTActionFactory.AttackerAiVer2` (`AttackAiVer2`): hide when under half
 /// health and being hit; otherwise attack the nearest enemy; with none, walk
 /// to a random place and rest there two seconds.
@@ -595,17 +643,7 @@ pub fn attacker_ai_ver2() -> impl BehaviorNode<AiBlackboard, Orders> {
             panic_behaviour(),
         ))),
         smart_attack_ver2(),
-        named("MoveToRandom", seq((
-            named("Rnd", action(quiet_start(MoveToPoint::with_params(
-                |bb| {
-                    let (own, range) = (bb.pos, bb.scan_distance * RANDOM_MOVE_RANGE_RATE);
-                    bb.random_node_position(own, range)
-                },
-                RANDOM_MOVE_SPEED_RATE,
-                RANDOM_MOVE_MIN_DIST,
-            )))),
-            named("Timer_2s", timer(RANDOM_MOVE_REST, named("Idle", action(quiet_start(Idle))))),
-        ))),
+        move_to_random(),
     )))
 }
 

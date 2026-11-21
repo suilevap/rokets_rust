@@ -136,8 +136,8 @@
 //! Everything else that is an `AIBTBaseControl` waits for the trees that use
 //! the nodes not yet ported (`docs/BACKLOG.md` says which node each needs):
 //! `Ai`, `AiFriend`, `AiSimpleTurretFriendFireAvailableTarget`, `GuardAi`,
-//! `SupportAi*`, `OrderExecutor*`, `CaptureTheBox*`, `AttackAi`,
-//! `AttackAiFriend`, `HammerAi*`, `ChaserTargetFromLocalVariable`. Cars with those stand idle, as
+//! `SupportAi*`, `OrderExecutor*`, `CaptureTheBox*`,
+//! `HammerAi*`, `ChaserTargetFromLocalVariable`. Cars with those stand idle, as
 //! before, and `AIAdjustment` sets only their team. `AITurret` and
 //! `AISimpleCarControl` are not reached by any `ControlType`;
 //! `AIPathCarControl` (the base of `AISimpleCarControl`,
@@ -198,6 +198,9 @@ pub struct AiPlugin;
 
 impl Plugin for AiPlugin {
     fn build(&self, app: &mut App) {
+        // Every tree `set_control` gives a car needs its plugin here, or the
+        // car holds the tree and it never ticks (and its `stop_behavior` in
+        // `set_control`).
         app.add_plugins((
             BehaviorPlugin::for_tree(trees::turret_ai).in_schedule(FixedUpdate).tick_mode(tick_mode),
             BehaviorPlugin::for_tree(trees::chaser_ai).in_schedule(FixedUpdate).tick_mode(tick_mode),
@@ -206,7 +209,9 @@ impl Plugin for AiPlugin {
             BehaviorPlugin::for_tree(trees::go_to_enemy_simple_prediction_position)
                 .in_schedule(FixedUpdate)
                 .tick_mode(tick_mode),
+            BehaviorPlugin::for_tree(trees::attacker_ai).in_schedule(FixedUpdate).tick_mode(tick_mode),
             BehaviorPlugin::for_tree(trees::attacker_ai_ver2).in_schedule(FixedUpdate).tick_mode(tick_mode),
+            BehaviorPlugin::for_tree(trees::panic_behaviour).in_schedule(FixedUpdate).tick_mode(tick_mode),
             BehaviorPlugin::for_tree(trees::simple_attack_nearest_enemy).in_schedule(FixedUpdate).tick_mode(tick_mode),
             BehaviorPlugin::for_tree(trees::simple_follow_by_enemy_ai).in_schedule(FixedUpdate).tick_mode(tick_mode),
             BehaviorPlugin::for_tree(trees::move_in_one_direction_ai).in_schedule(FixedUpdate).tick_mode(tick_mode),
@@ -252,6 +257,7 @@ pub fn set_control(car: &mut EntityCommands, control: &str, seed: u64) {
         .stop_behavior(trees::follow_path_ai)
         .stop_behavior(trees::follow_path_ai_safe)
         .stop_behavior(trees::go_to_enemy_simple_prediction_position)
+        .stop_behavior(trees::attacker_ai)
         .stop_behavior(trees::attacker_ai_ver2)
         .stop_behavior(trees::panic_behaviour)
         .stop_behavior(trees::simple_attack_nearest_enemy)
@@ -282,6 +288,9 @@ pub fn set_control(car: &mut EntityCommands, control: &str, seed: u64) {
         }
         "GoToEnemySimplePredictionPosition" => {
             car.insert((brain, Behavior::for_tree(trees::go_to_enemy_simple_prediction_position)));
+        }
+        "AttackAi" | "AttackAiFriend" => {
+            car.insert((brain, Behavior::for_tree(trees::attacker_ai)));
         }
         "AttackAiVer2" => {
             car.insert((brain, Behavior::for_tree(trees::attacker_ai_ver2)));
@@ -338,6 +347,8 @@ pub fn is_live(control: &str) -> bool {
             | "MoveByPathFriend"
             | "MoveByPathSafelyFriend"
             | "GoToEnemySimplePredictionPosition"
+            | "AttackAi"
+            | "AttackAiFriend"
             | "AttackAiVer2"
             | "ChickenAi"
             | "SimpleAttackNearestEnemy"
