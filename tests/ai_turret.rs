@@ -424,16 +424,14 @@ fn the_first_step_thinks_at_once_whatever_the_period() {
 }
 
 #[test]
-fn an_action_started_in_a_thinking_pass_gives_no_orders_that_step() {
+fn an_action_gives_orders_in_the_step_that_starts_it() {
+    // C#'s thinking pass started an action without ticking it, a step late;
+    // the port does not keep that step.
     let setup = Setup::new(vec![foe(1, 8.0, 0.0)]);
     let mut turret = Rig::new(turret_ai, 24);
-    // The first step thinks and starts the attack, as `Context.Think` does.
     let first = setup.step(&mut turret);
     assert_eq!(turret.phase(), Phase::Attack);
-    assert_eq!(first, Orders::default());
-    // The next step ticks it.
-    let second = setup.step(&mut turret);
-    assert!(second.aim_dir.is_some() && second.fire);
+    assert!(first.aim_dir.is_some() && first.fire, "{first:?}");
 }
 
 #[test]
@@ -464,8 +462,8 @@ fn the_second_branch_of_the_attack_never_runs() {
     for _ in 0..180 {
         setup.step(&mut turret);
         let path = turret.path();
-        // The second branch is the one action left unnamed.
-        assert!(!path.ends_with("QuietStart (action)"), "{path}");
+        // The second branch is `FireToTarget` alone; the first is `Fire`.
+        assert!(!path.ends_with("FireToTarget (action)"), "{path}");
     }
     // With no gun the first branch starts and is at once over, `Fail`, and so
     // does the second.

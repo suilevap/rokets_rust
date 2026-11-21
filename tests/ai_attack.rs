@@ -355,9 +355,8 @@ fn move_and_fire_in_init_direction_keeps_the_stick_and_gun_where_it_faced_and_fi
     // It faced +x at the start: that stays, whatever it turns to.
     car.heading = 1.0;
     car.run(0.5);
-    assert!(car.orders.iter().skip(2).all(|o| o.move_dir == Some(Vec2::X) && o.aim_dir == Some(Vec2::X) && o.fire));
-    // The first step gives no orders (the thinking pass starts the action).
-    assert_eq!(car.orders[0], Orders::default());
+    // From the first step on, the action starting and ticking at once.
+    assert!(car.orders.iter().all(|o| o.move_dir == Some(Vec2::X) && o.aim_dir == Some(Vec2::X) && o.fire));
 }
 
 #[test]

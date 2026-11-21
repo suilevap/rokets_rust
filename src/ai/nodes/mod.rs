@@ -10,7 +10,7 @@
 //! | Node | C# |
 //! |---|---|
 //! | [`DecoratorCondition`], [`timer`], [`while_target_alive`] | `BTLib.DecoratorCondtion` (`While`), `BTActionFactory.Timer`, `BTActions/WhileTargetAlive` |
-//! | [`quiet_start`] | the way `Context.Think` starts an action without ticking it |
+//! | [`act`] | an action named after its type (C#'s thinking pass started it without ticking it; not kept) |
 //! | [`all`] | `BTLib.ParallelAllActionNode` (`All`) |
 //! | [`optional`] | `BTLib.OptionalActionNode` (`bt.Optional`) |
 //! | [`FindNearestEnemy`] | `BTActions/FindNearestEnemy` |
@@ -44,7 +44,7 @@ mod flocking;
 mod optional;
 mod parallel;
 mod path;
-mod quiet;
+mod act;
 
 pub use actions::{
     AimToTarget, FindNearestEnemy, FireToTarget, Idle, MoveInInitDirection, MoveTowardsTargetNoPath, RememberTargetPos,
@@ -58,4 +58,4 @@ pub use parallel::{All, all};
 pub use path::{
     FollowBy, MoveBase, MoveParams, MoveToPoint, MoveToRandomVisiblePosition, PositionFn, go_to_position, to_go_world,
 };
-pub use quiet::{QuietStart, quiet_start};
+pub use act::act;
