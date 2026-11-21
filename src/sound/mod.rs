@@ -19,6 +19,8 @@
 //!     the squeal eases (3/s) towards `0.4 + 0.6 × speed²` (`speed²` × 0.9
 //!     when turning on the spot), heard while above 0.15; one of two
 //!     squeals, picked anew each time it stops.
+//!   - A car the AI drives is quieter (`Car.Control`): the engine at half,
+//!     the tyres' speed part at 0.7 ([`CarSounds::loudness`]).
 //!
 //! Playing them is `playback`, behind the `sound` cargo feature (on by
 //! default; `--no-default-features` builds a silent game without the
@@ -129,6 +131,10 @@ pub struct CarSounds {
     wheels_pitch: f32,
     squeal_level: f32,
     squeal_name: usize,
+    /// How loud the engine and the tyres are for whoever drives the car
+    /// ([`CarSounds::loudness`]).
+    engine_loudness: f32,
+    wheels_loudness: f32,
     pub engine: Option<LoopCue>,
     pub squeal: Option<LoopCue>,
     /// The gun while it fires (`weapon`).
@@ -142,10 +148,29 @@ impl CarSounds {
             wheels_pitch,
             squeal_level: 0.0,
             squeal_name: 0,
+            engine_loudness: 1.0,
+            wheels_loudness: 1.0,
             engine: None,
             squeal: None,
             gun: None,
         }
+    }
+
+    /// `Car.Control`'s setter: the engine and the tyres at full loudness
+    /// for a car held for the player's devices (`LocalDevice`), at half
+    /// (engine) and 0.7 (tyres) for any other.
+    pub fn loudness(mut self, local_device: bool) -> CarSounds {
+        self.set_loudness(local_device);
+        self
+    }
+
+    pub fn set_loudness(&mut self, local_device: bool) {
+        (self.engine_loudness, self.wheels_loudness) = if local_device { (1.0, 1.0) } else { (0.5, 0.7) };
+    }
+
+    /// The engine's and the tyres' loudness factors.
+    pub fn loudness_factors(&self) -> (f32, f32) {
+        (self.engine_loudness, self.wheels_loudness)
     }
 }
 
@@ -348,14 +373,16 @@ fn car_loops(
         s.engine = s.engine_name.filter(|_| driven && car.drive.steering).map(|name| LoopCue {
             name,
             pitch: (v.0.length() / top).min(1.0),
-            volume: (0.05 + 0.95 * stick).min(1.0),
+            volume: (0.05 + 0.95 * stick).min(1.0) * s.engine_loudness,
         });
 
         // Tyres: eased towards the slip's loudness.
         let speed2 = (v.0.length_squared() / (top * top)).min(1.0);
         let target = if driven && car.drive.skidding {
             let sideways = (FRAC_PI_4..3.0 * FRAC_PI_4).contains(&car.drive.wheel_angle.abs());
-            if sideways { speed2 * 0.9 } else { 0.4 + 0.6 * speed2 }
+            // C# scaled the speed's part only.
+            let w = s.wheels_loudness;
+            if sideways { speed2 * w * 0.9 } else { 0.4 + 0.6 * speed2 * w }
         } else {
             0.0
         };

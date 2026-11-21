@@ -120,6 +120,10 @@ pub struct PlayerData {
     /// Run when the car appears at map start, for it.
     #[serde(default)]
     pub action_on_create: Option<String>,
+    /// Run when the game destroys the car (`TriggerManager.GetActionOnDestroy`
+    /// for a `Car`): an AI-driven one when it is wrecked.
+    #[serde(default)]
+    pub action_on_destroy: Option<String>,
 }
 
 fn default_player_car() -> String {

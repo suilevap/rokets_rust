@@ -12,18 +12,34 @@
 //!   then it is removed and its `ActionOnDestroy` runs
 //!   (`SimpleCarCorpseTime`, `Destroy`, `OnEntityDestroy`).
 //!
+//! An AI's `Car` (another of the map's `Players`) dies as `Car.OnKilled`
+//! and `GameModeSinglePlayer.OnNewAvatarCreate` have it (no local device
+//! and `RespawnAll` off: `SheduleDestroy`): it bursts and sounds as above,
+//! and its wreck (`CreateDestroyedEntity`: a `Box` with the wreck's sprite,
+//! the car's speed and spin) stays to the end of the level, a plain body
+//! the magnet may grab, which smokes not (a box does not) and does not move
+//! if the car could not (`SetRestrictions` all on a static car). The car
+//! itself is gone at once: its map id is free and its `ActionOnDestroy`
+//! runs (`Destroy`, `OnEntityDestroy`); nobody drives it, its gun, magnet,
+//! sounds and health bar are gone, the camera lets it go.
+//!
 //! The player's car has its own (`game_mode`: restart, lives, respawn).
 //!
 //! Not ported: the red border that flashes round a dead enemy
 //! (`HighlightDeadEnemy`) and the flying car parts a damaged or destroyed
-//! car throws (`CreateCarPartOnDamage`, a frame strip).
+//! car throws (`CreateCarPartOnDamage`, a frame strip); the wreck of an
+//! AI's `Car` keeps the car's collider, mass and damping (C#'s `Box` took
+//! the wreck sprite's size and its density's mass).
 
 use avian2d::prelude::*;
 use bevy::prelude::*;
 use rand::rngs::SmallRng;
 use rand::{Rng, SeedableRng};
 
-use super::control::Team;
+use super::cabin::CabinSway;
+use super::control::{AutoAimVisible, LocalDevice, Team};
+use super::smoke::SmokePoints;
+use super::Car;
 use super::health_bar::HealthBar;
 use super::shield::Shield;
 use super::simple::SimpleDrive;
@@ -31,6 +47,9 @@ use crate::actions::{OnDestroy, RunAction, destroy_action};
 use crate::controls::{LocalPlayer, PlayerIntent};
 use crate::explosion::{Destroyed, ExplosionSystems, Health};
 use crate::game::{GameState, LoadedMap, MapId};
+use crate::gadget::{Linkable, Magnet};
+use crate::render::camera::CameraTarget;
+use crate::sound::CarSounds;
 use crate::game_mode::{Wreck, Wreckable, burst};
 use crate::particles::styles::DAMAGED_SMOKE;
 use crate::render::particles::Particles;
@@ -75,20 +94,36 @@ fn kill_cars(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut particles: ResMut<Particles>,
     mut rng: ResMut<DeathRng>,
-    cars: Query<(&Wreckable, &Transform, Option<&Children>, &RigidBody), (With<Team>, Without<LocalPlayer>, Without<Corpse>, Without<Wreck>)>,
+    cars: Query<
+        (&Wreckable, &Transform, Option<&Children>, &RigidBody, Has<Car>, Option<&OnDestroy>, Option<&MapId>),
+        (With<Team>, Without<LocalPlayer>, Without<Corpse>, Without<Wreck>),
+    >,
+    mut run: MessageWriter<RunAction>,
 ) {
     let rng = &mut rng.0;
     for Destroyed(entity) in destroyed.read() {
-        let Ok((wreckable, transform, children, body)) = cars.get(*entity) else {
+        let Ok((wreckable, transform, children, body, ai_car, on_destroy, id)) = cars.get(*entity) else {
             continue;
         };
         let mut car = commands.entity(*entity);
         // Nobody drives it, shoots, soaks or shows a bar any more; a blow
         // is no blow to it (no health).
-        car.remove::<(Weapon, PlayerIntent, SimpleDrive, HealthBar, Health, Shield)>()
-            .insert(Corpse { left: CORPSE_TIME });
-        if *body == RigidBody::Static {
-            car.insert((RigidBody::Dynamic, TransformInterpolation));
+        car.remove::<(Weapon, PlayerIntent, SimpleDrive, HealthBar, Health, Shield)>();
+        if ai_car {
+            // The car is gone, its wreck a plain box that stays.
+            crate::ai::set_control(&mut car, "", 0);
+            car.remove::<(Car, CarSounds, SmokePoints, CabinSway, Magnet, CameraTarget, MapId)>()
+                .remove::<(Team, AutoAimVisible, LocalDevice)>();
+            // A static car's stays put: nothing to pull.
+            if *body != RigidBody::Static {
+                car.insert(Linkable);
+            }
+            run.write_batch(destroy_action(on_destroy, id));
+        } else {
+            car.insert(Corpse { left: CORPSE_TIME });
+            if *body == RigidBody::Static {
+                car.insert((RigidBody::Dynamic, TransformInterpolation));
+            }
         }
         for child in children.into_iter().flatten() {
             commands.entity(*child).despawn();

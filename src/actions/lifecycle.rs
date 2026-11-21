@@ -5,7 +5,9 @@
 //! removed two seconds after it died). Leaving the map does not count.
 //!
 //! The player's car runs its `ActionOnCreate` at map start only: coming
-//! back at a respawn point it is the same car in C#.
+//! back at a respawn point it is the same car in C#. Its `ActionOnDestroy`
+//! does not run, as it is wrecked rather than destroyed (`game_mode`);
+//! the other `Players` cars run theirs as they are wrecked (`car::death`).
 
 use bevy::prelude::*;
 
@@ -35,7 +37,7 @@ fn actions_of(map: &LoadedMap, id: i64) -> (Option<String>, Option<String>) {
         return (named(&e.action_on_create), named(&e.action_on_destroy));
     }
     if let Some(p) = map.data.players.items.iter().find(|p| p.id == id) {
-        return (named(&p.action_on_create), None);
+        return (named(&p.action_on_create), named(&p.action_on_destroy));
     }
     if let Some(c) = map.data.simple_cars.items.iter().find(|c| c.id == id) {
         return (named(&c.action_on_create), named(&c.action_on_destroy));

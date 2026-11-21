@@ -3,7 +3,8 @@
 use bevy::prelude::*;
 use tilerider::actions::{ActionsPlugin, CurrentActions, run};
 use tilerider::content::map::MapData;
-use tilerider::car::control::Team;
+use tilerider::car::control::{LocalDevice, Team};
+use tilerider::sound::CarSounds;
 use tilerider::controls::{LocalPlayer, NoInput};
 use tilerider::game::MapId;
 
@@ -36,6 +37,22 @@ fn set_control_on_a_simple_car_sets_its_team_and_whether_nobody_drives_it() {
     assert!(run(w, "SetControl(3001,NoneFriend)", None, 0));
     assert_eq!(w.entity(car).get::<Team>(), Some(&Team(0)));
     assert!(!run(w, "SetControl(3999,NoneFriend)", None, 0), "no such car");
+}
+
+#[test]
+fn set_control_says_whether_a_car_is_held_for_the_players_devices() {
+    let mut app = App::new();
+    app.add_plugins(ActionsPlugin);
+    // Another of the map's `Players`, an AI's `Car` with its sounds.
+    let car = app.world_mut().spawn((MapId(4002), Team(1), CarSounds::new(Some("Engine"), 0.0).loudness(false))).id();
+    let w = app.world_mut();
+    assert!(run(w, "SetControl(4002,NoneLocal)", None, 0));
+    assert!(w.entity(car).contains::<LocalDevice>(), "no blows out of view");
+    assert_eq!(w.entity(car).get::<CarSounds>().unwrap().loudness_factors(), (1.0, 1.0));
+    assert!(run(w, "SetControl(4002,AttackAiVer2)", None, 0));
+    assert!(!w.entity(car).contains::<LocalDevice>());
+    assert_eq!(w.entity(car).get::<CarSounds>().unwrap().loudness_factors(), (0.5, 0.7));
+    assert!(!w.entity(car).contains::<NoInput>(), "an AI drives it");
 }
 
 /// An app whose map has an `AIAdjustment` named `Adjust` for `item` with `team`.

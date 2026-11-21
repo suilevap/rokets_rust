@@ -1,4 +1,6 @@
-//! Enemy controls: what writes the `PlayerIntent` of the map's simple cars.
+//! Enemy controls: what writes the `PlayerIntent` of the map's simple cars
+//! and of its `Players` cars other than the player's (`car::Role::AiCar`:
+//! a `Car` the AI drives as the devices drive the player's).
 //!
 //! C# origin: `AiControlFactory` (which `ControlType` makes which control),
 //! `BaseControl`, `AIBaseControl`, `AIBTBaseControl`, `AiSimpleControl`,
@@ -179,7 +181,6 @@ use crate::actions::{Inactive, RunAction};
 use crate::car::CarRadius;
 use crate::car::control::Team;
 use crate::car::shield::Shield;
-use crate::car::simple::SimpleDrive;
 use crate::controls::{LocalPlayer, PlayerIntent};
 use crate::particles::styles::{BOMB_BEEP, TELEPORT_STREAK};
 use crate::render::camera::MainCamera;
@@ -393,7 +394,7 @@ fn gather_blackboards(
         Has<Inactive>,
         Option<&LinearVelocity>,
         &CarRadius,
-        Has<SimpleDrive>,
+        &RigidBody,
         &PlayerIntent,
         Option<&Shield>,
     )>,
@@ -448,7 +449,7 @@ fn gather_blackboards(
         mates.extend(keyed.into_iter().map(|k| k.1));
     }
     let blocked = |a: Vec2, b: Vec2| map.line_collides(a, b);
-    for (own, mut blackboard, running, position, rotation, team, health, weapon, inactive, velocity, radius, can_move, intent, shield) in
+    for (own, mut blackboard, running, position, rotation, team, health, weapon, inactive, velocity, radius, rigid_body, intent, shield) in
         &mut brains
     {
         // `ControlableEntity.Update`: nothing for a car that is inactive
@@ -469,7 +470,8 @@ fn gather_blackboards(
             }),
             velocity: velocity.map_or(Vec2::ZERO, |v| v.0),
             radius: radius.0,
-            can_move,
+            // `!IsStatic`: a simple car's or an AI `Car`'s.
+            can_move: *rigid_body != RigidBody::Static,
             stick: intent.move_dir,
             health: health.hp,
             max_health: health.max,

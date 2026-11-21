@@ -25,6 +25,15 @@ pub struct Team(pub u8);
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct AutoAimVisible(pub bool);
 
+/// `Control.LocalDevice`: the car is the player's devices' or held for
+/// them (`Local`, the hot-seat ones, `NoneLocal`), whether or not the
+/// devices drive it now. Such a car takes no blow while the camera does not
+/// see it (`ControlableEntity.TakeDamage`, `Car.TakeDamage`: `LocalDevice
+/// && !IsInView`), shows no health bar and sounds at full loudness (`Car`:
+/// an AI's engine and tyres are quieter).
+#[derive(Component, Debug, Clone, Copy, PartialEq, Eq)]
+pub struct LocalDevice;
+
 /// What a `ControlType` makes of a car.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ControlKind {
