@@ -1,5 +1,5 @@
-//! The car's gun: the Minigun, the Railgun, the Hammer, the Zombie's and
-//! the Plasma gun so far.
+//! The car's gun: the Minigun, the Railgun, the Hammer, the Zombie's, the
+//! Plasma gun and the Tesla so far.
 //!
 //! C# origin: `BaseWeapon`, `BaseComplexWeapon`, `MinigunWeapon`,
 //! `RailgunWeapon`, `HammerWeapon`, `PlasmaGun`, `WeaponHelper.SimulateMinigunBullet` /
@@ -41,6 +41,11 @@
 //!   hurts (8) and pushes (18) the first thing it touches. Its shot is not
 //!   immediate ([`Kind::is_immediate`]): the attacking AI fires it in the
 //!   slow gun's rhythm.
+//! - The Tesla ([`tesla`]) has no barrel and nothing to aim: while the
+//!   trigger is down it strikes, once a reload (0.25 s; 0.1 of the
+//!   player's energy), every living car of another team within 8 units of
+//!   its coil for 8, pushing each by 5, with a crackle of lightning; its
+//!   reach shows as a pulsing red dotted circle once it has been fired.
 //! - The gun rides the swaying cabin (`DrawCabina` updated it a second
 //!   time with the cabin's offset, which also doubled the speed of its
 //!   eases; [`Aim::step`] runs twice for cars with a cabin, as there).
@@ -94,6 +99,7 @@ pub mod hammer;
 pub mod max_angle;
 pub mod model;
 pub mod plasma;
+pub mod tesla;
 mod view;
 pub mod zombie;
 
@@ -114,7 +120,7 @@ use crate::particles::styles::{
 use crate::render::particles::Particles;
 use crate::sound::{CarSounds, LoopCue, PlaySound};
 use crate::units::PX_PER_UNIT;
-use model::{AimLook, Aim, Energy, Hammer, Kind, Minigun, Options, Plasma, Railgun, Shot, Tracking, Zombie};
+use model::{AimLook, Aim, Energy, Hammer, Kind, Minigun, Options, Plasma, Railgun, Shot, Tesla, Tracking, Zombie};
 
 pub use view::{AIM_LINE_TEXTURES, energy_bar_alpha};
 
@@ -154,15 +160,25 @@ pub const HAMMER_SPRITE: GunSprite = GunSprite {
     origin: Vec2::new(64.0, 64.0),
 };
 
-/// The sprite of a kind of gun; the Zombie's has none (`ZombieWeapon.Draw`
-/// only draws its pull).
+/// The sprite of a kind of gun turned about its origin; the Zombie's has
+/// none (`ZombieWeapon.Draw` only draws its pull), nor has the Tesla (its
+/// two spinning discs are [`tesla`]'s).
 pub fn sprite_of(kind: Kind) -> Option<GunSprite> {
     match kind {
         Kind::Minigun => Some(MINIGUN_SPRITE),
         Kind::Railgun => Some(RAILGUN_SPRITE),
         Kind::Hammer => Some(HAMMER_SPRITE),
-        Kind::Zombie => None,
+        Kind::Zombie | Kind::Tesla => None,
         Kind::Plasma => Some(PLASMA_SPRITE),
+    }
+}
+
+/// Every texture a kind of gun draws with on the car, to load with a map
+/// that has one: its sprite, or the Tesla's discs and circle.
+pub fn textures_of(kind: Kind) -> Vec<&'static str> {
+    match kind {
+        Kind::Tesla => tesla::TEXTURES.to_vec(),
+        _ => sprite_of(kind).map(|s| s.name).into_iter().collect(),
     }
 }
 
@@ -198,6 +214,8 @@ pub struct Weapon {
     pub zombie: Zombie<Entity>,
     /// The reload of a [`Kind::Plasma`].
     pub plasma: Plasma,
+    /// The reload of a [`Kind::Tesla`], and whether it has been fired.
+    pub tesla: Tesla,
     /// The saw is turning and hurts (`_isWorking`): its car is alive and
     /// someone drives it.
     pub working: bool,
@@ -235,6 +253,7 @@ impl Weapon {
             tracking: Tracking::default(),
             zombie: Zombie::new(&options, rng.random()),
             plasma: Plasma::new(&options, rng.random()),
+            tesla: Tesla::new(&options, rng.random()),
             working: false,
             local: mount,
             local_angle: 0.0,
@@ -260,7 +279,7 @@ impl Weapon {
             Kind::Railgun => self.railgun.look(&self.options, energy),
             Kind::Plasma => self.plasma.look(&self.options, energy),
             // No aim line; never asked.
-            Kind::Hammer | Kind::Zombie => AimLook::Normal,
+            Kind::Hammer | Kind::Zombie | Kind::Tesla => AimLook::Normal,
         }
     }
 
@@ -273,6 +292,7 @@ impl Weapon {
             Kind::Hammer => true,
             Kind::Zombie => self.zombie.reloaded(),
             Kind::Plasma => self.plasma.can_fire(&self.options, None),
+            Kind::Tesla => self.tesla.can_fire(&self.options, None),
         }
     }
 
@@ -282,8 +302,9 @@ impl Weapon {
     }
 
     /// `TargetInFireRange`: whether a target (middle and radius) is where
-    /// the gun points now and within its range. The Hammer is a plain
-    /// `BaseWeapon`: its `PiuPosition` is its mount, not a muzzle.
+    /// the gun points now and within its range. The Hammer and the Tesla
+    /// are plain `BaseWeapon`s: their `PiuPosition` is the mount (the
+    /// Tesla has no sprite, so its muzzle is its mount anyway).
     pub fn in_fire_range(&self, target: Vec2, radius: f32) -> bool {
         self.fire_range().contains(target, radius)
     }
@@ -365,7 +386,13 @@ impl Plugin for WeaponPlugin {
                     .run_if(in_state(GameState::Playing)),
             )
             .add_systems(Update, gun_sounds.run_if(in_state(GameState::Playing)))
-            .add_plugins((view::WeaponViewPlugin, max_angle::MaxAnglePlugin, zombie::ZombiePlugin, plasma::PlasmaPlugin));
+            .add_plugins((
+                view::WeaponViewPlugin,
+                max_angle::MaxAnglePlugin,
+                zombie::ZombiePlugin,
+                plasma::PlasmaPlugin,
+                tesla::TeslaPlugin,
+            ));
     }
 }
 
@@ -404,6 +431,7 @@ fn fire_weapons(
     mut hits: MessageWriter<Hit>,
     mut play: MessageWriter<PlaySound>,
     mut waves: MessageWriter<zombie::ZombieWave>,
+    (mut strikes, mut crackles): (MessageWriter<tesla::TeslaStrike>, MessageWriter<tesla::TeslaCrackle>),
     mut commands: Commands,
 ) {
     let dt = time.delta_secs();
@@ -526,6 +554,23 @@ fn fire_weapons(
                     e.0.try_spend(options.energy);
                 }
             }
+            // `TeslaWeapon.TryShoot` while the trigger is down (either kind,
+            // `FireType.Shoot`): a crackle now and then, whether it strikes
+            // or not, then `BaseWeapon.TryShoot`'s reload and energy; its
+            // `OnShoot` is the strike ([`tesla::tesla_strikes`]). Not from an
+            // inactive car, as the Plasma gun's. The coil is where the car
+            // is now, not where the gun was last placed (`PiuPosition`
+            // placed it afresh).
+            Kind::Tesla => {
+                if !inactive && (intent.fire || accurate) {
+                    let coil = position.0 + Vec2::from_angle(angle).rotate(gun.mount);
+                    crackles.write(tesla::TeslaCrackle { at: coil, range: options.range });
+                    if gun.tesla.pull(&options, energy.as_mut().map(|e| &mut e.0)) {
+                        strikes.write(tesla::TeslaStrike { car, at: coil });
+                    }
+                }
+                gun.tesla.step(dt);
+            }
             // The same `TryShoot`, a reload and all; its `OnShoot` is the
             // wave ([`zombie::zombie_waves`]).
             Kind::Zombie => {
@@ -535,8 +580,11 @@ fn fire_weapons(
                 }
             }
         }
-        // The saw does not ride the cabin (its `Update` ignored `deltaPos`).
-        let cabin = sway.filter(|_| gun.kind != Kind::Hammer).map_or((Vec2::ZERO, 0.0), |s| s.pose(angle));
+        // The saw and the coil do not ride the cabin (their `Update`
+        // ignored `deltaPos`).
+        let cabin = sway
+            .filter(|_| !matches!(gun.kind, Kind::Hammer | Kind::Tesla))
+            .map_or((Vec2::ZERO, 0.0), |s| s.pose(angle));
         gun.aim.step(dt);
         if sway.is_some() {
             gun.aim.step(dt);

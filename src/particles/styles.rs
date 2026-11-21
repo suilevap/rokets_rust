@@ -574,8 +574,71 @@ pub static PLASMA_END: Style = Style {
     origin: CENTRE,
 };
 
+/// `Color.Cyan`.
+const CYAN: [f32; 4] = color(0.0, 1.0, 1.0);
+
+/// `_teslaTrailStyle`: a cyan spark of the Tesla's lightning shooting out
+/// along a random line at 512 pixels a second and stopping, short and
+/// thin to start, then shorter and wider as it fades, in 0.2 s.
+pub static TESLA_TRAIL: Style = Style {
+    begin: State {
+        speed: 512.0 / 32.0,
+        scale: Vec2::new(2.0, 0.5),
+        view_rotation: 0.0,
+        rotation: 0.0,
+        color: CYAN,
+        height: SMOKE_FLY_TRAIL_START,
+    },
+    end: State {
+        speed: 0.0,
+        scale: Vec2::new(0.75, 2.5),
+        view_rotation: 0.0,
+        rotation: 0.0,
+        color: TRANSPARENT,
+        height: SMOKE_FLY_TRAIL_START,
+    },
+    lifetime: 0.2,
+    texture: "Particles\\TeslaTrail",
+    additive: true,
+    random_frame: false,
+    origin: CENTRE,
+};
+
+/// `TeslaTrailMaxLength` (`GetMaxWidth`): the texture's 64 pixels × 2.
+pub const TESLA_TRAIL_LENGTH: f32 = 64.0 / 32.0 * 2.0;
+
+/// `_teslaTrailStaticStyle`: one still link of a bolt, cyan, widening
+/// from half to 2.75 times the texture's height as it fades in 0.2 s.
+pub static TESLA_TRAIL_STATIC: Style = Style {
+    begin: State {
+        speed: 0.0,
+        scale: Vec2::new(1.0, 0.5),
+        view_rotation: 0.0,
+        rotation: 0.0,
+        color: CYAN,
+        height: SMOKE_FLY_TRAIL_START,
+    },
+    end: State {
+        speed: 0.0,
+        scale: Vec2::new(1.0, 2.75),
+        view_rotation: 0.0,
+        rotation: 0.0,
+        color: TRANSPARENT,
+        height: SMOKE_FLY_TRAIL_START,
+    },
+    lifetime: 0.2,
+    texture: "Particles\\TeslaTrail",
+    additive: true,
+    random_frame: false,
+    origin: CENTRE,
+};
+
+/// `TeslaTrailStaticLength` (`GetMaxWidth`): a link is the texture's 64
+/// pixels long.
+pub const TESLA_LINK_LENGTH: f32 = 64.0 / 32.0;
+
 /// Every texture a style here draws with, to load with the map.
-pub const TEXTURES: [&str; 19] = [
+pub const TEXTURES: [&str; 20] = [
     WHEEL_TRAIL.texture,
     EXHAUST.texture,
     BOMB_BEEP.texture,
@@ -595,4 +658,5 @@ pub const TEXTURES: [&str; 19] = [
     STUN_FLASH.texture,
     ZOMBIE_CIRCLE_START.texture,
     PLASMA_END.texture,
+    TESLA_TRAIL.texture,
 ];

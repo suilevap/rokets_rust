@@ -86,11 +86,13 @@ along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
    `AITouchAndRunCarControl`, `PlayerCarControlPath`: no `ControlType`
    reaches them); a debug view of each car's path (`AiBlackboard.Draw`).
 2. **Weapons and enemy extras.** The other weapons (`Laser`,
-   `Tesla`, `Shotgun`, `Rocketlauncher*`, `LaserWithDelay`:
+   `Shotgun`, `Rocketlauncher*`, `LaserWithDelay`:
    `PeriodicFireControl`'s pre-fire uses its `ChargeTime`; the rockets can
    fly as the Plasma gun's bullets do, `weapon/plasma.rs`), the `SetWeapon`
-   action (Arena and TestLab hand the player a Plasma gun with it), an
-   inactive car's other guns (only the Plasma gun and the Zombie's check
+   action (Arena and TestLab hand the player a Plasma gun with it,
+   SupportAiTest a Tesla), the Tesla's `Guard` car (HiddenBox, TheLastStand)
+   once `GuardAi` drives it, an
+   inactive car's other guns (only the Plasma gun, the Tesla and the Zombie's check
    `Inactive`: Trophy's deactivated `AlwaysShoot` turret had its trigger
    down from its first step and fired its Plasma gun until it did), the red aim
    line of a static or enemy gun (`LaserVisiblityUpdate`: drawn for every
