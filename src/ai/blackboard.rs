@@ -62,8 +62,11 @@
 //! `LeaderSeeTarget` (the leader, alive, has no wall between it and the
 //! target) is looked at with the target, against the floor plan.
 //!
+//! The orders a map gives the car (`Orders`, `OrdersManager`) are its
+//! [`OrderQueue`](super::order_queue::OrderQueue).
+//!
 //! Not ported: `AiBlackboard`'s other states (`SeeTargetForward`: no tree
-//! reads it), its `Orders`,
+//! reads it),
 //! `AdditionalTargetPosition`, `LastDamagerPosition` (copied by `Uii` in C#,
 //! read by no tree), `ActionData`
 //! (the one slot every action shared: an action keeps its own state), the
@@ -87,6 +90,7 @@ use rand::{Rng, SeedableRng};
 use flatbt_bevy::Tick;
 
 use super::navigation::Navigation;
+use super::order_queue::OrderQueue;
 use crate::map::nav::{Blocker, NavPath};
 use crate::map::terrain::Terrain;
 use crate::weapon::model::{FireRange, closer_by_chebyshev, due};
@@ -324,6 +328,9 @@ pub struct AiBlackboard {
     pub blocker: Option<Blocker>,
     /// `MapActionOnTirgger`: the map action `TriggerMapAction` runs.
     pub map_action_on_trigger: Option<String>,
+    /// `Orders`: what the map has ordered the car to do (`MoveOrder`, …),
+    /// carried out by `ExecuteOrders`.
+    pub order_queue: OrderQueue,
     /// Map actions the tree asked for (`MapManager.Triggers.RunAction`),
     /// sent by `ai::send_trigger_actions`.
     actions: Vec<String>,
@@ -417,6 +424,7 @@ impl AiBlackboard {
             path_compute_time: 0.0,
             blocker: None,
             map_action_on_trigger: None,
+            order_queue: OrderQueue::default(),
             actions: Vec::new(),
             stick_cleared: false,
             watch: PathWatch::default(),

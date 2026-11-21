@@ -14,8 +14,9 @@ for `AiSimpleTurret` / `AiSimpleTurretFriend` (`TurretAi`), `AiChaser`
 (`FollowPathAi`, `FollowPathAiSafe`), `GoToEnemySimplePredictionPosition`
 (all flatbt trees), `AttackAiVer2`, `SimpleAttackNearestEnemy`,
 `SimpleFollowByEnemyAi`, `MoveAndFireInInitDirection`, `ZombieFlocking`,
-`ZombieFlockingFriend`, `SimpleFlocking`, `AlwaysShoot` and
-`ShootPattern`; every other
+`ZombieFlockingFriend`, `SimpleFlocking`,
+`OrderExecutorFriend`, `OrderExecutorAi` (with `MoveOrder` and
+`AIClearOrders`), `AlwaysShoot` and `ShootPattern`; every other
 `ControlType` that is an `AIBTBaseControl` stands idle until the next slice.
 The navigation (`map/nav`: `NavGraph`, `NavPath`) and the nodes that drive
 along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
@@ -31,9 +32,26 @@ along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
      — then `PatrolPath` as the `Path`; `SetPath` already stores it),
      `AlwaysTryShoot`, `MoveToRandomVisiblePosition`
      (`GetRandomFreeVisiblePoint`, `RandomHelper.NextVector2Fake`);
-   - `SupportAi*`, `OrderExecutor*`: `ExecuteOrders`, `OrdersManager`,
-     `FollowLeader`, `SmartAttack` (below); `FindNearestLeader`, the
-     `Leader` and the friends (`Mate`) are in with the zombies;
+   - `SupportAi*`: `SmartAttack` (below), `ExecuteOrders` (in, with the
+     order queue), `FollowLeader`; `FindNearestLeader`, the `Leader` and
+     the friends (`Mate`) are in with the zombies;
+   - the other AI orders (`ai/order_queue.rs` has the queue and
+     `MoveOrder`), each a map action that queues a behaviour for
+     `ExecuteOrders`: `MoveCargoOrder` (26 in 2WeeksAgo, Assembly,
+     FinalCredits, Friend, Race, Teleport, UnderPressure:
+     `BTActionFactory.CreateCarrierBehaviour`: grab the cargo with the
+     magnet, tow it to a point within `R`, drop it at `DropPosition` or a
+     place the AI finds), `GrabCargoOrder` (4: `CreateGrabCargoBehaviour`,
+     and `ActionOnGrab` as the blackboard's `MapActionOnTirgger`),
+     `PressButtonOrder` (Friend: `CreatePressButtonBehaviour`: drive onto
+     the button, wait 1.2 s, check it is pressed), `AttackTargetOrder`
+     (no map: `CreateAttackTargetBehaviour`); they need the AI to use the
+     magnet gadget. Also `MoveOrder`'s `DEBUG` build (`CustomAi.SmartMoveToPos`:
+     a door in the way opened first by its button or a box pushed onto it;
+     AiPathTest is its test map, where the release build's `MoveToPoint`,
+     the one ported, finds the way shut and drops its `RemoveOnTry` order;
+     `tools/compare.py` runs the C# Debug build, so it shows the car going
+     to the button there);
    - `AttackAi*`'s slow-gun style: the Plasma gun and rocket launcher
      (`IsImmidiate` false) come with the weapons (`Kind::is_immediate`);
    - `CaptureTheBox*` (`CustomAi`): the chain gadget actions
@@ -44,8 +62,8 @@ along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
      variables read from a tree);
    - `AiSimpleTurretFriendFireAvailableTarget` (`TurretAiFireToAnyone`:
      `SimpleAttackByAngle`, `FindAngleNearestEnemy`; no map uses it).
-   And `BTLib`'s `RepeatUntilSuccess`, `DynamicNode`, `Condition` where a tree
-   wants them, `Orders`, `LastDamagerPosition`, `AdditionalTargetPosition`.
+   And `BTLib`'s `RepeatUntilSuccess`, `Condition` where a tree
+   wants them, `LastDamagerPosition`, `AdditionalTargetPosition`.
    A tree whose world reads are heavier than the turret's (many cars) will
    want the gather to copy less per step than it does (it already casts
    sight only on a thinking step; `FollowPathAi` cars also gather the
