@@ -105,9 +105,10 @@ impl Plugin for TriggersPlugin {
             .add_map_action::<ActivateTrigger, _>(arm_triggers)
             .add_systems(OnEnter(GameState::Playing), build_triggers)
             .add_systems(
-                Update,
+                FixedUpdate,
                 (watch_subscribers, check_triggers, finish_level)
                     .chain()
+                    .after(crate::explosion::ExplosionSystems)
                     .before(crate::actions::ActionSystems)
                     .run_if(in_state(GameState::Playing)),
             );

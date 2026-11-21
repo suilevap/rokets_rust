@@ -144,7 +144,7 @@ const LIT: [f32; 3] = [1.0, 69.0 / 255.0, 0.0];
 #[derive(Resource)]
 struct BoomRng(SmallRng);
 
-/// The explosion systems, for others to run after.
+/// The explosion systems (in `FixedUpdate`), for others to run after.
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ExplosionSystems;
 
@@ -157,8 +157,10 @@ impl Plugin for ExplosionPlugin {
             .add_message::<Damaged>()
             .add_message::<Destroyed>()
             .insert_resource(BoomRng(rand::SeedableRng::seed_from_u64(11)))
+            // In the fixed step, after the weapons' hits of the step.
+            .configure_sets(FixedUpdate, ExplosionSystems.after(crate::weapon::WeaponSystems))
             .add_systems(
-                Update,
+                FixedUpdate,
                 (blow_up_on_touch, burn_fuses, explode, take_hits, beep)
                     .chain()
                     .in_set(ExplosionSystems)

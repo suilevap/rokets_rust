@@ -30,7 +30,13 @@ impl Plugin for PickupsPlugin {
         app.init_resource::<CoinCount>()
             .add_message::<CoinCollected>()
             .add_systems(OnEnter(GameState::Loading), reset_count)
-            .add_systems(Update, (count_new_pickups, collect).run_if(in_state(GameState::Playing)));
+            .add_systems(
+                FixedUpdate,
+                (count_new_pickups, collect)
+                    .chain()
+                    .after(crate::explosion::ExplosionSystems)
+                    .run_if(in_state(GameState::Playing)),
+            );
     }
 }
 

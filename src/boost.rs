@@ -22,7 +22,10 @@ pub struct BoostPlugin;
 
 impl Plugin for BoostPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, boost_on_contact.run_if(in_state(GameState::Playing)));
+        app.add_systems(
+            FixedUpdate,
+            boost_on_contact.after(crate::explosion::ExplosionSystems).run_if(in_state(GameState::Playing)),
+        );
     }
 }
 

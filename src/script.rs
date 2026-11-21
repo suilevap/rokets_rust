@@ -102,7 +102,10 @@ fn run_script(
     // `trace t id x y angle speed`, in the C# game's units and axes (y
     // down, angles the other way) for `tools/compare.py`.
     if script.tick.is_multiple_of(6) {
-        for (id, t, v, health) in traced.iter().filter(|(id, ..)| script.trace.contains(&id.0)) {
+        // By map id: the query's order is the order things were made in.
+        let mut lines: Vec<_> = traced.iter().filter(|(id, ..)| script.trace.contains(&id.0)).collect();
+        lines.sort_by_key(|(id, ..)| id.0);
+        for (id, t, v, health) in lines {
             let angle = t.rotation.to_euler(EulerRot::XYZ).2.to_degrees();
             info!(
                 "trace {:.2} {} {:.3} {:.3} {:.2} {:.3}",

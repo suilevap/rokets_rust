@@ -66,9 +66,14 @@ impl Plugin for TeleportPlugin {
         app.add_map_action::<CreateTeleport, _>(create_teleport)
             .add_action_sprites::<CreateTeleport>(&[HOLE])
             .add_systems(
-                Update,
-                (take, arrive, pulse, streaks).run_if(in_state(GameState::Playing)),
-            );
+                FixedUpdate,
+                (take, arrive)
+                    .chain()
+                    .after(crate::explosion::ExplosionSystems)
+                    .before(crate::actions::ActionSystems)
+                    .run_if(in_state(GameState::Playing)),
+            )
+            .add_systems(Update, (pulse, streaks).run_if(in_state(GameState::Playing)));
     }
 }
 

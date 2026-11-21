@@ -357,7 +357,7 @@ pub fn energy_bar_alpha(e: &Energy) -> f32 {
 #[allow(clippy::type_complexity)]
 fn draw_energy_bar(
     time: Res<Time>,
-    mut rng: ResMut<super::WeaponRng>,
+    mut rng: ResMut<super::ViewRng>,
     windows: Query<&Window>,
     mut energies: Query<&mut PlayerEnergy, With<LocalPlayer>>,
     mut bars: Query<(&mut Node, &mut Visibility), (With<EnergyBar>, Without<BarPart>)>,

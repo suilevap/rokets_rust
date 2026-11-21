@@ -19,7 +19,7 @@
 use bevy::prelude::*;
 
 use super::shield::Shield;
-use crate::explosion::{Damaged, ExplosionSystems, Health};
+use crate::explosion::{Damaged, Health};
 use crate::game::{GameState, LoadedMap, MapEntity};
 use crate::render::layers::Layer;
 use crate::render::sprite::{SpriteTint, UnitQuad, sprite_bundle};
@@ -90,7 +90,7 @@ impl Plugin for HealthBarPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (show_on_damage.after(ExplosionSystems), spawn_bars, place_bars)
+            (show_on_damage, spawn_bars, place_bars)
                 .chain()
                 .run_if(in_state(GameState::Playing)),
         );

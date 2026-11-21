@@ -141,8 +141,15 @@ impl Plugin for ButtonPlugin {
     fn build(&self, app: &mut App) {
         app.add_map_action::<CreateButton, _>(create_button)
             .add_action_sprites::<CreateButton>(SPRITES)
-            .add_systems(Update, (look, show).chain().run_if(in_state(GameState::Playing)))
-            .add_systems(FixedUpdate, hold.run_if(in_state(GameState::Playing)));
+            .add_systems(
+                FixedUpdate,
+                (look, hold)
+                    .chain()
+                    .after(crate::explosion::ExplosionSystems)
+                    .before(crate::actions::ActionSystems)
+                    .run_if(in_state(GameState::Playing)),
+            )
+            .add_systems(Update, show.run_if(in_state(GameState::Playing)));
     }
 }
 

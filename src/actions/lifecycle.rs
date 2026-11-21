@@ -26,7 +26,7 @@ pub struct LifecyclePlugin;
 
 impl Plugin for LifecyclePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, on_create.run_if(in_state(GameState::Playing)));
+        app.add_systems(FixedUpdate, on_create.before(super::ActionSystems).run_if(in_state(GameState::Playing)));
     }
 }
 
