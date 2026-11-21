@@ -2,7 +2,7 @@
 
 use bevy::math::Vec2;
 use bevy::prelude::Entity;
-use flatbt::BtAction;
+use flatbt::{BtAction, NodeResult};
 
 use crate::ai::blackboard::{AiBlackboard, Foe};
 use crate::ai::orders::Orders;
@@ -17,29 +17,17 @@ use crate::ai::orders::Orders;
 /// as it was, to be looked at again next time). Succeeds when it found one.
 ///
 /// An action that does its work in `Start` and is over at once
-/// (`IsInProgress` false, `Complete` true). C# throws from its `Tick`
-/// (never reached); here it writes nothing.
-#[derive(Clone, Copy, Debug, Default)]
-pub struct FindNearestEnemy;
-
-impl BtAction<AiBlackboard, Orders> for FindNearestEnemy {
-    type State = ();
-
-    fn start(&self, bb: &mut AiBlackboard, _: ()) -> Option<()> {
-        let team = bb.team;
-        let hit_back = bb.damager().filter(|f| f.team != team).map(|f| f.entity);
-        let found = hit_back.or_else(|| nearest_enemy(bb));
-        // `Target`'s setter looks at it.
-        bb.set_target(found?);
-        Some(())
-    }
-
-    fn is_in_progress(&self, _: &(), _: &AiBlackboard, _: ()) -> bool {
-        false
-    }
-
-    fn tick(&self, _: &mut (), _: &mut AiBlackboard, _: ()) -> Orders {
-        Orders::default()
+/// (`IsInProgress` false, `Complete` true): a leaf here.
+pub fn find_nearest_enemy(bb: &mut AiBlackboard) -> NodeResult<Orders> {
+    let team = bb.team;
+    let hit_back = bb.damager().filter(|f| f.team != team).map(|f| f.entity);
+    match hit_back.or_else(|| nearest_enemy(bb)) {
+        Some(found) => {
+            // `Target`'s setter looks at it.
+            bb.set_target(found);
+            NodeResult::Success
+        }
+        None => NodeResult::Failure,
     }
 }
 
@@ -355,25 +343,10 @@ impl BtAction<AiBlackboard, Orders> for TriggerMapAction {
 
 /// `Sleep2Sec` (`b.Control.Sleep(2.0f)`): puts the next forced think off by
 /// `secs` and a period; over at once.
-#[derive(Clone, Copy, Debug)]
-pub struct Sleep {
-    pub secs: f32,
-}
-
-impl BtAction<AiBlackboard, Orders> for Sleep {
-    type State = ();
-
-    fn start(&self, ctx: &mut AiBlackboard, _: ()) -> Option<()> {
-        ctx.sleep(self.secs);
-        Some(())
-    }
-
-    fn is_in_progress(&self, _: &(), _: &AiBlackboard, _: ()) -> bool {
-        false
-    }
-
-    fn tick(&self, _: &mut (), _: &mut AiBlackboard, _: ()) -> Orders {
-        Orders::default()
+pub fn sleep(secs: f32) -> impl Fn(&mut AiBlackboard) -> NodeResult<Orders> + Clone {
+    move |bb| {
+        bb.sleep(secs);
+        NodeResult::Success
     }
 }
 
@@ -485,25 +458,10 @@ impl BtAction<AiBlackboard, Orders> for AimToTarget {
 
 /// `BTActionFactory.StopAction`: drops the path and lets the stick go; over
 /// at once, `Ok`.
-#[derive(Clone, Copy, Debug, Default)]
-pub struct Stop;
-
-impl BtAction<AiBlackboard, Orders> for Stop {
-    type State = ();
-
-    fn start(&self, ctx: &mut AiBlackboard, _: ()) -> Option<()> {
-        ctx.path = None;
-        ctx.clear_stick();
-        Some(())
-    }
-
-    fn is_in_progress(&self, _: &(), _: &AiBlackboard, _: ()) -> bool {
-        false
-    }
-
-    fn tick(&self, _: &mut (), _: &mut AiBlackboard, _: ()) -> Orders {
-        Orders::default()
-    }
+pub fn stop_moving(bb: &mut AiBlackboard) -> NodeResult<Orders> {
+    bb.path = None;
+    bb.clear_stick();
+    NodeResult::Success
 }
 
 /// `BTActionFactory.RemeberTargetPos(predicSec)` (`RemberPos`, 2014, for
@@ -516,26 +474,13 @@ impl BtAction<AiBlackboard, Orders> for Stop {
 /// `GetPredictionPosition`'s `Removed` branch (a removed body answers its
 /// `SafePosition`) is not here: a removed or deactivated target is no live
 /// target, so the action fails as for a dead one.
-#[derive(Clone, Copy, Debug, Default)]
-pub struct RememberTargetPos {
-    pub predict_sec: f32,
-}
-
-impl BtAction<AiBlackboard, Orders> for RememberTargetPos {
-    type State = ();
-
-    fn start(&self, ctx: &mut AiBlackboard, _: ()) -> Option<()> {
-        let target = ctx.live_target().copied()?;
-        ctx.target_position = ctx.prediction_position(target.pos, target.vel, self.predict_sec);
-        Some(())
-    }
-
-    fn is_in_progress(&self, _: &(), _: &AiBlackboard, _: ()) -> bool {
-        false
-    }
-
-    fn tick(&self, _: &mut (), _: &mut AiBlackboard, _: ()) -> Orders {
-        Orders::default()
+pub fn remember_target_pos(predict_sec: f32) -> impl Fn(&mut AiBlackboard) -> NodeResult<Orders> + Clone {
+    move |bb| match bb.live_target().copied() {
+        Some(target) => {
+            bb.target_position = bb.prediction_position(target.pos, target.vel, predict_sec);
+            NodeResult::Success
+        }
+        None => NodeResult::Failure,
     }
 }
 

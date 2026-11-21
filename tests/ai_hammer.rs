@@ -7,9 +7,8 @@ use std::sync::Arc;
 
 use bevy::math::Vec2;
 use bevy::prelude::Entity;
-use flatbt::BtAction;
 use flatbt_bevy::prelude::*;
-use tilerider::ai::nodes::RememberTargetPos;
+use tilerider::ai::nodes::remember_target_pos;
 use tilerider::ai::trees::hammer_ai;
 use tilerider::ai::{AiBlackboard, Body, Foe, Navigation, Orders, is_live, tick_mode};
 use tilerider::content::map::MapData;
@@ -283,22 +282,21 @@ fn remember_target_pos_takes_the_targets_place_or_fails_without_one() {
         max_health: 12,
         shield: 0,
     };
-    let node = RememberTargetPos { predict_sec: 1.0 };
+    let node = remember_target_pos(1.0);
     // No target: it fails and leaves `TargetPosition` be.
     bb.gather(DT, false, body, &[], &blocked);
-    assert!(node.start(&mut bb, ()).is_none());
+    assert_eq!(node(&mut bb), NodeResult::Failure);
     assert_eq!(bb.target_position, Vec2::ZERO);
     // A target: where it will be in a second.
     let cars = [enemy(1, at(5.0, 2.0), Vec2::new(2.0, 0.0))];
     bb.gather(DT, false, body, &cars, &blocked);
     bb.set_target(id(1));
-    assert!(node.start(&mut bb, ()).is_some());
+    assert_eq!(node(&mut bb), NodeResult::Success);
     assert_eq!(bb.target_position, at(5.0, 2.0) + Vec2::new(2.0, 0.0));
-    assert!(!node.is_in_progress(&(), &bb, ()));
     // A prediction in a wall is moved to a free place.
     let cars = [enemy(1, at(5.0, 2.0), Vec2::new(0.0, 20.0))];
     bb.gather(DT, false, body, &cars, &blocked);
-    assert!(node.start(&mut bb, ()).is_some());
+    assert_eq!(node(&mut bb), NodeResult::Success);
     let p = bb.target_position;
     assert!(world.terrain.is_point_free(p), "{p}");
 }

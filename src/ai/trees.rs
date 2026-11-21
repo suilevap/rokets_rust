@@ -20,7 +20,7 @@
 //!
 //! SimpleAttack =                                  simple_attack() =
 //!   bt.Sequence("Attack",                           seq((
-//!     FindNearestEnemy,                               action(FindNearestEnemy),
+//!     FindNearestEnemy,                               leaf(find_nearest_enemy),
 //!     SimpleAttackTarget(0.2f))                       simple_attack_target(0.2),
 //!                                                   ))
 //! SimpleScanning =                                simple_scanning() =
@@ -53,7 +53,7 @@
 //! Chase =                                         chase() =
 //!   bt.Selector("ChaseAI",                          select((
 //!     bt.Sequence("Chase",                            seq((
-//!       FindNearestEnemy,                               action(FindNearestEnemy),
+//!       FindNearestEnemy,                               leaf(find_nearest_enemy),
 //!       WhileTargetAlive(                               while_target_alive(
 //!         bt.All("Chase and fire",                        action(all((
 //!           bt.Optional(FireToTarget()),                    optional(FireToTarget(0)),
@@ -76,13 +76,13 @@
 //!     TryFireToAnyone(3.0f))                        ))
 //! FollowPathAiSafe =                              follow_path_ai_safe() =
 //!   bt.Selector("Brain",                            select((
-//!     bt.Sequence("Danger",                           seq((action(FindNearestEnemy),
+//!     bt.Sequence("Danger",                           seq((leaf(find_nearest_enemy),
 //!       FindNearestEnemy, Runaway),                           action(Runaway))),
 //!     bt.All("Fire", TryFireToAnyone(3.0f),           action(all((TryFireToAnyone(3),
 //!       MoveBase("MoveByPath")))                                  MoveBase))),
 //!                                                   ))
 //! GoToEnemySimplePredictionPosition =             go_to_enemy_simple_prediction_position() =
-//!   bt.Sequence("FindAndFollow",                    seq((action(FindNearestEnemy),
+//!   bt.Sequence("FindAndFollow",                    seq((leaf(find_nearest_enemy),
 //!     FindNearestEnemy,                                   action(MoveTowardsTargetNoPath(0.6))))
 //!     MoveTowardsTargetNoPath(0.6f))
 //! ```
@@ -101,7 +101,7 @@
 //!   (ScanDistance = 20)
 //! SimpleFollowByEnemyAi =                         simple_follow_by_enemy_ai() =
 //!   bt.Selector("SimpleFollowByEnemy",              select((
-//!     bt.Sequence("FindAndFollow",                    seq((action(FindNearestEnemy),
+//!     bt.Sequence("FindAndFollow",                    seq((leaf(find_nearest_enemy),
 //!       FindNearestEnemy,                                   action(SimpleFollowByTarget(0.2)))),
 //!       SimpleFollowByTarget(0.2f)),                  action(Idle),
 //!     bt.Idle)                                      ))
@@ -118,7 +118,7 @@
 //!
 //! ```text
 //! C#                                              Rust
-//! StopAction =                                    stop() = action(Stop)
+//! StopAction =                                    stop() = leaf(stop_moving)
 //!   bt.Action("Stop", b => { b.Path = null;         (the path dropped, the stick let go;
 //!     CurrentAxisControl = Zero; return true; })     over at once)
 //!
@@ -166,7 +166,7 @@
 //!     bt.Sequence("Follow",
 //!       FollowBy(b => b.LastKnowTargetPosition)))     (a Sequence of one child is the child)
 //! SmartAttackVer2 =                               smart_attack_ver2() =
-//!   bt.Sequence("Attack",                           seq((action(FindNearestEnemy),
+//!   bt.Sequence("Attack",                           seq((leaf(find_nearest_enemy),
 //!     FindNearestEnemy, SmartAttackTargetVer2)        smart_attack_target_ver2()))
 //!
 //! HideMove =                                      hide_move() =
@@ -177,7 +177,7 @@
 //!         ? Target.Weapon.Range * 1.25f : 32))          without a gun)))
 //! PanicBehaviour =                                panic_behaviour() =
 //!   bt.Sequence("PanicBehaviour",                   seq((
-//!     FindNearestEnemy,                               action(FindNearestEnemy),
+//!     FindNearestEnemy,                               leaf(find_nearest_enemy),
 //!     bt.Condition("EnemyVisible", Target != null     check(target alive, in sight now or in 0.5 s),
 //!       && Target.Alive &&                            hide_move(),
 //!       CheckState(SeeTarget | WillSeeTarget)),       stop(),
@@ -212,7 +212,7 @@
 //! C#                                              Rust
 //! SimpleFlocking =                                simple_flocking() =
 //!   bt.Selector("FlockingBrain",                    select((
-//!     bt.Sequence("Attack",                           seq((action(FindNearestEnemy),
+//!     bt.Sequence("Attack",                           seq((leaf(find_nearest_enemy),
 //!       FindNearestEnemy, Flocking(.5f, 4.0f)),             action(Flocking(0.5, 4)))),
 //!     Flocking(0.1f, 4.0f))                           action(Flocking(0.1, 4)),
 //!                                                   ))
@@ -224,21 +224,21 @@
 //!         CloserThanByChebyshev(.., Range * 4) &&             axes, no friend within 2 ranges),
 //!         !GetFriends(Range * 2).Any()),
 //!       Timer(2.0f, bt.Action("Power", …)),             timer(2, action(Power)),
-//!       bt.Action("Fire!", Fire = Shoot)),              action(FireNow))),
+//!       bt.Action("Fire!", Fire = Shoot)),              leaf(fire_now))),
 //!     bt.Sequence("Attack",                           seq((
 //!       bt.Condition("Agr", TakeDamage &&               check(took damage, no live target),
 //!         (Target == null || !Target.Alive)),
-//!       bt.Action("Uii", … return false)),              action(AlertFriends))),
+//!       bt.Action("Uii", … return false)),              leaf(alert_friends))),
 //!     bt.Sequence("ChangeTarget",                     seq((
 //!       bt.Condition("Agr", TakeDamage &&               check(took damage, target is the damager),
 //!         Target == LastDamager),
-//!       FindNearestEnemy),                              action(FindNearestEnemy))),
+//!       FindNearestEnemy),                              leaf(find_nearest_enemy))),
 //!     bt.Sequence("Attack",                           seq((
-//!       FindNearestEnemy,                               action(FindNearestEnemy),
+//!       FindNearestEnemy,                               leaf(find_nearest_enemy),
 //!       WhileTargetAlive(                               while_target_alive(
 //!         Flocking(1, 8, 1, LastKnowTargetPosition))),    action(Flocking(1, 8, 1, last known)))))),
 //!     bt.Sequence("FollowLeader",                     seq((
-//!       FindNearestLeader,                              action(FindNearestLeader),
+//!       FindNearestLeader,                              leaf(find_nearest_leader),
 //!       bt.Selector("TriggerPlayerLeader",              select((
 //!         bt.Condition("CheckLeader", Leader            check(no player leader or no action),
 //!           == null || !Alive || !LocalDevice ||
@@ -404,9 +404,9 @@ use flatbt_bevy::prelude::*;
 
 use super::blackboard::AiBlackboard;
 use super::nodes::{
-    AimToTarget, AlertFriends, ExecuteOrders, FindNearestEnemy, FindNearestLeader, FireNow, FireToTarget, Flocking, FollowBy, Idle,
+    AimToTarget, ExecuteOrders, FireToTarget, Flocking, FollowBy, Idle, alert_friends, find_nearest_enemy, find_nearest_leader, fire_now,
     MoveBase, MoveInInitDirection, MoveTowardsTargetNoPath, MoveToPoint, MoveToRandomVisiblePosition, Power,
-    RememberTargetPos, Runaway, Scanning, SimpleFollowByTarget, Sleep, Stop, TriggerMapAction, TryFireToAnyone, all, decorator_condition, optional,
+    remember_target_pos, Runaway, Scanning, SimpleFollowByTarget, sleep, stop_moving, TriggerMapAction, TryFireToAnyone, all, decorator_condition, optional,
     act, timer, while_target_alive,
 };
 use crate::weapon::model::closer_by_chebyshev;
@@ -493,7 +493,7 @@ pub fn simple_attack_target(predict_sec: f32) -> impl BehaviorNode<AiBlackboard,
 
 /// `BTActionFactory.SimpleAttack`: find an enemy, then attack it.
 pub fn simple_attack() -> impl BehaviorNode<AiBlackboard, Orders> {
-    named("Attack", seq((action(FindNearestEnemy), simple_attack_target(AIM_AHEAD))))
+    named("Attack", seq((leaf(find_nearest_enemy), simple_attack_target(AIM_AHEAD))))
 }
 
 /// `BTActionFactory.SimpleScanning`: stand still, then turn the gun to a
@@ -525,7 +525,7 @@ fn move_to_last_known_target_position() -> impl BehaviorNode<AiBlackboard, Order
 pub fn chase() -> impl BehaviorNode<AiBlackboard, Orders> {
     named("ChaseAI", select((
         named("Chase", seq((
-            action(FindNearestEnemy),
+            leaf(find_nearest_enemy),
             while_target_alive(
                 named("Chase and fire", act(all((
                     optional(FireToTarget::new(0.0)),
@@ -534,7 +534,7 @@ pub fn chase() -> impl BehaviorNode<AiBlackboard, Orders> {
             ),
         ))),
         move_to_last_known_target_position(),
-        named("Sleep", seq((named("Sleep2s", action(Sleep { secs: SLEEP_TIME })), act(Idle)))),
+        named("Sleep", seq((named("Sleep2s", leaf(sleep(SLEEP_TIME))), act(Idle)))),
     )))
 }
 
@@ -557,7 +557,7 @@ pub fn follow_path_ai() -> impl BehaviorNode<AiBlackboard, Orders> {
 /// in sight.
 pub fn follow_path_ai_safe() -> impl BehaviorNode<AiBlackboard, Orders> {
     named("Brain", select((
-        named("Danger", seq((action(FindNearestEnemy), act(Runaway)))),
+        named("Danger", seq((leaf(find_nearest_enemy), act(Runaway)))),
         named("Fire", act(all((TryFireToAnyone::new(FIRE_TO_ANYONE_PERIOD), MoveBase::default())))),
     )))
 }
@@ -565,7 +565,7 @@ pub fn follow_path_ai_safe() -> impl BehaviorNode<AiBlackboard, Orders> {
 /// `BTActionFactory.GoToEnemySimplePredictionPosition`: find an enemy and go
 /// straight at where it will be.
 pub fn go_to_enemy_simple_prediction_position() -> impl BehaviorNode<AiBlackboard, Orders> {
-    named("FindAndFollow", seq((action(FindNearestEnemy), act(MoveTowardsTargetNoPath::new(GO_TO_ENEMY_PREDICT)))))
+    named("FindAndFollow", seq((leaf(find_nearest_enemy), act(MoveTowardsTargetNoPath::new(GO_TO_ENEMY_PREDICT)))))
 }
 
 /// `BTActionFactory.SimpleAttackNearestEnemy`: attack, else idle.
@@ -577,7 +577,7 @@ pub fn simple_attack_nearest_enemy() -> impl BehaviorNode<AiBlackboard, Orders> 
 /// path, no fire), else idle.
 pub fn simple_follow_by_enemy_ai() -> impl BehaviorNode<AiBlackboard, Orders> {
     named("SimpleFollowByEnemy", select((
-        named("FindAndFollow", seq((action(FindNearestEnemy), act(SimpleFollowByTarget::new(AIM_AHEAD))))),
+        named("FindAndFollow", seq((leaf(find_nearest_enemy), act(SimpleFollowByTarget::new(AIM_AHEAD))))),
         act(Idle),
     )))
 }
@@ -590,7 +590,7 @@ pub fn move_in_one_direction_ai() -> impl BehaviorNode<AiBlackboard, Orders> {
 
 /// `BTActionFactory.StopAction`.
 pub fn stop() -> impl BehaviorNode<AiBlackboard, Orders> {
-    named("Stop", action(Stop))
+    named("Stop", leaf(stop_moving))
 }
 
 /// `BTActionFactory.Maneur(predictionSec)`: go to a random place in sight of
@@ -673,7 +673,7 @@ pub fn smart_attack_target_ver2() -> impl BehaviorNode<AiBlackboard, Orders> {
 
 /// `BTActionFactory.SmartAttackVer2`: find an enemy, then attack it smartly.
 pub fn smart_attack_ver2() -> impl BehaviorNode<AiBlackboard, Orders> {
-    named("Attack", seq((action(FindNearestEnemy), smart_attack_target_ver2())))
+    named("Attack", seq((leaf(find_nearest_enemy), smart_attack_target_ver2())))
 }
 
 /// `BTActionFactory.HideMove`: go to a free place out of the target's sight,
@@ -693,7 +693,7 @@ pub fn hide_move() -> impl BehaviorNode<AiBlackboard, Orders> {
 /// enemy and, if it can see the car (or will in 0.5 s), hide from it.
 pub fn panic_behaviour() -> impl BehaviorNode<AiBlackboard, Orders> {
     named("PanicBehaviour", seq((
-        action(FindNearestEnemy),
+        leaf(find_nearest_enemy),
         named("EnemyVisible", check(|bb: &AiBlackboard| bb.live_target().is_some() && bb.can_see_target())),
         hide_move(),
         stop(),
@@ -738,7 +738,7 @@ pub fn smart_attack_target() -> impl BehaviorNode<AiBlackboard, Orders> {
 
 /// `BTActionFactory.SmartAttack`: find an enemy, then [`smart_attack_target`].
 pub fn smart_attack() -> impl BehaviorNode<AiBlackboard, Orders> {
-    named("Attack", seq((action(FindNearestEnemy), smart_attack_target())))
+    named("Attack", seq((leaf(find_nearest_enemy), smart_attack_target())))
 }
 
 /// `BTActionFactory.AttackerAi` (`AttackAi`, and `AttackAiFriend` for the
@@ -769,7 +769,7 @@ pub fn attacker_ai_ver2() -> impl BehaviorNode<AiBlackboard, Orders> {
 /// it), else at a tenth.
 pub fn simple_flocking() -> impl BehaviorNode<AiBlackboard, Orders> {
     named("FlockingBrain", select((
-        named("Attack", seq((action(FindNearestEnemy), act(Flocking::new(0.5, 4.0))))),
+        named("Attack", seq((leaf(find_nearest_enemy), act(Flocking::new(0.5, 4.0))))),
         act(Flocking::new(0.1, 4.0)),
     )))
 }
@@ -795,24 +795,24 @@ pub fn zombie_flocking() -> impl BehaviorNode<AiBlackboard, Orders> {
         named("Super attack", seq((
             named("Check", check(super_attack_ready)),
             named("Timer_2s", timer(SUPER_ATTACK_POWER_TIME, act(Power))),
-            named("Fire!", action(FireNow)),
+            named("Fire!", leaf(fire_now)),
         ))),
         named("Attack", seq((
             named("Agr", check(|bb: &AiBlackboard| bb.took_damage() && bb.live_target().is_none())),
-            named("Uii", action(AlertFriends)),
+            named("Uii", leaf(alert_friends)),
         ))),
         named("ChangeTarget", seq((
             named("Agr", check(|bb: &AiBlackboard| bb.took_damage() && bb.target() == bb.damager_entity())),
-            action(FindNearestEnemy),
+            leaf(find_nearest_enemy),
         ))),
         named("Attack", seq((
-            action(FindNearestEnemy),
+            leaf(find_nearest_enemy),
             while_target_alive(act(Flocking::toward(1.0, 8.0, 1.0, |bb| {
                 bb.last_known_target_position
             }))),
         ))),
         named("FollowLeader", seq((
-            action(FindNearestLeader),
+            leaf(find_nearest_leader),
             named("TriggerPlayerLeader", select((
                 named("CheckLeader", check(|bb: &AiBlackboard| !bb.player_leads() || bb.map_action_on_trigger.is_none())),
                 named("Trigger", act(optional(TriggerMapAction::new(true)))),
@@ -854,7 +854,7 @@ pub fn hammer_ai() -> impl BehaviorNode<AiBlackboard, Orders> {
     named("Hammer Ai", select((
         named("AttackHammer", seq((
             named("Timer_1s", timer(HAMMER_CHASE_TIME, chase())),
-            named("RemberPos", action(RememberTargetPos { predict_sec: HAMMER_CHARGE_PREDICT })),
+            named("RemberPos", leaf(remember_target_pos(HAMMER_CHARGE_PREDICT))),
             named("Timer_3s", timer(
                 HAMMER_CHARGE_TIME,
                 named("MoveTo_PrevTargetPos", act(MoveToPoint::new(|bb| bb.target_position))),
@@ -873,7 +873,7 @@ pub fn hammer_ai() -> impl BehaviorNode<AiBlackboard, Orders> {
             )),
         ))),
         named("Idle", seq((
-            named("Sleep2s", action(Sleep { secs: SLEEP_TIME })),
+            named("Sleep2s", leaf(sleep(SLEEP_TIME))),
             named("MoveTo_RandomPos", act(MoveToRandomVisiblePosition::new(
                 |bb| bb.pos,
                 |bb| bb.scan_distance,
