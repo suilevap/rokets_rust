@@ -8,7 +8,7 @@
 //! ```text
 //! C#                                              Rust
 //! Timer(t, child) =                               timer(t, child)
-//!   bt.While("Timer_ts", b => b.StartTimer(),       (decorator_condition: init, check, child)
+//!   bt.While("Timer_ts", b => b.StartTimer(),       (a node keeping its start; asked at a think)
 //!     b => b.Timer.TotalSeconds < t ? Running : Ok, child)
 //!
 //! SimpleAttackTarget(p) =                         simple_attack_target(p) =
@@ -250,8 +250,8 @@
 //!             leads && !IsVisible(Leader.Position)),
 //!           FollowBy("Follow leader",                       action(FollowBy(leader in 1 s, 1, 10)))),
 //!             Leader.GetPredictionPosition(1), 1, 10)),
-//!         bt.While("LeaderAlive", StartTimer,             decorator_condition(start timer,
-//!           Leader.Alive && Timer < 5 ? Running : Fail,     leader alive and under 5 s,
+//!         bt.While("LeaderAlive", StartTimer,             if_else(leader alive,
+//!           Leader.Alive && Timer < 5 ? Running : Fail,     time_limit(5,
 //!           Flocking(1, 8, 4, Leader alive ?                action(Flocking(1, 8, 4, leader in 4 s,
 //!             Leader.GetPredictionPosition(4) :               or its own position)))),
 //!             Entity.Position)))),                        )),
@@ -406,8 +406,8 @@ use super::blackboard::AiBlackboard;
 use super::nodes::{
     AimToTarget, ExecuteOrders, FireToTarget, Flocking, FollowBy, Idle, alert_friends, find_nearest_enemy, find_nearest_leader, fire_now,
     MoveBase, MoveInInitDirection, MoveTowardsTargetNoPath, MoveToPoint, MoveToRandomVisiblePosition, Power,
-    remember_target_pos, Runaway, Scanning, SimpleFollowByTarget, sleep, stop_moving, TriggerMapAction, TryFireToAnyone, all, decorator_condition, optional,
-    act, timer, while_target_alive,
+    remember_target_pos, Runaway, Scanning, SimpleFollowByTarget, sleep, stop_moving, TriggerMapAction, TryFireToAnyone, all, optional,
+    act, never, time_limit, timer, while_target_alive,
 };
 use crate::weapon::model::closer_by_chebyshev;
 use super::orders::Orders;
@@ -826,18 +826,13 @@ pub fn zombie_flocking() -> impl BehaviorNode<AiBlackboard, Orders> {
                         FOLLOW_LEADER_MIN_DIST,
                     ))),
                 ))),
-                named("LeaderAlive", decorator_condition(
-                    |bb: &mut AiBlackboard| bb.start_timer(),
-                    |bb: &mut AiBlackboard| {
-                        if bb.leader().is_some() && bb.timer() < LEADER_FLOCK_TIME - 1e-6 {
-                            NodeResult::RUNNING
-                        } else {
-                            NodeResult::Failure
-                        }
-                    },
-                    act(Flocking::toward(1.0, 8.0, 4.0, |bb| {
+                // `While("LeaderAlive", StartTimer, Leader.Alive && Timer < 5 ? Running : Fail)`.
+                named("LeaderAlive", if_else(
+                    |bb: &AiBlackboard| bb.leader().is_some(),
+                    time_limit(LEADER_FLOCK_TIME, act(Flocking::toward(1.0, 8.0, 4.0, |bb| {
                         if bb.leader().is_some() { bb.leader_prediction(LEADER_FLOCK_AHEAD) } else { bb.pos }
-                    })),
+                    }))),
+                    check(never),
                 )),
             ))),
         ))),
