@@ -506,6 +506,39 @@ impl BtAction<AiBlackboard, Orders> for Stop {
     }
 }
 
+/// `BTActionFactory.RemeberTargetPos(predicSec)` (`RemberPos`, 2014, for
+/// `HammerAi`): with a target that is alive, puts where it will be in
+/// `predict_sec` seconds (`Target.GetPredictionPosition`: a place in a wall
+/// moved to a free one, [`AiBlackboard::prediction_position`]) into
+/// `TargetPosition` for the next node to go to, and succeeds; without one,
+/// fails. Over at once (`IsInProgress` false, `Complete` true).
+///
+/// `GetPredictionPosition`'s `Removed` branch (a removed body answers its
+/// `SafePosition`) is not here: a removed or deactivated target is no live
+/// target, so the action fails as for a dead one.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct RememberTargetPos {
+    pub predict_sec: f32,
+}
+
+impl BtAction<AiBlackboard, Orders> for RememberTargetPos {
+    type State = ();
+
+    fn start(&self, ctx: &mut AiBlackboard, _: ()) -> Option<()> {
+        let target = ctx.live_target().copied()?;
+        ctx.target_position = ctx.prediction_position(target.pos, target.vel, self.predict_sec);
+        Some(())
+    }
+
+    fn is_in_progress(&self, _: &(), _: &AiBlackboard, _: ()) -> bool {
+        false
+    }
+
+    fn tick(&self, _: &mut (), _: &mut AiBlackboard, _: ()) -> Orders {
+        Orders::default()
+    }
+}
+
 /// `BTActionFactory.MoveInOneDirectionAi`'s action (`MoveToInitDirection`):
 /// remembers the way the car faces when it starts, then keeps the stick and
 /// the gun that way with the trigger down, for ever.

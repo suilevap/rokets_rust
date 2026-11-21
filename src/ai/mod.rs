@@ -18,7 +18,7 @@
 //! | [`orders`] | [`Orders`]: what a tree makes the car do (flatbt's act) | `IControl` |
 //! | [`blackboard`] | [`AiBlackboard`]: what the trees read and write | `AiBlackboard` |
 //! | [`nodes`] | the shared nodes: `DecoratorCondition`, `Timer`, `All`, `Optional`, `FindNearestEnemy`, `FireToTarget`, `MoveBase`, `MoveToPoint`, `FollowBy`, … | `BTLib`, `BTActions/*` |
-//! | [`trees`] | the trees put together from them: `TurretAi`, `ChaserAi`, `FollowPathAi` and their subtrees | `BTActionFactory` |
+//! | [`trees`] | the trees put together from them: `TurretAi`, `ChaserAi`, `FollowPathAi`, `AttackerAiVer2`, `ZombieFlocking`, `HammerAi`, … and their subtrees | `BTActionFactory` |
 //! | [`navigation`] | [`Navigation`]: the map's navigation graph ([`crate::map::nav`]) as a resource, `SetPath`, `--nav` | `MapManager._navigation`, `ActionRunner.SetPathRun` |
 //! | [`fire`] | `AlwaysShoot`, `ShootPattern`: plain controls, not trees | `AiSimpleControl`, `PeriodicFireControl` |
 //!
@@ -37,6 +37,7 @@
 //! | `MoveAndFireInInitDirection` | stick and gun along the way the car faced when its tree started, the trigger down |
 //! | `ZombieFlocking`, `ZombieFlockingFriend` | `BTActionFactory.ZombieFlocking` (`ScanDistance` 12): alone near its target with its wave ready, stands 2 s and fires it; hurt with nobody to fight, tells its idle friends who did it; flocks at the nearest enemy; else follows a leader (the player first: runs `ActionOnBTTrigger` once, follows by a path when out of sight) or wanders with its flock ([`trees::zombie_flocking`]) |
 //! | `SimpleFlocking` | `BTActionFactory.SimpleFlocking`: flocks at half speed with an enemy near, else at a tenth |
+//! | `HammerAi`, `HammerAiFriend` | `BTActionFactory.HammerAi`: chases the nearest enemy within `ScanDistance` for a second, charges at full stick by a path to where it was then (up to 3 s), and, while it lives, backs off at half the stick to a random place in sight for a second before the next round; with nobody, sleeps 2 s and wanders ([`trees::hammer_ai`]) |
 //! | `AlwaysShoot` | [`AlwaysShoot`]: the trigger always down, the gun where the car points |
 //! | `ShootPattern` | [`ShootPattern`]: a random pattern of quarter-second silences and bursts |
 //! | `NoneLocal`, `NoneEnemy`, `NoneFriend` | nothing (`AINone`; see `car::control`) |
@@ -137,7 +138,7 @@
 //! the nodes not yet ported (`docs/BACKLOG.md` says which node each needs):
 //! `Ai`, `AiFriend`, `AiSimpleTurretFriendFireAvailableTarget`, `GuardAi`,
 //! `SupportAi*`, `OrderExecutor*`, `CaptureTheBox*`,
-//! `HammerAi*`, `ChaserTargetFromLocalVariable`. Cars with those stand idle, as
+//! `ChaserTargetFromLocalVariable`. Cars with those stand idle, as
 //! before, and `AIAdjustment` sets only their team. `AITurret` and
 //! `AISimpleCarControl` are not reached by any `ControlType`;
 //! `AIPathCarControl` (the base of `AISimpleCarControl`,
@@ -217,6 +218,7 @@ impl Plugin for AiPlugin {
             BehaviorPlugin::for_tree(trees::move_in_one_direction_ai).in_schedule(FixedUpdate).tick_mode(tick_mode),
             BehaviorPlugin::for_tree(trees::zombie_flocking).in_schedule(FixedUpdate).tick_mode(tick_mode),
             BehaviorPlugin::for_tree(trees::simple_flocking).in_schedule(FixedUpdate).tick_mode(tick_mode),
+            BehaviorPlugin::for_tree(trees::hammer_ai).in_schedule(FixedUpdate).tick_mode(tick_mode),
             navigation::NavigationPlugin,
         ))
         .configure_sets(
@@ -264,7 +266,8 @@ pub fn set_control(car: &mut EntityCommands, control: &str, seed: u64) {
         .stop_behavior(trees::simple_follow_by_enemy_ai)
         .stop_behavior(trees::move_in_one_direction_ai)
         .stop_behavior(trees::zombie_flocking)
-        .stop_behavior(trees::simple_flocking);
+        .stop_behavior(trees::simple_flocking)
+        .stop_behavior(trees::hammer_ai);
     #[cfg(debug_assertions)]
     car.remove::<DebugBehavior>();
     let mut brain = AiBlackboard::new(seed);
@@ -320,6 +323,10 @@ pub fn set_control(car: &mut EntityCommands, control: &str, seed: u64) {
             brain.watch_friends = true;
             car.insert((brain, Behavior::for_tree(trees::simple_flocking)));
         }
+        // The default `ScanDistance`; the team is the control's (`car::control`).
+        "HammerAi" | "HammerAiFriend" => {
+            car.insert((brain, Behavior::for_tree(trees::hammer_ai)));
+        }
         "AlwaysShoot" => {
             car.insert(AlwaysShoot);
             return;
@@ -357,6 +364,8 @@ pub fn is_live(control: &str) -> bool {
             | "ZombieFlocking"
             | "ZombieFlockingFriend"
             | "SimpleFlocking"
+            | "HammerAi"
+            | "HammerAiFriend"
             | "AlwaysShoot"
             | "ShootPattern"
     )

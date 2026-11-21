@@ -20,6 +20,7 @@
 //! | [`MoveBase`], [`MoveToPoint`], [`FollowBy`], [`MoveToRandomVisiblePosition`] | `BTActions/MoveBase`, `MoveToPoint`, `FollowBy`, `MoveToRandomVisiblePosition`: drive along a [`NavPath`](crate::map::nav::NavPath) |
 //! | [`AimToTarget`] | `BTActions/AimToTarget` (in `FireToTarget.cs`) |
 //! | [`Stop`] | `BTActionFactory.StopAction` |
+//! | [`RememberTargetPos`] | `BTActionFactory.RemeberTargetPos` |
 //! | [`MoveInInitDirection`] | `BTActionFactory.MoveInOneDirectionAi`'s action |
 //! | [`TryFireToAnyone`] | `BTActions/TryFireToAnyone` |
 //! | [`TriggerMapAction`] | `BTActions/TriggerMapAction` |
@@ -44,8 +45,8 @@ mod path;
 mod quiet;
 
 pub use actions::{
-    AimToTarget, FindNearestEnemy, FireToTarget, Idle, MoveInInitDirection, MoveTowardsTargetNoPath, Runaway, Scanning,
-    SimpleFollowByTarget, Sleep, Stop, TriggerMapAction, TryFireToAnyone,
+    AimToTarget, FindNearestEnemy, FireToTarget, Idle, MoveInInitDirection, MoveTowardsTargetNoPath, RememberTargetPos,
+    Runaway, Scanning, SimpleFollowByTarget, Sleep, Stop, TriggerMapAction, TryFireToAnyone,
 };
 pub use flocking::{AlertFriends, FindNearestLeader, FireNow, FlockState, Flocking, Power, TargetFn};
 pub use condition::{DecoratorCondition, WhileState, decorator_condition, timer, while_target_alive};
