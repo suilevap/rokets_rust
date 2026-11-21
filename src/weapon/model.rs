@@ -6,7 +6,8 @@
 //! bullet ([`reflect`]) and the Hammer's saw: its place, reach, damage
 //! and the list of enemies it keeps hurting ([`Hammer`], [`Tracking`]) and
 //! the Zombie's reload and its choice of the one it drags and bites
-//! ([`Zombie`]).
+//! ([`Zombie`]), and the Plasma gun's reload, spread and kick
+//! ([`Plasma`], [`plasma_directions`]).
 //!
 //! Timers count seconds down while the game runs (C#'s `PeriodicUpdate`
 //! compared absolute game times; the same while nothing pauses). One is
@@ -32,6 +33,9 @@ pub enum Kind {
     Hammer,
     /// The zombie's pull and bite, and its stunning wave (`ZombieWeapon`).
     Zombie,
+    /// A gun whose bullets fly (`PlasmaGun`, the `PlasmaGun` and
+    /// `PlasmaGunSlow` types).
+    Plasma,
 }
 
 impl Kind {
@@ -43,18 +47,19 @@ impl Kind {
     }
 
     /// Whether it is a `BaseComplexWeapon`: it has a barrel to aim, with an
-    /// aim line, recoil and a bounded `MaxAngle` (the Minigun and the
-    /// Railgun). The Hammer and the Zombie's are plain `BaseWeapon`s with an
-    /// empty `Aim`.
+    /// aim line, recoil and a bounded `MaxAngle` (the Minigun, the
+    /// Railgun and the Plasma gun). The Hammer and the Zombie's are plain
+    /// `BaseWeapon`s with an empty `Aim`.
     pub fn is_complex(self) -> bool {
-        matches!(self, Kind::Minigun | Kind::Railgun)
+        matches!(self, Kind::Minigun | Kind::Railgun | Kind::Plasma)
     }
 
     /// `IBaseWeapon.IsImmidiate`: the shot arrives the moment it is fired
-    /// (`BaseWeapon` sets it; only the Plasma gun and the rocket launcher,
-    /// not ported, clear it).
+    /// (`BaseWeapon` sets it; the Plasma gun clears it, its bullets fly,
+    /// and so does the rocket launcher, not ported). The AI's attack
+    /// picks its style by it (`SmartAttackTargetSlowWeapon`).
     pub fn is_immediate(self) -> bool {
-        true
+        self != Kind::Plasma
     }
 }
 
@@ -86,6 +91,12 @@ pub struct Options {
     /// Times a bullet bounces off what it hits (`MaxReflections`; the
     /// Railgun's).
     pub reflections: u32,
+    /// Units a second a flying bullet goes (`BulletSpeed`; the Plasma
+    /// gun's, 0 for the others).
+    pub bullet_speed: f32,
+    /// A flying bullet's colour, sRGB (`BulletColor`; the Plasma gun's,
+    /// black, C#'s default, for the others).
+    pub bullet_color: [f32; 3],
 }
 
 /// `DamageConst.Miningun`, `MiningunImpulse`.
@@ -105,6 +116,8 @@ pub const MINIGUN: Options = Options {
     max_angle: PI / 3.0,
     range: 32.0,
     reflections: 0,
+    bullet_speed: 0.0,
+    bullet_color: [0.0; 3],
 };
 
 /// `MinigunPlayerDefaultOptions`: the player's, two bullets a pull, a
@@ -122,6 +135,8 @@ pub const MINIGUN_PLAYER: Options = Options {
     max_angle: PI / 3.0,
     range: 32.0,
     reflections: 0,
+    bullet_speed: 0.0,
+    bullet_color: [0.0; 3],
 };
 
 /// `DamageConst.Railgun`.
@@ -144,6 +159,8 @@ pub const RAILGUN: Options = Options {
     max_angle: PI / 3.0,
     range: 32.0,
     reflections: 1,
+    bullet_speed: 0.0,
+    bullet_color: [0.0; 3],
 };
 
 /// `DamageConst.HammerImmediateMin`, `HammerImmediateMax`.
@@ -169,6 +186,8 @@ pub const HAMMER: Options = Options {
     max_angle: PI / 3.0,
     range: 8.0,
     reflections: 0,
+    bullet_speed: 0.0,
+    bullet_color: [0.0; 3],
 };
 
 /// `WeaponOptions.ZombieDefaultOptions`: the enemy zombies'. A drag of 36
@@ -190,10 +209,47 @@ pub const ZOMBIE: Options = Options {
     max_angle: PI / 3.0,
     range: 4.0,
     reflections: 0,
+    bullet_speed: 0.0,
+    bullet_color: [0.0; 3],
 };
 
 /// `ZombieDefaultOptionsPlayer`: the same, a wave every 2 s.
 pub const ZOMBIE_PLAYER: Options = Options { reload: 2.0, ..ZOMBIE };
+
+/// `DamageConst.Plasmagun`, `PlasmagunImpulse`.
+const PLASMA_DAMAGE: i32 = 8;
+const PLASMA_IMPULSE: f32 = 18.0;
+
+/// `WeaponOptions.PlasmagunDefaultOptions` (`PlasmaGun`): one red bullet a
+/// 0.5 s reload, straight (no dispersion), 32 units a second, 8 damage and
+/// a push of 18 where it lands. The same for everyone (no player preset);
+/// the energy is the default 0.1 a shot.
+pub const PLASMA: Options = Options {
+    damage: PLASMA_DAMAGE,
+    damage_max: PLASMA_DAMAGE,
+    impulse: PLASMA_IMPULSE,
+    dispersion: 0.0,
+    bullets: 1,
+    shoot_time: 0.0,
+    reload: 0.5,
+    energy: 0.1,
+    max_angle: PI / 3.0,
+    range: 32.0,
+    reflections: 0,
+    bullet_speed: 32.0,
+    // `Color.Red`.
+    bullet_color: [1.0, 0.0, 0.0],
+};
+
+/// `PlasmagunSlowOptions` (`PlasmaGunSlow`): the same, a yellow bullet at
+/// half the speed (16) every second.
+pub const PLASMA_SLOW: Options = Options {
+    reload: 1.0,
+    bullet_speed: 16.0,
+    // `Color.Yellow`.
+    bullet_color: [1.0, 1.0, 0.0],
+    ..PLASMA
+};
 
 /// `RailgunMinReflectionAngle` (`RailgunWeapon._reflectionMinAngle`): a
 /// bullet bounces only when it comes in more than this off the surface's
@@ -224,10 +280,15 @@ pub fn for_type(name: &str, local: bool) -> Option<(Kind, Options)> {
         // The energy left at the default 0.1.
         "RailgunNoReflection" => Options { energy: 0.1, reflections: 0, ..RAILGUN },
         "RailgunAngle5" => Options { energy: 0.1, max_angle: PI / 36.0, ..RAILGUN },
+        // One preset each for everyone (`RegisterObject` without a player's).
+        "PlasmaGun" => PLASMA,
+        "PlasmaGunSlow" => PLASMA_SLOW,
         _ => return None,
     };
     let kind = if name.starts_with("Railgun") {
         Kind::Railgun
+    } else if name.starts_with("PlasmaGun") {
+        Kind::Plasma
     } else if name == "Hammer" {
         Kind::Hammer
     } else if name == "ZombieWeapon" {
@@ -633,6 +694,83 @@ impl Railgun {
             AimLook::Low
         }
     }
+}
+
+/// The Plasma gun's rhythm (`PlasmaGun`, `BaseWeapon.TryShoot`): a shot
+/// when the trigger is held (`ShootMultiple`; the AI's pulls both kinds),
+/// once the reload is over and the energy pays; then the reload starts
+/// over. A pull without the energy overloads the store and fires nothing.
+#[derive(Clone, Copy, Debug, PartialEq, Default)]
+pub struct Plasma {
+    /// Seconds before the next shot (`_reload`).
+    reload_in: f32,
+}
+
+impl Plasma {
+    /// The first shot waits a random part of the reload
+    /// (`PeriodicUpdate.Sparse`); `offset` is 0..1.
+    pub fn new(options: &Options, offset: f32) -> Plasma {
+        Plasma {
+            reload_in: options.reload * offset,
+        }
+    }
+
+    /// Time passes.
+    pub fn step(&mut self, dt: f32) {
+        self.reload_in -= dt;
+    }
+
+    /// `TryShoot`: fires, if the reload is over and the energy pays (a
+    /// reload not over asks nothing of the energy).
+    pub fn pull(&mut self, options: &Options, mut energy: Option<&mut Energy>) -> bool {
+        if due(self.reload_in) && spend(&mut energy, options.energy) {
+            self.reload_in = options.reload;
+            true
+        } else {
+            false
+        }
+    }
+
+    /// `CanShoot`: the reload is over and there is the energy.
+    pub fn can_fire(&self, options: &Options, mut energy: Option<&mut Energy>) -> bool {
+        due(self.reload_in) && has(&mut energy, options.energy)
+    }
+
+    /// `UpdateLaser` for a gun that fires while held: low while it cannot
+    /// fire for want of energy, normal otherwise (also while it reloads).
+    /// The energy is asked again when the reload is over and it fell short
+    /// (`CanShoot`, then `CheckEnergy`), as C# did.
+    pub fn look(&self, options: &Options, mut energy: Option<&mut Energy>) -> AimLook {
+        if self.can_fire(options, energy.as_deref_mut()) || has(&mut energy, options.energy) {
+            AimLook::Normal
+        } else {
+            AimLook::Low
+        }
+    }
+}
+
+/// `PlasmaGun.OnShoot`'s kick: the gun is set back 1 to 5 pixels
+/// (`_feedback.CurrentValue = NextFloatFakeRange(1, 5)`), `random` 0..1.
+pub fn plasma_recoil(random: f32) -> f32 {
+    1.0 + 4.0 * random
+}
+
+/// `PlasmaGun.OnShoot`'s bullets, the world angle of each: one bullet
+/// flies a random part of the dispersion off the aim (`random` gives
+/// 0..1); several spread evenly across ± the dispersion, the first at
+/// one edge (C#'s `- dispersion` side, our `+`: its angles turn the other
+/// way). None for no bullets.
+pub fn plasma_directions(aim: f32, options: &Options, mut random: impl FnMut() -> f32) -> Vec<f32> {
+    let n = options.bullets;
+    (0..n)
+        .map(|i| {
+            if n == 1 {
+                aim + (random() * 2.0 - 1.0) * options.dispersion
+            } else {
+                aim - options.dispersion * (2.0 * i as f32 / (n as f32 - 1.0) - 1.0)
+            }
+        })
+        .collect()
 }
 
 /// `SimulateRailgunBullet`'s bounce: the direction a bullet flying along
