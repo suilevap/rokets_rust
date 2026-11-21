@@ -47,10 +47,10 @@ mod path;
 mod act;
 
 pub use actions::{
-    AimToTarget, FindNearestEnemy, FireToTarget, Idle, MoveInInitDirection, MoveTowardsTargetNoPath, RememberTargetPos,
-    Runaway, Scanning, SimpleFollowByTarget, Sleep, Stop, TriggerMapAction, TryFireToAnyone,
+    AimToTarget, FireToTarget, Idle, MoveInInitDirection, MoveTowardsTargetNoPath, Runaway, Scanning, SimpleFollowByTarget,
+    TriggerMapAction, TryFireToAnyone, find_nearest_enemy, remember_target_pos, sleep, stop_moving,
 };
-pub use flocking::{AlertFriends, FindNearestLeader, FireNow, FlockState, Flocking, Power, TargetFn};
+pub use flocking::{FlockState, Flocking, Power, TargetFn, alert_friends, find_nearest_leader, fire_now};
 pub use execute_orders::ExecuteOrders;
 pub use condition::{DecoratorCondition, WhileState, decorator_condition, timer, while_target_alive};
 pub use optional::{Optional, optional, optional_required};

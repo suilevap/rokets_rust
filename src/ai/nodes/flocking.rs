@@ -39,7 +39,7 @@
 
 use bevy::math::Vec2;
 use bevy::prelude::Entity;
-use flatbt::BtAction;
+use flatbt::{BtAction, NodeResult};
 
 use crate::ai::blackboard::{AiBlackboard, Alert, Effect, Mate};
 use crate::ai::orders::Orders;
@@ -241,8 +241,15 @@ impl BtAction<AiBlackboard, Orders> for Flocking {
 /// May lead: the player's car, or an AI car whose `Traits[0]` is over 0.9.
 /// The best is the player's car, else the AI with the least `Traits[1]`
 /// (the first of equals, in the map's order). Over at once.
-#[derive(Clone, Copy, Debug, Default)]
-pub struct FindNearestLeader;
+pub fn find_nearest_leader(bb: &mut AiBlackboard) -> NodeResult<Orders> {
+    match nearest_leader(bb) {
+        Some(leader) => {
+            bb.set_leader(leader);
+            NodeResult::Success
+        }
+        None => NodeResult::Failure,
+    }
+}
 
 /// May lead: the player's, or an AI with `Traits[0] > 0.9`.
 fn may_lead(m: &Mate) -> bool {
@@ -298,25 +305,6 @@ fn nearest_leader(bb: &AiBlackboard) -> Option<Entity> {
     }
 }
 
-impl BtAction<AiBlackboard, Orders> for FindNearestLeader {
-    type State = ();
-
-    fn start(&self, bb: &mut AiBlackboard, _: ()) -> Option<()> {
-        let leader = nearest_leader(bb)?;
-        bb.set_leader(leader);
-        Some(())
-    }
-
-    fn is_in_progress(&self, _: &(), _: &AiBlackboard, _: ()) -> bool {
-        false
-    }
-
-    /// C# throws here (never reached).
-    fn tick(&self, _: &mut (), _: &mut AiBlackboard, _: ()) -> Orders {
-        Orders::default()
-    }
-}
-
 /// `ZombieFlocking`'s `Power`: the car stands (a zero stick every step)
 /// while it gathers its wave, with a one in five chance each step of a
 /// small teleport streak (`SmallTeleportParticle(Position, Radius * 2)`:
@@ -353,24 +341,9 @@ impl BtAction<AiBlackboard, Orders> for Power {
 
 /// `ZombieFlocking`'s `Fire!`: pulls the trigger in the thinking pass
 /// (`Control.Fire = FireType.Shoot`, from `Start`) and is over at once.
-#[derive(Clone, Copy, Debug, Default)]
-pub struct FireNow;
-
-impl BtAction<AiBlackboard, Orders> for FireNow {
-    type State = ();
-
-    fn start(&self, bb: &mut AiBlackboard, _: ()) -> Option<()> {
-        bb.pull_trigger();
-        Some(())
-    }
-
-    fn is_in_progress(&self, _: &(), _: &AiBlackboard, _: ()) -> bool {
-        false
-    }
-
-    fn tick(&self, _: &mut (), _: &mut AiBlackboard, _: ()) -> Orders {
-        Orders::default()
-    }
+pub fn fire_now(bb: &mut AiBlackboard) -> NodeResult<Orders> {
+    bb.pull_trigger();
+    NodeResult::Success
 }
 
 /// `ZombieFlocking`'s `Uii`: every AI friend within twice `ScanDistance`,
@@ -378,30 +351,16 @@ impl BtAction<AiBlackboard, Orders> for FireNow {
 /// this car (its `LastDamager`, even none, and when: the friend forgets it
 /// when this car would), and a red ping flashes on it (`CreateBip2`, when
 /// in view). Always fails (`return false`), so the tree goes on.
-#[derive(Clone, Copy, Debug, Default)]
-pub struct AlertFriends;
-
-impl BtAction<AiBlackboard, Orders> for AlertFriends {
-    type State = ();
-
-    fn start(&self, bb: &mut AiBlackboard, _: ()) -> Option<()> {
-        let (damager, left) = (bb.damager_entity(), bb.damager_left());
-        let friends: Vec<Entity> = bb
-            .friends(bb.scan_distance * 2.0)
-            .filter(|m| m.mind.is_some_and(|mind| mind.idle))
-            .map(|m| m.entity)
-            .collect();
-        for friend in friends {
-            bb.alert(Alert { friend, damager, left });
-        }
-        None
+pub fn alert_friends(bb: &mut AiBlackboard) -> NodeResult<Orders> {
+    let (damager, left) = (bb.damager_entity(), bb.damager_left());
+    let friends: Vec<Entity> = bb
+        .friends(bb.scan_distance * 2.0)
+        .filter(|m| m.mind.is_some_and(|mind| mind.idle))
+        .map(|m| m.entity)
+        .collect();
+    for friend in friends {
+        bb.alert(Alert { friend, damager, left });
     }
-
-    fn is_in_progress(&self, _: &(), _: &AiBlackboard, _: ()) -> bool {
-        false
-    }
-
-    fn tick(&self, _: &mut (), _: &mut AiBlackboard, _: ()) -> Orders {
-        Orders::default()
-    }
+    NodeResult::Failure
 }
+
