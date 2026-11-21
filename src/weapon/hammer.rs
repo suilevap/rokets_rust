@@ -18,8 +18,9 @@
 //! - The saw works while the car is alive and someone drives it (not
 //!   `AINone`: [`NoInput`]); otherwise it does nothing and is drawn still.
 //!   A car with an AI control works its saw (it turns and hurts what it
-//!   touches), and a turret-controlled one chases and saws its target
-//!   ([`crate::ai`]).
+//!   touches), a turret-controlled one chases and saws its target, and a
+//!   `HammerAi` one charges at it and runs up again
+//!   ([`crate::ai::trees::hammer_ai`]).
 //! - It spares its own team (`isFriend`): a car of the same team is not
 //!   hurt, tracked or shoved, only sparked on.
 //!

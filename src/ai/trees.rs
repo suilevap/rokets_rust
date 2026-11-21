@@ -292,6 +292,77 @@
 //! (`IsInView(pos, 0)`). The commented-out `RandomHelper.RandomEvent(0.2f)`
 //! of `Check` is not there in C# either.
 //!
+//! `HammerAi` (`HammerAi`, team 1; `HammerAiFriend`, team 0; the default
+//! `ScanDistance` 16), for the cars with the Hammer's saw, which hurts by
+//! the car's speed at the blow:
+//!
+//! ```text
+//! C#                                              Rust
+//! RemeberTargetPos(p) =                           RememberTargetPos { predict_sec: p }
+//!   bt.Action("RemberPos", b => {                   (start: a live target's
+//!     Target != null && Target.Alive &&               prediction_position into
+//!       (TargetPosition =                             target_position; fails without)
+//!        Target.GetPredictionPosition(p)) })
+//!
+//! HammerAi =                                      hammer_ai() =
+//!   bt.Selector("Hammer Ai",                        select((
+//!     bt.Sequence("AttackHammer",                     seq((
+//!       Timer(1.0f, Chase),                             timer(1, chase()),
+//!       RemeberTargetPos(0.0f),                         action(RememberTargetPos(0)),
+//!       Timer(3.0f, MoveToPoint("PrevTargetPos",        timer(3, action(MoveToPoint(
+//!         b => b.TargetPosition)),                        target_position))),
+//!       bt.Condition("CheckTarget",                     check(a live target),
+//!         Target != null && Target.Alive),
+//!       Timer(1.0f, MoveToPoint("Rnd",                  timer(1, action(MoveToPoint(
+//!         b => GetRandomFreeVisiblePoint(                 random free visible point(own
+//!           Entity.Position, ScanDistance),                 position, ScanDistance),
+//!         0.5f, 1))),                                     0.5, 1)))),
+//!                                                     )),
+//!     bt.Sequence("Idle",                             seq((
+//!       Sleep2Sec,                                      action(Sleep(2)),
+//!       MoveToRandomVisiblePosition(                    action(MoveToRandomVisiblePosition(
+//!         b => b.ScanDistance, 0.5f)))                    own position, ScanDistance, 0.5, 1)),
+//!                                                     )),
+//!                                                   ))
+//! ```
+//!
+//! What it comes to (its history: a chase of 3 s and a run-up, January
+//! 2014; two days later the chase cut to 1 s and the charge at where the
+//! target was added; the `Idle` branch with `Sleep2Sec` a few days after):
+//! the hammer car chases the nearest enemy (as `ChaserAi`, but within
+//! `ScanDistance`; its trigger pulls change nothing, the saw cuts by
+//! contact) for a second, then
+//! drives at full stick by a path to where the enemy was then, without
+//! following it, so it rams through at speed (the saw's blow grows with
+//! the car's speed); the charge ends on arrival (within its radius plus 1),
+//! when stuck, or after 3 s. If the enemy still lives it backs off at half
+//! the stick to a random free place in sight within `ScanDistance` for a
+//! second, a run-up for the next charge, and starts again. With no live
+//! target, or when the charge finds no path, it sleeps 2 s and wanders
+//! at half the stick to a random free place in sight.
+//!
+//! Its branches, as `BTLib` runs them (each a consequence of the nodes,
+//! not written out): every `Timer` ends at the first thought at or after its
+//! time, and with its child's result if the child ends first (a charge that
+//! arrives goes straight on; a chase that ends `Ok` on reaching the target
+//! too); with no enemy `Chase` reaches its `Sleep` (no think for 2 s and a
+//! period), the timer then ends `Ok`, `RemberPos` fails and `Idle`'s
+//! `Sleep2s` puts the next think 2.25 s off while its wander starts at
+//! once: the car stands 2.25 s, then wanders, and at that next think the
+//! selector tries the attack again, so with nobody near it alternates
+//! standing and wandering; a run-up spot within the car's radius and 1 is
+//! reached at once and the round starts over; a charge whose `MoveToPoint`
+//! finds no path, or a blocked one, or the origin, fails the attack for
+//! `Idle`; the run-up's random point is the origin (no point) without a
+//! floor plan, failing it likewise; `CheckTarget` failing (the enemy died
+//! during the charge) goes to `Idle` too.
+//!
+//! Differences from C# in `HammerAi`: none of its own. `RemeberTargetPos`'s
+//! `GetPredictionPosition` has no `Removed` branch (a removed target is no
+//! live target, so the action fails; C# would have charged at its
+//! `SafePosition`), and the nodes it shares keep their own differences
+//! (`Chase`, `MoveToPoint`, the `Timer`s ending at a think).
+//!
 //! Not ported here: every other tree of `BTActionFactory` (`SimpleAttackDelayPos`,
 //! `Attack`, `SimpleAi`, `GuardAi`, `SmartAttack` (`AttackAi`'s: the
 //! first version of the smart attack, which `AttackAiVer2` replaced), … the
@@ -305,8 +376,8 @@ use flatbt_bevy::prelude::*;
 use super::blackboard::AiBlackboard;
 use super::nodes::{
     AimToTarget, AlertFriends, FindNearestEnemy, FindNearestLeader, FireNow, FireToTarget, Flocking, FollowBy, Idle,
-    MoveBase, MoveInInitDirection, MoveTowardsTargetNoPath, MoveToPoint, MoveToRandomVisiblePosition, Power, Runaway,
-    Scanning, SimpleFollowByTarget, Sleep, Stop, TriggerMapAction, TryFireToAnyone, all, decorator_condition, optional,
+    MoveBase, MoveInInitDirection, MoveTowardsTargetNoPath, MoveToPoint, MoveToRandomVisiblePosition, Power,
+    RememberTargetPos, Runaway, Scanning, SimpleFollowByTarget, Sleep, Stop, TriggerMapAction, TryFireToAnyone, all, decorator_condition, optional,
     quiet_start, timer, while_target_alive,
 };
 use crate::weapon::model::closer_by_chebyshev;
@@ -364,6 +435,23 @@ pub const FOLLOW_LEADER_MIN_DIST: f32 = 10.0;
 /// (`GetPredictionPosition(4.0f)`), s.
 pub const LEADER_FLOCK_TIME: f32 = 5.0;
 pub const LEADER_FLOCK_AHEAD: f32 = 4.0;
+
+/// `HammerAi`'s `Timer(1.0f, Chase)`: how long it chases before it charges, s.
+pub const HAMMER_CHASE_TIME: f32 = 1.0;
+/// `RemeberTargetPos(0.0f)`: the charge goes at where the target is, not
+/// ahead of it, s.
+pub const HAMMER_CHARGE_PREDICT: f32 = 0.0;
+/// `Timer(3.0f, MoveToPoint("PrevTargetPos", …))`: the longest charge, s.
+pub const HAMMER_CHARGE_TIME: f32 = 3.0;
+/// `Timer(1.0f, MoveToPoint("Rnd", …, 0.5f, 1))`: the run-up after a charge,
+/// s, at half the stick, done within 1 of the place.
+pub const HAMMER_RUN_UP_TIME: f32 = 1.0;
+pub const HAMMER_RUN_UP_SPEED_RATE: f32 = 0.5;
+pub const HAMMER_RUN_UP_MIN_DIST: f32 = 1.0;
+/// `Idle`'s `MoveToRandomVisiblePosition(b => b.ScanDistance, 0.5f)`: at half
+/// the stick, done within 1 (the constructor's `minDistanceToTarget`).
+pub const HAMMER_WANDER_SPEED_RATE: f32 = 0.5;
+pub const HAMMER_WANDER_MIN_DIST: f32 = 1.0;
 
 /// `BTActionFactory.SimpleAttackTarget`: fires at the target while steering
 /// at it, with the gun's aim `predict_sec` ahead of it.
@@ -725,5 +813,44 @@ pub fn zombie_flocking() -> impl BehaviorNode<AiBlackboard, Orders> {
             ))),
         ))),
         named("Flocking", action(quiet_start(Flocking::new(0.25, 4.0)))),
+    )))
+}
+
+/// `BTActionFactory.HammerAi` (`HammerAi`, `HammerAiFriend`): chase the
+/// nearest enemy for a second, then charge at the place it was (not
+/// following it) for up to 3 s; while it lives, pull back at half speed to a
+/// random place in sight for a second for the next run; with nobody,
+/// sleep 2 s and wander. See the module docs.
+pub fn hammer_ai() -> impl BehaviorNode<AiBlackboard, Orders> {
+    named("Hammer Ai", select((
+        named("AttackHammer", seq((
+            named("Timer_1s", timer(HAMMER_CHASE_TIME, chase())),
+            named("RemberPos", action(RememberTargetPos { predict_sec: HAMMER_CHARGE_PREDICT })),
+            named("Timer_3s", timer(
+                HAMMER_CHARGE_TIME,
+                named("MoveTo_PrevTargetPos", action(quiet_start(MoveToPoint::new(|bb| bb.target_position)))),
+            )),
+            named("CheckTarget", check(|bb: &AiBlackboard| bb.live_target().is_some())),
+            named("Timer_1s", timer(
+                HAMMER_RUN_UP_TIME,
+                named("MoveTo_Rnd", action(quiet_start(MoveToPoint::with_params(
+                    |bb| {
+                        let (own, range) = (bb.pos, bb.scan_distance);
+                        bb.random_free_visible_point(own, range)
+                    },
+                    HAMMER_RUN_UP_SPEED_RATE,
+                    HAMMER_RUN_UP_MIN_DIST,
+                )))),
+            )),
+        ))),
+        named("Idle", seq((
+            named("Sleep2s", action(Sleep { secs: SLEEP_TIME })),
+            named("MoveTo_RandomPos", action(quiet_start(MoveToRandomVisiblePosition::new(
+                |bb| bb.pos,
+                |bb| bb.scan_distance,
+                HAMMER_WANDER_SPEED_RATE,
+                HAMMER_WANDER_MIN_DIST,
+            )))),
+        ))),
     )))
 }

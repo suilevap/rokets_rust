@@ -34,10 +34,8 @@ along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
    - `SupportAi*`, `OrderExecutor*`: `ExecuteOrders`, `OrdersManager`,
      `FollowLeader`, `SmartAttack` (below); `FindNearestLeader`, the
      `Leader` and the friends (`Mate`) are in with the zombies;
-   - `HammerAi*`:
-     `RemeberTargetPos` (`GetPredictionPosition`) and the Hammer tree.
-     The Plasma gun and rocket launcher (`IsImmidiate` false) come with
-     the weapons (`Kind::is_immediate`);
+   - `AttackAi*`'s slow-gun style: the Plasma gun and rocket launcher
+     (`IsImmidiate` false) come with the weapons (`Kind::is_immediate`);
    - `CaptureTheBox*` (`CustomAi`): the chain gadget actions
      (`GrabByChainGadget`, `DropByChainGadget`), `FixBlocker` (the path's
      `Blocker` is there), `MoveUntilPositionNonVisible`, custom data on the
