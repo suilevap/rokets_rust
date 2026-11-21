@@ -1,0 +1,318 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>LastMap</Name>
+    <GameMode>SinglePlayer</GameMode>
+    <Image>Maps\Singleplayer\LastMap</Image>
+    <Scale>48</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>false</HaveOutlandVizualization>
+    <OutlandColorLT>FF000000</OutlandColorLT>
+    <OutlandColorRT>FF00BFFF</OutlandColorRT>
+    <OutlandColorRB>FFFFA500</OutlandColorRB>
+    <OutlandColorLB>FFFFFF00</OutlandColorLB>
+    <TargetTimeSec>0</TargetTimeSec>
+    <Friction>1</Friction>
+    <AmbientLight>FF000000</AmbientLight>
+    <Splash>MapDefault</Splash>
+    <LevelEffect>None</LevelEffect>
+    <CameraReadAccelerometer>true</CameraReadAccelerometer>
+    <Lights>
+      <Item>
+        <Position>21 17.5</Position>
+        <Color>DB00FFFF</Color>
+        <R>10</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+    </Lights>
+    <Players>
+      <Item>
+        <Id>4001</Id>
+        <Name>Player1</Name>
+        <Position>20.833334 17.583334</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>Local</Control>
+        <CarName>SandBuggyNoGadget</CarName>
+      </Item>
+    </Players>
+    <SimpleCars>
+      <Item>
+        <Id>3001</Id>
+        <Position>13.5 11.5</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+      <Item>
+        <Id>3002</Id>
+        <Position>14.5 22</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+      <Item>
+        <Id>3003</Id>
+        <Position>15 20</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+      <Item>
+        <Id>3004</Id>
+        <Position>23.5 26</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+      <Item>
+        <Id>3005</Id>
+        <Position>27 15</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+      <Item>
+        <Id>3006</Id>
+        <Position>22.5 20.5</Position>
+        <DirectionDeg>114.214462</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+      <Item>
+        <Id>3007</Id>
+        <Position>21.5 11</Position>
+        <DirectionDeg>305.916443</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+      <Item>
+        <Id>3008</Id>
+        <Position>17.5 17.5</Position>
+        <DirectionDeg>360</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+      <Item>
+        <Id>3009</Id>
+        <Position>11.5 16.5</Position>
+        <DirectionDeg>216.821518</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+      <Item>
+        <Id>3010</Id>
+        <Position>10.5 25</Position>
+        <DirectionDeg>16.45842</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+      <Item>
+        <Id>3011</Id>
+        <Position>18.5 30</Position>
+        <DirectionDeg>177.685364</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+      <Item>
+        <Id>3012</Id>
+        <Position>15 12.5</Position>
+        <DirectionDeg>37.2013664</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+      <Item>
+        <Id>3013</Id>
+        <Position>8.5 11</Position>
+        <DirectionDeg>164.743942</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+      <Item>
+        <Id>3014</Id>
+        <Position>11 8</Position>
+        <DirectionDeg>322.149719</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+      <Item>
+        <Id>3015</Id>
+        <Position>17.5 19.5</Position>
+        <DirectionDeg>31.0887356</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+      <Item>
+        <Id>3016</Id>
+        <Position>12 33.5</Position>
+        <DirectionDeg>288.985626</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+      <Item>
+        <Id>3017</Id>
+        <Position>24 15</Position>
+        <DirectionDeg>225</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+      <Item>
+        <Id>3018</Id>
+        <Position>29 35.5</Position>
+        <DirectionDeg>199.237427</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+      <Item>
+        <Id>3019</Id>
+        <Position>25.5 20</Position>
+        <DirectionDeg>107.336014</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+      <Item>
+        <Id>3020</Id>
+        <Position>33.5 19</Position>
+        <DirectionDeg>29.91436</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+      <Item>
+        <Id>3021</Id>
+        <Position>19.5 20.5</Position>
+        <DirectionDeg>73.1266251</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+      <Item>
+        <Id>3023</Id>
+        <Position>24 12.5</Position>
+        <DirectionDeg>349.938965</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+      <Item>
+        <Id>3024</Id>
+        <Position>21.5 7</Position>
+        <DirectionDeg>200.668533</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+      <Item>
+        <Id>3025</Id>
+        <Position>18 11</Position>
+        <DirectionDeg>345.69635</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+      <Item>
+        <Id>3026</Id>
+        <Position>25 17.5</Position>
+        <DirectionDeg>180</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+      <Item>
+        <Id>3027</Id>
+        <Position>16 15.5</Position>
+        <DirectionDeg>258.008453</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+      <Item>
+        <Id>3028</Id>
+        <Position>20 22.5</Position>
+        <DirectionDeg>196.204315</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+      <Item>
+        <Id>3029</Id>
+        <Position>16 25.5</Position>
+        <DirectionDeg>177.911682</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+      <Item>
+        <Id>3030</Id>
+        <Position>24.5 22.5</Position>
+        <DirectionDeg>346.224548</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+      <Item>
+        <Id>3031</Id>
+        <Position>18.5 14.5</Position>
+        <DirectionDeg>301.651978</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+      <Item>
+        <Id>3032</Id>
+        <Position>7 24</Position>
+        <DirectionDeg>68.51596</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+      <Item>
+        <Id>3033</Id>
+        <Position>8 30</Position>
+        <DirectionDeg>358.92572</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+      <Item>
+        <Id>3034</Id>
+        <Position>21 14</Position>
+        <DirectionDeg>270</DirectionDeg>
+        <Control>NoneLocal</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+    </SimpleCars>
+    <Actions>
+      <Item Type="GameLibrary.ShowText">
+        <Name>ShowText</Name>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Text>
+          <Item>Please exit to main menu</Item>
+          <Item>Then tap buy</Item>
+          <Item>Then play</Item>
+        </Text>
+        <ShowTimeSec>5</ShowTimeSec>
+        <PauseGame>false</PauseGame>
+      </Item>
+    </Actions>
+  </Asset>
+</XnaContent>

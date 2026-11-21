@@ -1,0 +1,581 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Accept" xml:space="preserve">
+    <value>Добра</value>
+  </data>
+  <data name="All_rights_reserved" xml:space="preserve">
+    <value>Усе правы абаронены</value>
+  </data>
+  <data name="Assembly" xml:space="preserve">
+    <value>Зборка</value>
+  </data>
+  <data name="Avoid_customs" xml:space="preserve">
+    <value>Пазбягай мытні!</value>
+  </data>
+  <data name="Be_careful" xml:space="preserve">
+    <value>Будзь пільным!</value>
+  </data>
+  <data name="Button" xml:space="preserve">
+    <value>Кнопка</value>
+  </data>
+  <data name="BuyMessageBox_BuyButton" xml:space="preserve">
+    <value>Набыць</value>
+  </data>
+  <data name="BuyMessageBox_Text" xml:space="preserve">
+    <value>Набыць версію цалкам?</value>
+  </data>
+  <data name="BuyMessageBox_Title" xml:space="preserve">
+    <value>Адкрыць усе ўзроўні</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Адмена</value>
+  </data>
+  <data name="CaptureTheBox" xml:space="preserve">
+    <value>Захоп скрыні</value>
+  </data>
+  <data name="ContactUsBody" xml:space="preserve">
+    <value>Прывітанне,7 Soft Pillows</value>
+  </data>
+  <data name="ContactUsSubject" xml:space="preserve">
+    <value>Tile Rider водгук</value>
+  </data>
+  <data name="Credits_Art" xml:space="preserve">
+    <value>-= Арт =-
+Aliaksei Davydau
+Darya Saulova
+Vladimir Budko
+Tatiana Chernyh</value>
+  </data>
+  <data name="Credits_Music" xml:space="preserve">
+    <value>-= Музыка =-
+Aliaksei Apet
+Гурт Abshar
+Igor Seleznev</value>
+  </data>
+  <data name="Credits_Producer" xml:space="preserve">
+    <value>-= Прадусар =-
+Alexey Zadorozhny</value>
+  </data>
+  <data name="Credits_Programming" xml:space="preserve">
+    <value>-= Распрацоўка =-
+Pavel Raliuk
+Alex Paklonski</value>
+  </data>
+  <data name="Credits_Sounds" xml:space="preserve">
+    <value>-= Гукі =-
+Igor Seleznev
+Grant Evans
+Tom Haigh
+Cheeseheadburger
+Miastodzwiekow
+Mike Koenig
+Freesound.org</value>
+  </data>
+  <data name="DANGER_destroy_turrets" xml:space="preserve">
+    <value>НЕБЯСПЕКА! Знішчыць турэлі</value>
+  </data>
+  <data name="DeadCity" xml:space="preserve">
+    <value>Мёртвы горад</value>
+  </data>
+  <data name="Deliver_this_cargo" xml:space="preserve">
+    <value>Даставіць гэты груз</value>
+  </data>
+  <data name="Destroy_all_targets" xml:space="preserve">
+    <value>Патрапіць ва ўсе мішэні!</value>
+  </data>
+  <data name="DoorsDream" xml:space="preserve">
+    <value>Сон дзвярэй</value>
+  </data>
+  <data name="DoorsWorld" xml:space="preserve">
+    <value>Свет дзвярэй</value>
+  </data>
+  <data name="Do_you_need_a_job" xml:space="preserve">
+    <value>Патрэбна праца?</value>
+  </data>
+  <data name="DragThisDoorDown" xml:space="preserve">
+    <value>Адцягні дзверы ўніз</value>
+  </data>
+  <data name="Dungeon" xml:space="preserve">
+    <value>Падзямелле</value>
+  </data>
+  <data name="Escape" xml:space="preserve">
+    <value>Уцёкі</value>
+  </data>
+  <data name="Escort" xml:space="preserve">
+    <value>Эскорт</value>
+  </data>
+  <data name="EscortPart2" xml:space="preserve">
+    <value>Эскорт: частка 2</value>
+  </data>
+  <data name="Escort_this_Very_ipmortant_cargo" xml:space="preserve">
+    <value>Суправаджай грузавік</value>
+  </data>
+  <data name="Exit" xml:space="preserve">
+    <value>Выхад</value>
+  </data>
+  <data name="FeaturesList" xml:space="preserve">
+    <value>Больш узроўняў
+ Новыя выклікі!
+ Таемнае жыццё дзвярэй
+ Зомбі!</value>
+  </data>
+  <data name="Find_the_finish" xml:space="preserve">
+    <value>Знайдзі фініш!</value>
+  </data>
+  <data name="Follow_me" xml:space="preserve">
+    <value>Накіроўвайся за мной!</value>
+  </data>
+  <data name="Friend" xml:space="preserve">
+    <value>Сябар</value>
+  </data>
+  <data name="FriendsTurn" xml:space="preserve">
+    <value>Ход сябра</value>
+  </data>
+  <data name="GadgetControl" xml:space="preserve">
+    <value>Кантроль гаджэта</value>
+  </data>
+  <data name="GadgetControlArea" xml:space="preserve">
+    <value>Вобласць кантролю гаджэта</value>
+  </data>
+  <data name="Garage" xml:space="preserve">
+    <value>Гараж</value>
+  </data>
+  <data name="GarbageCollector" xml:space="preserve">
+    <value>Зборшчык смецця</value>
+  </data>
+  <data name="Get_the_full_game" xml:space="preserve">
+    <value>ВЕРСІЯ ЦАЛКАМ</value>
+  </data>
+  <data name="Go" xml:space="preserve">
+    <value>Наперад!</value>
+  </data>
+  <data name="GrabCargoInstructions" xml:space="preserve">
+    <value>Схапіць груз:
+1. Націснуць
+2. Выбраць груз
+3. Адпусціць</value>
+  </data>
+  <data name="Great_go_with_me" xml:space="preserve">
+    <value>Выдатна! Накіроўвайся за мной…</value>
+  </data>
+  <data name="Ha_ha_3rd_is_blocked" xml:space="preserve">
+    <value>Ха! 3-я заблакавана</value>
+  </data>
+  <data name="HiddenBox" xml:space="preserve">
+    <value>Схаваная скрынка</value>
+  </data>
+  <data name="Hit_the_target" xml:space="preserve">
+    <value>Патрапіць у цэль</value>
+  </data>
+  <data name="Hm_you_are_agile" xml:space="preserve">
+    <value>Хм…А ты спрытны!</value>
+  </data>
+  <data name="Info_MusicIsPlaying" xml:space="preserve">
+    <value>Ваш тэлефон прайграе музыку непасрэна зараз</value>
+  </data>
+  <data name="JunkYard" xml:space="preserve">
+    <value>Звалка</value>
+  </data>
+  <data name="KeyboardArrowsMovement" xml:space="preserve">
+    <value>WASD - рух</value>
+  </data>
+  <data name="LastMap" xml:space="preserve">
+    <value>Апошняя карта</value>
+  </data>
+  <data name="Last_wave" xml:space="preserve">
+    <value>Апошняя хваля!</value>
+  </data>
+  <data name="LeftMouseButtonShoot" xml:space="preserve">
+    <value>Левая кнопка - стрэл</value>
+  </data>
+  <data name="LetItSnow" xml:space="preserve">
+    <value>Няхай будзе снег</value>
+  </data>
+  <data name="Looser" xml:space="preserve">
+    <value>Ты прайграў!</value>
+  </data>
+  <data name="Middleware" xml:space="preserve">
+    <value>Кропка ўваходу</value>
+  </data>
+  <data name="MoveCargoInstructions" xml:space="preserve">
+    <value>Перамяшчаць груз:
+1. 
+2. Націснуць і трымаць
+3. Рухаць груз
+4. Адпусціць</value>
+  </data>
+  <data name="MovementControlArea" xml:space="preserve">
+    <value>Вобласць кіравання</value>
+  </data>
+  <data name="MyGalaxy" xml:space="preserve">
+    <value>Мая Галактыка</value>
+  </data>
+  <data name="NeutralizeHim" xml:space="preserve">
+    <value>Нейтралізуй яго</value>
+  </data>
+  <data name="NewDay" xml:space="preserve">
+    <value>Новы дзень</value>
+  </data>
+  <data name="Next_area_is_dangerous" xml:space="preserve">
+    <value>Наступная зона небяспечная</value>
+  </data>
+  <data name="NoConnectionMessageBox_Text" xml:space="preserve">
+    <value>Падключыцца да інтэрнэту?</value>
+  </data>
+  <data name="NoConnectionMessageBox_Title" xml:space="preserve">
+    <value>Няма злучэння =(</value>
+  </data>
+  <data name="NoConnectionMessageBox_Yes" xml:space="preserve">
+    <value>Так!</value>
+  </data>
+  <data name="NoTimeToChill" xml:space="preserve">
+    <value>Не час для прахалоды</value>
+  </data>
+  <data name="Or_they_destroy_you" xml:space="preserve">
+    <value>Ці яны заб'юць цябе</value>
+  </data>
+  <data name="PauseTheMusicQuestion" xml:space="preserve">
+    <value>Спыніць музыку?</value>
+  </data>
+  <data name="PreciseShoot" xml:space="preserve">
+    <value>Дакладны стрэл</value>
+  </data>
+  <data name="PressAimRelease" xml:space="preserve">
+    <value>1. Націснуць
+2. Пацэліцца
+3. Адпусціць</value>
+  </data>
+  <data name="Prohibited_cargo" xml:space="preserve">
+    <value>Забаронены груз!</value>
+  </data>
+  <data name="Race" xml:space="preserve">
+    <value>Гонка</value>
+  </data>
+  <data name="Ready" xml:space="preserve">
+    <value>Гатовы?</value>
+  </data>
+  <data name="Revenge" xml:space="preserve">
+    <value>Адплата</value>
+  </data>
+  <data name="ReviewMessageBox_ReviewButton" xml:space="preserve">
+    <value>Ацаніць</value>
+  </data>
+  <data name="ReviewMessageBox_Text" xml:space="preserve">
+    <value>Падабаецца гэта гульня?</value>
+  </data>
+  <data name="ReviewMessageBox_Title" xml:space="preserve">
+    <value>Сказаць дзякуй</value>
+  </data>
+  <data name="RightMouseButtonUseGadget" xml:space="preserve">
+    <value>Правая кнопка-гаджэт</value>
+  </data>
+  <data name="Run_away" xml:space="preserve">
+    <value>Уцякай!</value>
+  </data>
+  <data name="ShareLinkText" xml:space="preserve">
+    <value>Tile Rider крутая гульня для вінфона</value>
+  </data>
+  <data name="ShareLinkTitle" xml:space="preserve">
+    <value>Паглядзі гульню "Tile Rider"</value>
+  </data>
+  <data name="Some_boxes_explode_on_hit" xml:space="preserve">
+    <value>Ёсць скрынкі выбухованебяспечныя</value>
+  </data>
+  <data name="Stat_CompleteMaps" xml:space="preserve">
+    <value>Пройдзеныя карты</value>
+  </data>
+  <data name="Stat_LongestMap" xml:space="preserve">
+    <value>Самая доўгая карта</value>
+  </data>
+  <data name="Stat_Stars" xml:space="preserve">
+    <value>Зоркі</value>
+  </data>
+  <data name="Stat_Title" xml:space="preserve">
+    <value>Статыстыка</value>
+  </data>
+  <data name="Stat_TotalDeaths" xml:space="preserve">
+    <value>Смерцяў</value>
+  </data>
+  <data name="Stat_TotalPlayTime" xml:space="preserve">
+    <value>Выніковы час</value>
+  </data>
+  <data name="Swarm" xml:space="preserve">
+    <value>Рой</value>
+  </data>
+  <data name="TakeCover" xml:space="preserve">
+    <value>Ва ўкрыццё</value>
+  </data>
+  <data name="Tap_this_message_to_close_it" xml:space="preserve">
+    <value>Націсні, каб закрыць</value>
+  </data>
+  <data name="Tap_to_continue" xml:space="preserve">
+    <value>Націсніце для працягу</value>
+  </data>
+  <data name="Targets" xml:space="preserve">
+    <value>Мішэні</value>
+  </data>
+  <data name="Teleport" xml:space="preserve">
+    <value>Тэлепорт</value>
+  </data>
+  <data name="TeslaGun" xml:space="preserve">
+    <value>Гармата Тэсла</value>
+  </data>
+  <data name="Thanks" xml:space="preserve">
+    <value>Дзякуй</value>
+  </data>
+  <data name="ThanksForPlaying" xml:space="preserve">
+    <value>Дзякуй за гульню!</value>
+  </data>
+  <data name="TheCity" xml:space="preserve">
+    <value>Горад</value>
+  </data>
+  <data name="TheEnd" xml:space="preserve">
+    <value>Канец</value>
+  </data>
+  <data name="TheGate" xml:space="preserve">
+    <value>Вароты</value>
+  </data>
+  <data name="TheLastStand" xml:space="preserve">
+    <value>Апошняя бітва</value>
+  </data>
+  <data name="TheRoad" xml:space="preserve">
+    <value>Дарога</value>
+  </data>
+  <data name="ThoWeeksEarlier" xml:space="preserve">
+    <value>2 тыдні таму</value>
+  </data>
+  <data name="Time" xml:space="preserve">
+    <value>Час:</value>
+  </data>
+  <data name="Time_is_up" xml:space="preserve">
+    <value>Час выйшаў!</value>
+  </data>
+  <data name="TooLate" xml:space="preserve">
+    <value>Занадта позна</value>
+  </data>
+  <data name="To_the_marked_place" xml:space="preserve">
+    <value>Да пазначанага месца</value>
+  </data>
+  <data name="Trial" xml:space="preserve">
+    <value>Дэма</value>
+  </data>
+  <data name="Try_to_collect_all_gears" xml:space="preserve">
+    <value>Пастарайся сабраць усе шэсцярні!</value>
+  </data>
+  <data name="Unboxing" xml:space="preserve">
+    <value>Распакоўка</value>
+  </data>
+  <data name="UnderPressure" xml:space="preserve">
+    <value>Пад ціскам</value>
+  </data>
+  <data name="Wait_for_green_light" xml:space="preserve">
+    <value>Чакай на зялёнае святло</value>
+  </data>
+  <data name="WeaponControl" xml:space="preserve">
+    <value>Кіраванне зброяй</value>
+  </data>
+  <data name="We_will_help_you" xml:space="preserve">
+    <value>Мы табе дапаможам</value>
+  </data>
+  <data name="WhereAmI" xml:space="preserve">
+    <value>Дзе я?</value>
+  </data>
+  <data name="Where_Is_My_Box" xml:space="preserve">
+    <value>Дзе мая скрынка?</value>
+  </data>
+  <data name="WinnersRoom" xml:space="preserve">
+    <value>Зала чэмпіёна</value>
+  </data>
+  <data name="You" xml:space="preserve">
+    <value>Ты</value>
+  </data>
+  <data name="YouWin" xml:space="preserve">
+    <value>Ты перамог!</value>
+  </data>
+  <data name="You_can_move_up_and_down" xml:space="preserve">
+    <value>Можаш рухацца ўверх і ўніз</value>
+  </data>
+  <data name="You_have_15_seconds" xml:space="preserve">
+    <value>У цябе 15 секундаў</value>
+  </data>
+  <data name="Credits_SpecialThanks" xml:space="preserve">
+    <value>-= Падзяка =-</value>
+  </data>
+  <data name="BadFeedback_DefaultText" xml:space="preserve">
+    <value />
+  </data>
+  <data name="BadFeedback_Text" xml:space="preserve">
+    <value>Мне не падабаецца гэта гульня, таму што:</value>
+  </data>
+  <data name="BadFeedback_Title" xml:space="preserve">
+    <value>Мае думкі</value>
+  </data>
+  <data name="Give_Feedback" xml:space="preserve">
+    <value>Пакінь водгук</value>
+  </data>
+  <data name="Later" xml:space="preserve">
+    <value>Пазней</value>
+  </data>
+  <data name="PlusOneFreeLevel" xml:space="preserve">
+    <value>І адчыні +1 узровень бясплатна</value>
+  </data>
+  <data name="ReviewWithReward_Hate" xml:space="preserve">
+    <value>Не зусім</value>
+  </data>
+  <data name="ReviewWithReward_Like" xml:space="preserve">
+    <value>Мне падабаецца</value>
+  </data>
+  <data name="ReviewWithReward_Text" xml:space="preserve">
+    <value>Вам не абавязкова пакідаць водгук, але для нас было б карысна даведацца, што вы думаеце. Ці падабаецца вам гульня?</value>
+  </data>
+  <data name="ReviewWithReward_Title" xml:space="preserve">
+    <value>+1 узровень адчынены</value>
+  </data>
+  <data name="Share_with_friend" xml:space="preserve">
+    <value>Падзяліся з сябрам</value>
+  </data>
+  <data name="Vote_for_us" xml:space="preserve">
+    <value>Галасуй за нас</value>
+  </data>
+  <data name="Want_More" xml:space="preserve">
+    <value>Хочаш яшчэ?</value>
+  </data>
+  <data name="WaitFor" xml:space="preserve">
+    <value>Цi чакай</value>
+  </data>
+  <data name="HiTemplate" xml:space="preserve">
+    <value>Прывітанне, {0}!</value>
+  </data>
+  <data name="Race2" xml:space="preserve">
+    <value>Гонка 2</value>
+  </data>
+  <data name="Help" xml:space="preserve">
+    <value>Дапамога</value>
+  </data>
+  <data name="Trophy" xml:space="preserve">
+    <value>Трафей</value>
+  </data>
+  <data name="Enemy" xml:space="preserve">
+    <value>вораг</value>
+  </data>
+  <data name="NeverAskAgain" xml:space="preserve">
+    <value>Больш не пытайцеся</value>
+  </data>
+</root>

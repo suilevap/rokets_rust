@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>CharMapTest</Name>
+    <GameMode>SinglePlayer</GameMode>
+    <Image></Image>
+    <ImageData></ImageData>
+    <Scale>64</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>true</HaveOutlandVizualization>
+    <OutlandColorLT>FF000000</OutlandColorLT>
+    <OutlandColorRT>FF00BFFF</OutlandColorRT>
+    <OutlandColorRB>FFFFA500</OutlandColorRB>
+    <OutlandColorLB>FFFFFF00</OutlandColorLB>
+    <TargetTimeSec>0</TargetTimeSec>
+    <AmbientLight>4C4C4C4C</AmbientLight>
+    <Splash>MapDefault</Splash>
+    <Lights>
+      <Item>
+        <Position>3 3</Position>
+        <Color>FFFFD700</Color>
+        <R>6</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>9 3</Position>
+        <Color>FF00BFFF</Color>
+        <R>8</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>16 8</Position>
+        <Color>FFFF69B4</Color>
+        <R>7</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+    </Lights>
+    <Players>
+      <Item>
+        <Id>4001</Id>
+        <Name>Player1</Name>
+        <Position>2 2</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>Local</Control>
+        <CarName>SandBuggyNoGadget</CarName>
+      </Item>
+    </Players>
+    <CameraAttachToEnemyEnable>false</CameraAttachToEnemyEnable>
+    <CharMapDictionary>*:#FFFF0000;.:#100000A0</CharMapDictionary>
+    <CharMap>
+********************
+*..................*
+*..******..******..*
+*..*....*..*....*..*
+*..*....*..*....*..*
+*..******..******..*
+*..................*
+*..****............*
+*..*..*............*
+*..****............*
+*..................*
+********************
+    </CharMap>
+  </Asset>
+</XnaContent>

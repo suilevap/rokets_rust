@@ -1,0 +1,605 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>DoorsDream</Name>
+    <GameMode>SinglePlayer</GameMode>
+    <Image>Maps\Singleplayer\DoorsDream</Image>
+    <Scale>256</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>false</HaveOutlandVizualization>
+    <OutlandColorLT>FF000000</OutlandColorLT>
+    <OutlandColorRT>FF00BFFF</OutlandColorRT>
+    <OutlandColorRB>FFFFA500</OutlandColorRB>
+    <OutlandColorLB>FFFFFF00</OutlandColorLB>
+    <TargetTimeSec>0</TargetTimeSec>
+    <Friction>1</Friction>
+    <MusicDynamic1>2_10</MusicDynamic1>
+    <AmbientLight>FFFFFFFF</AmbientLight>
+    <Splash>DoorsDream</Splash>
+    <LevelEffect>None</LevelEffect>
+    <CameraReadAccelerometer>false</CameraReadAccelerometer>
+    <Width>8</Width>
+    <Height>5</Height>
+    <Players Null="true" />
+    <SimpleCars>
+      <Item>
+        <Id>3001</Id>
+        <Position>1.65 2.5</Position>
+        <DirectionDeg>270</DirectionDeg>
+        <Control>GoToEnemySimplePredictionPosition</Control>
+        <CarName>DoorPlayer</CarName>
+        <Weapon>Default</Weapon>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>3002</Id>
+        <Position>6.35 2.5</Position>
+        <DirectionDeg>90</DirectionDeg>
+        <Control>Local</Control>
+        <CarName>DoorPlayer</CarName>
+        <Weapon>Default</Weapon>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>3003</Id>
+        <Position>4 2.5</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>AlwaysShoot</Control>
+        <CarName>SimpleTargetDoorsDream</CarName>
+        <Weapon>Default</Weapon>
+        <ActionOnCreate>seq_onCreate3003</ActionOnCreate>
+        <ActionOnDestroy>CloneObj3003</ActionOnDestroy>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+    </SimpleCars>
+    <Entities>
+      <Item>
+        <Id>1004</Id>
+        <Position>1.2 0.8</Position>
+        <Sprite>Entities\CargoQuest</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Tile</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1005</Id>
+        <Position>6.8 4.2</Position>
+        <Sprite>Entities\CargoQuest</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Tile</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1006</Id>
+        <Position>4 2.5</Position>
+        <Sprite>UI\Splash\Controls\ZonesDelimiter</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.7</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Tile</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+    </Entities>
+    <Triggers>
+      <Item>
+        <Id>1</Id>
+        <Area>1 1 1 3</Area>
+        <Amount>9999</Amount>
+        <Active>true</Active>
+        <LeaveActions>
+          <Item>ApplyImpulse3003Right</Item>
+          <Item>DeactivateTrigger(5)</Item>
+          <Item>ActivateTrigger(6)</Item>
+        </LeaveActions>
+        <Subscribers>3003 300301 300302</Subscribers>
+      </Item>
+      <Item>
+        <Id>2</Id>
+        <Area>6 1 1 3</Area>
+        <Amount>9999</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>ActivateTrigger(5)</Item>
+          <Item>DeactivateTrigger(6)</Item>
+        </Actions>
+        <LeaveActions>
+          <Item>ApplyImpulse3003Left</Item>
+        </LeaveActions>
+        <Subscribers>3003 300301 300302</Subscribers>
+      </Item>
+      <Item>
+        <Id>3</Id>
+        <Area>0 1 1 3</Area>
+        <Amount>999</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>DestroyEntity(0)</Item>
+          <Item>PlaySoundCoin</Item>
+          <Item>ChangeIntVariable2Plus</Item>
+          <Item>SplashSetBindVariable2</Item>
+          <Item>CheckStars2_1</Item>
+          <Item>CheckStars2_2</Item>
+          <Item>CheckStars2_3</Item>
+          <Item>DeactivateTrigger(6)</Item>
+        </Actions>
+        <Subscribers>3003 300301 300302</Subscribers>
+      </Item>
+      <Item>
+        <Id>4</Id>
+        <Area>7 1 1 3</Area>
+        <Amount>999</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>DestroyEntity(0)</Item>
+          <Item>PlaySoundRocket</Item>
+          <Item>ChangeIntVariable1Plus</Item>
+          <Item>SplashSetBindVariable1</Item>
+          <Item>CheckStars1_1</Item>
+          <Item>CheckStars1_2</Item>
+          <Item>CheckStars1_3</Item>
+          <Item>DeactivateTrigger(6)</Item>
+        </Actions>
+        <Subscribers>3003 300301 300302</Subscribers>
+      </Item>
+      <Item>
+        <Id>5</Id>
+        <Area>5 1 1 3</Area>
+        <Amount>9999</Amount>
+        <Active>false</Active>
+        <Actions>
+          <Item>PlaySoundBounce</Item>
+        </Actions>
+        <Subscribers>3003 300301 300302</Subscribers>
+      </Item>
+      <Item>
+        <Id>6</Id>
+        <Area>2 1 1 3</Area>
+        <Amount>9999</Amount>
+        <Active>false</Active>
+        <Actions>
+          <Item>PlaySoundBounce</Item>
+        </Actions>
+        <Subscribers>3003 300301 300302</Subscribers>
+      </Item>
+    </Triggers>
+    <Actions>
+      <Item Type="GameLibrary.AddEntitiesToFocus">
+        <Name>AddAllToFocus</Name>
+        <RunOnMapStart>true</RunOnMapStart>
+        <ItemIds>1004 1005</ItemIds>
+        <RemoveAllOthers>true</RemoveAllOthers>
+      </Item>
+      <Item Type="GameLibrary.SetBodyRestrictions">
+        <Name>SetBodyRestrictions3001</Name>
+        <RunOnMapStart>true</RunOnMapStart>
+        <ItemId>3001</ItemId>
+        <RestrictX>true</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+      </Item>
+      <Item Type="GameLibrary.SetBodyRestrictions">
+        <Name>SetBodyRestrictions3002</Name>
+        <RunOnMapStart>true</RunOnMapStart>
+        <ItemId>3002</ItemId>
+        <RestrictX>true</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+      </Item>
+      <Item Type="GameLibrary.AIAdjustment">
+        <Name>AIAdjustment3001</Name>
+        <RunOnMapStart>true</RunOnMapStart>
+        <ItemId>3001</ItemId>
+        <Team>0</Team>
+        <ScanDistance>20</ScanDistance>
+        <WeaponMaxAngleDeg>-1</WeaponMaxAngleDeg>
+        <FireAccuracy>1</FireAccuracy>
+        <IsVisibleForAutoAim>DoNotChange</IsVisibleForAutoAim>
+      </Item>
+      <Item Type="GameLibrary.AddConserveMaxReachedSpeedComponent">
+        <Name>ConserveMaxReachedSpeedComponent</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <ItemId>0</ItemId>
+      </Item>
+      <Item Type="GameLibrary.ApplyImpulseActionData">
+        <Name>ApplyImpulseStarting</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <ItemId>0</ItemId>
+        <Impulse>-12 -2</Impulse>
+        <RandomImpulse>0 4</RandomImpulse>
+      </Item>
+      <Item Type="GameLibrary.ApplyImpulseActionData">
+        <Name>ApplyImpulse3003Right</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <ItemId>0</ItemId>
+        <Impulse>2 -2</Impulse>
+        <RandomImpulse>1 4</RandomImpulse>
+      </Item>
+      <Item Type="GameLibrary.ApplyImpulseActionData">
+        <Name>ApplyImpulse3003Left</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <ItemId>0</ItemId>
+        <Impulse>-2 -2</Impulse>
+        <RandomImpulse>-1 4</RandomImpulse>
+      </Item>
+      <Item Type="GameLibrary.CloneObject">
+        <Name>CloneObj3003</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>3 2 2 1</Area>
+        <ItemId>3003</ItemId>
+        <TargetIds>300301 300302</TargetIds>
+        <Count>1</Count>
+        <IsUseRelativePosition>false</IsUseRelativePosition>
+        <RelativeByItem>0</RelativeByItem>
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>seq_onCreate3003</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>ConserveMaxReachedSpeedComponent</Item>
+          <Item>ApplyImpulseStarting</Item>
+        </Actions>
+        <TimeBetweenInSec>0</TimeBetweenInSec>
+      </Item>
+      <Item Type="GameLibrary.ChangeIntVariable">
+        <Name>ChangeIntVariable1</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <VariableName>Score1</VariableName>
+        <Global>true</Global>
+        <ItemId>0</ItemId>
+        <Value>0</Value>
+        <Operation>Set</Operation>
+      </Item>
+      <Item Type="GameLibrary.ChangeIntVariable">
+        <Name>ChangeIntVariable2</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <VariableName>Score2</VariableName>
+        <Global>true</Global>
+        <ItemId>0</ItemId>
+        <Value>0</Value>
+        <Operation>Set</Operation>
+      </Item>
+      <Item Type="GameLibrary.ChangeIntVariable">
+        <Name>ChangeIntVariable1Plus</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <VariableName>Score1</VariableName>
+        <Global>true</Global>
+        <ItemId>0</ItemId>
+        <Value>1</Value>
+        <Operation>Increase</Operation>
+      </Item>
+      <Item Type="GameLibrary.ChangeIntVariable">
+        <Name>ChangeIntVariable2Plus</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <VariableName>Score2</VariableName>
+        <Global>true</Global>
+        <ItemId>0</ItemId>
+        <Value>1</Value>
+        <Operation>Increase</Operation>
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>seq_mapStart</Name>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Actions>
+          <Item>DeactivateEntity(3003)</Item>
+          <Item>ChangeIntVariable1</Item>
+          <Item>ChangeIntVariable2</Item>
+          <Item>SplashSetBindVariable1</Item>
+          <Item>SplashSetBindVariable2</Item>
+          <Item>ShowSplashReadyGo</Item>
+          <Item>HighlightControllerMovement()</Item>
+        </Actions>
+        <TimeBetweenInSec>0.5</TimeBetweenInSec>
+      </Item>
+      <Item Type="GameLibrary.ShowSplash">
+        <Name>ShowSplash</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <SplashName>PongScore</SplashName>
+        <AutoHideTimeSec>73</AutoHideTimeSec>
+        <Clickable>false</Clickable>
+        <ActionOnHide>CompareScores</ActionOnHide>
+      </Item>
+      <Item Type="GameLibrary.SplashSetBindVariable">
+        <Name>SplashSetBindVariable1</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <BindVariableNumber>First</BindVariableNumber>
+        <Value>Score1</Value>
+      </Item>
+      <Item Type="GameLibrary.SplashSetBindVariable">
+        <Name>SplashSetBindVariable2</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <BindVariableNumber>Second</BindVariableNumber>
+        <Value>Score2</Value>
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>seq_showSplash</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <NextAction>PlayLevelMusicD1</NextAction>
+        <Actions>
+          <Item>CloneObj3003</Item>
+          <Item>ShowSplash</Item>
+        </Actions>
+        <TimeBetweenInSec>3</TimeBetweenInSec>
+      </Item>
+      <Item Type="GameLibrary.PlaySound">
+        <Name>PlaySoundCoin</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Sound>CoinCollected</Sound>
+        <EmmiterEntityId>0</EmmiterEntityId>
+        <UseListenerPosition>true</UseListenerPosition>
+        <Volume>1</Volume>
+        <Pitch>0</Pitch>
+        <PlayWithNextPitch>false</PlayWithNextPitch>
+      </Item>
+      <Item Type="GameLibrary.PlaySound">
+        <Name>PlaySoundRocket</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Sound>RocketDestroy</Sound>
+        <EmmiterEntityId>0</EmmiterEntityId>
+        <UseListenerPosition>true</UseListenerPosition>
+        <Volume>1</Volume>
+        <Pitch>0</Pitch>
+        <PlayWithNextPitch>false</PlayWithNextPitch>
+      </Item>
+      <Item Type="GameLibrary.CheckIntVariable">
+        <Name>CompareScores</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <VariableName>Score2</VariableName>
+        <Global>true</Global>
+        <ItemId>0</ItemId>
+        <Value>Score1</Value>
+        <ActionOnLess>seq_onSplashHidePositive</ActionOnLess>
+        <ActionOnEqual>seq_onSplashHidePositive</ActionOnEqual>
+        <ActionOnGreater>seq_onSplashHidePositive</ActionOnGreater>
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>seq_onSplashHidePositive</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>ShowSuccess()</Item>
+          <Item>NextMap(Score2)</Item>
+        </Actions>
+        <TimeBetweenInSec>1</TimeBetweenInSec>
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>seq_onSplashHideNegative</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>ShowSuccessAnti</Item>
+          <Item>RestartMap()</Item>
+        </Actions>
+        <TimeBetweenInSec>1</TimeBetweenInSec>
+      </Item>
+      <Item Type="GameLibrary.ShowSuccess">
+        <Name>ShowSuccessAnti</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <SuccessType>AntiSuccess</SuccessType>
+      </Item>
+      <Item Type="GameLibrary.ShowSplash">
+        <Name>ShowSplashReadyGo</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <SplashName>ReadyGo</SplashName>
+        <AutoHideTimeSec>5</AutoHideTimeSec>
+        <Clickable>false</Clickable>
+        <ActionOnHide>seq_showSplash</ActionOnHide>
+      </Item>
+      <Item Type="GameLibrary.PlayLevelMusic">
+        <Name>PlayLevelMusicD1</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <LevelMusicType>Dynamic1</LevelMusicType>
+        <Looped>true</Looped>
+      </Item>
+      <Item Type="GameLibrary.AttachAdditionalView">
+        <Name>AttachAdditionalView3002_1</Name>
+        <Groups>
+          <Item>AttachAdditionalView</Item>
+        </Groups>
+        <RunOnMapStart>false</RunOnMapStart>
+        <NextAction>HighlightControllerOff()</NextAction>
+        <Position>6.3 2.3</Position>
+        <Sprite>UI\MapBack\Star</Sprite>
+        <Scale>0.35</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Animated>false</Animated>
+        <Color>FFFFFFFF</Color>
+        <ItemId>3002</ItemId>
+        <Depth>0.01</Depth>
+        <RelativeDepth>true</RelativeDepth>
+      </Item>
+      <Item Type="GameLibrary.AttachAdditionalView">
+        <Name>AttachAdditionalView3002_2</Name>
+        <Groups>
+          <Item>AttachAdditionalView</Item>
+        </Groups>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Position>6.3 2.55</Position>
+        <Sprite>UI\MapBack\Star</Sprite>
+        <Scale>0.35</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Animated>false</Animated>
+        <Color>FFFFFFFF</Color>
+        <ItemId>3002</ItemId>
+        <Depth>0.01</Depth>
+        <RelativeDepth>true</RelativeDepth>
+      </Item>
+      <Item Type="GameLibrary.AttachAdditionalView">
+        <Name>AttachAdditionalView3002_3</Name>
+        <Groups>
+          <Item>AttachAdditionalView</Item>
+        </Groups>
+        <RunOnMapStart>false</RunOnMapStart>
+        <NextAction>CompareScores</NextAction>
+        <Position>6.3 2.8</Position>
+        <Sprite>UI\MapBack\Star</Sprite>
+        <Scale>0.35</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Animated>false</Animated>
+        <Color>FFFFFFFF</Color>
+        <ItemId>3002</ItemId>
+        <Depth>0.01</Depth>
+        <RelativeDepth>true</RelativeDepth>
+      </Item>
+      <Item Type="GameLibrary.CheckIntVariable">
+        <Name>CheckStars2_1</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <NextAction>CaptureScreen(3002,4)</NextAction>
+        <VariableName>Score2</VariableName>
+        <Global>true</Global>
+        <ItemId>0</ItemId>
+        <Value>1</Value>
+        <ActionOnLess Null="true" />
+        <ActionOnEqual>AttachAdditionalView3002_1</ActionOnEqual>
+        <ActionOnGreater Null="true" />
+      </Item>
+      <Item Type="GameLibrary.CheckIntVariable">
+        <Name>CheckStars2_3</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <VariableName>Score2</VariableName>
+        <Global>true</Global>
+        <ItemId>0</ItemId>
+        <Value>3</Value>
+        <ActionOnLess Null="true" />
+        <ActionOnEqual>seqOnPlayerWin3</ActionOnEqual>
+        <ActionOnGreater Null="true" />
+      </Item>
+      <Item Type="GameLibrary.CheckIntVariable">
+        <Name>CheckStars2_2</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <VariableName>Score2</VariableName>
+        <Global>true</Global>
+        <ItemId>0</ItemId>
+        <Value>2</Value>
+        <ActionOnLess Null="true" />
+        <ActionOnEqual>AttachAdditionalView3002_2</ActionOnEqual>
+        <ActionOnGreater Null="true" />
+      </Item>
+      <Item Type="GameLibrary.AttachAdditionalView">
+        <Name>AttachAdditionalView3001_1</Name>
+        <Groups>
+          <Item>AttachAdditionalView</Item>
+        </Groups>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Position>1.7 2.17</Position>
+        <Sprite>UI\MapBack\Star</Sprite>
+        <Scale>0.35</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Animated>false</Animated>
+        <Color>FFFFFFFF</Color>
+        <ItemId>3001</ItemId>
+        <Depth>0.01</Depth>
+        <RelativeDepth>true</RelativeDepth>
+      </Item>
+      <Item Type="GameLibrary.AttachAdditionalView">
+        <Name>AttachAdditionalView3001_2</Name>
+        <Groups>
+          <Item>AttachAdditionalView</Item>
+        </Groups>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Position>1.7 2.42</Position>
+        <Sprite>UI\MapBack\Star</Sprite>
+        <Scale>0.35</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Animated>false</Animated>
+        <Color>FFFFFFFF</Color>
+        <ItemId>3001</ItemId>
+        <Depth>0.01</Depth>
+        <RelativeDepth>true</RelativeDepth>
+      </Item>
+      <Item Type="GameLibrary.AttachAdditionalView">
+        <Name>AttachAdditionalView3001_3</Name>
+        <Groups>
+          <Item>AttachAdditionalView</Item>
+        </Groups>
+        <RunOnMapStart>false</RunOnMapStart>
+        <NextAction>CompareScores</NextAction>
+        <Position>1.7 2.67</Position>
+        <Sprite>UI\MapBack\Star</Sprite>
+        <Scale>0.35</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Animated>false</Animated>
+        <Color>FFFFFFFF</Color>
+        <ItemId>3001</ItemId>
+        <Depth>0.01</Depth>
+        <RelativeDepth>true</RelativeDepth>
+      </Item>
+      <Item Type="GameLibrary.CheckIntVariable">
+        <Name>CheckStars1_1</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <VariableName>Score1</VariableName>
+        <Global>true</Global>
+        <ItemId>0</ItemId>
+        <Value>1</Value>
+        <ActionOnLess Null="true" />
+        <ActionOnEqual>AttachAdditionalView3001_1</ActionOnEqual>
+        <ActionOnGreater Null="true" />
+      </Item>
+      <Item Type="GameLibrary.CheckIntVariable">
+        <Name>CheckStars1_2</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <VariableName>Score1</VariableName>
+        <Global>true</Global>
+        <ItemId>0</ItemId>
+        <Value>2</Value>
+        <ActionOnLess Null="true" />
+        <ActionOnEqual>AttachAdditionalView3001_2</ActionOnEqual>
+        <ActionOnGreater Null="true" />
+      </Item>
+      <Item Type="GameLibrary.CheckIntVariable">
+        <Name>CheckStars1_3</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <VariableName>Score1</VariableName>
+        <Global>true</Global>
+        <ItemId>0</ItemId>
+        <Value>3</Value>
+        <ActionOnLess Null="true" />
+        <ActionOnEqual>AttachAdditionalView3001_3</ActionOnEqual>
+        <ActionOnGreater Null="true" />
+      </Item>
+      <Item Type="GameLibrary.PlaySound">
+        <Name>PlaySoundBounce</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Sound>PongBounce</Sound>
+        <EmmiterEntityId>0</EmmiterEntityId>
+        <UseListenerPosition>false</UseListenerPosition>
+        <Volume>1</Volume>
+        <Pitch>0</Pitch>
+        <PlayWithNextPitch>true</PlayWithNextPitch>
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>seqOnPlayerWin3</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>CheckIfAchievement</Item>
+          <Item>AttachAdditionalView3002_3</Item>
+        </Actions>
+        <TimeBetweenInSec>0</TimeBetweenInSec>
+      </Item>
+      <Item Type="GameLibrary.CheckIntVariable">
+        <Name>CheckIfAchievement</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <VariableName>Score1</VariableName>
+        <Global>true</Global>
+        <ItemId>0</ItemId>
+        <Value>0</Value>
+        <ActionOnLess Null="true" />
+        <ActionOnEqual>UnlockAch(TR_PONG_MASTER)</ActionOnEqual>
+        <ActionOnGreater Null="true" />
+      </Item>
+    </Actions>
+  </Asset>
+</XnaContent>

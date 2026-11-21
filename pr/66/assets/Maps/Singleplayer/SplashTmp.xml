@@ -1,0 +1,325 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>NewMap</Name>
+    <GameMode>SinglePlayer</GameMode>
+    <Image>Maps\Singleplayer\SplashTmp</Image>
+    <Scale>32</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>false</HaveOutlandVizualization>
+    <OutlandColorLT>FF000000</OutlandColorLT>
+    <OutlandColorRT>FF00BFFF</OutlandColorRT>
+    <OutlandColorRB>FFFFA500</OutlandColorRB>
+    <OutlandColorLB>FFFFFF00</OutlandColorLB>
+    <TargetTimeSec>0</TargetTimeSec>
+    <Friction>1</Friction>
+    <AmbientLight>0C0C0C0C</AmbientLight>
+    <Splash>AboutTesla</Splash>
+    <LevelEffect>None</LevelEffect>
+    <CameraReadAccelerometer>true</CameraReadAccelerometer>
+    <Width>25</Width>
+    <Height>15</Height>
+    <Players Null="true" />
+    <Actions>
+      <Item Type="GameLibrary.SplashFakeData">
+        <Name>SplashMainInfo</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <DrawBackground>true</DrawBackground>
+        <AppearFadeToBlack>true</AppearFadeToBlack>
+        <TranslationTime>2.5</TranslationTime>
+        <AutoHide>false</AutoHide>
+        <IgnorePause>true</IgnorePause>
+        <ParallaxAmount>2</ParallaxAmount>
+        <ShowClickableIndicatorAfterSec>3</ShowClickableIndicatorAfterSec>
+        <ScaleUpWhenNeeded>false</ScaleUpWhenNeeded>
+        <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
+      </Item>
+      <Item Type="GameLibrary.LayerFakeMapData">
+        <Name>Layer</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <BindTextId>-1</BindTextId>
+        <StretchToScreen>false</StretchToScreen>
+        <Color>FFFFFFFF</Color>
+        <Static>false</Static>
+        <OnForeground>false</OnForeground>
+        <DelaySec>0</DelaySec>
+        <Height>0.8</Height>
+        <Sprite>Cars\SimpleBuggy\Base</Sprite>
+        <Scale>1</Scale>
+        <Position>7 7</Position>
+        <DirectionDeg>0</DirectionDeg>
+      </Item>
+      <Item Type="GameLibrary.LayerFakeMapData">
+        <Name>Layer</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <BindTextId>-1</BindTextId>
+        <StretchToScreen>false</StretchToScreen>
+        <Color>FFFFFFFF</Color>
+        <Static>true</Static>
+        <OnForeground>false</OnForeground>
+        <DelaySec>0</DelaySec>
+        <Height>1</Height>
+        <Sprite>Hints\Danger</Sprite>
+        <Scale>1</Scale>
+        <Position>11.5 1.5</Position>
+        <DirectionDeg>0</DirectionDeg>
+      </Item>
+      <Item Type="GameLibrary.LayerFakeMapData">
+        <Name>Layer</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <BindTextId>-1</BindTextId>
+        <StretchToScreen>false</StretchToScreen>
+        <Color>FFFFFFFF</Color>
+        <Static>false</Static>
+        <OnForeground>false</OnForeground>
+        <DelaySec>0</DelaySec>
+        <Height>0.6</Height>
+        <Sprite>Cars\SimpleBuggy\Destroyed2</Sprite>
+        <Scale>1</Scale>
+        <Position>17 6.71875</Position>
+        <DirectionDeg>315</DirectionDeg>
+      </Item>
+      <Item Type="GameLibrary.LayerFakeMapData">
+        <Name>Layer</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <BindTextId>-1</BindTextId>
+        <StretchToScreen>false</StretchToScreen>
+        <Color>FFFFFFFF</Color>
+        <Static>true</Static>
+        <OnForeground>false</OnForeground>
+        <DelaySec>0</DelaySec>
+        <Height>0.1</Height>
+        <Sprite>Cars\TurretStat\Base</Sprite>
+        <Scale>1</Scale>
+        <Position>13.5 6.5</Position>
+        <DirectionDeg>270</DirectionDeg>
+      </Item>
+      <Item Type="GameLibrary.LayerFakeMapData">
+        <Name>Layer</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <BindTextId>-1</BindTextId>
+        <StretchToScreen>false</StretchToScreen>
+        <Color>FF40E0D0</Color>
+        <Static>true</Static>
+        <OnForeground>false</OnForeground>
+        <DelaySec>0</DelaySec>
+        <Height>0.2</Height>
+        <Sprite>Particles\TeslaTrail</Sprite>
+        <Scale>0.8</Scale>
+        <Position>12.5 7.5</Position>
+        <DirectionDeg>298.720337</DirectionDeg>
+      </Item>
+      <Item Type="GameLibrary.LayerFakeMapData">
+        <Name>Layer</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <BindTextId>-1</BindTextId>
+        <StretchToScreen>false</StretchToScreen>
+        <Color>FF40E0D0</Color>
+        <Static>true</Static>
+        <OnForeground>false</OnForeground>
+        <DelaySec>0</DelaySec>
+        <Height>0.21</Height>
+        <Sprite>Particles\TeslaTrail</Sprite>
+        <Scale>0.8</Scale>
+        <Position>12.5 7.5</Position>
+        <DirectionDeg>180</DirectionDeg>
+      </Item>
+      <Item Type="GameLibrary.LayerFakeMapData">
+        <Name>Layer</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <BindTextId>-1</BindTextId>
+        <StretchToScreen>false</StretchToScreen>
+        <Color>62FF0004</Color>
+        <Static>true</Static>
+        <OnForeground>false</OnForeground>
+        <DelaySec>0</DelaySec>
+        <Height>0.01</Height>
+        <Sprite>UI\DottedCircle</Sprite>
+        <Scale>0.8</Scale>
+        <Position>21.5 7.5</Position>
+        <DirectionDeg>225</DirectionDeg>
+      </Item>
+      <Item Type="GameLibrary.LayerFakeMapData">
+        <Name>Layer</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <BindTextId>-1</BindTextId>
+        <StretchToScreen>false</StretchToScreen>
+        <Color>FF40E0D0</Color>
+        <Static>true</Static>
+        <OnForeground>false</OnForeground>
+        <DelaySec>0</DelaySec>
+        <Height>0.21</Height>
+        <Sprite>Particles\TeslaTrail</Sprite>
+        <Scale>0.8</Scale>
+        <Position>13.5 9</Position>
+        <DirectionDeg>234.713272</DirectionDeg>
+      </Item>
+      <Item Type="GameLibrary.LayerFakeMapData">
+        <Name>Layer</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <BindTextId>-1</BindTextId>
+        <StretchToScreen>false</StretchToScreen>
+        <Color>FF40E0D0</Color>
+        <Static>true</Static>
+        <OnForeground>false</OnForeground>
+        <DelaySec>0</DelaySec>
+        <Height>0.21</Height>
+        <Sprite>Particles\TeslaTrail</Sprite>
+        <Scale>0.8</Scale>
+        <Position>12.5 7.5</Position>
+        <DirectionDeg>56.6015129</DirectionDeg>
+      </Item>
+      <Item Type="GameLibrary.LayerFakeMapData">
+        <Name>Layer</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <BindTextId>-1</BindTextId>
+        <StretchToScreen>false</StretchToScreen>
+        <Color>FF40E0D0</Color>
+        <Static>true</Static>
+        <OnForeground>false</OnForeground>
+        <DelaySec>0</DelaySec>
+        <Height>0.21</Height>
+        <Sprite>Particles\TeslaTrail</Sprite>
+        <Scale>0.8</Scale>
+        <Position>13.5 6</Position>
+        <DirectionDeg>315</DirectionDeg>
+      </Item>
+      <Item Type="GameLibrary.LayerFakeMapData">
+        <Name>Layer</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <BindTextId>-1</BindTextId>
+        <StretchToScreen>false</StretchToScreen>
+        <Color>FF40E0D0</Color>
+        <Static>true</Static>
+        <OnForeground>false</OnForeground>
+        <DelaySec>0</DelaySec>
+        <Height>0.21</Height>
+        <Sprite>Particles\TeslaTrail</Sprite>
+        <Scale>0.8</Scale>
+        <Position>11.5 9</Position>
+        <DirectionDeg>315</DirectionDeg>
+      </Item>
+      <Item Type="GameLibrary.LayerFakeMapData">
+        <Name>Layer</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <BindTextId>-1</BindTextId>
+        <StretchToScreen>false</StretchToScreen>
+        <Color>FF40E0D0</Color>
+        <Static>true</Static>
+        <OnForeground>false</OnForeground>
+        <DelaySec>0</DelaySec>
+        <Height>0.21</Height>
+        <Sprite>Particles\TeslaTrail</Sprite>
+        <Scale>0.8</Scale>
+        <Position>11.5 9</Position>
+        <DirectionDeg>244.867035</DirectionDeg>
+      </Item>
+      <Item Type="GameLibrary.LayerFakeMapData">
+        <Name>Layer</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <BindTextId>-1</BindTextId>
+        <StretchToScreen>false</StretchToScreen>
+        <Color>FF40E0D0</Color>
+        <Static>true</Static>
+        <OnForeground>false</OnForeground>
+        <DelaySec>0</DelaySec>
+        <Height>0.21</Height>
+        <Sprite>Particles\TeslaTrail</Sprite>
+        <Scale>0.8</Scale>
+        <Position>12.5 7.5</Position>
+        <DirectionDeg>148.7681</DirectionDeg>
+      </Item>
+      <Item Type="GameLibrary.LayerFakeMapData">
+        <Name>Layer</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <BindTextId>-1</BindTextId>
+        <StretchToScreen>false</StretchToScreen>
+        <Color>FF40E0D0</Color>
+        <Static>true</Static>
+        <OnForeground>false</OnForeground>
+        <DelaySec>0</DelaySec>
+        <Height>0.21</Height>
+        <Sprite>Particles\TeslaTrail</Sprite>
+        <Scale>0.8</Scale>
+        <Position>11.0625 6.59375</Position>
+        <DirectionDeg>120.815704</DirectionDeg>
+      </Item>
+      <Item Type="GameLibrary.LayerFakeMapData">
+        <Name>Layer</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <BindTextId>-1</BindTextId>
+        <StretchToScreen>false</StretchToScreen>
+        <Color>FFFF0000</Color>
+        <Static>false</Static>
+        <OnForeground>false</OnForeground>
+        <DelaySec>0</DelaySec>
+        <Height>0.62</Height>
+        <Sprite>Particles\TeslaTrail</Sprite>
+        <Scale>0.8</Scale>
+        <Position>17 7.21875</Position>
+        <DirectionDeg>270</DirectionDeg>
+      </Item>
+      <Item Type="GameLibrary.LayerFakeMapData">
+        <Name>Layer</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <BindTextId>-1</BindTextId>
+        <StretchToScreen>false</StretchToScreen>
+        <Color>FFFF0000</Color>
+        <Static>false</Static>
+        <OnForeground>false</OnForeground>
+        <DelaySec>0</DelaySec>
+        <Height>0.61</Height>
+        <Sprite>Particles\TeslaTrail</Sprite>
+        <Scale>0.8</Scale>
+        <Position>17 7.5</Position>
+        <DirectionDeg>135</DirectionDeg>
+      </Item>
+      <Item Type="GameLibrary.LayerFakeMapData">
+        <Name>Layer</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Text>TeslaGun</Text>
+        <BindTextId>-1</BindTextId>
+        <StretchToScreen>false</StretchToScreen>
+        <Color>FF000000</Color>
+        <Static>false</Static>
+        <OnForeground>false</OnForeground>
+        <DelaySec>0</DelaySec>
+        <Height>1</Height>
+        <Sprite Null="true" />
+        <Scale>1</Scale>
+        <Position>9.5 3.5</Position>
+        <DirectionDeg>0</DirectionDeg>
+      </Item>
+      <Item Type="GameLibrary.LayerFakeMapData">
+        <Name>Layer</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <BindTextId>-1</BindTextId>
+        <StretchToScreen>false</StretchToScreen>
+        <Color>FF000000</Color>
+        <Static>true</Static>
+        <OnForeground>false</OnForeground>
+        <DelaySec>0</DelaySec>
+        <Height>0.1</Height>
+        <Sprite>UI/Equal</Sprite>
+        <Scale>1</Scale>
+        <Position>15 7</Position>
+        <DirectionDeg>0</DirectionDeg>
+      </Item>
+      <Item Type="GameLibrary.LayerFakeMapData">
+        <Name>Layer</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <BindTextId>-1</BindTextId>
+        <StretchToScreen>false</StretchToScreen>
+        <Color>FF000000</Color>
+        <Static>true</Static>
+        <OnForeground>false</OnForeground>
+        <DelaySec>0</DelaySec>
+        <Height>0.1</Height>
+        <Sprite>UI/Plus</Sprite>
+        <Scale>1</Scale>
+        <Position>9 7</Position>
+        <DirectionDeg>0</DirectionDeg>
+      </Item>
+    </Actions>
+  </Asset>
+</XnaContent>

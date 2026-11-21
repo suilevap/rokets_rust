@@ -1,0 +1,732 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Accept" xml:space="preserve">
+    <value>Accept</value>
+  </data>
+  <data name="All_rights_reserved" xml:space="preserve">
+    <value>All rights reserved</value>
+  </data>
+  <data name="Assembly" xml:space="preserve">
+    <value>Assembly</value>
+  </data>
+  <data name="Avoid_customs" xml:space="preserve">
+    <value>Avoid customs!</value>
+  </data>
+  <data name="BadFeedback_DefaultText" xml:space="preserve">
+    <value />
+  </data>
+  <data name="BadFeedback_Text" xml:space="preserve">
+    <value>I don't like this game because:</value>
+  </data>
+  <data name="BadFeedback_Title" xml:space="preserve">
+    <value>My thoughts</value>
+  </data>
+  <data name="Be_careful" xml:space="preserve">
+    <value>Be Careful</value>
+  </data>
+  <data name="Button" xml:space="preserve">
+    <value>Button</value>
+  </data>
+  <data name="BuyMessageBox_BuyButton" xml:space="preserve">
+    <value>Buy</value>
+  </data>
+  <data name="BuyMessageBox_Text" xml:space="preserve">
+    <value>Buy full version of TileRider?</value>
+  </data>
+  <data name="BuyMessageBox_Title" xml:space="preserve">
+    <value>Unlock all levels</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="CaptureTheBox" xml:space="preserve">
+    <value>Capture The Box</value>
+  </data>
+  <data name="CompanyName" xml:space="preserve">
+    <value>7 Soft Pillows</value>
+  </data>
+  <data name="ContactUsBody" xml:space="preserve">
+    <value>Hi 7 Soft Pillows,</value>
+  </data>
+  <data name="ContactUsSubject" xml:space="preserve">
+    <value>Feedback Tile Rider</value>
+  </data>
+  <data name="Credits_Art" xml:space="preserve">
+    <value>-= ART =-
+Aliaksei Davydau
+Darya Saulova
+Vladimir Budko
+Tatiana Chernyh</value>
+  </data>
+  <data name="Credits_CompanyName" xml:space="preserve">
+    <value>7 Soft Pillows, 2015</value>
+  </data>
+  <data name="Credits_GameName" xml:space="preserve">
+    <value>Tile Rider</value>
+  </data>
+  <data name="Credits_Music" xml:space="preserve">
+    <value>-= MUSIC =-
+Aliaksei Apet
+Abshar band
+Igor Seleznev</value>
+  </data>
+  <data name="Credits_Producer" xml:space="preserve">
+    <value>-= PRODUCER =-
+Alexey Zadorozhny</value>
+  </data>
+  <data name="Credits_Programming" xml:space="preserve">
+    <value>-= DEVELOPMENT =-
+Pavel Raliuk
+Alex Paklonski</value>
+  </data>
+  <data name="Credits_Sounds" xml:space="preserve">
+    <value>-= SOUNDS =-
+Igor Seleznev
+Grant Evans
+Tom Haigh
+Cheeseheadburger
+Miastodzwiekow
+Mike Koenig
+Freesound.org</value>
+  </data>
+  <data name="Credits_SpecialThanks" xml:space="preserve">
+    <value>-= Special thanks to =-</value>
+  </data>
+  <data name="Credits_SpecialThanksList" xml:space="preserve">
+    <value>Alexey Zadorozhny
+Tanya Kazak
+Ilia Papliouka
+Elena Pilipenko
+Olga Orlovskaya
+Dimi-urg
+Vitali Tishkevich
+Andrei Shvydryk
+Denis Ovsyannikov
+Tanya Balash
+Evgeniy Basalyha
+Pavel Maleev
+Denis Ignatik
+Torben Dzillak</value>
+  </data>
+  <data name="DANGER_destroy_turrets" xml:space="preserve">
+    <value>DANGER! Destroy turrets</value>
+  </data>
+  <data name="DeadCity" xml:space="preserve">
+    <value>Dead City</value>
+  </data>
+  <data name="Deliver_this_cargo" xml:space="preserve">
+    <value>Deliver this cargo</value>
+  </data>
+  <data name="Destroy_all_targets" xml:space="preserve">
+    <value>Destroy all targets!</value>
+  </data>
+  <data name="DoorsDream" xml:space="preserve">
+    <value>Door's Dream</value>
+  </data>
+  <data name="DoorsWorld" xml:space="preserve">
+    <value>Doors World</value>
+  </data>
+  <data name="Do_you_need_a_job" xml:space="preserve">
+    <value>Do you need a job?</value>
+  </data>
+  <data name="DragThisDoorDown" xml:space="preserve">
+    <value>Drag this door down</value>
+  </data>
+  <data name="Dungeon" xml:space="preserve">
+    <value>Dungeon</value>
+  </data>
+  <data name="Escape" xml:space="preserve">
+    <value>Escape</value>
+  </data>
+  <data name="Escort" xml:space="preserve">
+    <value>Escort</value>
+  </data>
+  <data name="EscortPart2" xml:space="preserve">
+    <value>Escort: Part 2</value>
+  </data>
+  <data name="Escort_this_Very_ipmortant_cargo" xml:space="preserve">
+    <value>Mission: Escort truck</value>
+  </data>
+  <data name="Exit" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="FeaturesList" xml:space="preserve">
+    <value>New levels to explore
+ More challenges!
+ Secret life of doors
+ Zombies!</value>
+  </data>
+  <data name="Find_the_finish" xml:space="preserve">
+    <value>Find the finish!</value>
+  </data>
+  <data name="Follow_me" xml:space="preserve">
+    <value>Follow me!</value>
+  </data>
+  <data name="Friend" xml:space="preserve">
+    <value>Friend</value>
+  </data>
+  <data name="FriendsTurn" xml:space="preserve">
+    <value>Friend's Turn</value>
+  </data>
+  <data name="GadgetControl" xml:space="preserve">
+    <value>Gadget control</value>
+  </data>
+  <data name="GadgetControlArea" xml:space="preserve">
+    <value>Gadget control area</value>
+  </data>
+  <data name="Garage" xml:space="preserve">
+    <value>Garage</value>
+  </data>
+  <data name="GarbageCollector" xml:space="preserve">
+    <value>Garbage Collector</value>
+  </data>
+  <data name="Get_the_full_game" xml:space="preserve">
+    <value>GET THE FULL GAME!</value>
+  </data>
+  <data name="Give_Feedback" xml:space="preserve">
+    <value>Give feedback</value>
+  </data>
+  <data name="Go" xml:space="preserve">
+    <value>Go!</value>
+  </data>
+  <data name="GrabCargoInstructions" xml:space="preserve">
+    <value>Grab cargo:
+1. Press
+2. Choose cargo
+3. Release</value>
+  </data>
+  <data name="Great_go_with_me" xml:space="preserve">
+    <value>Great! Go with me...</value>
+  </data>
+  <data name="Ha_ha_3rd_is_blocked" xml:space="preserve">
+    <value>Ha! The 3rd one is blocked</value>
+  </data>
+  <data name="HiddenBox" xml:space="preserve">
+    <value>Hidden Box</value>
+  </data>
+  <data name="Hit_the_target" xml:space="preserve">
+    <value>Hit the target</value>
+  </data>
+  <data name="Hm_you_are_agile" xml:space="preserve">
+    <value>Hm... You are agile!</value>
+  </data>
+  <data name="Info_MusicIsPlaying" xml:space="preserve">
+    <value>Your device is playing music right now</value>
+  </data>
+  <data name="JunkYard" xml:space="preserve">
+    <value>Junk Yard</value>
+  </data>
+  <data name="KeyboardArrowsMovement" xml:space="preserve">
+    <value>WASD - Movement</value>
+  </data>
+  <data name="LastMap" xml:space="preserve">
+    <value>Last Map</value>
+  </data>
+  <data name="Last_wave" xml:space="preserve">
+    <value>Last wave!</value>
+  </data>
+  <data name="Later" xml:space="preserve">
+    <value>Later</value>
+  </data>
+  <data name="LeftMouseButtonShoot" xml:space="preserve">
+    <value>Left Button - Shoot</value>
+  </data>
+  <data name="LetItSnow" xml:space="preserve">
+    <value>Let It Snow</value>
+  </data>
+  <data name="Looser" xml:space="preserve">
+    <value>You lose!</value>
+  </data>
+  <data name="Middleware" xml:space="preserve">
+    <value>Entry Point</value>
+  </data>
+  <data name="MoveCargoInstructions" xml:space="preserve">
+    <value>Move cargo:
+1. 
+2. Press and hold
+3. Move cargo
+4. Release</value>
+  </data>
+  <data name="MovementControlArea" xml:space="preserve">
+    <value>Movement control area</value>
+  </data>
+  <data name="MyGalaxy" xml:space="preserve">
+    <value>My Galaxy</value>
+  </data>
+  <data name="NeutralizeHim" xml:space="preserve">
+    <value>Neutralize Him</value>
+  </data>
+  <data name="NewDay" xml:space="preserve">
+    <value>New Day</value>
+  </data>
+  <data name="Next_area_is_dangerous" xml:space="preserve">
+    <value>Next area is dangerous</value>
+  </data>
+  <data name="NoConnectionMessageBox_Text" xml:space="preserve">
+    <value>Will we try to enable Internet?</value>
+  </data>
+  <data name="NoConnectionMessageBox_Title" xml:space="preserve">
+    <value>No Connection =(</value>
+  </data>
+  <data name="NoConnectionMessageBox_Yes" xml:space="preserve">
+    <value>Yes! Lets try.</value>
+  </data>
+  <data name="NotEnoughFreeSpaceText" xml:space="preserve">
+    <value>Please free up some space</value>
+  </data>
+  <data name="NotEnoughFreeSpaceTitle" xml:space="preserve">
+    <value>There is not enough space on the disk</value>
+  </data>
+  <data name="NoTimeToChill" xml:space="preserve">
+    <value>No Time To Chill</value>
+  </data>
+  <data name="Or_they_destroy_you" xml:space="preserve">
+    <value>Or they destroy you</value>
+  </data>
+  <data name="PauseTheMusicQuestion" xml:space="preserve">
+    <value>Pause the music?</value>
+  </data>
+  <data name="PlusOneFreeLevel" xml:space="preserve">
+    <value>And unlock +1 level for free</value>
+  </data>
+  <data name="PreciseShoot" xml:space="preserve">
+    <value>Precise shot</value>
+  </data>
+  <data name="PressAimRelease" xml:space="preserve">
+    <value>1. Press
+2. Aim
+3. Release</value>
+  </data>
+  <data name="Prohibited_cargo" xml:space="preserve">
+    <value>Prohibited cargo!</value>
+  </data>
+  <data name="Race" xml:space="preserve">
+    <value>Race</value>
+  </data>
+  <data name="Ready" xml:space="preserve">
+    <value>Ready?</value>
+  </data>
+  <data name="Revenge" xml:space="preserve">
+    <value>Revenge</value>
+  </data>
+  <data name="ReviewMessageBox_ReviewButton" xml:space="preserve">
+    <value>Rate us</value>
+  </data>
+  <data name="ReviewMessageBox_Text" xml:space="preserve">
+    <value>Do you like this game?</value>
+  </data>
+  <data name="ReviewMessageBox_Title" xml:space="preserve">
+    <value>Send us love</value>
+  </data>
+  <data name="ReviewWithReward_Hate" xml:space="preserve">
+    <value>Not really</value>
+  </data>
+  <data name="ReviewWithReward_Like" xml:space="preserve">
+    <value>I like it</value>
+  </data>
+  <data name="ReviewWithReward_Text" xml:space="preserve">
+    <value>You don't have to leave feedback but it would be very helpful. Do you like this game?</value>
+  </data>
+  <data name="ReviewWithReward_Title" xml:space="preserve">
+    <value>+1 level unlocked!</value>
+  </data>
+  <data name="RightMouseButtonUseGadget" xml:space="preserve">
+    <value>Right Button - Use Gadget</value>
+  </data>
+  <data name="Run_away" xml:space="preserve">
+    <value>Run away!</value>
+  </data>
+  <data name="ShareLinkText" xml:space="preserve">
+    <value>Tile Rider is cool game for WP</value>
+  </data>
+  <data name="ShareLinkTitle" xml:space="preserve">
+    <value>Check out "Tile Rider". A high-speed adventure game with puzzle, racing and battle elements.</value>
+  </data>
+  <data name="Share_with_friend" xml:space="preserve">
+    <value>Share with friend</value>
+  </data>
+  <data name="Some_boxes_explode_on_hit" xml:space="preserve">
+    <value>Some boxes explode when hit</value>
+  </data>
+  <data name="Stat_CompleteMaps" xml:space="preserve">
+    <value>Maps Completed</value>
+  </data>
+  <data name="Stat_LongestMap" xml:space="preserve">
+    <value>Longest Map</value>
+  </data>
+  <data name="Stat_Stars" xml:space="preserve">
+    <value>Stars</value>
+  </data>
+  <data name="Stat_Title" xml:space="preserve">
+    <value>Statistics</value>
+  </data>
+  <data name="Stat_TotalDeaths" xml:space="preserve">
+    <value>Total Deaths</value>
+  </data>
+  <data name="Stat_TotalPlayTime" xml:space="preserve">
+    <value>Total Time</value>
+  </data>
+  <data name="Swarm" xml:space="preserve">
+    <value>Swarm</value>
+  </data>
+  <data name="TakeCover" xml:space="preserve">
+    <value>Take Cover</value>
+  </data>
+  <data name="Tap_this_message_to_close_it" xml:space="preserve">
+    <value>You can tap to close it</value>
+  </data>
+  <data name="Tap_to_continue" xml:space="preserve">
+    <value>Press to continue</value>
+  </data>
+  <data name="Targets" xml:space="preserve">
+    <value>Targets</value>
+  </data>
+  <data name="Teleport" xml:space="preserve">
+    <value>Teleport</value>
+  </data>
+  <data name="TeslaGun" xml:space="preserve">
+    <value>Tesla Gun</value>
+  </data>
+  <data name="Thanks" xml:space="preserve">
+    <value>Thanks</value>
+  </data>
+  <data name="ThanksForPlaying" xml:space="preserve">
+    <value>Thanks for playing!</value>
+  </data>
+  <data name="TheCity" xml:space="preserve">
+    <value>The City</value>
+  </data>
+  <data name="TheEnd" xml:space="preserve">
+    <value>The End</value>
+  </data>
+  <data name="TheGate" xml:space="preserve">
+    <value>The Gate</value>
+  </data>
+  <data name="TheLastStand" xml:space="preserve">
+    <value>The Last Stand</value>
+  </data>
+  <data name="TheRoad" xml:space="preserve">
+    <value>The Road</value>
+  </data>
+  <data name="ThoWeeksEarlier" xml:space="preserve">
+    <value>2 Weeks Earlier</value>
+  </data>
+  <data name="Time" xml:space="preserve">
+    <value>Time:</value>
+  </data>
+  <data name="Time_is_up" xml:space="preserve">
+    <value>Time is up!</value>
+  </data>
+  <data name="TooLate" xml:space="preserve">
+    <value>Too Late</value>
+  </data>
+  <data name="To_the_marked_place" xml:space="preserve">
+    <value>To the marked place</value>
+  </data>
+  <data name="Trial" xml:space="preserve">
+    <value>Trial</value>
+  </data>
+  <data name="Try_to_collect_all_gears" xml:space="preserve">
+    <value>Try to collect all gears!</value>
+  </data>
+  <data name="Unboxing" xml:space="preserve">
+    <value>Unboxing</value>
+  </data>
+  <data name="UnderPressure" xml:space="preserve">
+    <value>Under Pressure</value>
+  </data>
+  <data name="Vote_for_us" xml:space="preserve">
+    <value>Vote for us</value>
+  </data>
+  <data name="Wait_for_green_light" xml:space="preserve">
+    <value>Wait for green light</value>
+  </data>
+  <data name="Want_More" xml:space="preserve">
+    <value>Want more?</value>
+  </data>
+  <data name="WeaponControl" xml:space="preserve">
+    <value>Weapon control</value>
+  </data>
+  <data name="We_will_help_you" xml:space="preserve">
+    <value>We will help you</value>
+  </data>
+  <data name="WhereAmI" xml:space="preserve">
+    <value>Where Am I?</value>
+  </data>
+  <data name="Where_Is_My_Box" xml:space="preserve">
+    <value>Where is my Box?</value>
+  </data>
+  <data name="WinnersRoom" xml:space="preserve">
+    <value>Winner's Room</value>
+  </data>
+  <data name="You" xml:space="preserve">
+    <value>You</value>
+  </data>
+  <data name="YouWin" xml:space="preserve">
+    <value>You win!</value>
+  </data>
+  <data name="You_can_move_up_and_down" xml:space="preserve">
+    <value>You can move up and down</value>
+  </data>
+  <data name="You_have_15_seconds" xml:space="preserve">
+    <value>You have 15 seconds</value>
+  </data>
+  <data name="Z" xml:space="preserve">
+    <value>Z</value>
+  </data>
+  <data name="WaitFor" xml:space="preserve">
+    <value>Or wait</value>
+  </data>
+  <data name="Smile_Up" xml:space="preserve">
+    <value>:-)</value>
+  </data>
+  <data name="HiTemplate" xml:space="preserve">
+    <value>Hi {0}!</value>
+  </data>
+  <data name="Num1" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="Num2" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="Race2" xml:space="preserve">
+    <value>Race 2</value>
+  </data>
+  <data name="Div" xml:space="preserve">
+    <value>/</value>
+  </data>
+  <data name="Help" xml:space="preserve">
+    <value>Help</value>
+  </data>
+  <data name="Trophy" xml:space="preserve">
+    <value>Trophy</value>
+  </data>
+  <data name="Stat_TotalKills" xml:space="preserve">
+    <value>Kills</value>
+  </data>
+  <data name="Stat_TotalScore" xml:space="preserve">
+    <value>Score</value>
+  </data>
+  <data name="Enemy" xml:space="preserve">
+    <value>enemy</value>
+  </data>
+  <data name="AchievementUnlocked" xml:space="preserve">
+    <value>Achievement Unlocked</value>
+  </data>
+  <data name="TR_PONG_MASTER_DESC" xml:space="preserve">
+    <value>Win 3:0 on the Door's Dream level</value>
+  </data>
+  <data name="TR_PONG_MASTER_NAME" xml:space="preserve">
+    <value>Pong Master</value>
+  </data>
+  <data name="TR_AGILITY_DESC" xml:space="preserve">
+    <value>Take the untakeable</value>
+  </data>
+  <data name="TR_AGILITY_NAME" xml:space="preserve">
+    <value>Agility</value>
+  </data>
+  <data name="TR_BAD_CONTRABANDIST_DESC" xml:space="preserve">
+    <value>Just be bad in transferring prohibited cargoes</value>
+  </data>
+  <data name="TR_BAD_CONTRABANDIST_NAME" xml:space="preserve">
+    <value>Bad Contrabandist</value>
+  </data>
+  <data name="TR_DISINFECTOR_DESC" xml:space="preserve">
+    <value>Destroy all zombies on the Dead City level</value>
+  </data>
+  <data name="TR_DISINFECTOR_NAME" xml:space="preserve">
+    <value>Disinfector</value>
+  </data>
+  <data name="TR_EXPLORER_DESC" xml:space="preserve">
+    <value>Get 3 stars on the Unboxing level</value>
+  </data>
+  <data name="TR_EXPLORER_NAME" xml:space="preserve">
+    <value>Explorer</value>
+  </data>
+  <data name="TR_FAST_RIDER_DESC" xml:space="preserve">
+    <value>Complete Garage in less than 43 seconds</value>
+  </data>
+  <data name="TR_FAST_RIDER_NAME" xml:space="preserve">
+    <value>Fast Rider</value>
+  </data>
+  <data name="TR_FROZEN_RIDER_DESC" xml:space="preserve">
+    <value>You'd better BE FAST</value>
+  </data>
+  <data name="TR_FROZEN_RIDER_NAME" xml:space="preserve">
+    <value>Frozen Rider</value>
+  </data>
+  <data name="TR_FULLENERGY_DESC" xml:space="preserve">
+    <value>Not ready to die</value>
+  </data>
+  <data name="TR_FULLENERGY_NAME" xml:space="preserve">
+    <value>Ready to Live!</value>
+  </data>
+  <data name="TR_KILLS_50_DESC" xml:space="preserve">
+    <value>Kill 50 enemies</value>
+  </data>
+  <data name="TR_KILLS_50_NAME" xml:space="preserve">
+    <value>Killer</value>
+  </data>
+  <data name="TR_SCORE_256_DESC" xml:space="preserve">
+    <value>Get 256 000</value>
+  </data>
+  <data name="TR_SCORE_256_NAME" xml:space="preserve">
+    <value>256</value>
+  </data>
+  <data name="TR_STARS_50_DESC" xml:space="preserve">
+    <value>Collect 50 stars</value>
+  </data>
+  <data name="TR_STARS_50_NAME" xml:space="preserve">
+    <value>Collector</value>
+  </data>
+  <data name="TR_STOP_DESC" xml:space="preserve">
+    <value>Complete "The Last Stand" without any help</value>
+  </data>
+  <data name="TR_STOP_NAME" xml:space="preserve">
+    <value>Stop Helping Me!</value>
+  </data>
+  <data name="TR_TEAMWORK_DESC" xml:space="preserve">
+    <value>Find 10 zombie friends</value>
+  </data>
+  <data name="TR_TEAMWORK_NAME" xml:space="preserve">
+    <value>Party Time</value>
+  </data>
+  <data name="TR_THE_END_DESC" xml:space="preserve">
+    <value>Thanks for playing</value>
+  </data>
+  <data name="TR_THE_END_NAME" xml:space="preserve">
+    <value>The End</value>
+  </data>
+  <data name="TR_TROPHY_DESC" xml:space="preserve">
+    <value>Collect all gears in the Winner's Room</value>
+  </data>
+  <data name="TR_TROPHY_NAME" xml:space="preserve">
+    <value>Trophy</value>
+  </data>
+  <data name="TR_TURRETHELP_DESC" xml:space="preserve">
+    <value>Use help of a turret to fight against zombies</value>
+  </data>
+  <data name="TR_TURRETHELP_NAME" xml:space="preserve">
+    <value>Turret Friend</value>
+  </data>
+  <data name="NeverAskAgain" xml:space="preserve">
+    <value>Never Ask Again</value>
+  </data>
+</root>

@@ -1,0 +1,246 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>Danger</Name>
+    <GameMode>SinglePlayer</GameMode>
+    <Image>Maps\Singleplayer\Danger</Image>
+    <Scale>48</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>false</HaveOutlandVizualization>
+    <OutlandColorLT>FF000000</OutlandColorLT>
+    <OutlandColorRT>FF00BFFF</OutlandColorRT>
+    <OutlandColorRB>FFFFA500</OutlandColorRB>
+    <OutlandColorLB>FFFFFF00</OutlandColorLB>
+    <TargetTimeSec>0</TargetTimeSec>
+    <Friction>1</Friction>
+    <AmbientLight>2F0C0C0C</AmbientLight>
+    <Splash>MapDefault</Splash>
+    <LevelEffect>None</LevelEffect>
+    <CameraReadAccelerometer>true</CameraReadAccelerometer>
+    <Width>48</Width>
+    <Height>48</Height>
+    <Lights>
+      <Item>
+        <Position>39.0833359 36.75</Position>
+        <Color>FFFFFFFF</Color>
+        <R>25</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>31 41</Position>
+        <Color>91FFFFFF</Color>
+        <R>8</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>43.5 25</Position>
+        <Color>99FFFFFF</Color>
+        <R>25</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>33.75 34.625</Position>
+        <Color>FFFFCD4F</Color>
+        <R>9</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>43.5 46</Position>
+        <Color>FF32CD32</Color>
+        <R>6</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>28.5 18</Position>
+        <Color>FFFFFFFF</Color>
+        <R>25</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>5 35.5</Position>
+        <Color>FFFFFFFF</Color>
+        <R>25</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+    </Lights>
+    <Players>
+      <Item>
+        <Id>4001</Id>
+        <Name>Player1</Name>
+        <Position>27.5 44</Position>
+        <DirectionDeg>90</DirectionDeg>
+        <Control>Local</Control>
+        <CarName>SandBuggyMagnet</CarName>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+    </Players>
+    <SimpleCars>
+      <Item>
+        <Id>3001</Id>
+        <Position>45 25</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>ZombieFlocking</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>3002</Id>
+        <Position>34.5 30</Position>
+        <DirectionDeg>270</DirectionDeg>
+        <Control>AlwaysShoot</Control>
+        <CarName>Turret</CarName>
+        <Weapon>Hammer</Weapon>
+        <ActionOnCreate>Team3</ActionOnCreate>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>3003</Id>
+        <Position>43.5 44</Position>
+        <DirectionDeg>90</DirectionDeg>
+        <Control>AlwaysShoot</Control>
+        <CarName>Turret</CarName>
+        <Weapon>Hammer</Weapon>
+        <ActionOnCreate>Team3</ActionOnCreate>
+        <ActionOnDestroy>RespawnHammer</ActionOnDestroy>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>3004</Id>
+        <Position>33 26.5</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>NoneEnemy</Control>
+        <CarName>SimpleTargetStatHealthy</CarName>
+        <Weapon>Default</Weapon>
+        <ActionOnDestroy>OpenDoor(1001)</ActionOnDestroy>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>3005</Id>
+        <Position>17 21.5</Position>
+        <DirectionDeg>360</DirectionDeg>
+        <Control>AlwaysShoot</Control>
+        <CarName>Turret</CarName>
+        <Weapon>Laser</Weapon>
+        <ActionOnCreate>Team3</ActionOnCreate>
+        <ActionOnDestroy>RespawnHammer</ActionOnDestroy>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>3006</Id>
+        <Position>24.5 21.5</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>NoneEnemy</Control>
+        <CarName>SimpleTargetStatHealthy</CarName>
+        <Weapon>Default</Weapon>
+        <ActionOnCreate>Team3</ActionOnCreate>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+    </SimpleCars>
+    <Entities>
+      <Item>
+        <Id>1001</Id>
+        <Position>34 31.5</Position>
+        <Sprite>Entities\DoorBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.7</Scale>
+        <DirectionDeg>180</DirectionDeg>
+        <Type>NonLinkableBox</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <ActionOnCreate>SimpleDoor</ActionOnCreate>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1002</Id>
+        <Position>43.5 46</Position>
+        <Sprite>Entities\GearStar</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Coin</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+    </Entities>
+    <Triggers>
+      <Item>
+        <Id>1</Id>
+        <Area>31 40 1 2</Area>
+        <Amount>1</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>Zombie1</Item>
+          <Item>Save()</Item>
+        </Actions>
+      </Item>
+    </Triggers>
+    <Actions>
+      <Item Type="GameLibrary.AddDoorComponent">
+        <Name>SimpleDoor</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <ItemId>0</ItemId>
+        <OpenDistanceScale>1</OpenDistanceScale>
+        <IsDrawHint>false</IsDrawHint>
+        <IsDrawArrowHint>false</IsDrawArrowHint>
+        <IsFixOnOpen>true</IsFixOnOpen>
+        <ActionOnOpen Null="true" />
+        <IsStatic>true</IsStatic>
+      </Item>
+      <Item Type="GameLibrary.CloneObject">
+        <Name>Zombie1</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>37 20 9 4</Area>
+        <ItemId>3001</ItemId>
+        <TargetIds>30010 30011 30012 30013</TargetIds>
+        <Count>4</Count>
+        <IsUseRelativePosition>false</IsUseRelativePosition>
+        <RelativeByItem>0</RelativeByItem>
+      </Item>
+      <Item Type="GameLibrary.AIAdjustment">
+        <Name>Team3</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <ItemId>0</ItemId>
+        <Team>3</Team>
+        <ScanDistance>-1</ScanDistance>
+        <WeaponMaxAngleDeg>-1</WeaponMaxAngleDeg>
+        <FireAccuracy>1</FireAccuracy>
+        <IsVisibleForAutoAim>DoNotChange</IsVisibleForAutoAim>
+      </Item>
+      <Item Type="GameLibrary.AddPathComponent">
+        <Name>Path1</Name>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Path>33 27 33 30.5</Path>
+        <ItemId>3004</ItemId>
+        <Color>FFFFFFFF</Color>
+        <Depth>0</Depth>
+        <Width>5</Width>
+      </Item>
+      <Item Type="GameLibrary.CloneObjectByPath">
+        <Name>RespawnHammer</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>42 45 1 1</Area>
+        <ItemId>3003</ItemId>
+        <TargetIds>30030 30031 30032</TargetIds>
+        <Count>1</Count>
+        <IsUseRelativePosition>false</IsUseRelativePosition>
+        <RelativeByItem>0</RelativeByItem>
+        <Path>42.5 45.5</Path>
+        <DeltaAngle>90</DeltaAngle>
+      </Item>
+    </Actions>
+    <CameraAttachToEnemyEnable>true</CameraAttachToEnemyEnable>
+  </Asset>
+</XnaContent>

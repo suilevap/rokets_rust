@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>Speed Test</Name>
+    <GameMode>SinglePlayer</GameMode>
+    <Image>Maps\Singleplayer\SpeedTest</Image>
+    <Scale>196</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>false</HaveOutlandVizualization>
+    <OutlandColorLT>FF000000</OutlandColorLT>
+    <OutlandColorRT>FF00BFFF</OutlandColorRT>
+    <OutlandColorRB>FFFFA500</OutlandColorRB>
+    <OutlandColorLB>FFFFFF00</OutlandColorLB>
+    <TargetTimeSec>0</TargetTimeSec>
+    <AmbientLight>0C0C0C0C</AmbientLight>
+    <Splash>MapDefault</Splash>
+    <Players>
+      <Item>
+        <Id>4001</Id>
+        <Name>Player1</Name>
+        <Position>3 6</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>MoveAndFireInInitDirection</Control>
+        <CarName>SandBuggyNoGadget</CarName>
+      </Item>
+      <Item>
+        <Id>4002</Id>
+        <Name>Player1</Name>
+        <Position>3 7</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>MoveAndFireInInitDirection</Control>
+        <CarName>Buggy</CarName>
+      </Item>
+      <Item>
+        <Id>4003</Id>
+        <Name>Player1</Name>
+        <Position>3 8.5</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>MoveAndFireInInitDirection</Control>
+        <CarName>HoverScout</CarName>
+      </Item>
+      <Item>
+        <Id>4004</Id>
+        <Name>Player1</Name>
+        <Position>3 10</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>MoveAndFireInInitDirection</Control>
+        <CarName>Scout</CarName>
+      </Item>
+      <Item>
+        <Id>4005</Id>
+        <Name>Player1</Name>
+        <Position>3 12</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>MoveAndFireInInitDirection</Control>
+        <CarName>TruckHammer</CarName>
+      </Item>
+      <Item>
+        <Id>4006</Id>
+        <Name>Player1</Name>
+        <Position>3 15</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>MoveAndFireInInitDirection</Control>
+        <CarName>TruckSlow</CarName>
+      </Item>
+    </Players>
+    <SimpleCars>
+      <Item>
+        <Id>3001</Id>
+        <Position>3 19</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>MoveAndFireInInitDirection</Control>
+        <CarName>SimpleBuggy</CarName>
+      </Item>
+      <Item>
+        <Id>3002</Id>
+        <Position>3 25</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>MoveAndFireInInitDirection</Control>
+        <CarName>Zombie</CarName>
+      </Item>
+      <Item>
+        <Id>3003</Id>
+        <Position>3 27</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>MoveAndFireInInitDirection</Control>
+        <CarName>TurretPlayer</CarName>
+      </Item>
+      <Item>
+        <Id>3004</Id>
+        <Position>6 4</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>Local</Control>
+        <CarName>SimpleBuggy</CarName>
+        <ActionOnCreate>FocusOnEntity(3004)</ActionOnCreate>
+      </Item>
+    </SimpleCars>
+  </Asset>
+</XnaContent>

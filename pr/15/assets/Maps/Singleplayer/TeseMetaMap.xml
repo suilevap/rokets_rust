@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>TeseMetaMap</Name>
+    <GameMode>SinglePlayer</GameMode>
+    <Image>Maps\Singleplayer\TeseMetaMap</Image>
+    <Scale>48</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>false</HaveOutlandVizualization>
+    <OutlandColorLT>FF000000</OutlandColorLT>
+    <OutlandColorRT>FF00BFFF</OutlandColorRT>
+    <OutlandColorRB>FFFFA500</OutlandColorRB>
+    <OutlandColorLB>FFFFFF00</OutlandColorLB>
+    <TargetTimeSec>0</TargetTimeSec>
+    <Friction>1</Friction>
+    <AmbientLight>0C0C0C0C</AmbientLight>
+    <Splash>MapDefault</Splash>
+    <LevelEffect>None</LevelEffect>
+    <CameraReadAccelerometer>true</CameraReadAccelerometer>
+    <Width>1</Width>
+    <Height>1</Height>
+    <Players Null="true" />
+    <Actions>
+      <Item Type="GameLibrary.MapPart">
+        <Name>part</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <PartName>Part_StartPoint1</PartName>
+        <Position>8 21.5</Position>
+        <DirectionDeg>0</DirectionDeg>
+      </Item>
+      <Item Type="GameLibrary.MapPart">
+        <Name>part</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <PartName>Part_Choice</PartName>
+        <Position>24 21.5</Position>
+        <DirectionDeg>0</DirectionDeg>
+      </Item>
+      <Item Type="GameLibrary.MapPart">
+        <Name>part</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <PartName>Part_Choice</PartName>
+        <Position>40 21.5</Position>
+        <DirectionDeg>270</DirectionDeg>
+      </Item>
+      <Item Type="GameLibrary.MapPart">
+        <Name>part</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <PartName>Part_hCorridor</PartName>
+        <Position>40 37.5</Position>
+        <DirectionDeg>270</DirectionDeg>
+      </Item>
+      <Item Type="GameLibrary.MapPart">
+        <Name>part</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <PartName>Part_hCorridor</PartName>
+        <Position>24 37.5</Position>
+        <DirectionDeg>90</DirectionDeg>
+      </Item>
+      <Item Type="GameLibrary.MapPart">
+        <Name>part</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <PartName>Part_hCorridor</PartName>
+        <Position>40 8</Position>
+        <DirectionDeg>270</DirectionDeg>
+      </Item>
+      <Item Type="GameLibrary.MapPart">
+        <Name>part</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <PartName>Part_Choice</PartName>
+        <Position>24 53.5</Position>
+        <DirectionDeg>90</DirectionDeg>
+      </Item>
+      <Item Type="GameLibrary.MapPart">
+        <Name>part</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <PartName>Part_Choice</PartName>
+        <Position>40 53.5</Position>
+        <DirectionDeg>180</DirectionDeg>
+      </Item>
+    </Actions>
+  </Asset>
+</XnaContent>

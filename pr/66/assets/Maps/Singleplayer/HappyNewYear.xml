@@ -1,0 +1,835 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>HappyNewYear</Name>
+    <GameMode>SinglePlayer</GameMode>
+    <Image>Maps\Singleplayer\HappyNewYear</Image>
+    <Scale>48</Scale>
+    <ImageWallTreshold>98</ImageWallTreshold>
+    <HaveOutlandVizualization>false</HaveOutlandVizualization>
+    <OutlandColorLT>FF000000</OutlandColorLT>
+    <OutlandColorRT>FF00BFFF</OutlandColorRT>
+    <OutlandColorRB>FFFFA500</OutlandColorRB>
+    <OutlandColorLB>FFFFFF00</OutlandColorLB>
+    <TargetTimeSec>0</TargetTimeSec>
+    <Friction>1</Friction>
+    <AmbientLight>0C0C0C0C</AmbientLight>
+    <Splash>MapDefault</Splash>
+    <LevelEffect>Snow</LevelEffect>
+    <CameraReadAccelerometer>true</CameraReadAccelerometer>
+    <Width>48</Width>
+    <Height>48</Height>
+    <Lights>
+      <Item>
+        <Position>24.5 5.5</Position>
+        <Color>FF32CD32</Color>
+        <R>4</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>29 15</Position>
+        <Color>FF32CD32</Color>
+        <R>4</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>25 12.5</Position>
+        <Color>FF32CD32</Color>
+        <R>4</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>22 10.5</Position>
+        <Color>FF32CD32</Color>
+        <R>4</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>20.5 17</Position>
+        <Color>FF32CD32</Color>
+        <R>4</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>24.5 18.5</Position>
+        <Color>FF32CD32</Color>
+        <R>4</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>28.5 20</Position>
+        <Color>FF32CD32</Color>
+        <R>4</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>30.5 21.5</Position>
+        <Color>FF32CD32</Color>
+        <R>4</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>24.5 5</Position>
+        <Color>FFFFFF00</Color>
+        <R>28</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>18.5 23</Position>
+        <Color>FF32CD32</Color>
+        <R>4</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>23.5 25</Position>
+        <Color>FF32CD32</Color>
+        <R>4</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>28.5 26</Position>
+        <Color>FF32CD32</Color>
+        <R>4</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>12.4583359 26</Position>
+        <Color>FFFFFF00</Color>
+        <R>28</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>35.4583359 25.5</Position>
+        <Color>FFFFFF00</Color>
+        <R>28</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>24.5 6</Position>
+        <Color>FFFF0000</Color>
+        <R>1</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>23 10</Position>
+        <Color>FFFF0000</Color>
+        <R>1</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>25 10.5</Position>
+        <Color>FFFF0000</Color>
+        <R>1</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>27 11.5</Position>
+        <Color>FFFF0000</Color>
+        <R>1</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>24.5 4.5</Position>
+        <Color>FFFFFF00</Color>
+        <R>2</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>24.5 12.5</Position>
+        <Color>FFFFFF00</Color>
+        <R>32</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>24.5 17.5</Position>
+        <Color>FFFFFF00</Color>
+        <R>32</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>24.5 21.5</Position>
+        <Color>FFFFFF00</Color>
+        <R>32</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>28.5 28</Position>
+        <Color>FFFF8C00</Color>
+        <R>2</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>17.5 27</Position>
+        <Color>FFFF8C00</Color>
+        <R>2</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>31.5 26.5</Position>
+        <Color>FFFF8C00</Color>
+        <R>2</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>21 28.5</Position>
+        <Color>FFFF8C00</Color>
+        <R>2</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>24.666666 28.666666</Position>
+        <Color>FFFF8C00</Color>
+        <R>2</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>23.4 26.5333347</Position>
+        <Color>FFFF8C00</Color>
+        <R>2</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>25.5333328 26.4333324</Position>
+        <Color>FFFF8C00</Color>
+        <R>2</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+    </Lights>
+    <Players>
+      <Item>
+        <Id>4001</Id>
+        <Name>Player1</Name>
+        <Position>26 34</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>Local</Control>
+        <CarName>SandBuggyNoGadget</CarName>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+    </Players>
+    <SimpleCars>
+      <Item>
+        <Id>3001</Id>
+        <Position>38 29</Position>
+        <DirectionDeg>90</DirectionDeg>
+        <Control>AiSimpleTurretFriend</Control>
+        <CarName>TurretStatRocketLauncherChasing</CarName>
+        <Weapon>Default</Weapon>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>3002</Id>
+        <Position>38.5 15</Position>
+        <DirectionDeg>306.869843</DirectionDeg>
+        <Control>ChickenAi</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>3003</Id>
+        <Position>36.5 14.5</Position>
+        <DirectionDeg>315.000031</DirectionDeg>
+        <Control>ChickenAi</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>3004</Id>
+        <Position>36.5 7.5</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>ChickenAi</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>3005</Id>
+        <Position>39.5 8</Position>
+        <DirectionDeg>248.962357</DirectionDeg>
+        <Control>ChickenAi</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+    </SimpleCars>
+    <Entities>
+      <Item>
+        <Id>1001</Id>
+        <Position>22.5 8.5</Position>
+        <Sprite>Entities\GearChristmas</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.75</Scale>
+        <DirectionDeg>29.7448311</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1002</Id>
+        <Position>27 12.5</Position>
+        <Sprite>Entities\GearChristmas</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.75</Scale>
+        <DirectionDeg>29.7448311</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1003</Id>
+        <Position>20.5 17</Position>
+        <Sprite>Entities\GearChristmas</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.75</Scale>
+        <DirectionDeg>29.7448311</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1004</Id>
+        <Position>28.3333321 16.666666</Position>
+        <Sprite>Entities\GearChristmas</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.75</Scale>
+        <DirectionDeg>59.5344849</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1005</Id>
+        <Position>28.5 22.5</Position>
+        <Sprite>Entities\GearChristmas</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.75</Scale>
+        <DirectionDeg>59.5344849</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1006</Id>
+        <Position>18.5 22</Position>
+        <Sprite>Entities\GearChristmas</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.75</Scale>
+        <DirectionDeg>45</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1007</Id>
+        <Position>16.025 26.75</Position>
+        <Sprite>Entities\GearChristmas</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.75</Scale>
+        <DirectionDeg>45</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1008</Id>
+        <Position>19.666666 27.7333336</Position>
+        <Sprite>Entities\GearChristmas</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.5999994</Scale>
+        <DirectionDeg>22.7509956</DirectionDeg>
+        <Type>Tile</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1009</Id>
+        <Position>22.083334 27.1666679</Position>
+        <Sprite>Entities\HeavyBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.187499</Scale>
+        <DirectionDeg>360</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1010</Id>
+        <Position>20.6249981 27.2916679</Position>
+        <Sprite>Entities\CargoQuest</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.84375</Scale>
+        <DirectionDeg>117.407524</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1011</Id>
+        <Position>26.833334 27.125</Position>
+        <Sprite>Entities\CargoQuest</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.999999046</Scale>
+        <DirectionDeg>107.927948</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1012</Id>
+        <Position>19.0416641 27.25</Position>
+        <Sprite>Entities\SmallWall</Sprite>
+        <Animated>false</Animated>
+        <Scale>0.999999046</Scale>
+        <DirectionDeg>40.0302773</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1013</Id>
+        <Position>37.9666672 10.2666664</Position>
+        <Sprite>Entities\DamagableBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>303.111359</DirectionDeg>
+        <Type>DamagableBox</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <ActionOnDestroy>CloneObjByArea</ActionOnDestroy>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1014</Id>
+        <Position>36.7 12.9333324</Position>
+        <Sprite>Entities\DamagableBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>224.999969</DirectionDeg>
+        <Type>DamagableBox</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <ActionOnDestroy>CloneObjByArea</ActionOnDestroy>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1015</Id>
+        <Position>39.1 12.4666662</Position>
+        <Sprite>Entities\DamagableBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>263.157349</DirectionDeg>
+        <Type>DamagableBox</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <ActionOnDestroy>CloneObjByArea</ActionOnDestroy>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1016</Id>
+        <Position>36.23333 11.0666666</Position>
+        <Sprite>Entities\DamagableBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>252.8973</DirectionDeg>
+        <Type>DamagableBox</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <ActionOnDestroy>CloneObjByArea</ActionOnDestroy>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1017</Id>
+        <Position>40.7666664 10.5333328</Position>
+        <Sprite>Entities\DamagableBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>115.11483</DirectionDeg>
+        <Type>DamagableBox</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <ActionOnDestroy>CloneObjByArea</ActionOnDestroy>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+    </Entities>
+    <Actions>
+      <Item Type="GameLibrary.AttachAdditionalView">
+        <Name>AttachAdditionalView</Name>
+        <Groups>
+          <Item>AttachAdditionalView</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Position>21.5 12.5</Position>
+        <Sprite>Entities\GearChristmas</Sprite>
+        <Scale>0.687500954</Scale>
+        <DirectionDeg>55.6196976</DirectionDeg>
+        <Animated>false</Animated>
+        <Color>FFFF1493</Color>
+        <ItemId>1001</ItemId>
+        <Depth>6</Depth>
+        <RelativeDepth>false</RelativeDepth>
+      </Item>
+      <Item Type="GameLibrary.AttachAdditionalView">
+        <Name>AttachAdditionalView</Name>
+        <Groups>
+          <Item>AttachAdditionalView</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Position>26 15.5</Position>
+        <Sprite>Entities\Gear</Sprite>
+        <Scale>0.687500954</Scale>
+        <DirectionDeg>55.6196976</DirectionDeg>
+        <Animated>false</Animated>
+        <Color>FFFFFFFF</Color>
+        <ItemId>1001</ItemId>
+        <Depth>6</Depth>
+        <RelativeDepth>false</RelativeDepth>
+      </Item>
+      <Item Type="GameLibrary.AttachAdditionalView">
+        <Name>AttachAdditionalView</Name>
+        <Groups>
+          <Item>AttachAdditionalView</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Position>23 14.5</Position>
+        <Sprite>Entities\GearChristmas</Sprite>
+        <Scale>0.687500954</Scale>
+        <DirectionDeg>55.6196976</DirectionDeg>
+        <Animated>false</Animated>
+        <Color>FF00FFFF</Color>
+        <ItemId>1001</ItemId>
+        <Depth>6</Depth>
+        <RelativeDepth>false</RelativeDepth>
+      </Item>
+      <Item Type="GameLibrary.AttachAdditionalView">
+        <Name>AttachAdditionalView</Name>
+        <Groups>
+          <Item>AttachAdditionalView</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Position>25.5 18.5</Position>
+        <Sprite>Entities\GearChristmas</Sprite>
+        <Scale>0.687500954</Scale>
+        <DirectionDeg>55.6196976</DirectionDeg>
+        <Animated>false</Animated>
+        <Color>FFFF0000</Color>
+        <ItemId>1001</ItemId>
+        <Depth>6</Depth>
+        <RelativeDepth>false</RelativeDepth>
+      </Item>
+      <Item Type="GameLibrary.AttachAdditionalView">
+        <Name>AttachAdditionalView</Name>
+        <Groups>
+          <Item>AttachAdditionalView</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Position>22 20</Position>
+        <Sprite>Entities\GearChristmas</Sprite>
+        <Scale>0.687500954</Scale>
+        <DirectionDeg>60.751133</DirectionDeg>
+        <Animated>false</Animated>
+        <Color>FFFFFF00</Color>
+        <ItemId>1001</ItemId>
+        <Depth>6</Depth>
+        <RelativeDepth>false</RelativeDepth>
+      </Item>
+      <Item Type="GameLibrary.AttachAdditionalView">
+        <Name>AttachAdditionalView</Name>
+        <Groups>
+          <Item>AttachAdditionalView</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Position>22.5 23.5</Position>
+        <Sprite>Entities\GearStar</Sprite>
+        <Scale>0.687500954</Scale>
+        <DirectionDeg>55.6196976</DirectionDeg>
+        <Animated>false</Animated>
+        <Color>FFFFFFFF</Color>
+        <ItemId>1001</ItemId>
+        <Depth>6</Depth>
+        <RelativeDepth>false</RelativeDepth>
+      </Item>
+      <Item Type="GameLibrary.AttachAdditionalView">
+        <Name>AttachAdditionalView</Name>
+        <Groups>
+          <Item>AttachAdditionalView</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Position>27.5 20.5</Position>
+        <Sprite>Entities\GearChristmas</Sprite>
+        <Scale>0.875000954</Scale>
+        <DirectionDeg>77.7638855</DirectionDeg>
+        <Animated>false</Animated>
+        <Color>FF7CFC00</Color>
+        <ItemId>1001</ItemId>
+        <Depth>5</Depth>
+        <RelativeDepth>false</RelativeDepth>
+      </Item>
+      <Item Type="GameLibrary.AttachAdditionalView">
+        <Name>AttachAdditionalView</Name>
+        <Groups>
+          <Item>AttachAdditionalView</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Position>25.791666 8.666667</Position>
+        <Sprite>UI\AddealsButton</Sprite>
+        <Scale>0.687500954</Scale>
+        <DirectionDeg>-0</DirectionDeg>
+        <Animated>false</Animated>
+        <Color>FFFFFFFF</Color>
+        <ItemId>1001</ItemId>
+        <Depth>5</Depth>
+        <RelativeDepth>false</RelativeDepth>
+      </Item>
+      <Item Type="GameLibrary.AttachAdditionalView">
+        <Name>AttachAdditionalView</Name>
+        <Groups>
+          <Item>AttachAdditionalView</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Position>19.916666 20.708334</Position>
+        <Sprite>UI\AddealsButton</Sprite>
+        <Scale>0.687500954</Scale>
+        <DirectionDeg>338.766144</DirectionDeg>
+        <Animated>false</Animated>
+        <Color>FFFFFFFF</Color>
+        <ItemId>1001</ItemId>
+        <Depth>5</Depth>
+        <RelativeDepth>false</RelativeDepth>
+      </Item>
+      <Item Type="GameLibrary.AttachAdditionalView">
+        <Name>AttachAdditionalView</Name>
+        <Groups>
+          <Item>AttachAdditionalView</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Position>30.5 26</Position>
+        <Sprite>UI\AddealsButton</Sprite>
+        <Scale>0.687500954</Scale>
+        <DirectionDeg>8.176177</DirectionDeg>
+        <Animated>false</Animated>
+        <Color>FFFFFFFF</Color>
+        <ItemId>1001</ItemId>
+        <Depth>5</Depth>
+        <RelativeDepth>false</RelativeDepth>
+      </Item>
+      <Item Type="GameLibrary.AttachAdditionalView">
+        <Name>AttachAdditionalView</Name>
+        <Groups>
+          <Item>AttachAdditionalView</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Position>19 26.1333332</Position>
+        <Sprite>UI\Sock</Sprite>
+        <Scale>0.687500954</Scale>
+        <DirectionDeg>351.339417</DirectionDeg>
+        <Animated>false</Animated>
+        <Color>FFFFFFFF</Color>
+        <ItemId>1001</ItemId>
+        <Depth>5</Depth>
+        <RelativeDepth>false</RelativeDepth>
+      </Item>
+      <Item Type="GameLibrary.AttachAdditionalView">
+        <Name>AttachAdditionalView</Name>
+        <Groups>
+          <Item>AttachAdditionalView</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Position>30.5 21.5</Position>
+        <Sprite>UI\Sock</Sprite>
+        <Scale>0.687500954</Scale>
+        <DirectionDeg>351.339417</DirectionDeg>
+        <Animated>false</Animated>
+        <Color>FFFFFFFF</Color>
+        <ItemId>1001</ItemId>
+        <Depth>5</Depth>
+        <RelativeDepth>false</RelativeDepth>
+      </Item>
+      <Item Type="GameLibrary.AttachAdditionalView">
+        <Name>AttachAdditionalView</Name>
+        <Groups>
+          <Item>AttachAdditionalView</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Position>24.5 5</Position>
+        <Sprite>UI\SimpleArrow</Sprite>
+        <Scale>2</Scale>
+        <DirectionDeg>90</DirectionDeg>
+        <Animated>false</Animated>
+        <Color>FFFFFFFF</Color>
+        <ItemId>1001</ItemId>
+        <Depth>2</Depth>
+        <RelativeDepth>false</RelativeDepth>
+      </Item>
+      <Item Type="GameLibrary.AttachAdditionalView">
+        <Name>AttachAdditionalView</Name>
+        <Groups>
+          <Item>AttachAdditionalView</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Position>24.333334 24.0666656</Position>
+        <Sprite>UI\Logo</Sprite>
+        <Scale>2</Scale>
+        <DirectionDeg>360</DirectionDeg>
+        <Animated>false</Animated>
+        <Color>FFFFFFFF</Color>
+        <ItemId>1001</ItemId>
+        <Depth>5</Depth>
+        <RelativeDepth>false</RelativeDepth>
+      </Item>
+      <Item Type="GameLibrary.AttachAdditionalView">
+        <Name>AttachAdditionalView</Name>
+        <Groups>
+          <Item>AttachAdditionalView</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Position>22.0833321 27.1666679</Position>
+        <Sprite>UI\IconLikeCircle</Sprite>
+        <Scale>0.687500954</Scale>
+        <DirectionDeg>351.339417</DirectionDeg>
+        <Animated>false</Animated>
+        <Color>FFFF0000</Color>
+        <ItemId>1001</ItemId>
+        <Depth>0.1</Depth>
+        <RelativeDepth>true</RelativeDepth>
+      </Item>
+      <Item Type="GameLibrary.AttachAdditionalView">
+        <Name>AttachAdditionalView</Name>
+        <Groups>
+          <Item>AttachAdditionalView</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Position>20.625 27.208334</Position>
+        <Sprite>UI\IconLikeCircle</Sprite>
+        <Scale>0.687500954</Scale>
+        <DirectionDeg>32.676693</DirectionDeg>
+        <Animated>false</Animated>
+        <Color>FFFF0000</Color>
+        <ItemId>1001</ItemId>
+        <Depth>0.1</Depth>
+        <RelativeDepth>true</RelativeDepth>
+      </Item>
+      <Item Type="GameLibrary.AttachAdditionalView">
+        <Name>AttachAdditionalView</Name>
+        <Groups>
+          <Item>AttachAdditionalView</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Position>23.166666 22.1999989</Position>
+        <Sprite>UI\SimpleArrow</Sprite>
+        <Scale>1</Scale>
+        <DirectionDeg>127.266396</DirectionDeg>
+        <Animated>false</Animated>
+        <Color>FFFF0000</Color>
+        <ItemId>1001</ItemId>
+        <Depth>5.01</Depth>
+        <RelativeDepth>false</RelativeDepth>
+      </Item>
+      <Item Type="GameLibrary.CreateTeleport">
+        <Name>CreateTeleport</Name>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Id>5001</Id>
+        <Position>24.5333328 3.9666667</Position>
+        <TargetPosition>0 0</TargetPosition>
+        <Scale>1</Scale>
+        <Action Null="true" />
+        <Subscribers Null="true" />
+        <GenerateBackTeleport>false</GenerateBackTeleport>
+      </Item>
+      <Item Type="GameLibrary.CloneObject">
+        <Name>CloneObjByArea</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>35 9 6 5</Area>
+        <ItemId>1013</ItemId>
+        <TargetIds>10130 10131 10132 10133 10134</TargetIds>
+        <Count>1</Count>
+        <IsUseRelativePosition>false</IsUseRelativePosition>
+        <RelativeByItem>0</RelativeByItem>
+      </Item>
+    </Actions>
+    <Hints>
+      <Item>
+        <Id>2001</Id>
+        <Position>8.5 20</Position>
+        <Sprite>WhitePixel</Sprite>
+        <DirectionDeg>57.683548</DirectionDeg>
+        <Animated>false</Animated>
+        <Timer>0</Timer>
+        <Scale>4</Scale>
+        <Area>-41 -30 100 100</Area>
+        <Text>Happy new</Text>
+        <DrawOnUI>false</DrawOnUI>
+      </Item>
+      <Item>
+        <Id>2002</Id>
+        <Position>13.5 17.5</Position>
+        <Sprite>WhitePixel</Sprite>
+        <DirectionDeg>57.683548</DirectionDeg>
+        <Animated>false</Animated>
+        <Timer>0</Timer>
+        <Scale>4</Scale>
+        <Area>-36 -32 100 100</Area>
+        <Text>Year!</Text>
+        <DrawOnUI>false</DrawOnUI>
+      </Item>
+      <Item>
+        <Id>2003</Id>
+        <Position>16.9666653 18.666666</Position>
+        <Sprite>WhitePixel</Sprite>
+        <DirectionDeg>57.68355</DirectionDeg>
+        <Animated>false</Animated>
+        <Timer>0</Timer>
+        <Scale>1</Scale>
+        <Area>-33 -31 100 100</Area>
+        <Text>FROM TILE RIDER</Text>
+        <DrawOnUI>false</DrawOnUI>
+      </Item>
+    </Hints>
+  </Asset>
+</XnaContent>

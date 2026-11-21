@@ -1,0 +1,208 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>Part_DoorButtonAccel</Name>
+    <GameMode>SinglePlayer</GameMode>
+    <Image>Maps\Parts\Part_DoorButtonAccel</Image>
+    <Scale>48</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>false</HaveOutlandVizualization>
+    <OutlandColorLT>FF000000</OutlandColorLT>
+    <OutlandColorRT>FF00BFFF</OutlandColorRT>
+    <OutlandColorRB>FFFFA500</OutlandColorRB>
+    <OutlandColorLB>FFFFFF00</OutlandColorLB>
+    <TargetTimeSec>0</TargetTimeSec>
+    <Friction>1</Friction>
+    <AmbientLight>0C0C0C0C</AmbientLight>
+    <Splash>MapDefault</Splash>
+    <LevelEffect>None</LevelEffect>
+    <CameraReadAccelerometer>true</CameraReadAccelerometer>
+    <Width>16</Width>
+    <Height>16</Height>
+    <Lights>
+      <Item>
+        <Position>12 5</Position>
+        <Color>FFFFFFFF</Color>
+        <R>12</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>6 13.5</Position>
+        <Color>DCFFFFFF</Color>
+        <R>11</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>4 2.5</Position>
+        <Color>FF9ACD32</Color>
+        <R>10</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+      </Item>
+    </Lights>
+    <Players />
+    <Entities>
+      <Item>
+        <Id>1001</Id>
+        <Position>12 10</Position>
+        <Sprite>Entities\DoorBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>90</DirectionDeg>
+        <Type>HeavyBox</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1004</Id>
+        <Position>12 3.5</Position>
+        <Sprite>Gadget\Bomb</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Bomb</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1005</Id>
+        <Position>12 5</Position>
+        <Sprite>Gadget\Bomb</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Bomb</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1006</Id>
+        <Position>12 6.5</Position>
+        <Sprite>Gadget\Bomb</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Bomb</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+    </Entities>
+    <Triggers>
+      <Item>
+        <Id>1</Id>
+        <Area>1 1 7 7</Area>
+        <Amount>999</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>AddFocusOnEntity(1001)</Item>
+        </Actions>
+        <LeaveActions>
+          <Item>FocusOnEntity(4001)</Item>
+        </LeaveActions>
+      </Item>
+    </Triggers>
+    <Actions>
+      <Item Type="GameLibrary.MapPartPortal">
+        <Name>Portal</Name>
+        <Groups>
+          <Item>Merge</Item>
+        </Groups>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>1 15 6 1</Area>
+        <AllowIn>true</AllowIn>
+        <AllowOut>true</AllowOut>
+      </Item>
+      <Item Type="GameLibrary.MapPartPortal">
+        <Name>Portal</Name>
+        <Groups>
+          <Item>Merge</Item>
+        </Groups>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>15 3 1 4</Area>
+        <AllowIn>false</AllowIn>
+        <AllowOut>true</AllowOut>
+      </Item>
+      <Item Type="GameLibrary.AddDoorComponent">
+        <Name>DoorComponent1001</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <ItemId>1001</ItemId>
+        <OpenDistanceScale>1</OpenDistanceScale>
+        <IsDrawHint>false</IsDrawHint>
+        <IsDrawArrowHint>false</IsDrawArrowHint>
+        <IsFixOnOpen>false</IsFixOnOpen>
+        <ActionOnOpen Null="true" />
+        <IsStatic>false</IsStatic>
+      </Item>
+      <Item Type="GameLibrary.CreateButton">
+        <Name>CreateButton</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Id>5001</Id>
+        <Position>4 3</Position>
+        <Path>4 4 4 5 9 5 9 7</Path>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <ActionPress>seqOnButtonPress</ActionPress>
+        <ActionRelease>CloseDoor(1001)</ActionRelease>
+        <Subscribers>4001</Subscribers>
+        <ButtonType>Button</ButtonType>
+      </Item>
+      <Item Type="GameLibrary.TriggerWithPeriodicCheck">
+        <Name>TriggerWithPeriodicCheck</Name>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Actions>
+          <Item>CreateButton</Item>
+          <Item>DoorComponent1001</Item>
+        </Actions>
+        <Area>0 0 24 24</Area>
+      </Item>
+      <Item Type="GameLibrary.MapPartSettings">
+        <Name>MapPartSettings</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <PartType>Corridor</PartType>
+        <EstimatedGameplayLength>0</EstimatedGameplayLength>
+        <ProbabilityRank>0.1</ProbabilityRank>
+        <DifficultyLevel>3</DifficultyLevel>
+        <FreePoint>0 0</FreePoint>
+        <FallbackpartNameForCompleted>Part_Alter_DoorButtonAccel</FallbackpartNameForCompleted>
+      </Item>
+      <Item Type="GameLibrary.MapPartPortal">
+        <Name>Portal</Name>
+        <Groups>
+          <Item>Merge</Item>
+        </Groups>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>0 8 1 6</Area>
+        <AllowIn>true</AllowIn>
+        <AllowOut>true</AllowOut>
+      </Item>
+      <Item Type="GameLibrary.WallWithProbability">
+        <Name>WallWithProbability</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>3 9 2 3</Area>
+        <Color>80FFFFFF</Color>
+        <Probability>0.3</Probability>
+        <WallGroup Null="true" />
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>seqOnButtonPress</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>OpenDoor(1001)</Item>
+          <Item>MarkAsCompleted()</Item>
+        </Actions>
+        <TimeBetweenInSec>0</TimeBetweenInSec>
+      </Item>
+    </Actions>
+  </Asset>
+</XnaContent>

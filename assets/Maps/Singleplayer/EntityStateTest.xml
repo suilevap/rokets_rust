@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  EntityStateTest map v5 — "The Toll Gate"
+
+  Layout (20x12 tiles, Scale=64):
+    Col 10: dividing wall with TWO gaps:
+      Row 4 — door 1001 (slides RIGHT; held open while ALLY 3001 stands on button A)
+      Row 7 — door 1003 (slides RIGHT; permanently opened when PLAYER steps on button B)
+    Left room  (cols 1-9):  player spawn (4,2), ally (7,3), cargo box (3,8)
+    Right room (cols 11-18): guard (17,9), button B (15,9), teleports
+
+  Entity IDs:
+    4001 = player (SandBuggyMinigun, Local — use SetControl:4001,OrderExecutorFriend for LLM)
+    3001 = ally (SimpleBuggyMinigun, OrderExecutorFriend — team=0, takes MoveOrder/AttackTarget)
+    3002 = guard (SimpleBuggyMinigun, SupportAi — team=1, auto-activates when player in range)
+    1001 = upper door (row 4) — opens while ally 3001 is on button A; closes when ally leaves
+    1003 = lower door (row 7) — WIN: permanently opens when player 4001 steps on button B (triggers WinSequence → NextMap)
+    1002 = cargo box — left room obstacle; no mechanical purpose
+    5001 = button A (left room col 6, row 9): ONLY ally 3001 activates it (not player!)
+    5002 = button B (right room col 15, row 9): ONLY player 4001 wins (not ally!)
+    5003 = teleport A: left corner (1,1) → right (16,6) — deliberate shortcut to right room
+    5004 = teleport B: right (16,8) → left (3,8) — escape route back to left room
+
+  Key tension:
+    Ally is the "key" to the door (holds button A) but cannot fight if holding it.
+    Player must cross while ally holds button — then faces guard alone.
+    After player crosses, ally can leave button (door closes, trapping player in right room).
+    LLM must decide the timing and order of operations carefully.
+
+  Strategies for LLM agents:
+    A (Hold+Cross+Fight): MoveOrder:3001,6.5,9.5 → ally on button → door opens →
+                    player crosses: MoveOrder:4001,8.5,4.5 → MoveOrder:4001,15.5,2.5 →
+                    fight guard: AIClearOrders:4001 → AttackTarget:4001,3002 →
+                    MoveOrder:4001,15.5,9.5 → WIN (door closed but player already across)
+
+    B (Cross+Ally follow): player crosses first → ally follows through door →
+                    ally auto-switches to SupportAiFriend for combat →
+                    2v1 against guard → MoveOrder:4001,15.5,9.5 → WIN
+
+    C (Teleport rush): MoveOrder:4001,1.5,1.5 → teleport to right room →
+                    dash to button B before guard activates → WIN (risky — guard at 17,9 may engage)
+
+  NOTE for LLM agents:
+    - Door gap requires TWO waypoints: first to (8.5,4.5), then to right-room target
+      (single long-range MoveOrder gets stuck at wall col 9)
+    - IMPORTANT: issue AIClearOrders before AttackTarget — pending MoveOrder delays attack!
+    - Ally 3001 is team=0 — can be commanded without SetControl
+    - Guard 3002 auto-activates when player is within 8 tiles; won't detect door crossing
+      (guard at 17,9 is 8.6 tiles from col 11 gap — just outside scan range)
+    - After crossing, guard activates when player reaches col ~15 (7.3 tiles from guard)
+    - Use SetControl:3001,SupportAiFriend to give ally auto-combat capability
+-->
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>EntityStateTest</Name>
+    <GameMode>SinglePlayer</GameMode>
+    <Image></Image>
+    <Scale>64</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>false</HaveOutlandVizualization>
+    <AmbientLight>FFFFFFFF</AmbientLight>
+    <Splash>MapDefault</Splash>
+    <LevelEffect>None</LevelEffect>
+
+    <Lights>
+      <!-- Left room — upper area (spawn zone) -->
+      <Item>
+        <Position>4.5 2.5</Position>
+        <Color>FFFFFFFF</Color>
+        <R>7</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <!-- Left room — lower area (button + box zone) -->
+      <Item>
+        <Position>5.5 9.5</Position>
+        <Color>FFFFFFFF</Color>
+        <R>6</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <!-- Right room — upper area (dormant enemy zone) -->
+      <Item>
+        <Position>14.5 2.5</Position>
+        <Color>FFFFFFFF</Color>
+        <R>7</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <!-- Right room — middle area (autonomous enemy + teleport zone) -->
+      <Item>
+        <Position>15.5 5.5</Position>
+        <Color>FFFF9900</Color>
+        <R>5</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <!-- Right room — lower area (button B + escape door zone) -->
+      <Item>
+        <Position>14.5 9.5</Position>
+        <Color>FFFFFFFF</Color>
+        <R>6</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+    </Lights>
+
+    <Players>
+      <Item>
+        <Id>4001</Id>
+        <Name>Player1</Name>
+        <Position>4.5 2.5</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>Local</Control>
+        <CarName>SandBuggyMinigun</CarName>
+      </Item>
+    </Players>
+
+    <SimpleCars>
+      <!-- Dormant ally (team=0, friendly) — does nothing without orders.
+           LLM can issue MoveOrder to hold button A, or AttackTarget to fight 3002.
+           Starts in LEFT room so it can be commanded without crossing the wall. -->
+      <Item>
+        <Id>3001</Id>
+        <Position>7.5 3.5</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>OrderExecutorFriend</Control>
+        <CarName>SimpleBuggyMinigun</CarName>
+      </Item>
+      <!-- Right guard — patrols near button B. SupportAi auto-activates when
+           player enters right room (7.3 tiles from spawn). Won't detect player
+           crossing the door gap (~8.6 tiles, just outside scan range).
+           Defeat 3002 before pressing button B, or lure it away with teleport. -->
+      <Item>
+        <Id>3002</Id>
+        <Position>17.5 9.5</Position>
+        <DirectionDeg>180</DirectionDeg>
+        <Control>SupportAi</Control>
+        <CarName>SimpleBuggyMinigun</CarName>
+      </Item>
+    </SimpleCars>
+
+    <Entities>
+      <!-- Upper door: blocks col 10 at row 4.
+           Ally (3001) standing on button A opens it; door closes when ally leaves.
+           DirectionDeg=0 → slides RIGHT into right-room corridor (row 4 is floor there). -->
+      <Item>
+        <Id>1001</Id>
+        <Position>10.5 4.5</Position>
+        <Sprite>Entities\DoorBoxNonLinkable</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>HeavyBox</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+      </Item>
+      <!-- Lower escape door: blocks col 10 at row 7.
+           Only opens when button B (right room) is pressed. One-way: IsFixOnOpen=true.
+           DirectionDeg=0 → slides RIGHT into right-room corridor (row 7 is floor there). -->
+      <Item>
+        <Id>1003</Id>
+        <Position>10.5 7.5</Position>
+        <Sprite>Entities\DoorBoxNonLinkable</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>HeavyBox</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+      </Item>
+      <!-- Cargo box — decorative obstacle in left room.
+           Button A is ally-only, so box cannot open the door.
+           Placed away from main paths. -->
+      <Item>
+        <Id>1002</Id>
+        <Position>3.5 8.5</Position>
+        <Sprite>Entities\CargoQuest</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+      </Item>
+    </Entities>
+
+    <Actions>
+      <!-- Door 1001 (upper): IsFixOnOpen=false allows re-closing when button released -->
+      <Item Type="GameLibrary.AddDoorComponent">
+        <Name>SetupDoor1001</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <ItemId>1001</ItemId>
+        <OpenDistanceScale>1</OpenDistanceScale>
+        <IsDrawHint>false</IsDrawHint>
+        <IsDrawArrowHint>false</IsDrawArrowHint>
+        <IsFixOnOpen>false</IsFixOnOpen>
+        <ActionOnOpen Null="true" />
+        <IsStatic>true</IsStatic>
+      </Item>
+      <!-- Door 1003 (lower escape): IsFixOnOpen=true — once opened, stays open -->
+      <Item Type="GameLibrary.AddDoorComponent">
+        <Name>SetupDoor1003</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <ItemId>1003</ItemId>
+        <OpenDistanceScale>1</OpenDistanceScale>
+        <IsDrawHint>false</IsDrawHint>
+        <IsDrawArrowHint>false</IsDrawArrowHint>
+        <IsFixOnOpen>true</IsFixOnOpen>
+        <ActionOnOpen Null="true" />
+        <IsStatic>true</IsStatic>
+      </Item>
+      <!-- Button A (left room col 6, row 9): holds door 1001 open while ALLY 3001 stands on it.
+           Player cannot activate — only ally 3001 triggers the door.
+           This creates tension: ally is the "key" to the door but cannot fight if holding it.
+           LLM must decide: send ally to hold door (player fights alone), or
+           find another way to deal with guard before pressing button B. -->
+      <Item Type="GameLibrary.CreateButton">
+        <Name>SetupButtonA</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Id>5001</Id>
+        <Position>6.5 9.5</Position>
+        <Path Null="true" />
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <ActionPress>OpenDoor(1001)</ActionPress>
+        <ActionRelease>CloseDoor(1001)</ActionRelease>
+        <Subscribers>3001</Subscribers>
+        <ButtonType>Button</ButtonType>
+      </Item>
+      <!-- Button B (right room): WIN condition — only player 4001 triggers it.
+           Ally and enemies cannot activate. Player must personally reach this button.
+           Pressing it opens door 1003 AND triggers the win sequence. -->
+      <Item Type="GameLibrary.CreateButton">
+        <Name>SetupButtonB</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Id>5002</Id>
+        <Position>15.5 9.5</Position>
+        <Path Null="true" />
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <ActionPress>WinSequence</ActionPress>
+        <ActionRelease Null="true" />
+        <Subscribers>4001</Subscribers>
+        <ButtonType>Button</ButtonType>
+      </Item>
+      <!-- Teleport: top-left corner (intentional shortcut) → right room near guard.
+           Placed at (1,1) — player must deliberately navigate to corner to use it.
+           Won't be triggered accidentally while pushing box or crossing door. -->
+      <Item Type="GameLibrary.CreateTeleport">
+        <Name>SetupTeleportLeft</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Id>5003</Id>
+        <Position>1.5 1.5</Position>
+        <TargetPosition>16.5 6.5</TargetPosition>
+        <Scale>1</Scale>
+        <Action Null="true" />
+        <Subscribers Null="true" />
+        <GenerateBackTeleport>false</GenerateBackTeleport>
+      </Item>
+      <!-- Teleport back: right room lower → left room (escape route).
+           Restricted to player 4001 only — prevents guard from teleporting to left room
+           when chasing player (guard passes through this tile naturally). -->
+      <Item Type="GameLibrary.CreateTeleport">
+        <Name>SetupTeleportRight</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Id>5004</Id>
+        <Position>16.5 8.5</Position>
+        <TargetPosition>3.5 8.5</TargetPosition>
+        <Scale>1</Scale>
+        <Action Null="true" />
+        <Subscribers>4001</Subscribers>
+        <GenerateBackTeleport>false</GenerateBackTeleport>
+      </Item>
+      <!-- Win sequence: show text then advance to next map -->
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>WinSequence</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>OpenDoor(1003)</Item>
+          <Item>ShowWinText</Item>
+          <Item>NextMap()</Item>
+        </Actions>
+      </Item>
+      <Item Type="GameLibrary.ShowText">
+        <Name>ShowWinText</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Text>
+          <Item>Level_Complete</Item>
+        </Text>
+        <ShowTimeSec>3</ShowTimeSec>
+        <PauseGame>true</PauseGame>
+      </Item>
+      <!-- Run all setup actions when map loads -->
+      <Item Type="GameLibrary.TriggerWithPeriodicCheck">
+        <Name>MapInit</Name>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Actions>
+          <Item>SetupDoor1001</Item>
+          <Item>SetupDoor1003</Item>
+          <Item>SetupButtonA</Item>
+          <Item>SetupButtonB</Item>
+          <Item>SetupTeleportLeft</Item>
+          <Item>SetupTeleportRight</Item>
+        </Actions>
+        <Area>0 0 20 12</Area>
+      </Item>
+    </Actions>
+
+    <!--
+      CharMap key (20 wide x 12 tall):
+        * = opaque red  (#FFFF0000, alpha=255) → wall
+        . = dark blue   (#100000A0, alpha=16)  → floor (alpha < ImageWallTreshold 96)
+
+      Layout:
+        Col 10: dividing wall with gaps at rows 4 and 7 (door entities block them physically)
+        Rows 4 and 7: fully open tiles (col 10 = floor) — doors placed there
+
+      Entity positions:
+        @=4001 player    (4,2)   left room — SandBuggyMinigun
+        a=3001 ally      (7,3)   left room — OrderExecutorFriend (team=0)
+        E=3002 guard     (17,9)  right room — SupportAi, guards button B
+        D=door 1001      (10,4)  upper gap — open while ALLY on button A at (6,9)
+        D=door 1003      (10,7)  lower gap — opens when player steps on button B
+        b=box 1002       (3,8)   decorative obstacle; has no mechanical purpose
+        A=btn 5001       (6,9)   left room — ONLY ally 3001 activates (not player)
+        B=btn 5002       (15,9)  right room — ONLY player 4001 wins
+        T=teleport A     (1,1)   → right room near guard (top-left corner)
+        t=teleport back  (16,8)  → left room
+    -->
+    <CharMapDictionary>*:#FFFF0000;.:#100000A0</CharMapDictionary>
+    <CharMap>
+********************
+*........*.........*
+*........*.........*
+*........*.........*
+*..................*
+*........*.........*
+*........*.........*
+*..................*
+*........*.........*
+*........*.........*
+*........*.........*
+********************
+    </CharMap>
+
+  </Asset>
+</XnaContent>

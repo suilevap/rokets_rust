@@ -1,0 +1,399 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>CaptureTheBox</Name>
+    <GameMode>SinglePlayerRespawnAll</GameMode>
+    <Image>Maps\Singleplayer\CTB</Image>
+    <Scale>128</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>false</HaveOutlandVizualization>
+    <OutlandColorLT>FF000000</OutlandColorLT>
+    <OutlandColorRT>FF00BFFF</OutlandColorRT>
+    <OutlandColorRB>FFFFA500</OutlandColorRB>
+    <OutlandColorLB>FFFFFF00</OutlandColorLB>
+    <TargetTimeSec>0</TargetTimeSec>
+    <Friction>1</Friction>
+    <AmbientLight>0C0C0C0C</AmbientLight>
+    <Splash>MapDefault</Splash>
+    <LevelEffect>None</LevelEffect>
+    <Lights>
+      <Item>
+        <Position>8 42</Position>
+        <Color>FFFFFFFF</Color>
+        <R>13</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>27.5 42.5</Position>
+        <Color>FFFFFFFF</Color>
+        <R>13</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>27 26.5</Position>
+        <Color>FFFFFFFF</Color>
+        <R>13</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>8.5 29</Position>
+        <Color>FFFFFFFF</Color>
+        <R>13</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>17 18</Position>
+        <Color>FF40E0D0</Color>
+        <R>13</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>33.5 35</Position>
+        <Color>FF40E0D0</Color>
+        <R>13</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>18 45.5</Position>
+        <Color>FF87CEEB</Color>
+        <R>13</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+    </Lights>
+    <Players>
+      <Item>
+        <Id>4001</Id>
+        <Name>Player1</Name>
+        <Position>3.5 39.5</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>Local</Control>
+        <CarName>SandBuggyMagnetMinigun</CarName>
+      </Item>
+      <Item>
+        <Id>4003</Id>
+        <Name>Player1</Name>
+        <Position>4 33.5</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>CaptureTheBox</Control>
+        <CarName>SandBuggyMagnetMinigun180</CarName>
+      </Item>
+      <Item>
+        <Id>4004</Id>
+        <Name>Player1</Name>
+        <Position>4 32.5</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>CaptureTheBox</Control>
+        <CarName>SandBuggyMagnetMinigun180</CarName>
+      </Item>
+      <Item>
+        <Id>4005</Id>
+        <Name>Player1</Name>
+        <Position>4.5 38.5</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>CaptureTheBoxFriend</Control>
+        <CarName>SandBuggyMagnetMinigun180</CarName>
+      </Item>
+    </Players>
+    <SimpleCars>
+      <Item>
+        <Id>3001</Id>
+        <Position>6.5 41.5</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>AiSimpleTurretFriend</Control>
+        <CarName>TurretMinigun</CarName>
+        <ActionOnDestroy>seqRespawnOurTurret</ActionOnDestroy>
+      </Item>
+      <Item>
+        <Id>3002</Id>
+        <Position>6.5 28.5</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>AiSimpleTurret</Control>
+        <CarName>TurretMinigun</CarName>
+        <ActionOnDestroy>seqRespawnEnemyTurret</ActionOnDestroy>
+      </Item>
+    </SimpleCars>
+    <Entities>
+      <Item>
+        <Id>1001</Id>
+        <Position>3.5 24.5</Position>
+        <Sprite>Entities\CargoQuest</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+      </Item>
+      <Item>
+        <Id>1002</Id>
+        <Position>3.5 44.5</Position>
+        <Sprite>Entities\CargoQuest</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+      </Item>
+      <Item>
+        <Id>1003</Id>
+        <Position>3.5 38.5</Position>
+        <Sprite>Entities\BoxPlaceholder</Sprite>
+        <Animated>false</Animated>
+        <Scale>5</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Tile</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+      </Item>
+      <Item>
+        <Id>1004</Id>
+        <Position>3.5 32.5</Position>
+        <Sprite>Entities\BoxPlaceholder</Sprite>
+        <Animated>false</Animated>
+        <Scale>5</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Tile</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+      </Item>
+    </Entities>
+    <Triggers>
+      <Item>
+        <Id>1</Id>
+        <Area>2 37 3 3</Area>
+        <Amount>999</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>ShowSuccess()</Item>
+          <Item>ResetPos(0)</Item>
+          <Item>seqOurPoint</Item>
+        </Actions>
+        <Subscribers>1001</Subscribers>
+      </Item>
+      <Item>
+        <Id>2</Id>
+        <Area>2 31 3 3</Area>
+        <Amount>999</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>ResetPos(0)</Item>
+          <Item>seqEnemyPoint</Item>
+        </Actions>
+        <Subscribers>1002</Subscribers>
+      </Item>
+    </Triggers>
+    <Actions>
+      <Item Type="GameLibrary.ChangeIntVariable">
+        <Name>InitTeam0Box</Name>
+        <Groups>
+          <Item>Init</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <VariableName>TeamBox_0</VariableName>
+        <Global>true</Global>
+        <ItemId>0</ItemId>
+        <Value>1002</Value>
+        <Operation>Set</Operation>
+      </Item>
+      <Item Type="GameLibrary.ChangeIntVariable">
+        <Name>InitTeam1Box</Name>
+        <Groups>
+          <Item>Init</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <VariableName>TeamBox_1</VariableName>
+        <Global>true</Global>
+        <ItemId>0</ItemId>
+        <Value>1001</Value>
+        <Operation>Set</Operation>
+      </Item>
+      <Item Type="GameLibrary.ChangeIntVariable">
+        <Name>InitTeam0Base</Name>
+        <Groups>
+          <Item>Init</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <VariableName>Base_0</VariableName>
+        <Global>true</Global>
+        <ItemId>0</ItemId>
+        <Value>1003</Value>
+        <Operation>Set</Operation>
+      </Item>
+      <Item Type="GameLibrary.ChangeIntVariable">
+        <Name>InitTeam1Base</Name>
+        <Groups>
+          <Item>Init</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <VariableName>Base_1</VariableName>
+        <Global>true</Global>
+        <ItemId>0</ItemId>
+        <Value>1004</Value>
+        <Operation>Set</Operation>
+      </Item>
+      <Item Type="GameLibrary.AttachAdditionalView">
+        <Name>AttachAdditionalView1002</Name>
+        <Groups>
+          <Item>AttachAdditionalView</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Position>3.5 44.5</Position>
+        <Sprite>Entities\BoxPlaceholder</Sprite>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Animated>false</Animated>
+        <Color>FF008000</Color>
+        <ItemId>1002</ItemId>
+        <Depth>1</Depth>
+      </Item>
+      <Item Type="GameLibrary.AttachAdditionalView">
+        <Name>AttachAdditionalView1001</Name>
+        <Groups>
+          <Item>AttachAdditionalView</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Position>3.5 24.5</Position>
+        <Sprite>Entities\BoxPlaceholder</Sprite>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Animated>false</Animated>
+        <Color>FFFF0000</Color>
+        <ItemId>1001</ItemId>
+        <Depth>1</Depth>
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>seqRespawnOurTurret</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>NA</Item>
+          <Item>CloneOurTurret</Item>
+        </Actions>
+        <TimeBetweenInSec>10</TimeBetweenInSec>
+      </Item>
+      <Item Type="GameLibrary.CloneObject">
+        <Name>CloneOurTurret</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>6 41 1 1</Area>
+        <ItemId>3001</ItemId>
+        <TargetIds>30010</TargetIds>
+        <Count>1</Count>
+      </Item>
+      <Item Type="GameLibrary.CloneObject">
+        <Name>CloneEnemyTurret</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>6 28 1 1</Area>
+        <ItemId>3002</ItemId>
+        <TargetIds>30020</TargetIds>
+        <Count>1</Count>
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>seqRespawnEnemyTurret</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>NA</Item>
+          <Item>CloneEnemyTurret</Item>
+        </Actions>
+        <TimeBetweenInSec>10</TimeBetweenInSec>
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>seqOurPoint</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>AddOurPoints</Item>
+          <Item>CheckOurVictory</Item>
+        </Actions>
+        <TimeBetweenInSec>0</TimeBetweenInSec>
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>seqEnemyPoint</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>AddEnemyPoints</Item>
+          <Item>CheckEnemyVictory</Item>
+        </Actions>
+        <TimeBetweenInSec>0</TimeBetweenInSec>
+      </Item>
+      <Item Type="GameLibrary.ChangeIntVariable">
+        <Name>InitOurPoints</Name>
+        <Groups>
+          <Item>Vars</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <VariableName>OurPoints</VariableName>
+        <Global>true</Global>
+        <ItemId>0</ItemId>
+        <Value>0</Value>
+        <Operation>Set</Operation>
+      </Item>
+      <Item Type="GameLibrary.ChangeIntVariable">
+        <Name>InitEnemyPoints</Name>
+        <Groups>
+          <Item>Vars</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <VariableName>EnemyPoints</VariableName>
+        <Global>true</Global>
+        <ItemId>0</ItemId>
+        <Value>0</Value>
+        <Operation>Set</Operation>
+      </Item>
+      <Item Type="GameLibrary.CheckIntVariable">
+        <Name>CheckOurVictory</Name>
+        <Groups>
+          <Item>Vars</Item>
+        </Groups>
+        <RunOnMapStart>false</RunOnMapStart>
+        <VariableName>OurPoints</VariableName>
+        <Global>true</Global>
+        <ItemId>0</ItemId>
+        <Value>3</Value>
+        <ActionOnLess Null="true" />
+        <ActionOnEqual>NextMap()</ActionOnEqual>
+        <ActionOnGreater Null="true" />
+      </Item>
+      <Item Type="GameLibrary.CheckIntVariable">
+        <Name>CheckEnemyVictory</Name>
+        <Groups>
+          <Item>Vars</Item>
+        </Groups>
+        <RunOnMapStart>false</RunOnMapStart>
+        <VariableName>EnemyPoints</VariableName>
+        <Global>true</Global>
+        <ItemId>0</ItemId>
+        <Value>3</Value>
+        <ActionOnLess Null="true" />
+        <ActionOnEqual>RestartMap()</ActionOnEqual>
+        <ActionOnGreater Null="true" />
+      </Item>
+      <Item Type="GameLibrary.ChangeIntVariable">
+        <Name>AddOurPoints</Name>
+        <Groups>
+          <Item>Vars</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <VariableName>OurPoints</VariableName>
+        <Global>true</Global>
+        <ItemId>0</ItemId>
+        <Value>1</Value>
+        <Operation>Increase</Operation>
+      </Item>
+      <Item Type="GameLibrary.ChangeIntVariable">
+        <Name>AddEnemyPoints</Name>
+        <Groups>
+          <Item>Vars</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <VariableName>EnemyPoints</VariableName>
+        <Global>true</Global>
+        <ItemId>0</ItemId>
+        <Value>1</Value>
+        <Operation>Increase</Operation>
+      </Item>
+    </Actions>
+  </Asset>
+</XnaContent>

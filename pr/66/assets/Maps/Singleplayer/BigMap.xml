@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>NewMap</Name>
+    <GameMode>SinglePlayer</GameMode>
+    <Image>Maps\Singleplayer\BigMap</Image>
+    <Scale>48</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>false</HaveOutlandVizualization>
+    <AmbientLight>0C0C0C0C</AmbientLight>
+    <Lights>
+      <Item>
+        <Position>42.5 15.5</Position>
+        <Color>FFFFFFFF</Color>
+        <R>32</R>
+      </Item>
+      <Item>
+        <Position>38 33</Position>
+        <Color>FFFFFFFF</Color>
+        <R>32</R>
+      </Item>
+      <Item>
+        <Position>77 50</Position>
+        <Color>FFFFFFFF</Color>
+        <R>32</R>
+      </Item>
+      <Item>
+        <Position>98 54</Position>
+        <Color>FFFFFFFF</Color>
+        <R>32</R>
+      </Item>
+      <Item>
+        <Position>118 5</Position>
+        <Color>FFFFFFFF</Color>
+        <R>32</R>
+      </Item>
+      <Item>
+        <Position>38 83</Position>
+        <Color>FFFFFFFF</Color>
+        <R>32</R>
+      </Item>
+      <Item>
+        <Position>23 115</Position>
+        <Color>FFFFFFFF</Color>
+        <R>32</R>
+      </Item>
+      <Item>
+        <Position>82 106</Position>
+        <Color>FFFFFFFF</Color>
+        <R>32</R>
+      </Item>
+    </Lights>
+    <Players>
+      <Item>
+        <Id>4000</Id>
+        <Name>p1</Name>
+        <Position>10.25 30.3882828</Position>
+        <Control>Local</Control>
+        <CarName>Buggy</CarName>
+      </Item>
+    </Players>
+  </Asset>
+</XnaContent>

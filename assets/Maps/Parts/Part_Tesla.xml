@@ -1,0 +1,104 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>Part_Tesla</Name>
+    <GameMode>SinglePlayer</GameMode>
+    <Image>Maps\Parts\Part_Tesla</Image>
+    <Scale>48</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>false</HaveOutlandVizualization>
+    <OutlandColorLT>FF000000</OutlandColorLT>
+    <OutlandColorRT>FF00BFFF</OutlandColorRT>
+    <OutlandColorRB>FFFFA500</OutlandColorRB>
+    <OutlandColorLB>FFFFFF00</OutlandColorLB>
+    <TargetTimeSec>0</TargetTimeSec>
+    <Friction>1</Friction>
+    <AmbientLight>0C0C0C0C</AmbientLight>
+    <Splash>MapDefault</Splash>
+    <LevelEffect>None</LevelEffect>
+    <CameraReadAccelerometer>true</CameraReadAccelerometer>
+    <Width>24</Width>
+    <Height>24</Height>
+    <Lights>
+      <Item>
+        <Position>12 12</Position>
+        <Color>FFFFFFFF</Color>
+        <R>28</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+    </Lights>
+    <Players>
+      <Item>
+        <Id>4001</Id>
+        <Name>Player1</Name>
+        <Position>3.83333325 15.875</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>Local</Control>
+        <CarName>SandBuggyMinigun</CarName>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+    </Players>
+    <SimpleCars>
+      <Item>
+        <Id>3001</Id>
+        <Position>12 16.5</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>AlwaysShoot</Control>
+        <CarName>TurretTesla</CarName>
+        <Weapon>Default</Weapon>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>3002</Id>
+        <Position>12 5.5</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>AlwaysShoot</Control>
+        <CarName>TurretTesla</CarName>
+        <Weapon>Default</Weapon>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+    </SimpleCars>
+    <Entities />
+    <Actions>
+      <Item Type="GameLibrary.MapPartPortal">
+        <Name>Portal</Name>
+        <Groups>
+          <Item>Merge</Item>
+        </Groups>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>0 15 1 6</Area>
+        <AllowIn>true</AllowIn>
+        <AllowOut>true</AllowOut>
+      </Item>
+      <Item Type="GameLibrary.MapPartPortal">
+        <Name>Portal</Name>
+        <Groups>
+          <Item>Merge</Item>
+        </Groups>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>23 3 1 6</Area>
+        <AllowIn>true</AllowIn>
+        <AllowOut>true</AllowOut>
+      </Item>
+      <Item Type="GameLibrary.TriggerWithPeriodicCheck">
+        <Name>TriggerWithPeriodicCheck</Name>
+        <Groups>
+          <Item>Merge</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Actions>
+          <Item>EnemySpawnArea</Item>
+        </Actions>
+        <Area>-9 0 40 24</Area>
+      </Item>
+      <Item Type="GameLibrary.WallWithProbability">
+        <Name>WallWithProbability</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>4 4 2 2</Area>
+        <Color>91872D2F</Color>
+        <Probability>0.5</Probability>
+        <WallGroup Null="true" />
+      </Item>
+    </Actions>
+  </Asset>
+</XnaContent>
