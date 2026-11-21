@@ -461,26 +461,6 @@ pub fn stop_moving(bb: &mut AiBlackboard) -> NodeResult<Orders> {
     NodeResult::Success
 }
 
-/// `BTActionFactory.RemeberTargetPos(predicSec)` (`RemberPos`, 2014, for
-/// `HammerAi`): with a target that is alive, puts where it will be in
-/// `predict_sec` seconds (`Target.GetPredictionPosition`: a place in a wall
-/// moved to a free one, [`AiBlackboard::prediction_position`]) into
-/// `TargetPosition` for the next node to go to, and succeeds; without one,
-/// fails. Over at once (`IsInProgress` false, `Complete` true).
-///
-/// `GetPredictionPosition`'s `Removed` branch (a removed body answers its
-/// `SafePosition`) is not here: a removed or deactivated target is no live
-/// target, so the action fails as for a dead one.
-pub fn remember_target_pos(predict_sec: f32) -> impl Fn(&mut AiBlackboard) -> NodeResult<Orders> + Clone {
-    move |bb| match bb.live_target().copied() {
-        Some(target) => {
-            bb.target_position = bb.prediction_position(target.pos, target.vel, predict_sec);
-            NodeResult::Success
-        }
-        None => NodeResult::Failure,
-    }
-}
-
 /// `BTActionFactory.MoveInOneDirectionAi`'s action (`MoveToInitDirection`):
 /// remembers the way the car faces when it starts, then keeps the stick and
 /// the gun that way with the trigger down, for ever.

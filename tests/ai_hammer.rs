@@ -8,7 +8,6 @@ use std::sync::Arc;
 use bevy::math::Vec2;
 use bevy::prelude::Entity;
 use flatbt_bevy::prelude::*;
-use tilerider::ai::nodes::remember_target_pos;
 use tilerider::ai::trees::hammer_ai;
 use tilerider::ai::{AiBlackboard, Body, Foe, Navigation, Orders, is_live, tick_mode};
 use tilerider::content::map::MapData;
@@ -263,7 +262,7 @@ fn an_enemy_beyond_the_scan_distance_is_not_chased() {
 }
 
 #[test]
-fn remember_target_pos_takes_the_targets_place_or_fails_without_one() {
+fn the_charge_point_is_the_predicted_place_moved_out_of_walls() {
     let world = World::new(OPEN_ROOM);
     let mut bb = AiBlackboard::new(1);
     bb.terrain = Some(world.terrain.clone());
@@ -282,21 +281,16 @@ fn remember_target_pos_takes_the_targets_place_or_fails_without_one() {
         max_health: 12,
         shield: 0,
     };
-    let node = remember_target_pos(1.0);
-    // No target: it fails and leaves `TargetPosition` be.
-    bb.gather(DT, false, body, &[], &blocked);
-    assert_eq!(node(&mut bb), NodeResult::Failure);
-    assert_eq!(bb.target_position, Vec2::ZERO);
-    // A target: where it will be in a second.
+    // `GetPredictionPosition`: where it will be in a second.
     let cars = [enemy(1, at(5.0, 2.0), Vec2::new(2.0, 0.0))];
     bb.gather(DT, false, body, &cars, &blocked);
     bb.set_target(id(1));
-    assert_eq!(node(&mut bb), NodeResult::Success);
-    assert_eq!(bb.target_position, at(5.0, 2.0) + Vec2::new(2.0, 0.0));
+    let t = *bb.live_target().unwrap();
+    assert_eq!(bb.prediction_position(t.pos, t.vel, 1.0), at(5.0, 2.0) + Vec2::new(2.0, 0.0));
     // A prediction in a wall is moved to a free place.
     let cars = [enemy(1, at(5.0, 2.0), Vec2::new(0.0, 20.0))];
     bb.gather(DT, false, body, &cars, &blocked);
-    assert_eq!(node(&mut bb), NodeResult::Success);
-    let p = bb.target_position;
+    let t = *bb.live_target().unwrap();
+    let p = bb.prediction_position(t.pos, t.vel, 1.0);
     assert!(world.terrain.is_point_free(p), "{p}");
 }
