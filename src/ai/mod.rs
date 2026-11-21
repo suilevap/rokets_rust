@@ -19,6 +19,7 @@
 //! | [`blackboard`] | [`AiBlackboard`]: what the trees read and write | `AiBlackboard` |
 //! | [`nodes`] | the shared nodes: `DecoratorCondition`, `Timer`, `All`, `Optional`, `FindNearestEnemy`, `FireToTarget`, `MoveBase`, `MoveToPoint`, `FollowBy`, … | `BTLib`, `BTActions/*` |
 //! | [`trees`] | the trees put together from them: `TurretAi`, `ChaserAi`, `FollowPathAi`, `AttackerAiVer2`, `ZombieFlocking`, `HammerAi`, … and their subtrees | `BTActionFactory` |
+//! | [`order_queue`] | [`OrderQueue`]: the orders a map gives a car (`MoveOrder`, `AIClearOrders`) | `OrdersManager`, `ActionRunner.MoveOrderRun`, `AIClearOrdersRun` |
 //! | [`navigation`] | [`Navigation`]: the map's navigation graph ([`crate::map::nav`]) as a resource, `SetPath`, `--nav` | `MapManager._navigation`, `ActionRunner.SetPathRun` |
 //! | [`fire`] | `AlwaysShoot`, `ShootPattern`: plain controls, not trees | `AiSimpleControl`, `PeriodicFireControl` |
 //!
@@ -38,6 +39,7 @@
 //! | `ZombieFlocking`, `ZombieFlockingFriend` | `BTActionFactory.ZombieFlocking` (`ScanDistance` 12): alone near its target with its wave ready, stands 2 s and fires it; hurt with nobody to fight, tells its idle friends who did it; flocks at the nearest enemy; else follows a leader (the player first: runs `ActionOnBTTrigger` once, follows by a path when out of sight) or wanders with its flock ([`trees::zombie_flocking`]) |
 //! | `SimpleFlocking` | `BTActionFactory.SimpleFlocking`: flocks at half speed with an enemy near, else at a tenth |
 //! | `HammerAi`, `HammerAiFriend` | `BTActionFactory.HammerAi`: chases the nearest enemy within `ScanDistance` for a second, charges at full stick by a path to where it was then (up to 3 s), and, while it lives, backs off at half the stick to a random place in sight for a second before the next round; with nobody, sleeps 2 s and wanders ([`trees::hammer_ai`]) |
+//! | `OrderExecutorFriend`, `OrderExecutorAi` | `BTActionFactory.OrderExecutorAi` (`ExecuteOrders`): carries out the orders the map gives it (`MoveOrder`: drives by a path to a point), first to last, each dropped as its `OrderRemoveCondition` says; with none it does nothing ([`trees::order_executor_ai`], [`order_queue`]) |
 //! | `AlwaysShoot` | [`AlwaysShoot`]: the trigger always down, the gun where the car points |
 //! | `ShootPattern` | [`ShootPattern`]: a random pattern of quarter-second silences and bursts |
 //! | `NoneLocal`, `NoneEnemy`, `NoneFriend` | nothing (`AINone`; see `car::control`) |
@@ -116,8 +118,10 @@
 //!
 //! Not ported of `BTLib`: `Context.ToString` and `RunningActionChanged` (the
 //! AI log: the running path is logged on change, `RUST_LOG=tilerider::ai=debug`),
-//! `OptionalActionNode`, `RepeatUntilSuccessDecorator`, `DynamicNode`,
-//! `Condition` (with the trees that use them), `BTBuilder`'s single-child
+//! `OptionalActionNode`, `RepeatUntilSuccessDecorator`,
+//! `Condition` (with the trees that use them), `DynamicNode` as a node of
+//! its own (its one use, `ExecuteOrders`, is an action over the order queue:
+//! [`nodes::ExecuteOrders`]), `BTBuilder`'s single-child
 //! shortcut (a `Selector` or `Sequence` of one child is the child).
 //!
 //! # Paths
@@ -137,7 +141,7 @@
 //! Everything else that is an `AIBTBaseControl` waits for the trees that use
 //! the nodes not yet ported (`docs/BACKLOG.md` says which node each needs):
 //! `Ai`, `AiFriend`, `AiSimpleTurretFriendFireAvailableTarget`, `GuardAi`,
-//! `SupportAi*`, `OrderExecutor*`, `CaptureTheBox*`,
+//! `SupportAi*`, `CaptureTheBox*`,
 //! `ChaserTargetFromLocalVariable`. Cars with those stand idle, as
 //! before, and `AIAdjustment` sets only their team. `AITurret` and
 //! `AISimpleCarControl` are not reached by any `ControlType`;
@@ -171,6 +175,7 @@ pub mod blackboard;
 pub mod fire;
 pub mod navigation;
 pub mod nodes;
+pub mod order_queue;
 pub mod orders;
 pub mod trees;
 
@@ -193,6 +198,7 @@ use crate::weapon::Weapon;
 pub use fire::{AlwaysShoot, ShootPattern};
 pub use blackboard::{AiBlackboard, Alert, Body, Effect, Foe, Gun, Mate, Mind};
 pub use navigation::{Navigation, SharedTerrain};
+pub use order_queue::{Order, OrderKind, OrderQueue};
 pub use orders::Orders;
 
 pub struct AiPlugin;
@@ -220,6 +226,10 @@ impl Plugin for AiPlugin {
             BehaviorPlugin::for_tree(trees::simple_flocking).in_schedule(FixedUpdate).tick_mode(tick_mode),
             BehaviorPlugin::for_tree(trees::hammer_ai).in_schedule(FixedUpdate).tick_mode(tick_mode),
             navigation::NavigationPlugin,
+        ))
+        .add_plugins((
+            BehaviorPlugin::for_tree(trees::order_executor_ai).in_schedule(FixedUpdate).tick_mode(tick_mode),
+            order_queue::OrdersPlugin,
         ))
         .configure_sets(
             FixedUpdate,
@@ -267,7 +277,8 @@ pub fn set_control(car: &mut EntityCommands, control: &str, seed: u64) {
         .stop_behavior(trees::move_in_one_direction_ai)
         .stop_behavior(trees::zombie_flocking)
         .stop_behavior(trees::simple_flocking)
-        .stop_behavior(trees::hammer_ai);
+        .stop_behavior(trees::hammer_ai)
+        .stop_behavior(trees::order_executor_ai);
     #[cfg(debug_assertions)]
     car.remove::<DebugBehavior>();
     let mut brain = AiBlackboard::new(seed);
@@ -327,6 +338,10 @@ pub fn set_control(car: &mut EntityCommands, control: &str, seed: u64) {
         "HammerAi" | "HammerAiFriend" => {
             car.insert((brain, Behavior::for_tree(trees::hammer_ai)));
         }
+        // The default `ScanDistance`; the team is the control's (`car::control`).
+        "OrderExecutorFriend" | "OrderExecutorAi" => {
+            car.insert((brain, Behavior::for_tree(trees::order_executor_ai)));
+        }
         "AlwaysShoot" => {
             car.insert(AlwaysShoot);
             return;
@@ -366,6 +381,8 @@ pub fn is_live(control: &str) -> bool {
             | "SimpleFlocking"
             | "HammerAi"
             | "HammerAiFriend"
+            | "OrderExecutorFriend"
+            | "OrderExecutorAi"
             | "AlwaysShoot"
             | "ShootPattern"
     )

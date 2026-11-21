@@ -363,6 +363,35 @@
 //! `SafePosition`), and the nodes it shares keep their own differences
 //! (`Chase`, `MoveToPoint`, the `Timer`s ending at a think).
 //!
+//! `OrderExecutorAi` (`OrderExecutorFriend`, team 0; `OrderExecutorAi`,
+//! team 1; the default `ScanDistance` 16, which nothing reads), for the
+//! cars a map scripts with orders (`super::order_queue`):
+//!
+//! ```text
+//! C#                                              Rust
+//! OrderExecutorAi = new ExecuteOrders()           order_executor_ai() =
+//!   (DynamicNode "Order": the first order's         action(ExecuteOrders)
+//!    tree, Fail with none; EndOrder(status)         (start: the first order's action,
+//!    when it ends)                                   fails with none; complete: the
+//!                                                    queue told)
+//! MoveOrderRun's order =                          OrderKind::Move { to } =
+//!   MoveToPoint("MoveOrder", b => p)                MoveToPoint(to), speed 1, within 1
+//! ```
+//!
+//! What it comes to: with no order the car does nothing at all (its tree
+//! fails every step, so it is thought over every step; the stick stays
+//! where it was, zero for a car that never had an order). With orders it
+//! drives by a path to the first order's point, and when it is there (its
+//! radius plus 1 from the point, or at the path's end) the order is done
+//! and the next one starts a step later. An order that fails (no path, a
+//! blocked one, stuck two seconds on the way) is tried again at the next
+//! step unless it is `RemoveOnTry`. The truck of Escort is such a car: the
+//! map orders it to the next stretch of road as the player clears it.
+//!
+//! Differences from C# in `OrderExecutorAi`: an order cleared and replaced
+//! within a quarter second starts afresh (see [`ExecuteOrders`]); the
+//! `DEBUG` build's `SmartMoveToPos` for a `MoveOrder` is not ported.
+//!
 //! Not ported here: every other tree of `BTActionFactory` (`SimpleAttackDelayPos`,
 //! `Attack`, `SimpleAi`, `GuardAi`, `SmartAttack` (`AttackAi`'s: the
 //! first version of the smart attack, which `AttackAiVer2` replaced), … the
@@ -375,7 +404,7 @@ use flatbt_bevy::prelude::*;
 
 use super::blackboard::AiBlackboard;
 use super::nodes::{
-    AimToTarget, AlertFriends, FindNearestEnemy, FindNearestLeader, FireNow, FireToTarget, Flocking, FollowBy, Idle,
+    AimToTarget, AlertFriends, ExecuteOrders, FindNearestEnemy, FindNearestLeader, FireNow, FireToTarget, Flocking, FollowBy, Idle,
     MoveBase, MoveInInitDirection, MoveTowardsTargetNoPath, MoveToPoint, MoveToRandomVisiblePosition, Power,
     RememberTargetPos, Runaway, Scanning, SimpleFollowByTarget, Sleep, Stop, TriggerMapAction, TryFireToAnyone, all, decorator_condition, optional,
     quiet_start, timer, while_target_alive,
@@ -853,4 +882,11 @@ pub fn hammer_ai() -> impl BehaviorNode<AiBlackboard, Orders> {
             )))),
         ))),
     )))
+}
+
+/// `BTActionFactory.OrderExecutorAi` (`OrderExecutorFriend`,
+/// `OrderExecutorAi`): carry out the map's orders, first to last; with none,
+/// do nothing. See the module docs.
+pub fn order_executor_ai() -> impl BehaviorNode<AiBlackboard, Orders> {
+    named("Order", action(quiet_start(ExecuteOrders)))
 }
