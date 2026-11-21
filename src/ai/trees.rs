@@ -298,19 +298,19 @@
 //!
 //! ```text
 //! C#                                              Rust
-//! RemeberTargetPos(p) =                           RememberTargetPos { predict_sec: p }
-//!   bt.Action("RemberPos", b => {                   (start: a live target's
-//!     Target != null && Target.Alive &&               prediction_position into
-//!       (TargetPosition =                             target_position; fails without)
-//!        Target.GetPredictionPosition(p)) })
+//! RemeberTargetPos(p) =                           (folded into the charge's point:
+//!   bt.Action("RemberPos", b => {                    where_the_target_is, a live
+//!     Target != null && Target.Alive &&               target's prediction_position;
+//!       (TargetPosition =                             ZERO without one, which
+//!        Target.GetPredictionPosition(p)) })          MoveToPoint refuses)
 //!
 //! HammerAi =                                      hammer_ai() =
 //!   bt.Selector("Hammer Ai",                        select((
 //!     bt.Sequence("AttackHammer",                     seq((
 //!       Timer(1.0f, Chase),                             timer(1, chase()),
-//!       RemeberTargetPos(0.0f),                         action(RememberTargetPos(0)),
-//!       Timer(3.0f, MoveToPoint("PrevTargetPos",        timer(3, action(MoveToPoint(
-//!         b => b.TargetPosition)),                        target_position))),
+//!       RemeberTargetPos(0.0f),
+//!       Timer(3.0f, MoveToPoint("PrevTargetPos",        timer(3, act(MoveToPoint(
+//!         b => b.TargetPosition)),                        where_the_target_is))),
 //!       bt.Condition("CheckTarget",                     check(a live target),
 //!         Target != null && Target.Alive),
 //!       Timer(1.0f, MoveToPoint("Rnd",                  timer(1, action(MoveToPoint(
@@ -400,13 +400,14 @@
 //! `SimpleAttackByAngle`, `FindAngleNearestEnemy`, `TryFireToAnyone`), which no
 //! map uses.
 
+use bevy::math::Vec2;
 use flatbt_bevy::prelude::*;
 
 use super::blackboard::AiBlackboard;
 use super::nodes::{
     AimToTarget, ExecuteOrders, FireToTarget, Flocking, FollowBy, Idle, alert_friends, find_nearest_enemy, find_nearest_leader, fire_now,
     MoveBase, MoveInInitDirection, MoveTowardsTargetNoPath, MoveToPoint, MoveToRandomVisiblePosition, Power,
-    remember_target_pos, Runaway, Scanning, SimpleFollowByTarget, sleep, stop_moving, TriggerMapAction, TryFireToAnyone, all, optional,
+    Runaway, Scanning, SimpleFollowByTarget, sleep, stop_moving, TriggerMapAction, TryFireToAnyone, all, optional,
     act, never, time_limit, timer, while_target_alive,
 };
 use crate::weapon::model::closer_by_chebyshev;
@@ -627,8 +628,7 @@ pub fn smart_attack_target_immediate_weapon() -> impl BehaviorNode<AiBlackboard,
             stop(),
             act(AimToTarget::new(0.0, 0.0)),
             act(AimToTarget::new(0.0, 0.5)),
-            named("Timer_1s", timer(1.0, act(FireToTarget::new(-0.5)))),
-            named("Timer_0.5s", timer(0.5, act(FireToTarget::new(0.0)))),
+            fire_round(),
             maneur(-1.0),
         ))),
     )))
@@ -642,11 +642,25 @@ pub fn smart_attack_target_slow_weapon() -> impl BehaviorNode<AiBlackboard, Orde
         named("SmartAttackTargetSlowWeapon", seq((
             named("CheckWeaponType", check(|bb: &AiBlackboard| bb.gun.is_some_and(|gun| !gun.immediate))),
             stop(),
-            named("Timer_1s", timer(1.0, act(FireToTarget::new(-0.5)))),
-            named("Timer_0.5s", timer(0.5, act(FireToTarget::new(0.0)))),
+            fire_round(),
             maneur(-0.5),
         ))),
     )))
+}
+
+/// The smart attacks' round of fire: a second aimed half a second behind
+/// the target, then half a second at it (`Timer(1, FireToTarget(-0.5))`,
+/// `Timer(0.5, FireToTarget(0))`).
+fn fire_round() -> impl BehaviorNode<AiBlackboard, Orders> {
+    seq((
+        named("Timer_1s", timer(1.0, act(FireToTarget::new(-0.5)))),
+        named("Timer_0.5s", timer(0.5, act(FireToTarget::new(0.0)))),
+    ))
+}
+
+/// The smart attacks' `Follow`: by a path to where the target was last seen.
+fn follow_last_known() -> impl BehaviorNode<AiBlackboard, Orders> {
+    named("Follow", act(FollowBy::new(|bb| bb.last_known_target_position)))
 }
 
 /// `DistAndVis`: the target is alive, in sight now, and within the gun's
@@ -667,7 +681,7 @@ pub fn smart_attack_target_ver2() -> impl BehaviorNode<AiBlackboard, Orders> {
             named("DistAndVis", check(target_in_range_and_sight)),
             named("ChooseAttackStyle", select((smart_attack_target_immediate_weapon(), smart_attack_target_slow_weapon()))),
         ))),
-        named("Follow", act(FollowBy::new(|bb| bb.last_known_target_position))),
+        follow_last_known(),
     )))
 }
 
@@ -681,7 +695,7 @@ pub fn smart_attack_ver2() -> impl BehaviorNode<AiBlackboard, Orders> {
 pub fn hide_move() -> impl BehaviorNode<AiBlackboard, Orders> {
     named("Hide", act(MoveToPoint::new(|bb| {
         let Some(target) = bb.live_target().copied() else {
-            return bevy::math::Vec2::ZERO;
+            return Vec2::ZERO;
         };
         let range = target.weapon_range.map_or(HIDE_RANGE_NO_GUN, |range| range * HIDE_RANGE_RATE);
         let own = bb.pos;
@@ -728,11 +742,10 @@ pub fn smart_attack_target() -> impl BehaviorNode<AiBlackboard, Orders> {
         named("Fire", seq((
             named("DistAndVis", check(target_in_range_and_sight)),
             stop(),
-            named("Timer_1s", timer(1.0, act(FireToTarget::new(-0.5)))),
-            named("Timer_0.5s", timer(0.5, act(FireToTarget::new(0.0)))),
+            fire_round(),
             maneur(0.0),
         ))),
-        named("Follow", act(FollowBy::new(|bb| bb.last_known_target_position))),
+        follow_last_known(),
     )))
 }
 
@@ -797,10 +810,11 @@ pub fn zombie_flocking() -> impl BehaviorNode<AiBlackboard, Orders> {
             named("Timer_2s", timer(SUPER_ATTACK_POWER_TIME, act(Power))),
             named("Fire!", leaf(fire_now)),
         ))),
-        named("Attack", seq((
+        // C#'s `Uii` returns `false`: the alarm given, the tree goes on.
+        named("Attack", force_failure(seq((
             named("Agr", check(|bb: &AiBlackboard| bb.took_damage() && bb.live_target().is_none())),
             named("Uii", leaf(alert_friends)),
-        ))),
+        )))),
         named("ChangeTarget", seq((
             named("Agr", check(|bb: &AiBlackboard| bb.took_damage() && bb.target() == bb.damager_entity())),
             leaf(find_nearest_enemy),
@@ -845,15 +859,27 @@ pub fn zombie_flocking() -> impl BehaviorNode<AiBlackboard, Orders> {
 /// following it) for up to 3 s; while it lives, pull back at half speed to a
 /// random place in sight for a second for the next run; with nobody,
 /// sleep 2 s and wander. See the module docs.
+/// `RemeberTargetPos(0)` then `MoveToPoint(b => b.TargetPosition)`: where a
+/// live target is now (`GetPredictionPosition`, a place in a wall moved to a
+/// free one), asked once as the charge starts; with no live target, none
+/// (`ZERO`, which `MoveToPoint` refuses, failing the attack as C#'s
+/// `RemberPos` did).
+///
+/// `GetPredictionPosition`'s `Removed` branch (a removed body answers its
+/// `SafePosition`) is not here: a removed or deactivated target is no live
+/// target.
+fn where_the_target_is(bb: &mut AiBlackboard) -> Vec2 {
+    match bb.live_target().copied() {
+        Some(target) => bb.prediction_position(target.pos, target.vel, HAMMER_CHARGE_PREDICT),
+        None => Vec2::ZERO,
+    }
+}
+
 pub fn hammer_ai() -> impl BehaviorNode<AiBlackboard, Orders> {
     named("Hammer Ai", select((
         named("AttackHammer", seq((
             named("Timer_1s", timer(HAMMER_CHASE_TIME, chase())),
-            named("RemberPos", leaf(remember_target_pos(HAMMER_CHARGE_PREDICT))),
-            named("Timer_3s", timer(
-                HAMMER_CHARGE_TIME,
-                named("MoveTo_PrevTargetPos", act(MoveToPoint::new(|bb| bb.target_position))),
-            )),
+            named("Timer_3s", timer(HAMMER_CHARGE_TIME, named("MoveTo_PrevTargetPos", act(MoveToPoint::new(where_the_target_is))))),
             named("CheckTarget", check(|bb: &AiBlackboard| bb.live_target().is_some())),
             named("Timer_1s", timer(
                 HAMMER_RUN_UP_TIME,

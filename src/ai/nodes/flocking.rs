@@ -350,7 +350,8 @@ pub fn fire_now(bb: &mut AiBlackboard) -> NodeResult<Orders> {
 /// alive, with nobody to fight (no target, no damager), is told who hurt
 /// this car (its `LastDamager`, even none, and when: the friend forgets it
 /// when this car would), and a red ping flashes on it (`CreateBip2`, when
-/// in view). Always fails (`return false`), so the tree goes on.
+/// in view). Succeeds; the tree makes its branch fail (C#'s `return false`)
+/// so that it goes on.
 pub fn alert_friends(bb: &mut AiBlackboard) -> NodeResult<Orders> {
     let (damager, left) = (bb.damager_entity(), bb.damager_left());
     let friends: Vec<Entity> = bb
@@ -361,6 +362,6 @@ pub fn alert_friends(bb: &mut AiBlackboard) -> NodeResult<Orders> {
     for friend in friends {
         bb.alert(Alert { friend, damager, left });
     }
-    NodeResult::Failure
+    NodeResult::Success
 }
 

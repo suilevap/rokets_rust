@@ -20,7 +20,6 @@
 //! | [`MoveBase`], [`MoveToPoint`], [`FollowBy`], [`MoveToRandomVisiblePosition`] | `BTActions/MoveBase`, `MoveToPoint`, `FollowBy`, `MoveToRandomVisiblePosition`: drive along a [`NavPath`](crate::map::nav::NavPath) |
 //! | [`AimToTarget`] | `BTActions/AimToTarget` (in `FireToTarget.cs`) |
 //! | [`Stop`] | `BTActionFactory.StopAction` |
-//! | [`RememberTargetPos`] | `BTActionFactory.RemeberTargetPos` |
 //! | [`MoveInInitDirection`] | `BTActionFactory.MoveInOneDirectionAi`'s action |
 //! | [`TryFireToAnyone`] | `BTActions/TryFireToAnyone` |
 //! | [`TriggerMapAction`] | `BTActions/TriggerMapAction` |
@@ -48,7 +47,7 @@ mod act;
 
 pub use actions::{
     AimToTarget, FireToTarget, Idle, MoveInInitDirection, MoveTowardsTargetNoPath, Runaway, Scanning, SimpleFollowByTarget,
-    TriggerMapAction, TryFireToAnyone, find_nearest_enemy, remember_target_pos, sleep, stop_moving,
+    TriggerMapAction, TryFireToAnyone, find_nearest_enemy, sleep, stop_moving,
 };
 pub use flocking::{FlockState, Flocking, Power, TargetFn, alert_friends, find_nearest_leader, fire_now};
 pub use execute_orders::ExecuteOrders;
