@@ -293,8 +293,10 @@ impl Plugin for ActionsPlugin {
                 view::ViewActionsPlugin,
             ))
             .add_systems(OnEnter(GameState::Playing), run_on_map_start)
+            // At the end of the fixed step: what the step set off runs in it.
+            .configure_sets(FixedUpdate, ActionSystems.after(crate::explosion::ExplosionSystems))
             .add_systems(
-                Update,
+                FixedUpdate,
                 (tick_delayed, run_actions)
                     .chain()
                     .in_set(ActionSystems)

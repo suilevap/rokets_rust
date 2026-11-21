@@ -60,7 +60,10 @@ impl Plugin for InfoPlugin {
             .add_systems(Startup, (load_texts, spawn_panel).chain())
             .add_systems(Update, read_texts.run_if(resource_exists::<TextsFile>))
             .add_systems(OnEnter(GameState::Playing), |mut shown: ResMut<Shown>| *shown = Shown::default())
-            .add_systems(Update, (count_down, show).chain());
+            // The time shown (and the pause it holds) is game time, counted
+            // in the fixed steps.
+            .add_systems(FixedUpdate, count_down)
+            .add_systems(Update, show);
     }
 }
 

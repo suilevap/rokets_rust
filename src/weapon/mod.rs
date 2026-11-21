@@ -294,8 +294,15 @@ pub struct PlayerEnergy(pub Energy);
 #[derive(Component, Debug, Clone, Copy, Default)]
 pub struct IgnoresWeapons;
 
+/// The weapons' gameplay draws, in the fixed steps only.
 #[derive(Resource)]
 struct WeaponRng(SmallRng);
+
+/// What only the views draw (the energy bar's jolt, the zombie's line), a
+/// frame at a time: apart from [`WeaponRng`], or the frame rate would
+/// change the fights.
+#[derive(Resource)]
+struct ViewRng(SmallRng);
 
 /// The weapon systems, for others to order against.
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
@@ -306,6 +313,7 @@ pub struct WeaponPlugin;
 impl Plugin for WeaponPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(WeaponRng(SmallRng::seed_from_u64(11)))
+            .insert_resource(ViewRng(SmallRng::seed_from_u64(12)))
             .add_systems(
                 FixedUpdate,
                 fire_weapons
@@ -327,10 +335,12 @@ impl Plugin for WeaponPlugin {
                     .after(fire_weapons)
                     .run_if(in_state(GameState::Playing)),
             )
+            // The contacts of the last physics step, before the cars drive
+            // and `remember_velocity` forgets the speed going into them.
             .add_systems(
-                Update,
+                FixedUpdate,
                 hammer::hammer_blows
-                    .before(crate::explosion::ExplosionSystems)
+                    .before(crate::car::drive_cars)
                     .run_if(in_state(GameState::Playing)),
             )
             .add_systems(Update, gun_sounds.run_if(in_state(GameState::Playing)))

@@ -46,7 +46,7 @@ use crate::car::Car;
 use crate::content::actions::defs::PlaySound as PlaySoundAction;
 use crate::car::impact::CarImpact;
 use crate::controls::PlayerIntent;
-use crate::explosion::{Damaged, Explosion, ExplosionSystems};
+use crate::explosion::{Damaged, Explosion};
 use crate::game::{ChangeMap, GameState};
 use crate::pickups::CoinCollected;
 
@@ -228,8 +228,7 @@ impl Plugin for SoundPlugin {
                     (impact_sounds, blast_sounds, damage_sounds, coin_sounds, finish_sounds, car_loops),
                     log_cues,
                 )
-                    .chain()
-                    .after(ExplosionSystems),
+                    .chain(),
             );
         #[cfg(feature = "sound")]
         app.add_plugins(playback::PlaybackPlugin);

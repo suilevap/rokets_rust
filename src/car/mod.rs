@@ -153,13 +153,18 @@ impl Plugin for CarPlugin {
             .add_message::<impact::CarImpact>()
             .add_systems(
                 FixedUpdate,
-                (drive_cars, simple::drive_simple_cars, simple::limit_spin, smoke::car_smoke, impact::remember_velocity, cabin::sway_cabins)
-                    .chain()
-                    .run_if(in_state(GameState::Playing)),
-            )
-            .add_systems(
-                Update,
-                (impact::detect_impacts, impact::impact_sparks)
+                (
+                    drive_cars,
+                    simple::drive_simple_cars,
+                    simple::limit_spin,
+                    smoke::car_smoke,
+                    // The contacts of the last physics step, with the
+                    // speeds going into them, before they are forgotten.
+                    impact::detect_impacts,
+                    impact::impact_sparks,
+                    impact::remember_velocity,
+                    cabin::sway_cabins,
+                )
                     .chain()
                     .run_if(in_state(GameState::Playing)),
             )

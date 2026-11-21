@@ -119,6 +119,16 @@ main
   the C# game.
 - Cars only read `PlayerIntent`; new control schemes and AI write it. What is only about the player's car (camera, energy bar, devices, pickups, triggers and buttons without subscribers, goal markers, the game mode's wreck and lives) is filtered by `LocalPlayer`; what is about any car (weapons, the saw, health, teams, sounds of damage) is not.
 - Physics and driving run in `FixedUpdate` at 60 Hz (the C# frame).
+  So does everything else that changes the game: the AI, weapons,
+  damage and explosions, deaths and the game mode, triggers, buttons,
+  teleports, pickups and the map actions, with their timers on the fixed
+  clock and their random draws from RNGs no frame-rate system shares; two
+  runs with the same input play the same at any frame rate (`--drive`
+  with `--trace` checks it). `Update` and `PostUpdate` only present the
+  game (sprites, particles, sounds, the camera, HUD); input is read in
+  `PreUpdate` into `PlayerIntent`, a press latched until a fixed step
+  takes it. Messages between the two are safe: Bevy keeps them until a
+  fixed step has run.
 - Tests are never in the same file as the code: public behaviour is
   tested in `tests/`, private details in a separate `tests.rs` next to the
   module (see `CLAUDE.md`).

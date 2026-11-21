@@ -34,7 +34,7 @@ use crate::car::smoke::SmokePoints;
 use crate::car::spawn_local_car;
 use crate::content::actions::defs::{SaveAction, SetRespawnPoint};
 use crate::controls::{LocalPlayer, NoInput, PlayerIntent};
-use crate::explosion::Destroyed;
+use crate::explosion::{Destroyed, ExplosionSystems};
 use crate::game::{ChangeMap, GameState, LoadedMap, MapId};
 use crate::render::camera::{CameraTarget, Unfocused};
 use crate::particles::styles::{CRASH_SMOKE, WRECK_FIRE, WRECK_SPARK};
@@ -113,8 +113,12 @@ impl Plugin for GameModePlugin {
             .add_map_action::<SaveAction, _>(save)
             .add_systems(OnEnter(GameState::Playing), |mut r: ResMut<Respawn>| *r = Respawn::default())
             .add_systems(
-                Update,
-                (wreck_cars, restart_after_wreck).run_if(in_state(GameState::Playing)),
+                FixedUpdate,
+                (wreck_cars, restart_after_wreck)
+                    .chain()
+                    .after(ExplosionSystems)
+                    .before(crate::actions::ActionSystems)
+                    .run_if(in_state(GameState::Playing)),
             );
     }
 }

@@ -248,7 +248,7 @@ impl Plugin for AiPlugin {
                 .run_if(in_state(GameState::Playing)),
         )
         .add_systems(
-            Update,
+            FixedUpdate,
             remember_damagers
                 .after(ExplosionSystems)
                 .run_if(in_state(GameState::Playing)),

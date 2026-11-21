@@ -47,7 +47,7 @@ use bevy::prelude::*;
 use rand::Rng;
 
 use super::model::{self, Kind, ZOMBIE_WAVE_REACH};
-use super::{Weapon, WeaponRng, WeaponSystems, fire_weapons};
+use super::{ViewRng, Weapon, WeaponSystems, fire_weapons};
 use crate::actions::Inactive;
 use crate::car::CarRadius;
 use crate::car::control::Team;
@@ -88,8 +88,10 @@ impl Plugin for ZombiePlugin {
             .add_systems(
                 FixedUpdate,
                 (run_zombies, zombie_waves)
+                    .chain()
                     .in_set(WeaponSystems)
                     .after(fire_weapons)
+                    .after(super::hammer::run_saws)
                     .run_if(in_state(GameState::Playing)),
             )
             .add_systems(Update, draw_pulls.run_if(in_state(GameState::Playing)));
@@ -208,7 +210,7 @@ fn draw_pulls(
     map: Res<LoadedMap>,
     quad: Res<UnitQuad>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut rng: ResMut<WeaponRng>,
+    mut rng: ResMut<ViewRng>,
     zombies: Query<(Entity, &Weapon, &Transform), Without<PullLine>>,
     targets: Query<(&Transform, &Health), Without<PullLine>>,
     mut lines: Query<(Entity, &PullLine, &mut Transform, &mut Visibility)>,

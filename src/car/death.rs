@@ -76,12 +76,13 @@ impl Plugin for DeathPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(DeathRng(SmallRng::seed_from_u64(13)))
             .add_systems(
-                Update,
-                (kill_cars.after(ExplosionSystems), remove_corpses)
+                FixedUpdate,
+                (kill_cars, remove_corpses, corpse_smoke)
                     .chain()
+                    .after(ExplosionSystems)
+                    .before(crate::actions::ActionSystems)
                     .run_if(in_state(GameState::Playing)),
-            )
-            .add_systems(FixedUpdate, corpse_smoke.run_if(in_state(GameState::Playing)));
+            );
     }
 }
 
