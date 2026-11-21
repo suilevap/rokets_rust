@@ -98,7 +98,7 @@
 //! | `ActionNode.OnUpdate`: `Start` unless running, then `IsInProgress`, `Complete` when it ends (`Ok`/`Fail`), `Fail` when `Start` says no | `action(..)` over a `BtAction` (`start`, `is_in_progress`, `tick`, `complete`) |
 //! | `ParallelAllActionNode` (`All`) | [`nodes::all`]: a `BtAction` over its children, `start`/`complete` of all (short-circuiting, as `Enumerable.All`), `is_in_progress` of all, every `tick` |
 //! | `DecoratorCondtion` (`While`): `init` when not running, then the condition on each thinking pass; `Context.Run()` never visits it | [`nodes::DecoratorCondition`]: `Evaluate` runs `init` (when fresh) and the condition; `Resume` of a running one passes straight to the child |
-//! | `Think` starts an action without ticking it | [`nodes::quiet_start`]: the tick in the update that started it gives no orders |
+//! | `Think` starts an action without ticking it | not kept: an action gives its first orders in the step that starts it, one step (1/60 s) sooner than C# ([`nodes::act`]) |
 //!
 //! What flatbt-bevy cannot say, and how it is handled: its tick is one pass,
 //! where C# on a thinking step ticked the running action (`Run`) *and then*
