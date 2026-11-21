@@ -9,7 +9,7 @@
 //!
 //! | Node | C# |
 //! |---|---|
-//! | [`DecoratorCondition`], [`timer`], [`while_target_alive`] | `BTLib.DecoratorCondtion` (`While`), `BTActionFactory.Timer`, `BTActions/WhileTargetAlive` |
+//! | [`timer`], [`time_limit`] ([`ThinkTimer`]), [`while_target_alive`] | `BTActionFactory.Timer` and `LeaderAlive` (`BTLib.DecoratorCondtion`, `While`), `BTActions/WhileTargetAlive` |
 //! | [`act`] | an action named after its type (C#'s thinking pass started it without ticking it; not kept) |
 //! | [`all`] | `BTLib.ParallelAllActionNode` (`All`) |
 //! | [`optional`] | `BTLib.OptionalActionNode` (`bt.Optional`) |
@@ -52,7 +52,7 @@ pub use actions::{
 };
 pub use flocking::{FlockState, Flocking, Power, TargetFn, alert_friends, find_nearest_leader, fire_now};
 pub use execute_orders::ExecuteOrders;
-pub use condition::{DecoratorCondition, WhileState, decorator_condition, timer, while_target_alive};
+pub use condition::{Condition, ThinkTimer, TimerState, WhileTargetAlive, has_live_target, never, time_limit, timer, while_target_alive};
 pub use optional::{Optional, optional, optional_required};
 pub use parallel::{All, all};
 pub use path::{

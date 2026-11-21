@@ -366,8 +366,6 @@ pub struct AiBlackboard {
     damager_left: f32,
     /// `Time.TotalGameTime`, s.
     now: f64,
-    /// `_startTimer`.
-    timer_start: f64,
     /// `_aiUpdateTime`: seconds to the next forced think.
     think_in: f32,
     /// How the tree is entered this step; what flatbt-bevy's tick asks.
@@ -440,7 +438,6 @@ impl AiBlackboard {
             damager: None,
             damager_left: 0.0,
             now: 0.0,
-            timer_start: 0.0,
             think_in,
             // Not entered until gathered.
             tick: Tick::Skip,
@@ -741,16 +738,6 @@ impl AiBlackboard {
     /// `RandomHelper.NextFloat`: 0 up to 1.
     pub fn random(&mut self) -> f32 {
         self.rng.random()
-    }
-
-    /// `StartTimer`.
-    pub fn start_timer(&mut self) {
-        self.timer_start = self.now;
-    }
-
-    /// `Timer.TotalSeconds`: since the last [`start_timer`](Self::start_timer).
-    pub fn timer(&self) -> f32 {
-        (self.now - self.timer_start) as f32
     }
 
     /// Whom it is attacking, or looked at last.

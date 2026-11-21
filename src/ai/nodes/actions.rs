@@ -391,8 +391,8 @@ impl BtAction<AiBlackboard, Orders> for Runaway {
 /// stick is left as it was. It goes on until the gun is within the weapon's
 /// `TargetInFireRange` and at least `min_time` seconds have passed.
 ///
-/// Starts when the target lives and is in sight now or in 0.5 s, and starts
-/// the blackboard's timer; goes on while that holds, the car has a gun, and
+/// Starts when the target lives and is in sight now or in 0.5 s, noting
+/// when (C#'s `StartTimer`); goes on while that holds, the car has a gun, and
 /// the time is not up or the gun is not on target; completes `Ok` when the
 /// target is alive, in sight (as above) and in the gun's range, `Fail`
 /// otherwise.
@@ -414,25 +414,22 @@ impl AimToTarget {
 }
 
 impl BtAction<AiBlackboard, Orders> for AimToTarget {
-    type State = ();
+    /// When it started (C#'s `StartTimer` on the blackboard's one timer).
+    type State = f64;
 
-    fn start(&self, ctx: &mut AiBlackboard, _: ()) -> Option<()> {
-        let result = ctx.live_target().is_some() && ctx.can_see_target();
-        if result {
-            ctx.start_timer();
-        }
-        result.then_some(())
+    fn start(&self, ctx: &mut AiBlackboard, _: ()) -> Option<f64> {
+        (ctx.live_target().is_some() && ctx.can_see_target()).then_some(ctx.now())
     }
 
-    fn is_in_progress(&self, _: &(), ctx: &AiBlackboard, _: ()) -> bool {
+    fn is_in_progress(&self, started: &f64, ctx: &AiBlackboard, _: ()) -> bool {
         let (Some(foe), Some(gun)) = (ctx.live_target(), ctx.gun) else {
             return false;
         };
         ctx.can_see_target()
-            && (ctx.timer() < self.min_time || !gun.range.contains(foe.pos, foe.radius * ctx.fire_accuracy))
+            && (((ctx.now() - started) as f32) < self.min_time || !gun.range.contains(foe.pos, foe.radius * ctx.fire_accuracy))
     }
 
-    fn tick(&self, _: &mut (), ctx: &mut AiBlackboard, _: ()) -> Orders {
+    fn tick(&self, _: &mut f64, ctx: &mut AiBlackboard, _: ()) -> Orders {
         let Some(foe) = ctx.live_target() else {
             return Orders::default();
         };
@@ -446,7 +443,7 @@ impl BtAction<AiBlackboard, Orders> for AimToTarget {
         Orders { move_dir, aim_dir: Some(aim), fire: false }
     }
 
-    fn complete(&self, _: &mut (), ctx: &mut AiBlackboard, _: ()) -> bool {
+    fn complete(&self, _: &mut f64, ctx: &mut AiBlackboard, _: ()) -> bool {
         match (ctx.live_target(), ctx.gun) {
             (Some(foe), Some(gun)) => {
                 ctx.can_see_target() && gun.range.contains(foe.pos, foe.radius * ctx.fire_accuracy)
