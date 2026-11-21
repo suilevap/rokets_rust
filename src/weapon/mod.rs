@@ -1,7 +1,8 @@
-//! The car's gun: the Minigun, the Railgun, the Hammer and the Zombie's so far.
+//! The car's gun: the Minigun, the Railgun, the Hammer, the Zombie's and
+//! the Plasma gun so far.
 //!
 //! C# origin: `BaseWeapon`, `BaseComplexWeapon`, `MinigunWeapon`,
-//! `RailgunWeapon`, `HammerWeapon`, `WeaponHelper.SimulateMinigunBullet` /
+//! `RailgunWeapon`, `HammerWeapon`, `PlasmaGun`, `WeaponHelper.SimulateMinigunBullet` /
 //! `SimulateRailgunBullet` / `SimulateBullet`, `WeaponFactory`,
 //! `EnergyComponent` and the fire input of the `PlayerCarControl*`
 //! classes (2010–2016). The numbers and the timing are in [`model`]; this
@@ -34,6 +35,12 @@
 //!   out a wave that stuns every enemy within twice the reach for two
 //!   seconds ([`crate::stun`]), a wave a reload (2 s for the player, 10 s
 //!   for the enemies) that costs the player's whole energy store.
+//! - The Plasma gun ([`plasma`]) fires while the trigger is held, once a
+//!   reload (0.5 s, or 1 s for `PlasmaGunSlow`), 0.1 of the energy a shot:
+//!   a bullet that flies (red at 32 units a second, or yellow at 16) and
+//!   hurts (8) and pushes (18) the first thing it touches. Its shot is not
+//!   immediate ([`Kind::is_immediate`]): the attacking AI fires it in the
+//!   slow gun's rhythm.
 //! - The gun rides the swaying cabin (`DrawCabina` updated it a second
 //!   time with the cabin's offset, which also doubled the speed of its
 //!   eases; [`Aim::step`] runs twice for cars with a cabin, as there).
@@ -86,6 +93,7 @@ pub mod beam;
 pub mod hammer;
 pub mod max_angle;
 pub mod model;
+pub mod plasma;
 mod view;
 pub mod zombie;
 
@@ -106,7 +114,7 @@ use crate::particles::styles::{
 use crate::render::particles::Particles;
 use crate::sound::{CarSounds, LoopCue, PlaySound};
 use crate::units::PX_PER_UNIT;
-use model::{AimLook, Aim, Energy, Hammer, Kind, Minigun, Options, Railgun, Shot, Tracking, Zombie};
+use model::{AimLook, Aim, Energy, Hammer, Kind, Minigun, Options, Plasma, Railgun, Shot, Tracking, Zombie};
 
 pub use view::{AIM_LINE_TEXTURES, energy_bar_alpha};
 
@@ -132,6 +140,13 @@ pub const RAILGUN_SPRITE: GunSprite = GunSprite {
     origin: Vec2::new(6.0, 6.0),
 };
 
+/// `PlasmaGun`: `Weapons\Plasmagun`, turned about pixel (9, 5).
+pub const PLASMA_SPRITE: GunSprite = GunSprite {
+    name: "Weapons\\Plasmagun",
+    size: Vec2::new(44.0, 11.0),
+    origin: Vec2::new(9.0, 5.0),
+};
+
 /// `HammerWeapon`: `Weapons\Saw`, round and turned about its middle.
 pub const HAMMER_SPRITE: GunSprite = GunSprite {
     name: "Weapons\\Saw",
@@ -147,6 +162,7 @@ pub fn sprite_of(kind: Kind) -> Option<GunSprite> {
         Kind::Railgun => Some(RAILGUN_SPRITE),
         Kind::Hammer => Some(HAMMER_SPRITE),
         Kind::Zombie => None,
+        Kind::Plasma => Some(PLASMA_SPRITE),
     }
 }
 
@@ -180,6 +196,8 @@ pub struct Weapon {
     pub tracking: Tracking<Entity>,
     /// The Zombie's reload and its target ([`Kind::Zombie`]).
     pub zombie: Zombie<Entity>,
+    /// The reload of a [`Kind::Plasma`].
+    pub plasma: Plasma,
     /// The saw is turning and hurts (`_isWorking`): its car is alive and
     /// someone drives it.
     pub working: bool,
@@ -216,6 +234,7 @@ impl Weapon {
             hammer,
             tracking: Tracking::default(),
             zombie: Zombie::new(&options, rng.random()),
+            plasma: Plasma::new(&options, rng.random()),
             working: false,
             local: mount,
             local_angle: 0.0,
@@ -239,6 +258,7 @@ impl Weapon {
                 }
             }
             Kind::Railgun => self.railgun.look(&self.options, energy),
+            Kind::Plasma => self.plasma.look(&self.options, energy),
             // No aim line; never asked.
             Kind::Hammer | Kind::Zombie => AimLook::Normal,
         }
@@ -252,6 +272,7 @@ impl Weapon {
             Kind::Railgun => self.railgun.can_fire(&self.options, None),
             Kind::Hammer => true,
             Kind::Zombie => self.zombie.reloaded(),
+            Kind::Plasma => self.plasma.can_fire(&self.options, None),
         }
     }
 
@@ -344,7 +365,7 @@ impl Plugin for WeaponPlugin {
                     .run_if(in_state(GameState::Playing)),
             )
             .add_systems(Update, gun_sounds.run_if(in_state(GameState::Playing)))
-            .add_plugins((view::WeaponViewPlugin, max_angle::MaxAnglePlugin, zombie::ZombiePlugin));
+            .add_plugins((view::WeaponViewPlugin, max_angle::MaxAnglePlugin, zombie::ZombiePlugin, plasma::PlasmaPlugin));
     }
 }
 
@@ -362,6 +383,7 @@ type Gun<'a> = (
     &'a Rotation,
     Option<&'a CabinSway>,
     Option<&'a mut PlayerEnergy>,
+    Has<crate::actions::Inactive>,
 );
 
 /// `ControlableEntity.ControlHandle` and `HandleControlEvent`, then the
@@ -382,6 +404,7 @@ fn fire_weapons(
     mut hits: MessageWriter<Hit>,
     mut play: MessageWriter<PlaySound>,
     mut waves: MessageWriter<zombie::ZombieWave>,
+    mut commands: Commands,
 ) {
     let dt = time.delta_secs();
     if physics.is_paused() || dt <= 0.0 {
@@ -393,7 +416,7 @@ fn fire_weapons(
         passes: &passes,
         hurt: &can_hurt,
     };
-    for (car, mut gun, mut intent, position, rotation, sway, mut energy) in &mut guns {
+    for (car, mut gun, mut intent, position, rotation, sway, mut energy, inactive) in &mut guns {
         let angle = rotation.as_radians();
         let gun = &mut *gun;
         if let Some(e) = energy.as_mut() {
@@ -464,6 +487,31 @@ fn fire_weapons(
                         name: "Railgun",
                         at: Some(sound_at),
                         pitch: 0.0,
+                        volume: 1.0,
+                    });
+                }
+            }
+            // `PlasmaGun.OnShoot`, by `BaseComplexWeapon.TryShoot` while the
+            // trigger is held (`ShootMultiple`). Not from an inactive car
+            // (`ControlableEntity.Update` is skipped for it; its trigger may
+            // still be down from before).
+            Kind::Plasma => {
+                let fired = !inactive && intent.fire && gun.plasma.pull(&options, energy.as_mut().map(|e| &mut e.0));
+                gun.plasma.step(dt);
+                if fired {
+                    // Set, not added to.
+                    gun.aim.recoil.current = model::plasma_recoil(rng.random());
+                    let muzzle = gun.muzzle();
+                    let team = teams.get(car).ok().copied();
+                    for direction in model::plasma_directions(gun.direction, &options, || rng.random()) {
+                        // In C#'s axes and degrees, as `/trace`.
+                        debug!("plasma shot from {:.3} {:.3} at {:.1}", muzzle.x, -muzzle.y, -direction.to_degrees());
+                        commands.spawn(plasma::bullet_bundle(plasma::PlasmaBullet::new(muzzle, direction, car, team, &options)));
+                    }
+                    play.write(PlaySound {
+                        name: "PlasmaShot",
+                        at: Some(muzzle),
+                        pitch: (rng.random::<f32>() * 2.0 - 1.0) * 0.2,
                         volume: 1.0,
                     });
                 }

@@ -52,8 +52,9 @@ along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
      the one ported, finds the way shut and drops its `RemoveOnTry` order;
      `tools/compare.py` runs the C# Debug build, so it shows the car going
      to the button there);
-   - `AttackAi*`'s slow-gun style: the Plasma gun and rocket launcher
-     (`IsImmidiate` false) come with the weapons (`Kind::is_immediate`);
+   - `AttackAi*`'s slow-gun style (`SmartAttackTargetSlowWeapon`) is
+     taken by the Plasma gun; the rocket launcher (`IsImmidiate` false
+     too) comes with the weapons (`Kind::is_immediate`);
    - `CaptureTheBox*` (`CustomAi`): the chain gadget actions
      (`GrabByChainGadget`, `DropByChainGadget`), `FixBlocker` (the path's
      `Blocker` is there), `MoveUntilPositionNonVisible`, custom data on the
@@ -84,9 +85,14 @@ along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
    `GetRandomFreeVisiblePoint`, …); `AIPathCarControl` (`AISimpleCarControl`,
    `AITouchAndRunCarControl`, `PlayerCarControlPath`: no `ControlType`
    reaches them); a debug view of each car's path (`AiBlackboard.Draw`).
-2. **Weapons and enemy extras.** The other weapons (`PlasmaGun`, `Laser`,
+2. **Weapons and enemy extras.** The other weapons (`Laser`,
    `Tesla`, `Shotgun`, `Rocketlauncher*`, `LaserWithDelay`:
-   `PeriodicFireControl`'s pre-fire uses its `ChargeTime`), the red aim
+   `PeriodicFireControl`'s pre-fire uses its `ChargeTime`; the rockets can
+   fly as the Plasma gun's bullets do, `weapon/plasma.rs`), the `SetWeapon`
+   action (Arena and TestLab hand the player a Plasma gun with it), an
+   inactive car's other guns (only the Plasma gun and the Zombie's check
+   `Inactive`: Trophy's deactivated `AlwaysShoot` turret had its trigger
+   down from its first step and fired its Plasma gun until it did), the red aim
    line of a static or enemy gun (`LaserVisiblityUpdate`: drawn for every
    gun, not only the player's, with the Railgun's bounces), `SetImmortal`
    and the `Immortal` shield, `HighlightEnemy` / `HighlightDeadEnemy`.

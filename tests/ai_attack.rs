@@ -401,3 +401,28 @@ fn the_first_attacker_with_no_enemy_walks_to_random_places() {
     assert!(car.path().contains("MoveToRandom"), "{}", car.path());
     assert_eq!(shots(&car.orders), 0);
 }
+
+#[test]
+fn with_a_slow_gun_it_fires_without_the_aiming_turn_then_manoeuvres() {
+    // The Plasma gun's shot flies (`IsImmidiate` false): `AttackAiVer2`
+    // takes `SmartAttackTargetSlowWeapon`.
+    assert!(!tilerider::weapon::model::Kind::Plasma.is_immediate());
+    let mut car = Car::new(attacker_ai_ver2, World::new(OPEN_ROOM), at(2.0, 2.0));
+    car.immediate = false;
+    car.others = vec![enemy(1, at(6.0, 2.0))];
+    car.run(0.2);
+    assert_eq!(car.bb.target(), Some(id(1)));
+    assert!(car.path().contains("SmartAttackTargetSlowWeapon"), "{}", car.path());
+    assert!(!car.path().contains("AimToTarget"), "{}", car.path());
+    // It stands and fires at once (the immediate gun's half second of
+    // aiming is skipped), a second and a half, then moves on.
+    assert_eq!(car.stick, Vec2::ZERO);
+    assert!(shots(&car.orders) > 5, "{} shots", shots(&car.orders));
+    car.run(12.0);
+    assert!(car.pos.distance(at(2.0, 2.0)) > 5.0, "it manoeuvred: {}", car.pos);
+    let mut rounds = 0;
+    for pair in car.orders.windows(2) {
+        rounds += usize::from(pair[0].fire && !pair[1].fire);
+    }
+    assert!(rounds >= 3, "{rounds} rounds of fire");
+}
