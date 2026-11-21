@@ -562,8 +562,20 @@ pub static RAILGUN_SPLASH: Style = Style {
     origin: CENTRE,
 };
 
+/// `_plasmaEndStyle`: where a plasma bullet ends, a white flash growing
+/// from nothing to twice its size as it fades, in 0.2 s.
+pub static PLASMA_END: Style = Style {
+    begin: still(0.0, 0.0, color(1.0, 1.0, 1.0), SMOKE_START),
+    end: still(2.0, 0.0, TRANSPARENT, SMOKE_START),
+    lifetime: 0.2,
+    texture: "Particles\\flash",
+    additive: true,
+    random_frame: false,
+    origin: CENTRE,
+};
+
 /// Every texture a style here draws with, to load with the map.
-pub const TEXTURES: [&str; 18] = [
+pub const TEXTURES: [&str; 19] = [
     WHEEL_TRAIL.texture,
     EXHAUST.texture,
     BOMB_BEEP.texture,
@@ -582,4 +594,5 @@ pub const TEXTURES: [&str; 18] = [
     ZOMBIE_CIRCLE.texture,
     STUN_FLASH.texture,
     ZOMBIE_CIRCLE_START.texture,
+    PLASMA_END.texture,
 ];
