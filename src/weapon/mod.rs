@@ -1,5 +1,5 @@
 //! The car's gun: the Minigun, the Railgun, the Hammer, the Zombie's, the
-//! Plasma gun, the Tesla, the Laser and the rocket launchers so far.
+//! Plasma gun, the Tesla, the Laser, the rocket launchers and the Shotgun.
 //!
 //! C# origin: `BaseWeapon`, `BaseComplexWeapon`, `MinigunWeapon`,
 //! `RailgunWeapon`, `HammerWeapon`, `PlasmaGun`, `WeaponHelper.SimulateMinigunBullet` /
@@ -57,6 +57,12 @@
 //!   blast of range 7 (16 for the straight one, 20 for the homing ones),
 //!   and, for `RocketlauncherChasing*`, homes in on the nearest moving enemy.
 //!   Its shot is not immediate ([`Kind::is_immediate`]).
+//! - The Shotgun ([`shotgun`]) fires only on [`PlayerIntent::fire_accurate`]
+//!   like the Railgun (one blast a 2 s reload; 0.1 of the energy), kicks the
+//!   gun back 30 pixels and the car back with an impulse of 15, and sends
+//!   five pellets, each a ray (`SimulateMinigunBullet`) at its own angle
+//!   within ±π/8 of the barrel that pushes (6) and hurts (4) what it hits.
+//!   Its gun turns half a turn either way.
 //! - The gun rides the swaying cabin (`DrawCabina` updated it a second
 //!   time with the cabin's offset, which also doubled the speed of its
 //!   eases; [`Aim::step`] runs twice for cars with a cabin, as there).
@@ -112,6 +118,7 @@ pub mod max_angle;
 pub mod model;
 pub mod plasma;
 pub mod rocket;
+pub mod shotgun;
 pub mod tesla;
 mod view;
 pub mod zombie;
@@ -187,6 +194,13 @@ pub const ROCKET_SPRITE: GunSprite = GunSprite {
     origin: Vec2::new(9.0, 5.0),
 };
 
+/// `ShotgunWeapon`: `Weapons\Shotgun`, turned about pixel (9, 5).
+pub const SHOTGUN_SPRITE: GunSprite = GunSprite {
+    name: "Weapons\\Shotgun",
+    size: Vec2::new(40.0, 11.0),
+    origin: Vec2::new(9.0, 5.0),
+};
+
 /// The sprite of a kind of gun turned about its origin; the Zombie's has
 /// none (`ZombieWeapon.Draw` only draws its pull), nor has the Tesla (its
 /// two spinning discs are [`tesla`]'s).
@@ -199,6 +213,7 @@ pub fn sprite_of(kind: Kind) -> Option<GunSprite> {
         Kind::Plasma => Some(PLASMA_SPRITE),
         Kind::Laser => Some(LASER_SPRITE),
         Kind::Rocket => Some(ROCKET_SPRITE),
+        Kind::Shotgun => Some(SHOTGUN_SPRITE),
     }
 }
 
@@ -314,8 +329,8 @@ impl Weapon {
             }
             Kind::Railgun => self.railgun.look(&self.options, energy),
             Kind::Plasma => self.plasma.look(&self.options, energy),
-            // Fires only accurately: the Railgun's reload look.
-            Kind::Rocket => self.railgun.look(&self.options, energy),
+            // Fire only accurately: the Railgun's reload look.
+            Kind::Rocket | Kind::Shotgun => self.railgun.look(&self.options, energy),
             // No aim line; never asked.
             Kind::Hammer | Kind::Zombie | Kind::Tesla | Kind::Laser => AimLook::Normal,
         }
@@ -332,7 +347,7 @@ impl Weapon {
             Kind::Plasma => self.plasma.can_fire(&self.options, None),
             Kind::Tesla => self.tesla.can_fire(&self.options, None),
             Kind::Laser => self.laser.can_shoot(),
-            Kind::Rocket => self.railgun.can_fire(&self.options, None),
+            Kind::Rocket | Kind::Shotgun => self.railgun.can_fire(&self.options, None),
         }
     }
 
@@ -440,6 +455,7 @@ impl Plugin for WeaponPlugin {
                 tesla::TeslaPlugin,
                 laser::LaserPlugin,
                 rocket::RocketPlugin,
+                shotgun::ShotgunPlugin,
             ));
     }
 }
@@ -464,7 +480,7 @@ type Gun<'a> = (
 
 /// `ControlableEntity.ControlHandle` and `HandleControlEvent`, then the
 /// weapon's `Update`, every step the game is not paused.
-#[allow(clippy::too_many_arguments)]
+#[allow(clippy::too_many_arguments, clippy::type_complexity)]
 fn fire_weapons(
     time: Res<Time>,
     physics: Res<Time<Physics>>,
@@ -480,11 +496,12 @@ fn fire_weapons(
     mut hits: MessageWriter<Hit>,
     mut play: MessageWriter<PlaySound>,
     mut waves: MessageWriter<zombie::ZombieWave>,
-    (mut strikes, mut crackles, mut charges, mut launched): (
+    (mut strikes, mut crackles, mut charges, mut launched, mut blasts): (
         MessageWriter<tesla::TeslaStrike>,
         MessageWriter<tesla::TeslaCrackle>,
         MessageWriter<laser::LaserCharge>,
         MessageWriter<rocket::RocketLaunched>,
+        MessageWriter<shotgun::ShotgunBlast>,
     ),
     mut commands: Commands,
 ) {
@@ -622,6 +639,24 @@ fn fire_weapons(
                         at: Some(gun.at),
                         pitch: 0.0,
                         volume: 1.0,
+                    });
+                }
+            }
+            // `ShotgunWeapon.OnShoot`, by `BaseComplexWeapon.TryShoot` on an
+            // accurate pulse (`_fireOnlyAccurate`), once a reload; the Railgun's
+            // rhythm. Not from an inactive car, as the Plasma gun's. The kick
+            // and the pellets are [`shotgun::shotgun_blasts`].
+            Kind::Shotgun => {
+                let fired = !inactive && accurate && gun.railgun.pull(&options, energy.as_mut().map(|e| &mut e.0));
+                gun.railgun.step(dt);
+                if fired {
+                    // Set, not added to.
+                    gun.aim.recoil.current = model::SHOTGUN_RECOIL;
+                    blasts.write(shotgun::ShotgunBlast {
+                        car,
+                        from: gun.at,
+                        muzzle: gun.muzzle(),
+                        direction: gun.direction,
                     });
                 }
             }

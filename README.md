@@ -64,7 +64,9 @@ when the left mouse button or the gamepad trigger is held (once reloaded),
 on a press of right Ctrl, on letting go of the arrows and on lifting the
 touch finger; its aim line is white and wide while it reloads and shows
 the bounce. In a drive script (`--drive`) `f` holds the trigger and fires
-the Railgun on its first step.
+the Railgun on its first step. The Shotgun (enemies', in `Swarm` and
+`UnderPressure`) fires the same way, five pellets in a spread a 2 s reload,
+and shoves its car back.
 The Hammer (a saw on the nose, drawn under the car) works by itself: drive
 into things with it. It hurts bombs, red boxes and cars by the car's speed
 (4 to 8) and shoves what it hits; it has no aim line, no fire zone and the
