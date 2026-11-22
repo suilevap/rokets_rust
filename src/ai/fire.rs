@@ -18,10 +18,14 @@
 //!
 //! Neither looks for a target, so neither needs the world.
 //!
-//! Not ported: `PeriodicFireControl`'s pre-fire (in the tail of a silence it
-//! pulls the trigger early for a weapon with a `ChargeTime`, which only
-//! `DelayWeaponDecorator` has: not a weapon in the port); the pattern's
-//! empty-string default (`1 s` silence, `0.25 s` fire: the constructor
+//! - `PeriodicFireControl`'s pre-fire: in the tail of a silence the trigger
+//!   is pulled early for a gun with a `ChargeTime` (only `LaserWithDelay`'s
+//!   decorator has one) that cannot shoot (one that is charging), when what
+//!   is left of the silence is no more than the charge. As C# had it, a
+//!   gun not charging can shoot, so the pre-fire only goes on with a charge
+//!   begun in a fire phase; it never begins one.
+//!
+//! Not ported: the pattern's empty-string default (`1 s` silence, `0.25 s` fire: the constructor
 //! with no pattern is never called with one).
 
 use bevy::prelude::Component;
@@ -80,6 +84,12 @@ impl ShootPattern {
     /// The phase lengths, seconds.
     pub fn timing(&self) -> &[f32] {
         &self.timing
+    }
+
+    /// Seconds left of the present phase (`_timing[_currentIndex]` less the
+    /// time since `_previousTime`).
+    pub fn remaining(&self) -> f32 {
+        self.timing[self.index] - self.since
     }
 
     /// `UpdateControl`: time passes (one phase at most a step); whether the

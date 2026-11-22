@@ -5,8 +5,10 @@
 //! (`LaserRenderer.Render` with `ReflectionCount`), which the Laser weapon
 //! also used to hurt what its beam touched (`LaserWeapon.Update` read the
 //! renderer's `CollideFixtures`, `CollidePositions`, `CollideNormals`).
-//! Here [`trace`] is that path once, and [`BeamRules`] are the
-//! differences:
+//! Here [`trace`] is that path once. The aim line and the Laser
+//! ([`super::laser::beam_legs`]: `Reach::Total` of 256 units) trace by one
+//! set of rules, the Railgun's bullet by another, and [`BeamRules`] are
+//! the differences:
 //!
 //! - [`Reach`]: the bullet's every leg flies its full reach; the aim line's
 //!   legs share one range, measured from where each is drawn.

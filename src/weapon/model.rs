@@ -8,7 +8,8 @@
 //! the Zombie's reload and its choice of the one it drags and bites
 //! ([`Zombie`]), the Plasma gun's reload, spread and kick
 //! ([`Plasma`], [`plasma_directions`]), and the Tesla's reload, reach and
-//! push ([`Tesla`], [`tesla_reaches`], [`tesla_push`]).
+//! push ([`Tesla`], [`tesla_reaches`], [`tesla_push`]), and the Laser's
+//! presets ([`LASER`]; its beam's state is [`super::laser::Laser`]).
 //!
 //! Timers count seconds down while the game runs (C#'s `PeriodicUpdate`
 //! compared absolute game times; the same while nothing pauses). One is
@@ -39,6 +40,10 @@ pub enum Kind {
     Plasma,
     /// A coil that strikes every enemy around it at once (`TeslaWeapon`).
     Tesla,
+    /// A beam that hurts what it touches for as long as the trigger is
+    /// held (`LaserWeapon`; the `Laser`, `LaserNoReflection` and
+    /// `LaserWithDelay` types).
+    Laser,
 }
 
 impl Kind {
@@ -51,10 +56,10 @@ impl Kind {
 
     /// Whether it is a `BaseComplexWeapon`: it has a barrel to aim, with an
     /// aim line, recoil and a bounded `MaxAngle` (the Minigun, the
-    /// Railgun and the Plasma gun). The Hammer and the Zombie's are plain
-    /// `BaseWeapon`s with an empty `Aim`.
+    /// Railgun, the Plasma gun and the Laser). The Hammer and the Zombie's
+    /// are plain `BaseWeapon`s with an empty `Aim`.
     pub fn is_complex(self) -> bool {
-        matches!(self, Kind::Minigun | Kind::Railgun | Kind::Plasma)
+        matches!(self, Kind::Minigun | Kind::Railgun | Kind::Plasma | Kind::Laser)
     }
 
     /// `IBaseWeapon.IsImmidiate`: the shot arrives the moment it is fired
@@ -100,6 +105,10 @@ pub struct Options {
     /// A flying bullet's colour, sRGB (`BulletColor`; the Plasma gun's,
     /// black, C#'s default, for the others).
     pub bullet_color: [f32; 3],
+    /// Seconds the trigger is held before the gun first fires
+    /// (`ChargeTime`: the `DelayWeaponDecorator`'s loading time, the
+    /// `LaserWithDelay` type's); 0 for a gun that fires at once.
+    pub charge: f32,
 }
 
 /// `DamageConst.Miningun`, `MiningunImpulse`.
@@ -121,6 +130,7 @@ pub const MINIGUN: Options = Options {
     reflections: 0,
     bullet_speed: 0.0,
     bullet_color: [0.0; 3],
+    charge: 0.0,
 };
 
 /// `MinigunPlayerDefaultOptions`: the player's, two bullets a pull, a
@@ -140,6 +150,7 @@ pub const MINIGUN_PLAYER: Options = Options {
     reflections: 0,
     bullet_speed: 0.0,
     bullet_color: [0.0; 3],
+    charge: 0.0,
 };
 
 /// `DamageConst.Railgun`.
@@ -164,6 +175,7 @@ pub const RAILGUN: Options = Options {
     reflections: 1,
     bullet_speed: 0.0,
     bullet_color: [0.0; 3],
+    charge: 0.0,
 };
 
 /// `DamageConst.HammerImmediateMin`, `HammerImmediateMax`.
@@ -191,6 +203,7 @@ pub const HAMMER: Options = Options {
     reflections: 0,
     bullet_speed: 0.0,
     bullet_color: [0.0; 3],
+    charge: 0.0,
 };
 
 /// `WeaponOptions.ZombieDefaultOptions`: the enemy zombies'. A drag of 36
@@ -214,6 +227,7 @@ pub const ZOMBIE: Options = Options {
     reflections: 0,
     bullet_speed: 0.0,
     bullet_color: [0.0; 3],
+    charge: 0.0,
 };
 
 /// `ZombieDefaultOptionsPlayer`: the same, a wave every 2 s.
@@ -242,6 +256,7 @@ pub const PLASMA: Options = Options {
     bullet_speed: 32.0,
     // `Color.Red`.
     bullet_color: [1.0, 0.0, 0.0],
+    charge: 0.0,
 };
 
 /// `PlasmagunSlowOptions` (`PlasmaGunSlow`): the same, a yellow bullet at
@@ -278,7 +293,40 @@ pub const TESLA: Options = Options {
     reflections: 0,
     bullet_speed: 0.0,
     bullet_color: [0.0; 3],
+    charge: 0.0,
 };
+
+/// `DamageConst.Laser`: a point of damage each update the beam touches,
+/// 3 × 60 a second.
+const LASER_DAMAGE: i32 = 3;
+
+/// `WeaponOptions.LaserDefaultOptions` with the factory's two bounces
+/// (`WeaponFactory`: `LaserWeapon(…, 2, o)`): the same for everyone (no
+/// player preset). The trigger held, the beam is on and each update it
+/// costs the player 0.001 of the energy (a pull in every step, no
+/// reload). `range` is `LaserWeapon`'s own `_fireDistance = 256`, not the
+/// options' 32: how far the beam reaches in all, and how far the enemies'
+/// trigger looks (`TargetInFireRange`); `dispersion` is the default 0.
+pub const LASER: Options = Options {
+    damage: LASER_DAMAGE,
+    damage_max: LASER_DAMAGE,
+    impulse: 0.0,
+    dispersion: 0.0,
+    bullets: 0,
+    shoot_time: 0.0,
+    reload: 0.0,
+    energy: 0.001,
+    max_angle: PI / 3.0,
+    range: 256.0,
+    reflections: 2,
+    bullet_speed: 0.0,
+    bullet_color: [0.0; 3],
+    charge: 0.0,
+};
+
+/// `DelayWeaponDecorator`'s loading time for `LaserWithDelay`
+/// (`TimeSpan.FromSeconds(0.9f)`).
+pub const LASER_CHARGE: f32 = 0.9;
 
 /// `RailgunMinReflectionAngle` (`RailgunWeapon._reflectionMinAngle`): a
 /// bullet bounces only when it comes in more than this off the surface's
@@ -313,6 +361,11 @@ pub fn for_type(name: &str, local: bool) -> Option<(Kind, Options)> {
         "PlasmaGun" => PLASMA,
         "PlasmaGunSlow" => PLASMA_SLOW,
         "Tesla" => TESLA,
+        // One preset each for everyone; the number of bounces is the
+        // factory's, the delay the decorator's.
+        "Laser" => LASER,
+        "LaserNoReflection" => Options { reflections: 0, ..LASER },
+        "LaserWithDelay" => Options { reflections: 0, charge: LASER_CHARGE, ..LASER },
         _ => return None,
     };
     let kind = if name.starts_with("Railgun") {
@@ -325,6 +378,8 @@ pub fn for_type(name: &str, local: bool) -> Option<(Kind, Options)> {
         Kind::Zombie
     } else if name == "Tesla" {
         Kind::Tesla
+    } else if name.starts_with("Laser") {
+        Kind::Laser
     } else {
         Kind::Minigun
     };

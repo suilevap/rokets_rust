@@ -135,7 +135,8 @@ pub(super) fn update_aim_magnets(
     }
     let camera = cameras.single().ok();
     for (mut gun, position, team, health, visible) in &mut guns {
-        if health.hp <= 0 || !visible.0 {
+        // `LaserWeapon` clears `_enableAimHelp`.
+        if health.hp <= 0 || !visible.0 || gun.kind == super::model::Kind::Laser {
             continue;
         }
         let alive = gun.magnet.candidate.is_none_or(|c| cars.get(c).is_ok_and(|car| car.5.hp > 0));

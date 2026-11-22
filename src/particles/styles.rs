@@ -574,6 +574,20 @@ pub static PLASMA_END: Style = Style {
     origin: CENTRE,
 };
 
+/// `DelayWeaponDecorator._chargingStyle`: a red ring closing on the muzzle
+/// of a charging Laser, from nothing (three times the texture's size) to
+/// a tenth of it as it reddens, for the 0.9 s the charge takes
+/// (`weapon::model::LASER_CHARGE`).
+pub static LASER_CHARGE: Style = Style {
+    begin: still(3.0, 0.0, TRANSPARENT, SPARK),
+    end: still(0.1, 0.0, color(1.0, 0.0, 0.0), SPARK),
+    lifetime: 0.9,
+    texture: "Particles\\Circle",
+    additive: true,
+    random_frame: false,
+    origin: CENTRE,
+};
+
 /// `Color.Cyan`.
 const CYAN: [f32; 4] = color(0.0, 1.0, 1.0);
 

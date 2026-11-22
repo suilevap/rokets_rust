@@ -1,5 +1,5 @@
 //! A beam's path (`weapon::beam::trace`) in a small physics world: the
-//! Railgun's bullet and the aim line (and later the Laser) share it.
+//! Railgun's bullet, the aim line and the Laser's beam share it.
 
 use std::f32::consts::FRAC_PI_4;
 
