@@ -10,6 +10,7 @@
 //! time stepped exactly 1/30 s per frame (whatever the rendering speed),
 //! for `--frames N` frames, then exits: turn them into a video with ffmpeg.
 //! `--start x,y` puts the car at that map cell instead of the map's start.
+//! `--car NAME` gives the player that car of `Cars.xml`, on every map.
 //! `--size WxH` sets the window size (default 1280x720; e.g. 720x1280 to
 //! try portrait). `--glow X` sets how strongly the additive (HDR) light is
 //! added (default 3; `[` and `]` turn it while playing). `--flash X` sets
@@ -19,7 +20,7 @@
 //!
 //! In the browser the page's URL parameters are the options, without `--`:
 //! `?map=Middleware&start=84,9.5&drive=1,0:3&glow=4&lang=ru`. Only `map`,
-//! `start`, `drive`, `glow`, `flash` and `lang` apply there; the file-writing options are native only.
+//! `start`, `car`, `drive`, `glow`, `flash` and `lang` apply there; the file-writing options are native only.
 
 use bevy::prelude::*;
 use bevy::render::view::screenshot::{Screenshot, save_to_disk};
@@ -50,6 +51,7 @@ struct Args {
     drive: Option<DriveScript>,
     record: Option<RecordRequest>,
     start: Option<Vec2>,
+    car: Option<String>,
     size: (u32, u32),
     glow: Option<f32>,
     flash: Option<f32>,
@@ -80,7 +82,7 @@ mod web {
     }
 
     /// Options the browser build accepts, as URL parameters.
-    const WEB_OPTIONS: &[&str] = &["map", "start", "drive", "glow", "flash", "lang", "nav"];
+    const WEB_OPTIONS: &[&str] = &["map", "start", "car", "drive", "glow", "flash", "lang", "nav"];
 
     /// `?map=Middleware&start=84,9.5` → `["--map", "Middleware", "--start", "84,9.5"]`.
     pub fn url_args() -> Vec<String> {
@@ -128,6 +130,7 @@ fn parse_args() -> Args {
     let mut drive = None;
     let mut record_dir = None;
     let mut start = None;
+    let mut car = None;
     let mut size = (1280, 720);
     let mut glow = None;
     let mut flash = None;
@@ -158,6 +161,7 @@ fn parse_args() -> Args {
                 })
             }
             "--record" => record_dir = args.next(),
+            "--car" => car = args.next(),
             "--start" => {
                 start = args.next().and_then(|v| {
                     let (x, y) = v.split_once(',')?;
@@ -202,6 +206,7 @@ fn parse_args() -> Args {
         drive,
         record,
         start,
+        car,
         size,
         glow,
         flash,
@@ -218,6 +223,7 @@ fn main() {
         drive,
         record,
         start,
+        car,
         size,
         glow,
         flash,
@@ -249,6 +255,9 @@ fn main() {
     .add_plugins(TileRiderPlugin { map });
     if let Some(start) = start {
         app.insert_resource(tilerider::car::StartOverride(start));
+    }
+    if let Some(car) = car {
+        app.insert_resource(tilerider::car::CarOverride(car));
     }
     app.insert_resource(tilerider::info::Language(lang));
     if let Some(glow) = glow {

@@ -25,6 +25,7 @@ cargo run --release -- -m LetItSnowDay
 | `--record DIR` | Save every frame (time stepped 1/30 s per frame) for `--frames N` frames, then exit; make a video with `ffmpeg -framerate 30 -i DIR/frame_%05d.png out.mp4` |
 | `--size WxH` | Window size (default 1280x720; `720x1280` for portrait) |
 | `--start x,y` | Put the car at that map cell instead of the map's start (first map only) |
+| `--car NAME` | Give the player that car of `Cars.xml` (on every map), e.g. `Truck` to try the rocket launcher no map gives the player |
 | `--glow X` | How strongly the additive (HDR) light of lamps with an `AdditiveRate` is added (default 3; `[` and `]` turn it by 0.25 while playing, shown as `glow` in the top line) |
 | `--flash X` | How much brighter additive effects (flashes, sparks, bullet trails, the aim line) are drawn (default 1.5; `;` and `'` turn it by 0.25 while playing, shown as `flash` in the top line) |
 | `--lang LANG` | The maps' texts in another language: `ru`, `de`, `es`, `it`, `be` (default English) |
@@ -115,7 +116,7 @@ the `gh-pages` branch:
 
 The page's bottom-right corner names the build it serves (`PR #<n> · <sha>`
 for a preview, "dev" locally). URL parameters are the options without `--`:
-`map`, `start`, `drive`, `glow`, `flash` and `lang`, for example
+`map`, `start`, `car`, `drive`, `glow`, `flash` and `lang`, for example
 `?map=LetItSnowDay`, `?map=Middleware&start=84,9.5` (next to the finish) or
 `?map=UnderPressure&start=74,56.5&glow=4` (an additive lamp, brighter).
 
