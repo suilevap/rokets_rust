@@ -209,6 +209,43 @@ fn aim_legs(
         .collect()
 }
 
+/// What a line of `width` C# pixels is drawn with (`LaserRenderer.Render`,
+/// `LaserView.Draw`): up to 3 wide, a row of the noise strip as long a
+/// part of it as the line is of 32 (`glow`: the wider faint copy beside it);
+/// wider, a solid bar when it ends on something or is longer than the strip,
+/// else the strip that fades out. Returns the texture, the line's width in
+/// pixels and the texture's transform. `t` is the game's clock, seconds.
+pub(super) fn beam_look(width: f32, length: f32, hit: bool, glow: bool, t: f32) -> (&'static str, f32, Affine2) {
+    if width <= 3.0 {
+        // A row of the strip, as long a part of it as the line is of 32
+        // (`Color.Green` is (0, 128, 0); the glow at half and wider).
+        let rows = if glow { 33.0 } else { 16.0 };
+        let row = ((t % 1.0) * 15.0).floor();
+        let row = if glow { row * 2.0 + 1.0 } else { row };
+        let part = ((length / STRIP_LENGTH).min(1.0) * 128.0).floor().max(1.0) / 128.0;
+        let uv = Affine2::from_scale_angle_translation(Vec2::new(part, 1.0 / rows), 0.0, Vec2::new(0.0, row / rows));
+        let w = if glow { width * 4.0 } else { width };
+        (if glow { LASER_GLOW } else { LASER_LINE }, w, uv)
+    } else if hit || length > STRIP_LENGTH {
+        (SOLID, width, Affine2::IDENTITY)
+    } else {
+        // The fading strip runs from its solid end at the leg's start.
+        let uv = Affine2::from_scale_angle_translation(Vec2::new(-1.0, 1.0), 0.0, Vec2::new(1.0, 0.0));
+        (FADING, width, uv)
+    }
+}
+
+/// Colours an additive line's material: `color` boosted as the flashes are
+/// (`FlashBoost`, linear light), with its texture and transform.
+pub(super) fn paint(m: &mut StandardMaterial, image: Option<Handle<Image>>, color: Color, boost: f32, uv: Affine2) {
+    if m.base_color_texture != image {
+        m.base_color_texture = image;
+    }
+    let c = color.to_linear();
+    m.base_color = Color::linear_rgba(c.red * boost, c.green * boost, c.blue * boost, c.alpha);
+    m.uv_transform = uv;
+}
+
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 fn draw_aim_lines(
     mut commands: Commands,
@@ -283,32 +320,10 @@ fn draw_aim_lines(
             }
             AimLook::Reload(left) => (3.0 + 23.0 * left, white(1.0 - left * 0.5)),
         };
-        let (texture, width, uv) = if width <= 3.0 {
-            // A row of the strip, as long a part of it as the line is of 32
-            // (`Color.Green` is (0, 128, 0); the glow at half and wider).
-            let rows = if line.glow { 33.0 } else { 16.0 };
-            let row = ((t % 1.0) * 15.0).floor();
-            let row = if line.glow { row * 2.0 + 1.0 } else { row };
-            let part = ((length / STRIP_LENGTH).min(1.0) * 128.0).floor().max(1.0) / 128.0;
-            let uv = Affine2::from_scale_angle_translation(Vec2::new(part, 1.0 / rows), 0.0, Vec2::new(0.0, row / rows));
-            let w = if line.glow { 12.0 } else { width };
-            (if line.glow { LASER_GLOW } else { LASER_LINE }, w, uv)
-        } else if hit || length > STRIP_LENGTH {
-            (SOLID, width, Affine2::IDENTITY)
-        } else {
-            // The fading strip runs from its solid end at the leg's start.
-            let uv = Affine2::from_scale_angle_translation(Vec2::new(-1.0, 1.0), 0.0, Vec2::new(1.0, 0.0));
-            (FADING, width, uv)
-        };
+        let (texture, width, uv) = beam_look(width, length, hit, line.glow, t);
         // Additive, as XNA added a premultiplied texture (`render/premultiply`).
         let image = map.sprites.get(texture).map(|s| premultiplied.of(&s.image, &mut images));
-        if m.base_color_texture != image {
-            m.base_color_texture = image;
-        }
-        // Additive, as the flashes: the same boost for linear light.
-        let c = color.to_linear();
-        m.base_color = Color::linear_rgba(c.red * flash.0, c.green * flash.0, c.blue * flash.0, c.alpha);
-        m.uv_transform = uv;
+        paint(&mut m, image, color, flash.0, uv);
         let mid = (start + end) / 2.0;
         *transform = Transform::from_translation(mid.extend(Layer::Glow.z()))
             .with_rotation(Quat::from_rotation_z((end - start).to_angle()))

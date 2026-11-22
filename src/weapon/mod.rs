@@ -1,5 +1,5 @@
 //! The car's gun: the Minigun, the Railgun, the Hammer, the Zombie's, the
-//! Plasma gun and the Tesla so far.
+//! Plasma gun, the Tesla and the Laser so far.
 //!
 //! C# origin: `BaseWeapon`, `BaseComplexWeapon`, `MinigunWeapon`,
 //! `RailgunWeapon`, `HammerWeapon`, `PlasmaGun`, `WeaponHelper.SimulateMinigunBullet` /
@@ -46,6 +46,10 @@
 //!   player's energy), every living car of another team within 8 units of
 //!   its coil for 8, pushing each by 5, with a crackle of lightning; its
 //!   reach shows as a pulsing red dotted circle once it has been fired.
+//! - The Laser ([`laser`]) is on while the trigger is held: a beam that
+//!   bounces twice (`Laser`; not the others) up to 256 units and hurts
+//!   what it touches for 3 every step, with a delay of 0.9 s of charging
+//!   for `LaserWithDelay` (and a red line to warn of it). Enemies only.
 //! - The gun rides the swaying cabin (`DrawCabina` updated it a second
 //!   time with the cabin's offset, which also doubled the speed of its
 //!   eases; [`Aim::step`] runs twice for cars with a cabin, as there).
@@ -96,6 +100,7 @@
 pub mod aim_help;
 pub mod beam;
 pub mod hammer;
+pub mod laser;
 pub mod max_angle;
 pub mod model;
 pub mod plasma;
@@ -160,6 +165,13 @@ pub const HAMMER_SPRITE: GunSprite = GunSprite {
     origin: Vec2::new(64.0, 64.0),
 };
 
+/// `LaserWeapon`: `Weapons\Laser`, turned about pixel (9, 5).
+pub const LASER_SPRITE: GunSprite = GunSprite {
+    name: "Weapons\\Laser",
+    size: Vec2::new(42.0, 13.0),
+    origin: Vec2::new(9.0, 5.0),
+};
+
 /// The sprite of a kind of gun turned about its origin; the Zombie's has
 /// none (`ZombieWeapon.Draw` only draws its pull), nor has the Tesla (its
 /// two spinning discs are [`tesla`]'s).
@@ -170,6 +182,7 @@ pub fn sprite_of(kind: Kind) -> Option<GunSprite> {
         Kind::Hammer => Some(HAMMER_SPRITE),
         Kind::Zombie | Kind::Tesla => None,
         Kind::Plasma => Some(PLASMA_SPRITE),
+        Kind::Laser => Some(LASER_SPRITE),
     }
 }
 
@@ -178,14 +191,16 @@ pub fn sprite_of(kind: Kind) -> Option<GunSprite> {
 pub fn textures_of(kind: Kind) -> Vec<&'static str> {
     match kind {
         Kind::Tesla => tesla::TEXTURES.to_vec(),
+        Kind::Laser => laser::TEXTURES.to_vec(),
         _ => sprite_of(kind).map(|s| s.name).into_iter().collect(),
     }
 }
 
 /// Whether the gun shows an aim line (`BaseComplexWeapon`; the Hammer and
-/// the Zombie's are plain `BaseWeapon`s).
+/// the Zombie's are plain `BaseWeapon`s). The Laser's own line is its beam
+/// ([`laser`]).
 pub fn has_aim_line(kind: Kind) -> bool {
-    kind.is_complex()
+    kind.is_complex() && kind != Kind::Laser
 }
 
 /// How far a bullet flies (`SimulateBullet`: 1024 pixels).
@@ -216,6 +231,8 @@ pub struct Weapon {
     pub plasma: Plasma,
     /// The reload of a [`Kind::Tesla`], and whether it has been fired.
     pub tesla: Tesla,
+    /// The beam of a [`Kind::Laser`].
+    pub laser: laser::Laser,
     /// The saw is turning and hurts (`_isWorking`): its car is alive and
     /// someone drives it.
     pub working: bool,
@@ -254,6 +271,7 @@ impl Weapon {
             zombie: Zombie::new(&options, rng.random()),
             plasma: Plasma::new(&options, rng.random()),
             tesla: Tesla::new(&options, rng.random()),
+            laser: laser::Laser::new(options.charge),
             working: false,
             local: mount,
             local_angle: 0.0,
@@ -279,7 +297,7 @@ impl Weapon {
             Kind::Railgun => self.railgun.look(&self.options, energy),
             Kind::Plasma => self.plasma.look(&self.options, energy),
             // No aim line; never asked.
-            Kind::Hammer | Kind::Zombie | Kind::Tesla => AimLook::Normal,
+            Kind::Hammer | Kind::Zombie | Kind::Tesla | Kind::Laser => AimLook::Normal,
         }
     }
 
@@ -293,7 +311,14 @@ impl Weapon {
             Kind::Zombie => self.zombie.reloaded(),
             Kind::Plasma => self.plasma.can_fire(&self.options, None),
             Kind::Tesla => self.tesla.can_fire(&self.options, None),
+            Kind::Laser => self.laser.can_shoot(),
         }
+    }
+
+    /// `ChargeTime`: how long the trigger is held before the gun fires
+    /// (the delayed Laser's 0.9 s); 0 for the rest.
+    pub fn charge_time(&self) -> f32 {
+        self.laser.charge_time()
     }
 
     /// The muzzle in the world (`PiuPosition`).
@@ -392,6 +417,7 @@ impl Plugin for WeaponPlugin {
                 zombie::ZombiePlugin,
                 plasma::PlasmaPlugin,
                 tesla::TeslaPlugin,
+                laser::LaserPlugin,
             ));
     }
 }
@@ -431,7 +457,11 @@ fn fire_weapons(
     mut hits: MessageWriter<Hit>,
     mut play: MessageWriter<PlaySound>,
     mut waves: MessageWriter<zombie::ZombieWave>,
-    (mut strikes, mut crackles): (MessageWriter<tesla::TeslaStrike>, MessageWriter<tesla::TeslaCrackle>),
+    (mut strikes, mut crackles, mut charges): (
+        MessageWriter<tesla::TeslaStrike>,
+        MessageWriter<tesla::TeslaCrackle>,
+        MessageWriter<laser::LaserCharge>,
+    ),
     mut commands: Commands,
 ) {
     let dt = time.delta_secs();
@@ -570,6 +600,28 @@ fn fire_weapons(
                     }
                 }
                 gun.tesla.step(dt);
+            }
+            // `ControlHandle` and `HandleControlEvent` of `LaserWeapon` (and
+            // its decorator): the line is wanted while aimed, the trigger
+            // pulls or lets go; the beam is [`laser::run_lasers`]. An
+            // inactive car's gun is cancelled (`Deactivate`).
+            Kind::Laser => {
+                if inactive {
+                    gun.laser.cancel();
+                } else {
+                    let dt = time.delta_secs();
+                    gun.laser.begin(dt, gun.aiming);
+                    let pulled = gun.laser.trigger(intent.fire || accurate, intent.fire, || {
+                        energy.as_mut().is_none_or(|e| e.0.try_spend(options.energy))
+                    });
+                    if pulled.charge_started {
+                        charges.write(laser::LaserCharge { at: gun.muzzle() });
+                    }
+                    if pulled.fired {
+                        // Set, not added to.
+                        gun.aim.recoil.current = laser::recoil(rng.random());
+                    }
+                }
             }
             // The same `TryShoot`, a reload and all; its `OnShoot` is the
             // wave ([`zombie::zombie_waves`]).
@@ -779,8 +831,14 @@ fn spark(particles: &mut Particles, rng: &mut SmallRng, at: Vec2, direction: f32
     let back = direction + std::f32::consts::PI;
     let flash = back + (rng.random::<f32>() * 2.0 - 1.0) * std::f32::consts::PI / 8.0;
     particles.try_add(&BULLET_SPARK, at, flash, flash);
+    collision_sparks(particles, rng, at, back);
+}
+
+/// `CreateCollisionSparks(…, 1)`: a spark flying off `at` within a quarter
+/// turn of `dir` (the normal of what was hit), one of two curls.
+fn collision_sparks(particles: &mut Particles, rng: &mut SmallRng, at: Vec2, dir: f32) {
     let jitter = Vec2::new(rng.random::<f32>() * 2.0 - 1.0, rng.random::<f32>() * 2.0 - 1.0) * 0.5;
-    let fly = back + (rng.random::<f32>() * 2.0 - 1.0) * std::f32::consts::FRAC_PI_2;
+    let fly = dir + (rng.random::<f32>() * 2.0 - 1.0) * std::f32::consts::FRAC_PI_2;
     let style = &SPARKS[rng.random_range(0..2)];
     particles.try_add(style, at + jitter, fly, fly);
 }
@@ -788,10 +846,19 @@ fn spark(particles: &mut Particles, rng: &mut SmallRng, at: Vec2, direction: f32
 /// The gun's sound: `Minigun` while it fires, paused between bursts.
 fn gun_sounds(mut cars: Query<(&mut CarSounds, Option<&Weapon>)>) {
     for (mut sounds, gun) in &mut cars {
-        let cue = gun.filter(|g| g.kind == Kind::Minigun && g.minigun.active).map(|_| LoopCue {
-            name: "Minigun",
-            pitch: 0.0,
-            volume: 1.0,
+        let cue = gun.and_then(|g| match g.kind {
+            Kind::Minigun if g.minigun.active => Some(LoopCue {
+                name: "Minigun",
+                pitch: 0.0,
+                volume: 1.0,
+            }),
+            // `_shootSound.Play(_worldPosition, 0, 0.5f)` while active.
+            Kind::Laser if g.laser.active => Some(LoopCue {
+                name: "Laser",
+                pitch: 0.0,
+                volume: 0.5,
+            }),
+            _ => None,
         });
         if sounds.gun != cue {
             sounds.gun = cue;

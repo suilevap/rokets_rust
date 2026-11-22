@@ -652,17 +652,25 @@ fn run_always_shoot(
 fn run_shoot_patterns(
     time: Res<Time>,
     physics: Res<Time<Physics>>,
-    mut cars: Query<(&mut ShootPattern, &mut PlayerIntent, &Rotation, &Health, Has<Inactive>), Without<AlwaysShoot>>,
+    mut cars: Query<(&mut ShootPattern, &mut PlayerIntent, &Rotation, &Health, Has<Inactive>, Option<&Weapon>), Without<AlwaysShoot>>,
 ) {
     let dt = time.delta_secs();
     if physics.is_paused() || dt <= 0.0 {
         return;
     }
-    for (mut pattern, mut intent, rotation, health, inactive) in &mut cars {
+    for (mut pattern, mut intent, rotation, health, inactive, weapon) in &mut cars {
         if health.hp <= 0 || inactive {
             continue;
         }
-        let firing = pattern.step(dt);
+        let mut firing = pattern.step(dt);
+        // Pre-fire: in the tail of a silence, a gun with a charge to wait
+        // that cannot shoot is pulled early.
+        if !firing
+            && let Some(gun) = weapon
+        {
+            let charge = gun.charge_time();
+            firing = charge > 0.0 && !gun.can_shoot() && pattern.remaining() <= charge;
+        }
         set(&mut intent.fire, firing);
         set(&mut intent.fire_accurate, firing);
         if firing {
