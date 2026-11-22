@@ -31,6 +31,10 @@ ITEMS = [
     ("Sprites/Minimap", "*.png", "Sprites/Minimap"),
     # The Zombie's wave ring (`CreateZombieCircleEffect`).
     ("Sprites/UI", "BigCircle.png", "Sprites/UI"),
+    # The rings of `SetWeapon`'s "collected" effect (`CreateWeaponCollectedUI`,
+    # `CreateMagnetCollectedUI`).
+    ("Sprites/UI", "BigCircleGun.png", "Sprites/UI"),
+    ("Sprites/UI", "BigCircleGadget.png", "Sprites/UI"),
     ("Sprites", "Gradient*.png", "Sprites"),
     ("Sprites", "WhitePixel.png", "Sprites"),
     ("Sounds", "*.wav", "Sounds"),

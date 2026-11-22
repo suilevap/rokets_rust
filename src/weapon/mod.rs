@@ -112,6 +112,7 @@
 
 pub mod aim_help;
 pub mod beam;
+mod collected;
 pub mod hammer;
 pub mod laser;
 pub mod max_angle;
@@ -119,6 +120,7 @@ pub mod model;
 pub mod plasma;
 pub mod rocket;
 pub mod shotgun;
+pub mod swap;
 pub mod tesla;
 mod view;
 pub mod zombie;
@@ -456,6 +458,8 @@ impl Plugin for WeaponPlugin {
                 laser::LaserPlugin,
                 rocket::RocketPlugin,
                 shotgun::ShotgunPlugin,
+                swap::SwapPlugin,
+                collected::CollectedPlugin,
             ));
     }
 }

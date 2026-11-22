@@ -55,9 +55,9 @@ pub const AIM_LINE_TEXTURES: [&str; 4] = [LASER_LINE, LASER_GLOW, SOLID, FADING]
 /// `LaserView.MaxLength`: the strip's full length, world units.
 const STRIP_LENGTH: f32 = 32.0;
 
-/// The gun's sprite on a car.
+/// The gun's sprite on a car, of the kind of gun it was made for.
 #[derive(Component)]
-struct GunView;
+struct GunView(Kind);
 
 /// The most legs the aim line has: the muzzle's and bounces (a gun
 /// bounces its bullets once; more would be cut short).
@@ -104,11 +104,23 @@ impl Plugin for WeaponViewPlugin {
             .add_systems(Update, show_fire_zone)
             .add_systems(
             Update,
-            (spawn_gun_views, place_gun_views, draw_aim_lines, draw_energy_bar)
+            (clear_gun_views, spawn_gun_views, place_gun_views, draw_aim_lines, draw_energy_bar)
                 .chain()
                 .after(WeaponSystems)
                 .run_if(in_state(GameState::Playing)),
         );
+    }
+}
+
+/// A gun's sprite goes with the gun: when `SetWeapon` takes the gun away
+/// or changes its kind, the old sprite is dropped and the next system
+/// draws the new one.
+fn clear_gun_views(mut commands: Commands, views: Query<(Entity, &GunView, &ChildOf)>, guns: Query<&Weapon>) {
+    for (view, GunView(kind), parent) in &views {
+        if guns.get(parent.parent()).is_ok_and(|g| g.kind == *kind) {
+            continue;
+        }
+        commands.entity(view).despawn();
     }
 }
 
@@ -147,7 +159,7 @@ fn spawn_gun_views(
         sprite.2.translation.x = centre.x / PX_PER_UNIT;
         sprite.2.translation.y = -centre.y / PX_PER_UNIT;
         let pivot = commands
-            .spawn((Name::new("Gun"), GunView, Transform::default(), Visibility::default()))
+            .spawn((Name::new("Gun"), GunView(gun.kind), Transform::default(), Visibility::default()))
             .with_child(sprite)
             .id();
         commands.entity(car).add_child(pivot);
@@ -333,7 +345,7 @@ fn draw_aim_lines(
 }
 
 /// C#'s screens were 800 × 480; its UI grew with the screen.
-fn ui_scale(window: &Window) -> f32 {
+pub(super) fn ui_scale(window: &Window) -> f32 {
     (window.width() / 800.0).min(window.height() / 480.0)
 }
 

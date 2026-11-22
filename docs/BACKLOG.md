@@ -90,9 +90,8 @@ along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
    LaserCollide`; `TheGate`'s three turrets and two collectors, whose beams
    are in (`weapon/laser.rs`) but touch the collector as a wall), the
    Laser's `CreateLaserEffect` (dirty-glass flash on the player's car), the
-   `SetWeapon`
-   action (Arena and TestLab hand the player a Plasma gun with it,
-   SupportAiTest a Tesla), the Tesla's `Guard` car (HiddenBox, TheLastStand)
+   gadgets `SetWeapon` hands out that are not ported (`Accelerator`, in
+   Derby, Friend and Trophy; the car keeps its own gadget), the Tesla's `Guard` car (HiddenBox, TheLastStand)
    once `GuardAi` drives it, an
    inactive car's other guns (only the Plasma gun, the Tesla, the Laser and the Zombie's check
    `Inactive`: Trophy's deactivated `AlwaysShoot` turret had its trigger

@@ -111,6 +111,11 @@ pub struct ActionRegistry {
     sprites: HashMap<&'static str, &'static [&'static str]>,
     /// Fields whose value names a sprite to load (`Sprite`).
     sprite_fields: HashMap<&'static str, &'static str>,
+    /// Types whose sprites depend on what the action says (`SetWeapon`'s
+    /// guns), by the function that reads them off its node.
+    sprite_fns: HashMap<&'static str, fn(&Node) -> Vec<String>>,
+    /// The same for a template (`SetWeapon(Railgun)`), by name.
+    template_sprites: HashMap<&'static str, fn(&TemplateArgs) -> Vec<String>>,
     /// By name, with how many arguments each takes (`NextMap()` and
     /// `NextMap(stars)` are two).
     by_template: HashMap<&'static str, Vec<(usize, Handler<TemplateArgs>)>>,
@@ -132,7 +137,28 @@ impl ActionRegistry {
         {
             out.push(n.text.trim().to_string());
         }
+        if let Some(of) = self.sprite_fns.get(action.kind.as_str()) {
+            out.extend(of(&action.node));
+        }
+        // Templates named in its items (a sequence's steps).
+        fn texts(node: &Node, out: &mut Vec<String>, registry: &ActionRegistry) {
+            out.extend(registry.sprites_of_text(&node.text));
+            for child in &node.children {
+                texts(child, out, registry);
+            }
+        }
+        texts(&action.node, &mut out, self);
         out
+    }
+
+    /// The sprites an action written as text (`SetWeapon(Railgun)`, as an
+    /// `ActionOnCreate` or a sequence's step) draws.
+    pub fn sprites_of_text(&self, text: &str) -> Vec<String> {
+        let reference = ActionRef::parse(text);
+        match (&reference.args, self.template_sprites.get(reference.name.as_str())) {
+            (Some(args), Some(of)) => of(&TemplateArgs(args.clone())),
+            _ => Vec::new(),
+        }
     }
 
     /// Whether the game carries out actions of type `kind`.
@@ -169,6 +195,13 @@ pub trait AddMapAction {
 
     /// The field of `T` that names a sprite each action draws.
     fn add_action_sprite_field<T: ActionDef>(&mut self, field: &'static str) -> &mut Self;
+
+    /// The sprites an action of type `T` draws, as its own fields say
+    /// (read off its XML node).
+    fn add_action_sprites_by<T: ActionDef>(&mut self, of: fn(&Node) -> Vec<String>) -> &mut Self;
+
+    /// The sprites a template draws, by its name, as its arguments say.
+    fn add_template_sprites(&mut self, name: &'static str, of: fn(&TemplateArgs) -> Vec<String>) -> &mut Self;
 }
 
 impl AddMapAction for App {
@@ -202,6 +235,18 @@ impl AddMapAction for App {
     fn add_action_sprite_field<T: ActionDef>(&mut self, field: &'static str) -> &mut Self {
         let mut registry = self.world_mut().get_resource_or_init::<ActionRegistry>();
         registry.sprite_fields.insert(T::INFO.kind, field);
+        self
+    }
+
+    fn add_action_sprites_by<T: ActionDef>(&mut self, of: fn(&Node) -> Vec<String>) -> &mut Self {
+        let mut registry = self.world_mut().get_resource_or_init::<ActionRegistry>();
+        registry.sprite_fns.insert(T::INFO.kind, of);
+        self
+    }
+
+    fn add_template_sprites(&mut self, name: &'static str, of: fn(&TemplateArgs) -> Vec<String>) -> &mut Self {
+        let mut registry = self.world_mut().get_resource_or_init::<ActionRegistry>();
+        registry.template_sprites.insert(name, of);
         self
     }
 }

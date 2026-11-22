@@ -67,8 +67,9 @@
 //! - The beam's width and the flashes' scales and brightness come from
 //!   `RandomHelper`'s fake generator (visual); here from the view's own
 //!   seeded generator, a frame at a time. The kick is a gameplay draw.
-//! - The player has no Laser (`Cars.xml` gives none, `SetWeapon` is not
-//!   ported); its energy (0.001 a step) is spent all the same.
+//! - The player has no Laser (`Cars.xml` gives none, no map's `SetWeapon`
+//!   names it for the player); its energy (0.001 a step) is spent all the
+//!   same.
 
 use std::f32::consts::{FRAC_PI_2, FRAC_PI_4, PI};
 
@@ -354,11 +355,19 @@ impl Plugin for LaserPlugin {
             )
             .add_systems(
                 Update,
-                (laser_effects, draw_lasers)
+                (forget_laser_views, laser_effects, draw_lasers)
                     .chain()
                     .after(WeaponSystems)
                     .run_if(in_state(GameState::Playing)),
             );
+    }
+}
+
+/// A car that has lost its gun (`SetWeapon` with `None`) has lost its
+/// beam's parts ([`draw_lasers`] despawns them); the mark must go too.
+fn forget_laser_views(mut commands: Commands, cars: Query<Entity, (With<LaserViews>, Without<Weapon>)>) {
+    for car in &cars {
+        commands.entity(car).remove::<LaserViews>();
     }
 }
 
@@ -508,6 +517,11 @@ fn draw_lasers(
     let mut looks: Vec<Look> = Vec::new();
     for (car, gun, has_views) in &guns {
         if gun.kind != Kind::Laser {
+            // Its parts go with the beam (below); the mark with them, so a
+            // later Laser (`SetWeapon`) gets its parts again.
+            if has_views {
+                commands.entity(car).remove::<LaserViews>();
+            }
             continue;
         }
         if !has_views {

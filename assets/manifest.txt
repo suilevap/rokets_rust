@@ -390,6 +390,8 @@ Sprites/Special/LaserLine2.png
 Sprites/UI/AddealsButton.png
 Sprites/UI/BigCircle.png
 Sprites/UI/BigCircleAccelerator.png
+Sprites/UI/BigCircleGadget.png
+Sprites/UI/BigCircleGun.png
 Sprites/UI/DottedCircle.png
 Sprites/UI/Equal.png
 Sprites/UI/GadgetUsage.png

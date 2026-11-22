@@ -606,6 +606,8 @@ actions! {
         new_gadget "NewGadget": GadgetType = GadgetType::Default, optional;
         /// Show&play effect
         change_silently "ChangeSilently": bool = false, optional;
+    } => templates {
+        "SetWeapon(weapon)" => |a| Some(SetWeapon { new_weapon: WeaponType::from_name(a.text(0)?)?, ..SetWeapon::default() }),
     }
 
     TriggerActionByEntitiesInArea("TriggerActionByEntitiesInArea", name = "TriggerActionByEntitiesInArea") {
