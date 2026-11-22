@@ -11,7 +11,8 @@
 //! push ([`Tesla`], [`tesla_reaches`], [`tesla_push`]), and the Laser's
 //! presets ([`LASER`]; its beam's state is [`super::laser::Laser`]), and
 //! the rocket launchers' presets ([`ROCKET_DIRECT`], [`ROCKET_CHASING`],
-//! [`ROCKET_CHASING_360`]; the rocket's flight is [`super::rocket`]).
+//! [`ROCKET_CHASING_360`]; the rocket's flight is [`super::rocket`]) and
+//! the Shotgun's ([`SHOTGUN`], [`shotgun_directions`], [`shotgun_kick`]).
 //!
 //! Timers count seconds down while the game runs (C#'s `PeriodicUpdate`
 //! compared absolute game times; the same while nothing pauses). One is
@@ -28,7 +29,7 @@ use std::f32::consts::PI;
 
 use bevy::math::Vec2;
 
-/// The weapons ported so far (`WeaponType`).
+/// The weapons (`WeaponType`).
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Kind {
     Minigun,
@@ -50,6 +51,8 @@ pub enum Kind {
     /// (`RocketLauncherWeapon`; the `RocketlauncherDirect`,
     /// `RocketlauncherChasing` and `RocketlauncherChasing360` types).
     Rocket,
+    /// A burst of pellets in a spread, one pull a reload (`ShotgunWeapon`).
+    Shotgun,
 }
 
 impl Kind {
@@ -65,7 +68,7 @@ impl Kind {
     /// Railgun, the Plasma gun, the Laser and the rocket launcher). The Hammer and the Zombie's
     /// are plain `BaseWeapon`s with an empty `Aim`.
     pub fn is_complex(self) -> bool {
-        matches!(self, Kind::Minigun | Kind::Railgun | Kind::Plasma | Kind::Laser | Kind::Rocket)
+        matches!(self, Kind::Minigun | Kind::Railgun | Kind::Plasma | Kind::Laser | Kind::Rocket | Kind::Shotgun)
     }
 
     /// `IBaseWeapon.IsImmidiate`: the shot arrives the moment it is fired
@@ -118,6 +121,9 @@ pub struct Options {
     /// The rocket homes in on the nearest moving enemy (`RocketLauncherWeapon`'s
     /// `isChasing`: `HeavyRoket`, not `SmallRoket`); only the rocket launchers'.
     pub homing: bool,
+    /// The push the car gets backwards from its own shot (`FeedbackImpulse`;
+    /// the Shotgun's), 0 for the other guns.
+    pub feedback: f32,
 }
 
 /// `DamageConst.Miningun`, `MiningunImpulse`.
@@ -141,6 +147,7 @@ pub const MINIGUN: Options = Options {
     bullet_color: [0.0; 3],
     charge: 0.0,
     homing: false,
+    feedback: 0.0,
 };
 
 /// `MinigunPlayerDefaultOptions`: the player's, two bullets a pull, a
@@ -162,6 +169,7 @@ pub const MINIGUN_PLAYER: Options = Options {
     bullet_color: [0.0; 3],
     charge: 0.0,
     homing: false,
+    feedback: 0.0,
 };
 
 /// `DamageConst.Railgun`.
@@ -188,6 +196,7 @@ pub const RAILGUN: Options = Options {
     bullet_color: [0.0; 3],
     charge: 0.0,
     homing: false,
+    feedback: 0.0,
 };
 
 /// `DamageConst.HammerImmediateMin`, `HammerImmediateMax`.
@@ -217,6 +226,7 @@ pub const HAMMER: Options = Options {
     bullet_color: [0.0; 3],
     charge: 0.0,
     homing: false,
+    feedback: 0.0,
 };
 
 /// `WeaponOptions.ZombieDefaultOptions`: the enemy zombies'. A drag of 36
@@ -242,6 +252,7 @@ pub const ZOMBIE: Options = Options {
     bullet_color: [0.0; 3],
     charge: 0.0,
     homing: false,
+    feedback: 0.0,
 };
 
 /// `ZombieDefaultOptionsPlayer`: the same, a wave every 2 s.
@@ -272,6 +283,7 @@ pub const PLASMA: Options = Options {
     bullet_color: [1.0, 0.0, 0.0],
     charge: 0.0,
     homing: false,
+    feedback: 0.0,
 };
 
 /// `PlasmagunSlowOptions` (`PlasmaGunSlow`): the same, a yellow bullet at
@@ -310,6 +322,7 @@ pub const TESLA: Options = Options {
     bullet_color: [0.0; 3],
     charge: 0.0,
     homing: false,
+    feedback: 0.0,
 };
 
 /// `DamageConst.Laser`: a point of damage each update the beam touches,
@@ -339,6 +352,7 @@ pub const LASER: Options = Options {
     bullet_color: [0.0; 3],
     charge: 0.0,
     homing: false,
+    feedback: 0.0,
 };
 
 /// `DelayWeaponDecorator`'s loading time for `LaserWithDelay`
@@ -373,6 +387,7 @@ pub const ROCKET_DIRECT: Options = Options {
     bullet_color: [0.0; 3],
     charge: 0.0,
     homing: false,
+    feedback: 0.0,
 };
 
 /// `RocketlauncherChasing`: the same options with `HeavyRoket`: it homes
@@ -392,6 +407,56 @@ pub const ROCKET_CHASING_360: Options = Options {
     energy: 0.5,
     ..ROCKET_CHASING
 };
+
+/// `DamageConst.Shotgun`, `ShotgunImpulse`: a pellet's damage and push.
+const SHOTGUN_DAMAGE: i32 = 4;
+const SHOTGUN_IMPULSE: f32 = 6.0;
+
+/// `WeaponOptions.ShotgunDefaultOptions` (`Shotgun`): five pellets a pull,
+/// each flying within ±π/8 of the aim, 4 damage and a push of 6 where it
+/// lands, one pull a 2 s reload for 0.1 of the player's energy, the gun
+/// turning half a turn either way (`MaxAngle` π). The car is pushed back
+/// by `FeedbackImpulse = ShotgunImpulse * 5 / 2` = 15. The same for
+/// everyone (no player preset). `range` is the default `FireDistance` 32,
+/// what the enemies' trigger looks at (`TargetInFireRange`).
+pub const SHOTGUN: Options = Options {
+    damage: SHOTGUN_DAMAGE,
+    damage_max: SHOTGUN_DAMAGE,
+    impulse: SHOTGUN_IMPULSE,
+    dispersion: PI / 8.0,
+    bullets: 5,
+    shoot_time: 0.0,
+    reload: 2.0,
+    energy: 0.1,
+    max_angle: PI,
+    range: 32.0,
+    reflections: 0,
+    bullet_speed: 0.0,
+    bullet_color: [0.0; 3],
+    charge: 0.0,
+    homing: false,
+    feedback: SHOTGUN_IMPULSE * 5.0 / 2.0,
+};
+
+/// `ShotgunWeapon.OnShoot`: the gun is set 30 pixels back
+/// (`_feedback.CurrentValue = 30`).
+pub const SHOTGUN_RECOIL: f32 = 30.0;
+
+/// `ShotgunWeapon.OnShoot`'s pellets, the world angle of each: every one
+/// flies a random part of the dispersion off the aim (`random` gives
+/// 0..1; `NextFloatFakeRange() * _dispersion`), independently, so the
+/// spread is uneven.
+pub fn shotgun_directions(aim: f32, options: &Options, mut random: impl FnMut() -> f32) -> Vec<f32> {
+    (0..options.bullets)
+        .map(|_| aim + (random() * 2.0 - 1.0) * options.dispersion)
+        .collect()
+}
+
+/// `ShotgunWeapon.OnShoot`'s kick of the car: `-GetVectorFast(Direction) *
+/// FeedbackImpulse`, an impulse back along the barrel.
+pub fn shotgun_kick(direction: f32, options: &Options) -> Vec2 {
+    -Vec2::from_angle(direction) * options.feedback
+}
 
 /// `RailgunMinReflectionAngle` (`RailgunWeapon._reflectionMinAngle`): a
 /// bullet bounces only when it comes in more than this off the surface's
@@ -436,6 +501,8 @@ pub fn for_type(name: &str, local: bool) -> Option<(Kind, Options)> {
         "RocketlauncherDirect" => ROCKET_DIRECT,
         "RocketlauncherChasing" => ROCKET_CHASING,
         "RocketlauncherChasing360" => ROCKET_CHASING_360,
+        // One preset for everyone (`RegisterObject` without a player's).
+        "Shotgun" => SHOTGUN,
         _ => return None,
     };
     let kind = if name.starts_with("Railgun") {
@@ -452,6 +519,8 @@ pub fn for_type(name: &str, local: bool) -> Option<(Kind, Options)> {
         Kind::Laser
     } else if name.starts_with("Rocketlauncher") {
         Kind::Rocket
+    } else if name == "Shotgun" {
+        Kind::Shotgun
     } else {
         Kind::Minigun
     };

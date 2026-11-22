@@ -85,7 +85,7 @@ along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
    `GetRandomFreeVisiblePoint`, …); `AIPathCarControl` (`AISimpleCarControl`,
    `AITouchAndRunCarControl`, `PlayerCarControlPath`: no `ControlType`
    reaches them); a debug view of each car's path (`AiBlackboard.Draw`).
-2. **Weapons and enemy extras.** The other weapons (`Shotgun`), the `LaserCollector` button (`CreateButton` of that
+2. **Weapons and enemy extras.** The `LaserCollector` button (`CreateButton` of that
    `ButtonType`: pressed while a laser beam touches it, `LaserCollectorButton.
    LaserCollide`; `TheGate`'s three turrets and two collectors, whose beams
    are in (`weapon/laser.rs`) but touch the collector as a wall), the
