@@ -178,7 +178,7 @@ fn place_gun_views(
 
 /// `PhaseHelper.Triangle_Period500`: 0 → 1 → 0 once a second (its name
 /// notwithstanding).
-fn triangle(seconds: f32) -> f32 {
+pub(super) fn triangle(seconds: f32) -> f32 {
     let r = (seconds % 1.0) * 2.0;
     if r > 1.0 { 2.0 - r } else { r }
 }

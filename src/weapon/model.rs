@@ -6,8 +6,9 @@
 //! bullet ([`reflect`]) and the Hammer's saw: its place, reach, damage
 //! and the list of enemies it keeps hurting ([`Hammer`], [`Tracking`]) and
 //! the Zombie's reload and its choice of the one it drags and bites
-//! ([`Zombie`]), and the Plasma gun's reload, spread and kick
-//! ([`Plasma`], [`plasma_directions`]).
+//! ([`Zombie`]), the Plasma gun's reload, spread and kick
+//! ([`Plasma`], [`plasma_directions`]), and the Tesla's reload, reach and
+//! push ([`Tesla`], [`tesla_reaches`], [`tesla_push`]).
 //!
 //! Timers count seconds down while the game runs (C#'s `PeriodicUpdate`
 //! compared absolute game times; the same while nothing pauses). One is
@@ -36,6 +37,8 @@ pub enum Kind {
     /// A gun whose bullets fly (`PlasmaGun`, the `PlasmaGun` and
     /// `PlasmaGunSlow` types).
     Plasma,
+    /// A coil that strikes every enemy around it at once (`TeslaWeapon`).
+    Tesla,
 }
 
 impl Kind {
@@ -55,8 +58,8 @@ impl Kind {
     }
 
     /// `IBaseWeapon.IsImmidiate`: the shot arrives the moment it is fired
-    /// (`BaseWeapon` sets it; the Plasma gun clears it, its bullets fly,
-    /// and so does the rocket launcher, not ported). The AI's attack
+    /// (`BaseWeapon` sets it, the Tesla's too; the Plasma gun clears it,
+    /// its bullets fly, and so does the rocket launcher, not ported). The AI's attack
     /// picks its style by it (`SmartAttackTargetSlowWeapon`).
     pub fn is_immediate(self) -> bool {
         self != Kind::Plasma
@@ -251,6 +254,32 @@ pub const PLASMA_SLOW: Options = Options {
     ..PLASMA
 };
 
+/// `DamageConst.Tesla`, `TeslaRange`.
+const TESLA_DAMAGE: i32 = 8;
+const TESLA_RANGE: f32 = 8.0;
+
+/// `WeaponOptions.TeslaDefaultOptions` (`TeslaWeapon`): every enemy within
+/// 8 units is struck for 8 and pushed by 5, once a 0.25 s reload, for 0.1
+/// of the player's energy (the default). The same for everyone (no player
+/// preset). `dispersion` is a whole turn, so the enemies' trigger
+/// (`TargetInFireRange`) asks only the range; the Tesla does not aim, so
+/// `max_angle` stays unused.
+pub const TESLA: Options = Options {
+    damage: TESLA_DAMAGE,
+    damage_max: TESLA_DAMAGE,
+    impulse: 5.0,
+    dispersion: 2.0 * PI,
+    bullets: 0,
+    shoot_time: 0.0,
+    reload: 0.25,
+    energy: 0.1,
+    max_angle: PI / 3.0,
+    range: TESLA_RANGE,
+    reflections: 0,
+    bullet_speed: 0.0,
+    bullet_color: [0.0; 3],
+};
+
 /// `RailgunMinReflectionAngle` (`RailgunWeapon._reflectionMinAngle`): a
 /// bullet bounces only when it comes in more than this off the surface's
 /// normal; closer to head-on it stops.
@@ -283,6 +312,7 @@ pub fn for_type(name: &str, local: bool) -> Option<(Kind, Options)> {
         // One preset each for everyone (`RegisterObject` without a player's).
         "PlasmaGun" => PLASMA,
         "PlasmaGunSlow" => PLASMA_SLOW,
+        "Tesla" => TESLA,
         _ => return None,
     };
     let kind = if name.starts_with("Railgun") {
@@ -293,6 +323,8 @@ pub fn for_type(name: &str, local: bool) -> Option<(Kind, Options)> {
         Kind::Hammer
     } else if name == "ZombieWeapon" {
         Kind::Zombie
+    } else if name == "Tesla" {
+        Kind::Tesla
     } else {
         Kind::Minigun
     };
@@ -1086,4 +1118,65 @@ pub fn zombie_pull(zombie: Vec2, other: Vec2, options: &Options) -> Vec2 {
 /// `size / (width / 2 * SimUnitRation)`, `size` being `FireDistance * 2`).
 pub fn zombie_circle_rate(radius: f32, texture_width: f32) -> f32 {
     radius / (texture_width / 2.0 / 32.0)
+}
+
+/// The Tesla's rhythm (`TeslaWeapon`, `BaseWeapon.TryShoot`): while the
+/// trigger is down, a strike once the reload is over and the energy pays;
+/// then the reload starts over. A pull without the energy overloads the
+/// store and strikes nothing.
+#[derive(Clone, Copy, Debug, PartialEq, Default)]
+pub struct Tesla {
+    /// Seconds before the next strike (`_reload`).
+    reload_in: f32,
+    /// The trigger has been pulled once (`_dottedCircleRend.Visible`, set by
+    /// every `TryShoot` and never cleared): its reach is shown from then on.
+    pub armed: bool,
+}
+
+impl Tesla {
+    /// The first strike waits a random part of the reload
+    /// (`PeriodicUpdate.Sparse`); `offset` is 0..1.
+    pub fn new(options: &Options, offset: f32) -> Tesla {
+        Tesla {
+            reload_in: options.reload * offset,
+            armed: false,
+        }
+    }
+
+    /// Time passes.
+    pub fn step(&mut self, dt: f32) {
+        self.reload_in -= dt;
+    }
+
+    /// `TryShoot`: the coil is armed (whether it strikes or not); it
+    /// strikes if the reload is over and the energy pays (a reload not
+    /// over asks nothing of the energy).
+    pub fn pull(&mut self, options: &Options, mut energy: Option<&mut Energy>) -> bool {
+        self.armed = true;
+        if due(self.reload_in) && spend(&mut energy, options.energy) {
+            self.reload_in = options.reload;
+            true
+        } else {
+            false
+        }
+    }
+
+    /// `CanShoot`: the reload is over and there is the energy.
+    pub fn can_fire(&self, options: &Options, mut energy: Option<&mut Energy>) -> bool {
+        due(self.reload_in) && has(&mut energy, options.energy)
+    }
+}
+
+/// `TeslaWeapon.OnShoot`'s reach: `other` is closer than the gun's
+/// `range` to the coil at `coil` (`VectorExtension.CloserThan`: a circle,
+/// strictly closer).
+pub fn tesla_reaches(coil: Vec2, other: Vec2, options: &Options) -> bool {
+    coil.distance_squared(other) < options.range * options.range
+}
+
+/// `TeslaWeapon.OnShoot`'s push on a struck car: the gun's impulse along
+/// the line from the shooting car's middle (not the coil) to the struck
+/// one's. None when they are at one point (C#'s `Normalize` made it NaN).
+pub fn tesla_push(car: Vec2, other: Vec2, options: &Options) -> Vec2 {
+    (other - car).normalize_or_zero() * options.impulse
 }

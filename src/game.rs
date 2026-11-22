@@ -102,7 +102,7 @@ fn sprites_for(map: &MapData, cars: &CarCatalog, registry: &crate::actions::Acti
                 names.extend(car.part_sprite(part));
             }
             if let Some((kind, _)) = car.weapon.as_deref().and_then(|w| crate::weapon::model::for_type(w, true)) {
-                names.extend(crate::weapon::sprite_of(kind).map(|s| s.name.to_string()));
+                names.extend(crate::weapon::textures_of(kind).into_iter().map(String::from));
                 if crate::weapon::has_aim_line(kind) {
                     names.extend(crate::weapon::AIM_LINE_TEXTURES.map(String::from));
                 }
@@ -124,7 +124,7 @@ fn sprites_for(map: &MapData, cars: &CarCatalog, registry: &crate::actions::Acti
         }
         let weapon = crate::car::weapon_type(sc.weapon_override(), car.weapon.as_deref());
         if let Some((kind, _)) = weapon.and_then(|w| crate::weapon::model::for_type(w, false)) {
-            names.extend(crate::weapon::sprite_of(kind).map(|s| s.name.to_string()));
+            names.extend(crate::weapon::textures_of(kind).into_iter().map(String::from));
         }
         names.push("WhitePixel".to_string());
     }
