@@ -53,8 +53,8 @@ along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
      `tools/compare.py` runs the C# Debug build, so it shows the car going
      to the button there);
    - `AttackAi*`'s slow-gun style (`SmartAttackTargetSlowWeapon`) is
-     taken by the Plasma gun; the rocket launcher (`IsImmidiate` false
-     too) comes with the weapons (`Kind::is_immediate`);
+     taken by the Plasma gun and the rocket launchers (`IsImmidiate` false,
+     `Kind::is_immediate`);
    - `CaptureTheBox*` (`CustomAi`): the chain gadget actions
      (`GrabByChainGadget`, `DropByChainGadget`), `FixBlocker` (the path's
      `Blocker` is there), `MoveUntilPositionNonVisible`, custom data on the
@@ -85,9 +85,7 @@ along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
    `GetRandomFreeVisiblePoint`, …); `AIPathCarControl` (`AISimpleCarControl`,
    `AITouchAndRunCarControl`, `PlayerCarControlPath`: no `ControlType`
    reaches them); a debug view of each car's path (`AiBlackboard.Draw`).
-2. **Weapons and enemy extras.** The other weapons (`Shotgun`,
-   `Rocketlauncher*`; the rockets can fly as the Plasma gun's bullets do,
-   `weapon/plasma.rs`), the `LaserCollector` button (`CreateButton` of that
+2. **Weapons and enemy extras.** The other weapons (`Shotgun`), the `LaserCollector` button (`CreateButton` of that
    `ButtonType`: pressed while a laser beam touches it, `LaserCollectorButton.
    LaserCollide`; `TheGate`'s three turrets and two collectors, whose beams
    are in (`weapon/laser.rs`) but touch the collector as a wall), the
