@@ -574,6 +574,62 @@ pub static PLASMA_END: Style = Style {
     origin: CENTRE,
 };
 
+/// `DepthConst.SmokePiuStart` and `SmokePiuEnd`.
+const SMOKE_PIU: f32 = -24.0 / 32.0 / 16.0;
+
+/// `_smokePiuStyle`: the two black puffs a rocket launcher blows out
+/// sideways at its muzzle (`CreatePiu`), shrinking as they thin in 2 s.
+pub static LAUNCH_SMOKE: Style = Style {
+    begin: State {
+        speed: 16.0 / 32.0,
+        scale: Vec2::splat(2.0),
+        view_rotation: -0.5,
+        rotation: 0.0,
+        color: color(0.0, 0.0, 0.0),
+        height: SMOKE_PIU,
+    },
+    end: State {
+        speed: 16.0 / 32.0,
+        scale: Vec2::splat(0.5),
+        view_rotation: -0.05,
+        rotation: 0.0,
+        color: TRANSPARENT,
+        height: SMOKE_PIU,
+    },
+    lifetime: 2.0,
+    texture: "Particles\\Smoke",
+    additive: false,
+    random_frame: false,
+    origin: CENTRE,
+};
+
+/// `_smokeStyle`: the white puff a homing rocket leaves every update,
+/// growing from a tenth of the texture to two and a half and thinning
+/// over four seconds.
+pub static ROCKET_SMOKE: Style = Style {
+    begin: State {
+        speed: 4.0 / 32.0,
+        scale: Vec2::splat(0.25),
+        view_rotation: -0.5,
+        rotation: 0.0,
+        color: color(1.0, 1.0, 1.0),
+        height: SMOKE_START,
+    },
+    end: State {
+        speed: 0.0,
+        scale: Vec2::splat(2.5),
+        view_rotation: -0.05,
+        rotation: 0.0,
+        color: TRANSPARENT,
+        height: SMOKE_END,
+    },
+    lifetime: 4.0,
+    texture: "Particles\\Smoke",
+    additive: false,
+    random_frame: false,
+    origin: CENTRE,
+};
+
 /// `DelayWeaponDecorator._chargingStyle`: a red ring closing on the muzzle
 /// of a charging Laser, from nothing (three times the texture's size) to
 /// a tenth of it as it reddens, for the 0.9 s the charge takes

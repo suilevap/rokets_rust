@@ -198,7 +198,7 @@ fn poll_loading(
     server: Res<AssetServer>,
     texts: Res<Assets<XmlText>>,
     images: Res<Assets<Image>>,
-    (pending, registry): (Option<ResMut<Pending>>, Res<crate::actions::ActionRegistry>),
+    (pending, registry, car): (Option<ResMut<Pending>>, Res<crate::actions::ActionRegistry>, Option<Res<crate::car::CarOverride>>),
     mut next: ResMut<NextState<GameState>>,
 ) {
     let Some(mut pending) = pending else {
@@ -225,7 +225,14 @@ fn poll_loading(
             Ok((map, cars, list))
         })();
         match parsed {
-            Ok(p) => {
+            Ok(mut p) => {
+                if let Some(car) = car.as_deref() {
+                    if p.1.get(&car.0).is_some() || p.1.get_simple(&car.0).is_some() {
+                        crate::car::override_local_car(&mut p.0, &car.0);
+                    } else {
+                        warn!("--car {:?} is not in Cars.xml", car.0);
+                    }
+                }
                 if let Some(image) = p.0.image.as_deref().filter(|s| !s.trim().is_empty()) {
                     match assets::sprite_path(image) {
                         Some(path) => {

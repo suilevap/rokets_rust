@@ -9,7 +9,9 @@
 //! ([`Zombie`]), the Plasma gun's reload, spread and kick
 //! ([`Plasma`], [`plasma_directions`]), and the Tesla's reload, reach and
 //! push ([`Tesla`], [`tesla_reaches`], [`tesla_push`]), and the Laser's
-//! presets ([`LASER`]; its beam's state is [`super::laser::Laser`]).
+//! presets ([`LASER`]; its beam's state is [`super::laser::Laser`]), and
+//! the rocket launchers' presets ([`ROCKET_DIRECT`], [`ROCKET_CHASING`],
+//! [`ROCKET_CHASING_360`]; the rocket's flight is [`super::rocket`]).
 //!
 //! Timers count seconds down while the game runs (C#'s `PeriodicUpdate`
 //! compared absolute game times; the same while nothing pauses). One is
@@ -44,6 +46,10 @@ pub enum Kind {
     /// held (`LaserWeapon`; the `Laser`, `LaserNoReflection` and
     /// `LaserWithDelay` types).
     Laser,
+    /// A launcher of rockets that fly, straight or homing
+    /// (`RocketLauncherWeapon`; the `RocketlauncherDirect`,
+    /// `RocketlauncherChasing` and `RocketlauncherChasing360` types).
+    Rocket,
 }
 
 impl Kind {
@@ -56,18 +62,18 @@ impl Kind {
 
     /// Whether it is a `BaseComplexWeapon`: it has a barrel to aim, with an
     /// aim line, recoil and a bounded `MaxAngle` (the Minigun, the
-    /// Railgun, the Plasma gun and the Laser). The Hammer and the Zombie's
+    /// Railgun, the Plasma gun, the Laser and the rocket launcher). The Hammer and the Zombie's
     /// are plain `BaseWeapon`s with an empty `Aim`.
     pub fn is_complex(self) -> bool {
-        matches!(self, Kind::Minigun | Kind::Railgun | Kind::Plasma | Kind::Laser)
+        matches!(self, Kind::Minigun | Kind::Railgun | Kind::Plasma | Kind::Laser | Kind::Rocket)
     }
 
     /// `IBaseWeapon.IsImmidiate`: the shot arrives the moment it is fired
-    /// (`BaseWeapon` sets it, the Tesla's too; the Plasma gun clears it,
-    /// its bullets fly, and so does the rocket launcher, not ported). The AI's attack
-    /// picks its style by it (`SmartAttackTargetSlowWeapon`).
+    /// (`BaseWeapon` sets it, the Tesla's too; the Plasma gun and the
+    /// rocket launcher clear it, their shots fly). The AI's attack picks
+    /// its style by it (`SmartAttackTargetSlowWeapon`).
     pub fn is_immediate(self) -> bool {
-        self != Kind::Plasma
+        !matches!(self, Kind::Plasma | Kind::Rocket)
     }
 }
 
@@ -109,6 +115,9 @@ pub struct Options {
     /// (`ChargeTime`: the `DelayWeaponDecorator`'s loading time, the
     /// `LaserWithDelay` type's); 0 for a gun that fires at once.
     pub charge: f32,
+    /// The rocket homes in on the nearest moving enemy (`RocketLauncherWeapon`'s
+    /// `isChasing`: `HeavyRoket`, not `SmallRoket`); only the rocket launchers'.
+    pub homing: bool,
 }
 
 /// `DamageConst.Miningun`, `MiningunImpulse`.
@@ -131,6 +140,7 @@ pub const MINIGUN: Options = Options {
     bullet_speed: 0.0,
     bullet_color: [0.0; 3],
     charge: 0.0,
+    homing: false,
 };
 
 /// `MinigunPlayerDefaultOptions`: the player's, two bullets a pull, a
@@ -151,6 +161,7 @@ pub const MINIGUN_PLAYER: Options = Options {
     bullet_speed: 0.0,
     bullet_color: [0.0; 3],
     charge: 0.0,
+    homing: false,
 };
 
 /// `DamageConst.Railgun`.
@@ -176,6 +187,7 @@ pub const RAILGUN: Options = Options {
     bullet_speed: 0.0,
     bullet_color: [0.0; 3],
     charge: 0.0,
+    homing: false,
 };
 
 /// `DamageConst.HammerImmediateMin`, `HammerImmediateMax`.
@@ -204,6 +216,7 @@ pub const HAMMER: Options = Options {
     bullet_speed: 0.0,
     bullet_color: [0.0; 3],
     charge: 0.0,
+    homing: false,
 };
 
 /// `WeaponOptions.ZombieDefaultOptions`: the enemy zombies'. A drag of 36
@@ -228,6 +241,7 @@ pub const ZOMBIE: Options = Options {
     bullet_speed: 0.0,
     bullet_color: [0.0; 3],
     charge: 0.0,
+    homing: false,
 };
 
 /// `ZombieDefaultOptionsPlayer`: the same, a wave every 2 s.
@@ -257,6 +271,7 @@ pub const PLASMA: Options = Options {
     // `Color.Red`.
     bullet_color: [1.0, 0.0, 0.0],
     charge: 0.0,
+    homing: false,
 };
 
 /// `PlasmagunSlowOptions` (`PlasmaGunSlow`): the same, a yellow bullet at
@@ -294,6 +309,7 @@ pub const TESLA: Options = Options {
     bullet_speed: 0.0,
     bullet_color: [0.0; 3],
     charge: 0.0,
+    homing: false,
 };
 
 /// `DamageConst.Laser`: a point of damage each update the beam touches,
@@ -322,11 +338,60 @@ pub const LASER: Options = Options {
     bullet_speed: 0.0,
     bullet_color: [0.0; 3],
     charge: 0.0,
+    homing: false,
 };
 
 /// `DelayWeaponDecorator`'s loading time for `LaserWithDelay`
 /// (`TimeSpan.FromSeconds(0.9f)`).
 pub const LASER_CHARGE: f32 = 0.9;
+
+/// `DamageConst.SmallRocket`, `HeavyRocket`: what the blast of a rocket
+/// does (the rocket's own number, not `WeaponOptions.DamageMin`, which the
+/// launcher's presets leave at 0).
+const SMALL_ROCKET_DAMAGE: i32 = 16;
+const HEAVY_ROCKET_DAMAGE: i32 = 20;
+
+/// `WeaponOptions.RocketLauncherDefaultOptions` with `SmallRoket`'s blast
+/// (`RocketlauncherDirect`): a rocket straight ahead (no dispersion) once
+/// a 1.2 s reload, for 0.1 of the player's energy. The same for everyone
+/// (no player preset). `range` is the default `FireDistance` 32, what the
+/// enemies' trigger looks at (`TargetInFireRange`); `impulse` is unused
+/// (the blast's push is [`crate::weapon::rocket::BLAST`]'s).
+pub const ROCKET_DIRECT: Options = Options {
+    damage: SMALL_ROCKET_DAMAGE,
+    damage_max: SMALL_ROCKET_DAMAGE,
+    impulse: 0.0,
+    dispersion: 0.0,
+    bullets: 0,
+    shoot_time: 0.0,
+    reload: 1.2,
+    energy: 0.1,
+    max_angle: PI / 3.0,
+    range: 32.0,
+    reflections: 0,
+    bullet_speed: 0.0,
+    bullet_color: [0.0; 3],
+    charge: 0.0,
+    homing: false,
+};
+
+/// `RocketlauncherChasing`: the same options with `HeavyRoket`: it homes
+/// in on the nearest moving enemy, and its blast does 20.
+pub const ROCKET_CHASING: Options = Options {
+    damage: HEAVY_ROCKET_DAMAGE,
+    damage_max: HEAVY_ROCKET_DAMAGE,
+    homing: true,
+    ..ROCKET_DIRECT
+};
+
+/// `WeaponOptions.RocketLauncher360DefaultOptions` (`RocketlauncherChasing360`,
+/// the factory gives it `HeavyRoket` too): the same, but the gun turns a
+/// half turn either way (`MaxAngle` π) and a rocket costs 0.5 of the energy.
+pub const ROCKET_CHASING_360: Options = Options {
+    max_angle: PI,
+    energy: 0.5,
+    ..ROCKET_CHASING
+};
 
 /// `RailgunMinReflectionAngle` (`RailgunWeapon._reflectionMinAngle`): a
 /// bullet bounces only when it comes in more than this off the surface's
@@ -366,6 +431,11 @@ pub fn for_type(name: &str, local: bool) -> Option<(Kind, Options)> {
         "Laser" => LASER,
         "LaserNoReflection" => Options { reflections: 0, ..LASER },
         "LaserWithDelay" => Options { reflections: 0, charge: LASER_CHARGE, ..LASER },
+        // One preset each for everyone; the factory's `isChasing` picks the
+        // rocket.
+        "RocketlauncherDirect" => ROCKET_DIRECT,
+        "RocketlauncherChasing" => ROCKET_CHASING,
+        "RocketlauncherChasing360" => ROCKET_CHASING_360,
         _ => return None,
     };
     let kind = if name.starts_with("Railgun") {
@@ -380,6 +450,8 @@ pub fn for_type(name: &str, local: bool) -> Option<(Kind, Options)> {
         Kind::Tesla
     } else if name.starts_with("Laser") {
         Kind::Laser
+    } else if name.starts_with("Rocketlauncher") {
+        Kind::Rocket
     } else {
         Kind::Minigun
     };

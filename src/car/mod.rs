@@ -125,6 +125,26 @@ const WHEEL_TURN_RATE: f32 = 12.0;
 #[derive(Resource, Debug, Clone, Copy)]
 pub struct StartOverride(pub Vec2);
 
+/// Debug: the player drives this car of `Cars.xml` instead of the map's
+/// (`--car NAME`), on every map, to try a gun no map gives the player.
+#[derive(Resource, Debug, Clone)]
+pub struct CarOverride(pub String);
+
+/// Gives the player's car (the `Players` one of [`local_player`] or the
+/// `SimpleCars` one of [`local_simple_car`]) the car `name` instead.
+pub fn override_local_car(data: &mut MapData, name: &str) {
+    let car_name = if let Some(id) = local_simple_car(data).map(|c| c.id) {
+        data.simple_cars.items.iter_mut().find(|c| c.id == id && c.control.trim() == "Local").map(|c| &mut c.car_name)
+    } else if let Some(id) = local_player(data).map(|p| p.id) {
+        data.players.items.iter_mut().find(|p| p.id == id).map(|p| &mut p.car_name)
+    } else {
+        None
+    };
+    if let Some(car_name) = car_name {
+        *car_name = name.to_string();
+    }
+}
+
 /// `Entity.Radius`: half the longer side of the car's sprite, world units.
 #[derive(Component, Debug, Clone, Copy, PartialEq)]
 pub struct CarRadius(pub f32);

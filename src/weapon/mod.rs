@@ -1,5 +1,5 @@
 //! The car's gun: the Minigun, the Railgun, the Hammer, the Zombie's, the
-//! Plasma gun, the Tesla and the Laser so far.
+//! Plasma gun, the Tesla, the Laser and the rocket launchers so far.
 //!
 //! C# origin: `BaseWeapon`, `BaseComplexWeapon`, `MinigunWeapon`,
 //! `RailgunWeapon`, `HammerWeapon`, `PlasmaGun`, `WeaponHelper.SimulateMinigunBullet` /
@@ -50,6 +50,13 @@
 //!   bounces twice (`Laser`; not the others) up to 256 units and hurts
 //!   what it touches for 3 every step, with a delay of 0.9 s of charging
 //!   for `LaserWithDelay` (and a red line to warn of it). Enemies only.
+//! - The rocket launchers ([`rocket`]) fire only on [`PlayerIntent::fire_accurate`]
+//!   like the Railgun (one rocket a 1.2 s reload; 0.1 of the energy, 0.5 for
+//!   the 360 type), kick the gun back 10 pixels and send a rocket that
+//!   speeds to 47 units a second, blows up on touch or after 2 s with a
+//!   blast of range 7 (16 for the straight one, 20 for the homing ones),
+//!   and, for `RocketlauncherChasing*`, homes in on the nearest moving enemy.
+//!   Its shot is not immediate ([`Kind::is_immediate`]).
 //! - The gun rides the swaying cabin (`DrawCabina` updated it a second
 //!   time with the cabin's offset, which also doubled the speed of its
 //!   eases; [`Aim::step`] runs twice for cars with a cabin, as there).
@@ -104,6 +111,7 @@ pub mod laser;
 pub mod max_angle;
 pub mod model;
 pub mod plasma;
+pub mod rocket;
 pub mod tesla;
 mod view;
 pub mod zombie;
@@ -172,6 +180,13 @@ pub const LASER_SPRITE: GunSprite = GunSprite {
     origin: Vec2::new(9.0, 5.0),
 };
 
+/// `RocketLauncherWeapon`: `Weapons\RocketLauncher`, turned about pixel (9, 5).
+pub const ROCKET_SPRITE: GunSprite = GunSprite {
+    name: "Weapons\\RocketLauncher",
+    size: Vec2::new(40.0, 10.0),
+    origin: Vec2::new(9.0, 5.0),
+};
+
 /// The sprite of a kind of gun turned about its origin; the Zombie's has
 /// none (`ZombieWeapon.Draw` only draws its pull), nor has the Tesla (its
 /// two spinning discs are [`tesla`]'s).
@@ -183,6 +198,7 @@ pub fn sprite_of(kind: Kind) -> Option<GunSprite> {
         Kind::Zombie | Kind::Tesla => None,
         Kind::Plasma => Some(PLASMA_SPRITE),
         Kind::Laser => Some(LASER_SPRITE),
+        Kind::Rocket => Some(ROCKET_SPRITE),
     }
 }
 
@@ -192,6 +208,7 @@ pub fn textures_of(kind: Kind) -> Vec<&'static str> {
     match kind {
         Kind::Tesla => tesla::TEXTURES.to_vec(),
         Kind::Laser => laser::TEXTURES.to_vec(),
+        Kind::Rocket => vec![ROCKET_SPRITE.name, rocket::SPRITE],
         _ => sprite_of(kind).map(|s| s.name).into_iter().collect(),
     }
 }
@@ -218,7 +235,8 @@ pub struct Weapon {
     pub length: f32,
     pub aim: Aim,
     /// The firing rhythm of a [`Kind::Minigun`] and of a [`Kind::Railgun`]
-    /// (the other is never used).
+    /// (the other is never used); a [`Kind::Rocket`] launcher fires on the
+    /// Railgun's (`_fireOnlyAccurate`, one shot a reload).
     pub minigun: Minigun,
     pub railgun: Railgun,
     /// The saw of a [`Kind::Hammer`]: its size and reach, and the cars it
@@ -296,6 +314,8 @@ impl Weapon {
             }
             Kind::Railgun => self.railgun.look(&self.options, energy),
             Kind::Plasma => self.plasma.look(&self.options, energy),
+            // Fires only accurately: the Railgun's reload look.
+            Kind::Rocket => self.railgun.look(&self.options, energy),
             // No aim line; never asked.
             Kind::Hammer | Kind::Zombie | Kind::Tesla | Kind::Laser => AimLook::Normal,
         }
@@ -312,6 +332,7 @@ impl Weapon {
             Kind::Plasma => self.plasma.can_fire(&self.options, None),
             Kind::Tesla => self.tesla.can_fire(&self.options, None),
             Kind::Laser => self.laser.can_shoot(),
+            Kind::Rocket => self.railgun.can_fire(&self.options, None),
         }
     }
 
@@ -418,6 +439,7 @@ impl Plugin for WeaponPlugin {
                 plasma::PlasmaPlugin,
                 tesla::TeslaPlugin,
                 laser::LaserPlugin,
+                rocket::RocketPlugin,
             ));
     }
 }
@@ -437,6 +459,7 @@ type Gun<'a> = (
     Option<&'a CabinSway>,
     Option<&'a mut PlayerEnergy>,
     Has<crate::actions::Inactive>,
+    Option<&'a LinearVelocity>,
 );
 
 /// `ControlableEntity.ControlHandle` and `HandleControlEvent`, then the
@@ -457,10 +480,11 @@ fn fire_weapons(
     mut hits: MessageWriter<Hit>,
     mut play: MessageWriter<PlaySound>,
     mut waves: MessageWriter<zombie::ZombieWave>,
-    (mut strikes, mut crackles, mut charges): (
+    (mut strikes, mut crackles, mut charges, mut launched): (
         MessageWriter<tesla::TeslaStrike>,
         MessageWriter<tesla::TeslaCrackle>,
         MessageWriter<laser::LaserCharge>,
+        MessageWriter<rocket::RocketLaunched>,
     ),
     mut commands: Commands,
 ) {
@@ -474,7 +498,7 @@ fn fire_weapons(
         passes: &passes,
         hurt: &can_hurt,
     };
-    for (car, mut gun, mut intent, position, rotation, sway, mut energy, inactive) in &mut guns {
+    for (car, mut gun, mut intent, position, rotation, sway, mut energy, inactive, car_velocity) in &mut guns {
         let angle = rotation.as_radians();
         let gun = &mut *gun;
         if let Some(e) = energy.as_mut() {
@@ -570,6 +594,33 @@ fn fire_weapons(
                         name: "PlasmaShot",
                         at: Some(muzzle),
                         pitch: (rng.random::<f32>() * 2.0 - 1.0) * 0.2,
+                        volume: 1.0,
+                    });
+                }
+            }
+            // `RocketLauncherWeapon.OnShoot`, by `BaseComplexWeapon.TryShoot`
+            // on an accurate pulse (`_fireOnlyAccurate`), once a reload. Not
+            // from an inactive car, as the Plasma gun's.
+            Kind::Rocket => {
+                let fired = !inactive && accurate && gun.railgun.pull(&options, energy.as_mut().map(|e| &mut e.0));
+                gun.railgun.step(dt);
+                if fired {
+                    // Set, not added to.
+                    gun.aim.recoil.current = model::RAILGUN_RECOIL;
+                    let team = teams.get(car).ok().copied();
+                    let rocket = rocket::launch(gun, car, team, car_velocity.map_or(Vec2::ZERO, |v| v.0));
+                    // In C#'s axes and degrees, as `/trace`.
+                    debug!("rocket from {:.3} {:.3} at {:.1}", rocket.at.x, -rocket.at.y, -gun.direction.to_degrees());
+                    launched.write(rocket::RocketLaunched {
+                        at: rocket.at,
+                        direction: gun.direction,
+                    });
+                    commands.spawn(rocket::rocket_bundle(rocket));
+                    // At the gun, not its muzzle (`_worldPosition`).
+                    play.write(PlaySound {
+                        name: "RocketLaunch",
+                        at: Some(gun.at),
+                        pitch: 0.0,
                         volume: 1.0,
                     });
                 }

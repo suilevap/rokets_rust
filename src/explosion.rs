@@ -243,7 +243,7 @@ fn explode(
     mut particles: ResMut<Particles>,
     mut rng: ResMut<BoomRng>,
     mut bodies: Query<(&RigidBody, &ColliderAabb, &Position, Forces), Without<Sensor>>,
-    targets: Query<(Entity, &Transform, Option<&ColliderAabb>, Option<&Team>), Or<(With<Health>, With<Explosive>)>>,
+    targets: Query<(Entity, &Transform, Option<&ColliderAabb>, Option<&Team>), Or<(With<Health>, With<Explosive>, With<crate::weapon::rocket::Rocket>)>>,
     teams: Query<&Team>,
     mut hits: MessageWriter<Hit>,
 ) {
