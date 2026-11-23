@@ -44,6 +44,10 @@
 //!   `Cancel` (`_isActive = false`) did, so a button still held starts it
 //!   again at the next step.
 //!
+//! - **`ApplyGadgetToPosition`** ([`super::apply`]) works it too, once, for a
+//!   place within a unit of the car: the same boost, ready or not, with no
+//!   charge and no regard for the aim; a held button still works it again.
+//!
 //! Not ported: the gadget's HUD icon (`UI\GadgetIcons\Accelerator`, drawn
 //! beside the health bar; no weapon or gadget icon is drawn yet), the move
 //! arrow C# draws while the gadget is active (`DrawMoveControlWhenGadgetIsActive`;
@@ -61,6 +65,7 @@ use rand::rngs::SmallRng;
 use rand::{Rng, SeedableRng};
 
 use super::GadgetSystems;
+use super::apply::ApplyGadget;
 use crate::actions::Inactive;
 use crate::car::{CarRadius, drive_cars};
 use crate::controls::{LocalPlayer, PlayerIntent};
@@ -77,6 +82,8 @@ use crate::weapon::{PlayerEnergy, Weapon};
 
 /// `ActiveGadget.ChargeTimeMs` of this gadget (250), seconds.
 pub const CHARGE: f32 = 0.25;
+/// `ActiveGadget._length` of this gadget: how near a target `ApplyGadgetToPosition` works it.
+const REACH: f32 = 1.0;
 /// `_pressedTimer = 1`: what the first step of a hold counts, seconds.
 const FIRST_STEP: f32 = 0.001;
 /// `_energyConsumption`: the whole bar.
@@ -193,7 +200,8 @@ impl Plugin for AcceleratorPlugin {
             .insert_resource(ViewRng(SmallRng::seed_from_u64(41)))
             .add_systems(
                 FixedUpdate,
-                use_accelerators
+                (use_accelerators, apply_to_accelerators)
+                    .chain()
                     .in_set(GadgetSystems)
                     .before(drive_cars)
                     .run_if(in_state(GameState::Playing)),
@@ -267,17 +275,57 @@ pub fn use_accelerators(
         if a.held <= CHARGE || a.active {
             continue;
         }
-        // `OnStartActivity`.
         a.active = true;
-        let full = a.ready && energy.as_mut().is_none_or(|e| e.0.try_spend(COST));
-        let rate = if full { 1.0 } else { FIZZLE_RATE };
-        if full {
-            explosions.write(Explosion { at, blast: BLAST, owner: Some(car) });
+        boost(car, at, facing, &mut a, energy.as_deref_mut(), &mut velocity, &mut explosions, &mut boosted);
+    }
+}
+
+/// `OnStartActivity`: the boost, in full when the gadget is ready and the
+/// energy is paid, a fizzle otherwise. Shared by the button and
+/// `ApplyGadgetToPosition`.
+#[allow(clippy::too_many_arguments)]
+fn boost(
+    car: Entity,
+    at: Vec2,
+    facing: Vec2,
+    a: &mut Accelerator,
+    energy: Option<&mut PlayerEnergy>,
+    velocity: &mut LinearVelocity,
+    explosions: &mut MessageWriter<Explosion>,
+    boosted: &mut MessageWriter<Boosted>,
+) {
+    let full = a.ready && energy.is_none_or(|e| e.0.try_spend(COST));
+    let rate = if full { 1.0 } else { FIZZLE_RATE };
+    if full {
+        explosions.write(Explosion { at, blast: BLAST, owner: Some(car) });
+    }
+    // An impulse of `30 × mass` is a speed of 30 whatever the mass.
+    velocity.0 += facing * SPEED * rate;
+    a.ready = false;
+    boosted.write(Boosted { car, at, rate });
+}
+
+/// `ApplyGadgetToPosition` for the accelerator (`ActiveGadget`'s, which
+/// it does not override): a target nearer than its `_length` (1 unit)
+/// works it, the same as the button does, with no regard for the charge or
+/// the aim. `_isActive` is not set, so a held button still works it
+/// after its own charge.
+#[allow(clippy::type_complexity)]
+pub fn apply_to_accelerators(
+    mut applied: MessageReader<ApplyGadget>,
+    mut cars: Query<(&mut Accelerator, &Position, &Rotation, &mut LinearVelocity, Option<&mut PlayerEnergy>), Without<Inactive>>,
+    mut explosions: MessageWriter<Explosion>,
+    mut boosted: MessageWriter<Boosted>,
+) {
+    for apply in applied.read() {
+        let Ok((mut a, pos, rot, mut velocity, mut energy)) = cars.get_mut(apply.car) else {
+            continue;
+        };
+        if (apply.at - pos.0).length_squared() >= REACH * REACH {
+            continue;
         }
-        // An impulse of `30 × mass` is a speed of 30 whatever the mass.
-        velocity.0 += facing * SPEED * rate;
-        a.ready = false;
-        boosted.write(Boosted { car, at, rate });
+        let facing = Vec2::from_angle(rot.as_radians());
+        boost(apply.car, pos.0, facing, &mut a, energy.as_deref_mut(), &mut velocity, &mut explosions, &mut boosted);
     }
 }
 

@@ -609,14 +609,15 @@ fn insert_player_parts(entity: &mut EntityCommands, car: &CarData, radius: f32, 
 /// whatever the magnet may do with it, and no hand on it when the control
 /// is `AINone`.
 fn insert_simple_parts(entity: &mut EntityCommands, car: &CarData, radius: f32, kind: control::ControlKind, simple_drive: bool) {
-    if car.can_move {
-        if simple_drive {
-            entity.insert(simple::SimpleDrive::new(car.speed, car.acceleration, car.controllability, radius));
-        }
-        // What the magnet may grab (`CanLink`); a static car it could not
-        // pull (`OnLinkTo` made it dynamic while linked; not ported).
-        if car.can_link {
-            entity.insert(crate::gadget::Linkable);
+    if car.can_move && simple_drive {
+        entity.insert(simple::SimpleDrive::new(car.speed, car.acceleration, car.controllability, radius));
+    }
+    // What the magnet may grab (`CanLink`); a static car (a turret) is
+    // dynamic while it is towed (`OnLinkTo`).
+    if car.can_link {
+        entity.insert(crate::gadget::Linkable);
+        if !car.can_move {
+            entity.insert(crate::gadget::static_cargo::StaticWhenFree);
         }
     }
     if !kind.local_device {

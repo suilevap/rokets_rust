@@ -25,12 +25,17 @@
 //! holds for them too (C#'s AI skipped it: its flags went straight to
 //! `ProcessActivity`).
 //!
+//! A map can also hitch a car's magnet to something: [`apply`]
+//! (`ApplyGadgetToPosition`).
+//!
 //! Not ported: C#'s touch circles and the flick that cuts the rope,
 //! the highlight of what can be grabbed, sparks, the transporting beam,
 //! the other gadgets (`Bomb`, `EditorPointer`).
 
 pub mod accelerator;
+pub mod apply;
 pub mod rope;
+pub mod static_cargo;
 
 use avian2d::prelude::*;
 use bevy::prelude::*;
@@ -186,7 +191,7 @@ impl Plugin for GadgetPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             FixedUpdate,
-            (use_magnets, pull_ropes)
+            (use_magnets, apply::apply_to_magnets, static_cargo::wake_towed, pull_ropes)
                 .chain()
                 .in_set(GadgetSystems)
                 .before(drive_cars)
@@ -195,7 +200,7 @@ impl Plugin for GadgetPlugin {
         .add_systems(Update, (spawn_views, draw_magnets).chain().run_if(in_state(GameState::Playing)))
         .add_systems(Startup, spawn_touch_zone)
         .add_systems(Update, show_touch_zone)
-        .add_plugins(accelerator::AcceleratorPlugin);
+        .add_plugins((apply::ApplyGadgetPlugin, accelerator::AcceleratorPlugin));
     }
 }
 
@@ -211,6 +216,7 @@ fn use_magnets(
     linkable: Query<(), With<Linkable>>,
     skipped: Query<(), Or<(With<Sensor>, With<Explosive>)>>,
     mut cargo: Query<(&Position, &Rotation, Forces), Without<Magnet>>,
+    placed: Query<(&Position, &Rotation), (With<Linkable>, Without<Magnet>)>,
     sizes: Query<(&ComputedMass, &Collider, Option<&LockedAxes>), Without<Magnet>>,
     mut heavy: Query<(&Heavy, &mut ColliderDensity)>,
     mut play: MessageWriter<PlaySound>,
@@ -338,13 +344,10 @@ fn use_magnets(
                 let grab = m.candidate.filter(|_| m.far_enough && m.dragging.is_none());
                 match grab {
                     Some(c) => {
-                        if let Ok((cpos, crot, _)) = cargo.get_mut(c.entity) {
+                        // A static cargo (a turret) has no forces to apply yet.
+                        if let Ok((cpos, crot)) = placed.get(c.entity) {
                             let local = crot.inverse() * (c.at - c.normal * 0.125 - cpos.0);
-                            unlink(&mut m, &mut heavy);
-                            m.link = Some(Link { cargo: c.entity, local });
-                            if let Ok((h, mut density)) = heavy.get_mut(c.entity) {
-                                density.0 /= h.0;
-                            }
+                            attach(&mut m, Link { cargo: c.entity, local }, &mut heavy);
                             sound(&mut play, "ChainConnect", at);
                         }
                     }
@@ -377,6 +380,15 @@ fn radius_along(collider: &Collider, rot: &Rotation, dir: Vec2) -> f32 {
             dir.dot(x).abs() * c.half_extents.x + dir.dot(y).abs() * c.half_extents.y
         }
         None => 0.5,
+    }
+}
+
+/// `Chain.LinkTo`: the rope takes `link`, a heavy box made light.
+fn attach(m: &mut Magnet, link: Link, heavy: &mut Query<(&Heavy, &mut ColliderDensity)>) {
+    unlink(m, heavy);
+    m.link = Some(link);
+    if let Ok((h, mut density)) = heavy.get_mut(link.cargo) {
+        density.0 /= h.0;
     }
 }
 

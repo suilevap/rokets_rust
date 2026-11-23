@@ -40,3 +40,21 @@ fn the_far_end_reaches_no_further_than_the_rope_stretches() {
     assert!((end.x - MAX_LENGTH).abs() < 1e-4);
     assert_eq!(Rope::reach(Vec2::ZERO, Vec2::new(1.0, 1.0)), Vec2::new(1.0, 1.0));
 }
+
+#[test]
+fn laid_as_c_sharp_did_only_the_last_point_is_on_the_line_s_far_end() {
+    // `SetElementsPositionByLine`'s `i / (count - 1)` is an integer
+    // division: the first step then yanks the cargo hard towards the car.
+    let (from, to) = (Vec2::ZERO, Vec2::new(4.0, 0.0));
+    let mut rope = Rope::new(Vec2::ZERO);
+    rope.lay_by_c_sharp_line(from, to);
+    let points = rope.points();
+    assert!(points[..POINTS - 1].iter().all(|&p| p == from));
+    assert_eq!(points[POINTS - 1], to);
+    let yank = rope.step(from, to);
+    let mut line = Rope::new(Vec2::ZERO);
+    line.lay(from, to);
+    let relaxed = line.step(from, to);
+    assert!(yank.x < -500.0, "{yank}");
+    assert!(yank.x < relaxed.x * 2.0, "{yank} against {relaxed}");
+}

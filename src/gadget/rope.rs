@@ -82,6 +82,19 @@ impl Rope {
         self.destination.clone_from(&self.current);
     }
 
+    /// `Chain.SetElementsPositionByLine` as C# computed it: the fraction
+    /// `i / (count - 1)` is an integer division, so every point lies on
+    /// `from` and only the last on `to`. The rope's first step then pulls
+    /// the cargo hard towards the car (the way it did when a map hitched
+    /// it, `ApplyGadgetToPosition`); [`Rope::lay`] is the line it meant.
+    pub fn lay_by_c_sharp_line(&mut self, from: Vec2, to: Vec2) {
+        self.current.fill(from);
+        if let Some(last) = self.current.last_mut() {
+            *last = to;
+        }
+        self.destination.clone_from(&self.current);
+    }
+
     /// The far end where it can reach: no further than [`MAX_LENGTH`]
     /// from the car (`SetLinkedToPos`).
     pub fn reach(from: Vec2, to: Vec2) -> Vec2 {

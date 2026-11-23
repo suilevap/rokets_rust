@@ -83,7 +83,9 @@ along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
    LaserCollide`; `TheGate`'s three turrets and two collectors, whose beams
    are in (`weapon/laser.rs`) but touch the collector as a wall), the
    Laser's `CreateLaserEffect` (dirty-glass flash on the player's car), the
-   gadgets that are not ported (`Bomb`, `EditorPointer`; no map hands them
+   gadgets that are not ported (`Bomb`, `EditorPointer`, which also need
+   their `ApplyGadgetToPosition` answer, `ActiveGadget`'s default, as the
+   magnet and the accelerator have in `gadget/apply.rs`; no map hands them
    out but the `HoverScout` car has the Bomb; the accelerator's HUD icon
    `UI\GadgetIcons\Accelerator`, with the other gadgets' and the guns'
    icons beside the health bar, is still to draw), the Tesla's `Guard` car (HiddenBox, TheLastStand)
