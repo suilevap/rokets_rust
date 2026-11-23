@@ -33,9 +33,6 @@ along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
      — then `PatrolPath` as the `Path`; `SetPath` already stores it),
      `AlwaysTryShoot`, `MoveToRandomVisiblePosition`
      (`GetRandomFreeVisiblePoint`, `RandomHelper.NextVector2Fake`);
-   - `SupportAi*`: `SmartAttack` (below), `ExecuteOrders` (in, with the
-     order queue), `FollowLeader`; `FindNearestLeader`, the `Leader` and
-     the friends (`Mate`) are in with the zombies;
    - the other AI orders: `ai/order_queue.rs` has the queue and
      `MoveOrder`, `MoveCargoOrder`, `GrabCargoOrder` and `PressButtonOrder`
      (`CreateCarrierBehaviour`, `CreateGrabCargoBehaviour`,
