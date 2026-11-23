@@ -385,6 +385,7 @@ Sprites/Particles/flash2.png
 Sprites/Particles/flash3.png
 Sprites/Particles/flashTransparent.png
 Sprites/Particles/minigunTrail.png
+Sprites/Special/DottedLine.png
 Sprites/Special/LaserLine.png
 Sprites/Special/LaserLine2.png
 Sprites/UI/AddealsButton.png
