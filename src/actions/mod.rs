@@ -32,6 +32,7 @@ pub mod area;
 mod body;
 mod camera_path;
 mod clone;
+mod conserve_speed;
 mod control;
 pub mod destroy_on_contact;
 mod entity;
@@ -58,6 +59,7 @@ use crate::content::actions::{ActionDef, ActionRef, MapActions, RawAction, Templ
 use crate::content::node::Node;
 use crate::game::{GameState, LoadedMap, MapId};
 
+pub use conserve_speed::ConserveMaxReachedSpeed;
 pub use clone::{CloneOf, along, source_id};
 pub use path::{Leg, legs, offset, uv};
 pub use camera_path::stop_camera_path;
@@ -349,7 +351,7 @@ impl Plugin for ActionsPlugin {
                 variables::VariablesPlugin,
                 view::ViewActionsPlugin,
             ))
-            .add_plugins((area::AreaActionPlugin, immortal::ImmortalActionPlugin, move_entity::MoveEntityPlugin))
+            .add_plugins((area::AreaActionPlugin, conserve_speed::ConserveSpeedPlugin, immortal::ImmortalActionPlugin, move_entity::MoveEntityPlugin))
             .add_systems(OnEnter(GameState::Playing), run_on_map_start)
             // At the end of the fixed step: what the step set off runs in it.
             .configure_sets(FixedUpdate, ActionSystems.after(crate::explosion::ExplosionSystems))
