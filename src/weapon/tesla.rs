@@ -370,14 +370,16 @@ fn place_tesla_views(
     mut commands: Commands,
     time: Res<Time>,
     guns: Query<(&Weapon, &Transform), (Without<TeslaDiscs>, Without<Disc>, Without<ReachCircle>)>,
-    mut pivots: Query<(&ChildOf, &mut Transform), (With<TeslaDiscs>, Without<Disc>, Without<ReachCircle>)>,
+    mut pivots: Query<(Entity, &ChildOf, &mut Transform), (With<TeslaDiscs>, Without<Disc>, Without<ReachCircle>)>,
     mut discs: Query<(&Disc, &mut Transform), (Without<TeslaDiscs>, Without<ReachCircle>)>,
     mut circles: Query<(Entity, &ReachCircle, &mut Transform, &mut Visibility, &mut SpriteTint), (Without<TeslaDiscs>, Without<Disc>)>,
 ) {
     let t = time.elapsed_secs();
-    for (parent, mut pivot) in &mut pivots {
-        if let Ok((gun, _)) = guns.get(parent.parent()) {
-            pivot.translation = gun.local.extend(0.0);
+    for (entity, parent, mut pivot) in &mut pivots {
+        // The discs go with the coil: `SetWeapon` may take it away.
+        match guns.get(parent.parent()) {
+            Ok((gun, _)) if gun.kind == Kind::Tesla => pivot.translation = gun.local.extend(0.0),
+            _ => commands.entity(entity).despawn(),
         }
     }
     // `entityDir + Sawtooth × 2π` and `entityDir + (1 − Sawtooth) × 2π`,

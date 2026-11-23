@@ -221,7 +221,8 @@ fn draw_pulls(
     // A line for each zombie; none for a car that has lost its weapon.
     let mut have = Vec::new();
     for (line, pull, mut transform, mut visibility) in &mut lines {
-        let Ok((_, gun, car)) = zombies.get(pull.owner) else {
+        // Gone with the zombie's weapon, or when `SetWeapon` changes its kind.
+        let Some((_, gun, car)) = zombies.get(pull.owner).ok().filter(|(_, g, _)| g.kind == Kind::Zombie) else {
             commands.entity(line).despawn();
             continue;
         };

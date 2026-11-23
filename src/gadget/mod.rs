@@ -55,6 +55,10 @@ const GRADIENT: &str = "Gradient2Pixel";
 const SHADOW_ALPHA: f32 = 0.5;
 const INACTIVE_SPRITE: &str = "Gadget\\ChainInactive";
 
+/// Every texture the magnet draws with, to load with a map that gives a
+/// car one.
+pub const TEXTURES: [&str; 4] = [ACTIVE_SPRITE, INACTIVE_SPRITE, PIXEL, GRADIENT];
+
 /// Can be grabbed by the magnet (`LinkablePhysicEntity.CanBeLinked`).
 #[derive(Component, Debug, Default)]
 pub struct Linkable;
@@ -129,6 +133,12 @@ impl Magnet {
             last_force: Vec2::ZERO,
             views: None,
         }
+    }
+
+    /// The entities its rope and head are drawn with (made on the first
+    /// frame it exists); to despawn when the car loses the gadget.
+    pub fn view_entities(&self) -> Vec<Entity> {
+        self.views.iter().flat_map(|v| v.pieces.iter().flat_map(|&(a, b)| [a, b]).chain([v.active, v.inactive])).collect()
     }
 
     /// Something is on the rope (`IsInSpecialState`).

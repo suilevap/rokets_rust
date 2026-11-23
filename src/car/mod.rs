@@ -149,6 +149,20 @@ pub fn override_local_car(data: &mut MapData, name: &str) {
 #[derive(Component, Debug, Clone, Copy, PartialEq)]
 pub struct CarRadius(pub f32);
 
+/// Where a car carries its gun and its gadget, and how big it is: what
+/// `SetWeapon` needs to fit a new gun or magnet to the car later
+/// (`ControlableEntity.WeaponRelativePosition`, `Car.GadgetRelativePosition`,
+/// `Size`). Every car made by [`spawn_car`] has it, with or without a gun.
+#[derive(Component, Debug, Clone, Copy, PartialEq)]
+pub struct Mounts {
+    /// `WeaponPositon` times the scale, car frame (y up).
+    pub weapon: Vec2,
+    /// `GadgetPosition` times the scale, car frame (y up).
+    pub gadget: Vec2,
+    /// The `Base` sprite's size times the scale, world units.
+    pub size: Vec2,
+}
+
 #[derive(Component, Debug)]
 pub struct Car {
     pub params: DriveParams,
@@ -486,8 +500,13 @@ pub fn spawn_car(
     // `WeaponFactory`: a weapon of the car's own type or the map's, at
     // `WeaponPositon` (pixels, y down; the gun itself is drawn unscaled).
     // The player's preset for the player, the others' for the rest.
+    let at = car.weapon_positon.map_or(Vec2::ZERO, |p| Vec2::new(p.x, -p.y) * px(1.0) * car.scale);
+    entity.insert(Mounts {
+        weapon: at,
+        gadget: car.gadget_position.map_or(Vec2::ZERO, |p| Vec2::new(p.x, -p.y) * px(1.0) * car.scale),
+        size,
+    });
     if let Some((kind, options)) = weapon_type(weapon, car.weapon.as_deref()).and_then(|w| crate::weapon::model::for_type(w, local)) {
-        let at = car.weapon_positon.map_or(Vec2::ZERO, |p| Vec2::new(p.x, -p.y) * px(1.0) * car.scale);
         let mut rng = <rand::rngs::SmallRng as rand::SeedableRng>::seed_from_u64(id as u64);
         let mut gun = crate::weapon::Weapon::new(kind, options, at, size, local, &mut rng);
         // `CreateSimpleCar`: a static car with a gun the map names does not

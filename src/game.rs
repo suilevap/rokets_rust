@@ -108,7 +108,7 @@ fn sprites_for(map: &MapData, cars: &CarCatalog, registry: &crate::actions::Acti
                 }
             }
             if car.gadget.as_deref() == Some("Link") {
-                names.extend(["Gadget\\ChainActive", "Gadget\\ChainInactive", "WhitePixel", "Gradient2Pixel"].map(String::from));
+                names.extend(crate::gadget::TEXTURES.map(String::from));
             }
         }
     }
@@ -131,6 +131,18 @@ fn sprites_for(map: &MapData, cars: &CarCatalog, registry: &crate::actions::Acti
     // What the map's actions draw (door hints, …).
     for a in &map.actions.0 {
         names.extend(registry.sprites_of(a));
+    }
+    // … and what the items run when they appear or are destroyed.
+    let on_create_destroy = map
+        .players
+        .iter()
+        .map(|p| (&p.action_on_create, &p.action_on_destroy))
+        .chain(map.simple_cars.iter().map(|c| (&c.action_on_create, &c.action_on_destroy)))
+        .chain(map.entities.iter().map(|e| (&e.action_on_create, &e.action_on_destroy)));
+    for (create, destroy) in on_create_destroy {
+        for text in [create, destroy].into_iter().flatten() {
+            names.extend(registry.sprites_of_text(text));
+        }
     }
     // Shadows of cars and loose objects (`render/shadow`).
     names.extend(["Gradient4Pixel", "Gradient4PixelUniform"].map(String::from));
