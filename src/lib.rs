@@ -26,6 +26,7 @@ pub mod platform;
 pub mod render;
 pub mod script;
 pub mod sound;
+pub mod splash;
 pub mod stun;
 pub mod teleport;
 pub mod triggers;
@@ -60,7 +61,7 @@ impl Plugin for TileRiderPlugin {
                 render::spin::SpinPlugin,
                 render::animate::AnimatePlugin,
                 (triggers::TriggersPlugin, actions::ActionsPlugin, door::DoorPlugin, button::ButtonPlugin, teleport::TeleportPlugin, platform::PlatformPlugin, info::InfoPlugin, markers::MarkersPlugin, gadget::GadgetPlugin, weapon::WeaponPlugin, stun::StunPlugin, ai::AiPlugin),
-                hud::HudPlugin,
+                (hud::HudPlugin, splash::SplashPlugin),
                 script::ScriptPlugin,
             ));
     }

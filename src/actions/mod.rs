@@ -58,7 +58,7 @@ pub use path::{Leg, legs, offset, uv};
 pub use camera_path::stop_camera_path;
 pub use entity::Inactive;
 pub use lifecycle::{OnDestroy, Respawned, destroy_action};
-pub use splash::SplashBindText;
+pub use splash::{SplashBindText, SplashCommand};
 pub use variables::{Owner, Variables};
 
 /// How deep sequences and `NextAction` chains may nest (a loop guard).
