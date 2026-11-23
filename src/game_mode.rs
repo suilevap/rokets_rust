@@ -12,7 +12,11 @@
 //! - with one, a life goes (three a level; with none left the level starts
 //!   again), the point's `ActionOnRespawn` runs, and two seconds after
 //!   that the wreck goes up in smoke and the car is back at the point,
-//!   whole, the camera on it alone (`OnRespawn`, `Car.Respawn`).
+//!   whole, the camera on it alone (`OnRespawn`, `Car.Respawn`). It is
+//!   the same car in C#, so it comes back with the gun and the gadget it
+//!   died with, not the ones the map started it with: a `SetWeapon` that
+//!   gave it the accelerator (Derby) or another gun (Revenge's Railgun)
+//!   still holds ([`Kept`]).
 //!
 //! The point is set by `SetRespawnPoint` (a place and heading) or
 //! `SaveAction` (`Save()`: where the car is now, with an action to run on
@@ -21,7 +25,15 @@
 //! Other cars' deaths are `car::death`'s.
 //!
 //! Not ported: the respawn flashes (`CreateRespawn`), the lives shown on
-//! screen (`ShowEnergy`; the top line shows them).
+//! screen (`ShowEnergy`; the top line shows them). The car that comes back
+//! is a new entity built from the map's car and then given the gun and
+//! gadget of the one that died, made anew: a gun's reload and an
+//! accelerator's charge start over (C# kept the objects, `Cancel`ed), a
+//! magnet comes back with no rope (C#'s `OnKilled` cancelled it too), and
+//! anything else an action changed on the car (its control, say) is the
+//! map's again. C# moved the camera to the point when the car vanished
+//! (`OnRespawn` runs as `Car.Respawn` puts the hidden car there); here it
+//! stays on the wreck until the car is back.
 
 use std::f32::consts::PI;
 
@@ -98,6 +110,24 @@ pub struct Wreck {
     id: Option<i64>,
     /// Counting down to the car coming back (after the restart's time).
     back_in: Option<f32>,
+    /// What the car carried, to come back with.
+    kept: Kept,
+}
+
+/// The gun and gadget a car died with (C#'s `Car.Respawn` brings back the
+/// same car, so what a `SetWeapon` gave it stays).
+#[derive(Debug, Clone, Copy, Default, PartialEq)]
+pub struct Kept {
+    pub gun: Option<(crate::weapon::model::Kind, crate::weapon::model::Options)>,
+    pub gadget: KeptGadget,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum KeptGadget {
+    #[default]
+    None,
+    Magnet,
+    Accelerator,
 }
 
 #[derive(Resource)]
@@ -133,12 +163,23 @@ fn wreck_cars(
     mut particles: ResMut<Particles>,
     mut rng: ResMut<WreckRng>,
     cars: Query<(&Wreckable, &Transform, Option<&Children>, Option<&MapId>), (With<LocalPlayer>, Without<Wreck>)>,
+    carried: Query<(Option<&crate::weapon::Weapon>, Has<crate::gadget::Magnet>, Has<crate::gadget::accelerator::Accelerator>)>,
 ) {
     let rng = &mut rng.0;
     for Destroyed(entity) in destroyed.read() {
         let Ok((wreckable, transform, children, id)) = cars.get(*entity) else {
             continue;
         };
+        let kept = carried.get(*entity).map_or(Kept::default(), |(gun, magnet, accelerator)| Kept {
+            gun: gun.map(|g| (g.kind, g.options)),
+            gadget: if accelerator {
+                KeptGadget::Accelerator
+            } else if magnet {
+                KeptGadget::Magnet
+            } else {
+                KeptGadget::None
+            },
+        });
         let mut car = commands.entity(*entity);
         // The wreck keeps no map id: a new car takes it.
         car.remove::<(LocalPlayer, PlayerIntent, SmokePoints, MapId, crate::weapon::Weapon, crate::weapon::PlayerEnergy, crate::gadget::accelerator::Accelerator)>()
@@ -146,6 +187,7 @@ fn wreck_cars(
                 restart_in: RESTART_AFTER,
                 id: id.map(|id| id.0),
                 back_in: None,
+                kept,
             });
         for child in children.into_iter().flatten() {
             commands.entity(*child).despawn();
@@ -160,6 +202,38 @@ fn wreck_cars(
             commands.entity(*entity).with_child(sprite);
         }
         burst(&mut particles, rng, transform.translation.truncate());
+    }
+}
+
+/// The car that comes back carries what the one that died did: its gun
+/// (or none) and its gadget, made anew on the same mounts (the same car).
+pub fn give_back(commands: &mut Commands, car: Entity, kept: Kept, mounts: &crate::car::Mounts, id: Option<i64>) {
+    use crate::gadget::{Magnet, accelerator::Accelerator};
+    use crate::weapon::{PlayerEnergy, Weapon};
+    let mut car = commands.entity(car);
+    match kept.gun {
+        Some((kind, options)) => {
+            let mut rng: SmallRng = rand::SeedableRng::seed_from_u64(id.unwrap_or(0) as u64);
+            car.insert(Weapon::new(kind, options, mounts.weapon, mounts.size, true, &mut rng));
+        }
+        None => {
+            car.remove::<Weapon>();
+        }
+    }
+    match kept.gadget {
+        KeptGadget::Accelerator => {
+            car.remove::<Magnet>().insert(Accelerator::new());
+        }
+        KeptGadget::Magnet => {
+            car.remove::<Accelerator>().insert(Magnet::new(mounts.gadget));
+        }
+        KeptGadget::None => {
+            car.remove::<(Magnet, Accelerator)>();
+        }
+    }
+    // The store the gun and the accelerator draw on (new, as the car is).
+    if kept.gun.is_some() || kept.gadget == KeptGadget::Accelerator {
+        car.insert(PlayerEnergy::default());
     }
 }
 
@@ -203,11 +277,11 @@ fn save(
     true
 }
 
-#[allow(clippy::too_many_arguments)]
+#[allow(clippy::too_many_arguments, clippy::type_complexity)]
 fn restart_after_wreck(
     mut commands: Commands,
     time: Res<Time>,
-    mut wrecks: Query<(Entity, &mut Wreck, &Transform, Has<NoInput>)>,
+    mut wrecks: Query<(Entity, &mut Wreck, &Transform, Has<NoInput>, Option<&crate::car::Mounts>)>,
     mut respawn: ResMut<Respawn>,
     (map, quad): (Res<LoadedMap>, Res<UnitQuad>),
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -218,7 +292,7 @@ fn restart_after_wreck(
     mut run: MessageWriter<RunAction>,
 ) {
     let dt = time.delta_secs();
-    for (e, mut wreck, transform, no_input) in &mut wrecks {
+    for (e, mut wreck, transform, no_input, mounts) in &mut wrecks {
         if let Some(back_in) = wreck.back_in.as_mut() {
             *back_in -= dt;
             if *back_in <= 0.0 {
@@ -238,6 +312,9 @@ fn restart_after_wreck(
                     commands.entity(car).insert(Respawned);
                     if !no_input {
                         commands.entity(car).remove::<NoInput>();
+                    }
+                    if let Some(mounts) = mounts {
+                        give_back(&mut commands, car, wreck.kept, mounts, wreck.id);
                     }
                 }
             }
