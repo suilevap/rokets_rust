@@ -28,6 +28,8 @@ ITEMS = [
     ("Sprites/Weapons", "*.png", "Sprites/Weapons"),
     # The aim line's strips.
     ("Sprites/Special", "LaserLine*.png", "Sprites/Special"),
+    # The route line `AddPathComponent` draws (`DottedSpritePath`).
+    ("Sprites/Special", "DottedLine.png", "Sprites/Special"),
     ("Sprites/Minimap", "*.png", "Sprites/Minimap"),
     # The Zombie's wave ring (`CreateZombieCircleEffect`).
     ("Sprites/UI", "BigCircle.png", "Sprites/UI"),

@@ -36,6 +36,7 @@ mod entity;
 mod focus;
 mod level;
 mod lifecycle;
+mod path;
 mod silent;
 mod splash;
 pub mod variables;
@@ -53,6 +54,7 @@ use crate::content::node::Node;
 use crate::game::{GameState, LoadedMap, MapId};
 
 pub use clone::{CloneOf, along, source_id};
+pub use path::{Leg, legs, offset, uv};
 pub use camera_path::stop_camera_path;
 pub use entity::Inactive;
 pub use lifecycle::{OnDestroy, Respawned, destroy_action};
@@ -332,6 +334,7 @@ impl Plugin for ActionsPlugin {
                 focus::FocusActionsPlugin,
                 level::LevelActionsPlugin,
                 lifecycle::LifecyclePlugin,
+                path::PathActionsPlugin,
                 silent::SilentActionsPlugin,
                 splash::SplashActionsPlugin,
                 variables::VariablesPlugin,
