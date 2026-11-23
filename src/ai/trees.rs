@@ -488,7 +488,7 @@ use flatbt_bevy::prelude::*;
 
 use super::blackboard::AiBlackboard;
 use super::nodes::{
-    AimToTarget, DropByChainGadget, FireToTarget, GrabByChainGadget, PositionFn, execute_orders, executing_drop, Flocking, FollowBy, Idle, alert_friends, find_nearest_enemy, find_nearest_leader, fire_now,
+    AimToTarget, DropByChainGadget, FireToTarget, GrabByChainGadget, PositionFn, execute_orders, executing_drop, Flocking, FollowBy, Idle, alert_friends, find_nearest_enemy, find_nearest_leader, fire_now, get_target_from_variables,
     MoveBase, MoveInInitDirection, MoveTowardsTargetNoPath, MoveToPoint, MoveToRandomVisiblePosition, Power,
     Runaway, Scanning, SimpleFollowByTarget, sleep, stop_moving, TriggerMapAction, TryFireToAnyone, all, optional,
     act, never, time_limit, timer, while_target_alive,
@@ -623,6 +623,22 @@ pub fn chase() -> impl BehaviorNode<AiBlackboard, Orders> {
         move_to_last_known_target_position(),
         named("Sleep", seq((named("Sleep2s", leaf(sleep(SLEEP_TIME))), act(Idle)))),
     )))
+}
+
+/// `BTActionFactory.ChaseCurrentTargetForever`: while the target lives,
+/// chase it and fire when the gun points at it, or chase it alone.
+fn chase_current_target_forever() -> impl BehaviorNode<AiBlackboard, Orders> {
+    while_target_alive(named("FollowAndFire", select((
+        named("Chase and fire", act(all((FireToTarget::new(0.0), FollowBy::new(|bb| bb.target_position_safe()))))),
+        act(FollowBy::new(|bb| bb.target_position_safe())),
+    ))))
+}
+
+/// `BTActionFactory.ChaserTargetFromLocalVariable` (2014, "Ai to chase
+/// specified target"): chase the car the map named in the car's own
+/// `Target` variable (Escape's hover scout after the player), forever.
+pub fn chaser_target_from_local_variable() -> impl BehaviorNode<AiBlackboard, Orders> {
+    named("ChaserTargetFromLocalVariable", seq((leaf(get_target_from_variables), chase_current_target_forever())))
 }
 
 /// `BTActionFactory.ChaserAi`.

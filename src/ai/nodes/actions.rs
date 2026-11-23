@@ -31,6 +31,19 @@ pub fn find_nearest_enemy(bb: &mut AiBlackboard) -> NodeResult<Orders> {
     }
 }
 
+/// `BTActions/GetTargetFromVariables`: the target is the car the car's own
+/// `Target` variable names (a map id, set by the map's `ChangeIntVariable`);
+/// `Fail` when it names none.
+pub fn get_target_from_variables(bb: &mut AiBlackboard) -> NodeResult<Orders> {
+    match bb.variable_target {
+        Some(target) => {
+            bb.set_target(target);
+            NodeResult::Success
+        }
+        None => NodeResult::Failure,
+    }
+}
+
 /// `FindNearestEnemy.GetNearestEnemy`.
 fn nearest_enemy(bb: &AiBlackboard) -> Option<Entity> {
     let scan = bb.scan_distance;

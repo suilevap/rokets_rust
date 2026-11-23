@@ -38,7 +38,7 @@ mod level;
 mod lifecycle;
 mod silent;
 mod splash;
-mod variables;
+pub mod variables;
 mod view;
 
 use std::collections::{BTreeSet, HashMap};

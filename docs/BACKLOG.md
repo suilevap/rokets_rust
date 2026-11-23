@@ -11,7 +11,8 @@ The map's `SimpleCars` are spawned (`car`, `car/simple`, `car/death`) with
 their health, shield, team, weapon and wreck. Their controls (`ai`) are live
 for `AiSimpleTurret` / `AiSimpleTurretFriend` (`TurretAi`), `AiChaser`
 (`ChaserAi`), `MoveByPath` / `MoveByPathFriend` / `MoveByPathSafelyFriend`
-(`FollowPathAi`, `FollowPathAiSafe`), `GoToEnemySimplePredictionPosition`
+(`FollowPathAi`, `FollowPathAiSafe`), `GoToEnemySimplePredictionPosition`,
+`ChaserTargetFromLocalVariable`
 (all flatbt trees), `AttackAiVer2`, `SimpleAttackNearestEnemy`,
 `SimpleFollowByEnemyAi`, `MoveAndFireInInitDirection`, `ZombieFlocking`,
 `ZombieFlockingFriend`, `SimpleFlocking`,
@@ -53,8 +54,6 @@ along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
    - `CaptureTheBox*` (`CustomAi`): `FixBlocker` (the path's
      `Blocker` is there), `MoveUntilPositionNonVisible`, custom data on the
      blackboard;
-   - `ChaserTargetFromLocalVariable`: `GetTargetFromVariables` (map
-     variables read from a tree);
    - `AiSimpleTurretFriendFireAvailableTarget` (`TurretAiFireToAnyone`:
      `SimpleAttackByAngle`, `FindAngleNearestEnemy`; no map uses it).
    And `BTLib`'s `RepeatUntilSuccess`, `Condition` where a tree
