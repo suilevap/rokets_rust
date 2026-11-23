@@ -36,6 +36,7 @@ mod control;
 pub mod destroy_on_contact;
 mod entity;
 mod focus;
+mod highlight;
 mod immortal;
 mod level;
 mod lifecycle;
@@ -60,6 +61,7 @@ pub use clone::{CloneOf, along, source_id};
 pub use path::{Leg, legs, offset, uv};
 pub use camera_path::stop_camera_path;
 pub use entity::Inactive;
+pub use highlight::ControlHighlight;
 pub use lifecycle::{OnDestroy, Respawned, destroy_action};
 pub use splash::{SplashBindText, SplashCommand};
 pub use variables::{Owner, Variables};
@@ -337,6 +339,7 @@ impl Plugin for ActionsPlugin {
                 control::ControlActionsPlugin,
                 destroy_on_contact::DestroyOnContactPlugin,
                 focus::FocusActionsPlugin,
+                highlight::HighlightActionsPlugin,
                 level::LevelActionsPlugin,
                 lifecycle::LifecyclePlugin,
                 path::PathActionsPlugin,

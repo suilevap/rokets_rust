@@ -523,6 +523,11 @@ actions! {
         gadget_control "GadgetControl": bool = false;
         weapon_control "WeaponControl": bool = false;
         movement_control "MovementControl": bool = false;
+    } => templates {
+        "HighlightControllerOff()" => |_| Some(HighlightController::default()),
+        "HighlightControllerWeapon()" => |_| Some(HighlightController { weapon_control: true, ..HighlightController::default() }),
+        "HighlightControllerGadget()" => |_| Some(HighlightController { gadget_control: true, ..HighlightController::default() }),
+        "HighlightControllerMovement()" => |_| Some(HighlightController { movement_control: true, ..HighlightController::default() }),
     }
 
     MoveOrder("MoveOrder", name = "MoveOrder") {

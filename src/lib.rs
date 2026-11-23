@@ -8,6 +8,7 @@ pub mod boost;
 pub mod button;
 pub mod car;
 pub mod content;
+pub mod control_highlight;
 pub mod controls;
 pub mod door;
 pub mod explosion;
@@ -61,7 +62,7 @@ impl Plugin for TileRiderPlugin {
                 render::spin::SpinPlugin,
                 render::animate::AnimatePlugin,
                 (triggers::TriggersPlugin, actions::ActionsPlugin, door::DoorPlugin, button::ButtonPlugin, teleport::TeleportPlugin, platform::PlatformPlugin, info::InfoPlugin, markers::MarkersPlugin, gadget::GadgetPlugin, weapon::WeaponPlugin, stun::StunPlugin, ai::AiPlugin),
-                (hud::HudPlugin, splash::SplashPlugin),
+                (hud::HudPlugin, splash::SplashPlugin, control_highlight::ControlHighlightPlugin),
                 script::ScriptPlugin,
             ));
     }
