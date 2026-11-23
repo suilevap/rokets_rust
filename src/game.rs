@@ -107,8 +107,10 @@ fn sprites_for(map: &MapData, cars: &CarCatalog, registry: &crate::actions::Acti
                     names.extend(crate::weapon::AIM_LINE_TEXTURES.map(String::from));
                 }
             }
-            if car.gadget.as_deref() == Some("Link") {
-                names.extend(crate::gadget::TEXTURES.map(String::from));
+            match car.gadget.as_deref() {
+                Some("Link") => names.extend(crate::gadget::TEXTURES.map(String::from)),
+                Some("Accelerator") => names.extend(crate::gadget::accelerator::TEXTURES.map(String::from)),
+                _ => {}
             }
         }
     }

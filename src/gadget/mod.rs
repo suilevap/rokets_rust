@@ -1,6 +1,8 @@
-//! Gadgets of the player's car (`Weapons/ActiveGadget.cs`). The one ported
-//! is the magnet, `Link` (`ChainGadget.cs`, `Entities/Chain.cs`): most of
-//! the player's cars have it.
+//! Gadgets of the player's car (`Weapons/ActiveGadget.cs`). Two are ported:
+//! the magnet, `Link` (`ChainGadget.cs`, `Entities/Chain.cs`), which most
+//! of the player's cars have, and the accelerator ([`accelerator`]).
+//!
+//! The magnet:
 //!
 //! Holding the gadget button for 0.2 s (`ChargeTimeMs`) shoots the magnet
 //! towards the aim (the cursor, or ahead of the car), up to 8 units out.
@@ -25,8 +27,9 @@
 //!
 //! Not ported: C#'s touch circles and the flick that cuts the rope,
 //! the highlight of what can be grabbed, sparks, the transporting beam,
-//! the other gadgets (`Accelerator`, `Bomb`, `EditorPointer`).
+//! the other gadgets (`Bomb`, `EditorPointer`).
 
+pub mod accelerator;
 pub mod rope;
 
 use avian2d::prelude::*;
@@ -40,6 +43,7 @@ use crate::render::layers::Layer;
 use crate::render::sprite::{SpriteTint, UnitQuad, sprite_bundle};
 use crate::sound::PlaySound;
 use crate::units::px;
+use accelerator::Accelerator;
 use rope::Rope;
 
 /// `ChainGadget.ActiveDistance`: how far the magnet reaches, world units.
@@ -65,6 +69,9 @@ const INACTIVE_SPRITE: &str = "Gadget\\ChainInactive";
 /// Every texture the magnet draws with, to load with a map that gives a
 /// car one.
 pub const TEXTURES: [&str; 4] = [ACTIVE_SPRITE, INACTIVE_SPRITE, PIXEL, GRADIENT];
+
+/// A car with a gadget the player's button works (`_hasGadget`).
+pub type WithGadget = Or<(With<Magnet>, With<Accelerator>)>;
 
 /// Can be grabbed by the magnet (`LinkablePhysicEntity.CanBeLinked`).
 #[derive(Component, Debug, Default)]
@@ -187,7 +194,8 @@ impl Plugin for GadgetPlugin {
         )
         .add_systems(Update, (spawn_views, draw_magnets).chain().run_if(in_state(GameState::Playing)))
         .add_systems(Startup, spawn_touch_zone)
-        .add_systems(Update, show_touch_zone);
+        .add_systems(Update, show_touch_zone)
+        .add_plugins(accelerator::AcceleratorPlugin);
     }
 }
 
@@ -551,15 +559,26 @@ fn spawn_touch_zone(mut commands: Commands) {
 }
 
 /// Faint while it waits, bright while a finger holds it; only on touch,
-/// and only with a magnet.
+/// and only with a gadget: the magnet's always, the accelerator's while it
+/// is ready (`GetTouchView`).
 fn show_touch_zone(
     scheme: Res<crate::controls::ActiveScheme>,
     touch: Res<crate::controls::GadgetTouch>,
-    magnets: Query<(), (With<Magnet>, With<crate::controls::LocalPlayer>)>,
+    gadgets: Query<(Has<Magnet>, Option<&Accelerator>), With<crate::controls::LocalPlayer>>,
     mut zones: Query<(&mut BorderColor, &mut BackgroundColor), With<TouchZone>>,
 ) {
-    let shown = *scheme == crate::controls::ActiveScheme::Touch && !magnets.is_empty();
-    let alpha = if !shown { 0.0 } else if touch.finger.is_some() { 0.6 } else { 0.25 };
+    let has = gadgets.iter().any(|(magnet, accelerator)| magnet || accelerator.is_some());
+    let waiting = gadgets.iter().any(|(magnet, accelerator)| magnet || accelerator.is_some_and(Accelerator::ready));
+    let shown = *scheme == crate::controls::ActiveScheme::Touch && has;
+    let alpha = if !shown {
+        0.0
+    } else if touch.finger.is_some() {
+        0.6
+    } else if waiting {
+        0.25
+    } else {
+        0.0
+    };
     for (mut border, mut back) in &mut zones {
         let edge = Color::srgba(1.0, 1.0, 1.0, alpha);
         if border.top != edge {

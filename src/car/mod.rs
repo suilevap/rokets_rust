@@ -523,6 +523,10 @@ pub fn spawn_car(
             entity.insert(CarSounds::new(None, 0.0));
         }
     }
+    // The accelerator spends the player's energy too, gun or none.
+    if local && car.gadget.as_deref() == Some("Accelerator") {
+        entity.insert(crate::weapon::PlayerEnergy::default());
+    }
     if full {
         insert_car_parts(&mut entity, car, radius, friction, kind);
     }
@@ -559,7 +563,7 @@ pub fn spawn_car(
 
 /// What every `Car` has, the player's or the AI's: its driving, the
 /// swaying cabin, engine and tyre sounds (quieter for an AI's), smoke and
-/// the magnet.
+/// the gadget.
 fn insert_car_parts(entity: &mut EntityCommands, car: &CarData, radius: f32, friction: f32, kind: control::ControlKind) {
     let params = DriveParams::new(car, radius, friction);
     entity.insert((
@@ -583,6 +587,10 @@ fn insert_car_parts(entity: &mut EntityCommands, car: &CarData, radius: f32, fri
     if car.gadget.as_deref() == Some("Link") {
         let at = car.gadget_position.map_or(Vec2::ZERO, |p| Vec2::new(p.x, -p.y) * px(1.0) * car.scale);
         entity.insert(crate::gadget::Magnet::new(at));
+    }
+    // … and the accelerator, which needs no place.
+    if car.gadget.as_deref() == Some("Accelerator") {
+        entity.insert(crate::gadget::accelerator::Accelerator::new());
     }
 }
 

@@ -176,6 +176,11 @@ impl Plugin for ExplosionPlugin {
 pub fn blast_impulse(at: Vec2, blast: &Blast, center: Vec2, radius: f32) -> Vec2 {
     let to = center - at;
     let d = to.length();
+    // A blast on a body's very middle (the accelerator's, on its car)
+    // pushes it equally all round: Farseer's rays from inside cancel.
+    if d < 1e-3 {
+        return Vec2::ZERO;
+    }
     let near = (d - radius).max(0.0);
     if near >= blast.range {
         return Vec2::ZERO;

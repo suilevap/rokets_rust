@@ -53,6 +53,13 @@ shoulder aim it ahead of the car (or where the arrows point, on a car
 with a gun). On touch, hold a finger on the circle at
 the top right and drag from there to aim (the scheme is the landscape one
 for now).
+Cars with the accelerator (Race2's `ScoutAccelerator`; Derby, Friend and
+Trophy hand it over): hold the same gadget button a quarter of a second
+(right mouse, right Shift or `E`, the gamepad's right shoulder, a finger on the
+top right circle) for a burst of speed along the car and a blast around it,
+which spends the whole energy bar; the bar's refilled in about three
+seconds, a ring tells so, and a flash glows at the tail while it is ready.
+Pressed before that, it only gives a quarter of the push.
 Cars with a gun (the Minigun and the Railgun so far): hold the left mouse button to fire
 at the cursor, or the arrows to aim and fire that way, or right Ctrl to
 fire where it points; the gamepad's right trigger fires and its right

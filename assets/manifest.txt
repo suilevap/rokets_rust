@@ -395,6 +395,7 @@ Sprites/UI/BigCircleGun.png
 Sprites/UI/DottedCircle.png
 Sprites/UI/Equal.png
 Sprites/UI/GadgetUsage.png
+Sprites/UI/GadgetUsageInactive.png
 Sprites/UI/IconLikeCircle.png
 Sprites/UI/IconNotLikeCircle.png
 Sprites/UI/Logo.png
