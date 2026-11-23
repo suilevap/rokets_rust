@@ -16,6 +16,13 @@
 //! On touch the top right quarter of the screen is the gadget's: hold a
 //! finger there and drag from where it landed to aim (no drag: ahead).
 //!
+//! The enemies' cars use it too, by the same intent (`PlayerIntent::gadget`,
+//! `gadget_dir`, `gadget_cancel`): the AI's `Grab` and `Drop` actions
+//! (`ai::nodes::cargo`) hold the button, aim it and let go, as C#'s
+//! `FireType.GadgetActivityStart`, `End` and `Cancel` did. The 0.2 s charge
+//! holds for them too (C#'s AI skipped it: its flags went straight to
+//! `ProcessActivity`).
+//!
 //! Not ported: C#'s touch circles and the flick that cuts the rope,
 //! the highlight of what can be grabbed, sparks, the transporting beam,
 //! the other gadgets (`Accelerator`, `Bomb`, `EditorPointer`).
@@ -141,9 +148,14 @@ impl Magnet {
         self.views.iter().flat_map(|v| v.pieces.iter().flat_map(|&(a, b)| [a, b]).chain([v.active, v.inactive])).collect()
     }
 
-    /// Something is on the rope (`IsInSpecialState`).
+    /// Something is on the rope (`IsInSpecialState`, `LinkedSlave`).
     pub fn towing(&self) -> Option<Entity> {
         self.link.map(|l| l.cargo)
+    }
+
+    /// What the magnet would grab if let go now (`ChainGadget.Candidate`).
+    pub fn candidate(&self) -> Option<Entity> {
+        self.candidate.map(|c| c.entity)
     }
 }
 
@@ -198,6 +210,19 @@ fn use_magnets(
     let dt = time.delta_secs();
     for (car, mut m, mut intent, pos, rot, collider) in &mut cars {
         let at = pos.0;
+        if std::mem::take(&mut intent.gadget_cancel) {
+            // `ChainGadget.Cancel`: the cargo goes, nothing is linked.
+            if m.link.is_some() {
+                sound(&mut play, "ChainBrake", at);
+            }
+            unlink(&mut m, &mut heavy);
+            m.held = 0.0;
+            m.active = false;
+            m.far_enough = false;
+            m.dragging = None;
+            m.candidate = None;
+            continue;
+        }
         let facing = Vec2::from_angle(rot.as_radians());
         let radius = collider.shape_scaled().as_cuboid().map_or(1.0, |c| c.half_extents.max_element());
         if intent.gadget {

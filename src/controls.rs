@@ -47,6 +47,11 @@ pub struct PlayerIntent {
     pub gadget_at: Option<Vec2>,
     /// Or the way it aims, world, length 0..1 of its reach (a touch drag).
     pub gadget_dir: Option<Vec2>,
+    /// The gadget's activity is cancelled: what it holds is let go and
+    /// nothing is linked (`FireType.GadgetActivityCancel`, which the AI's
+    /// `Grab`/`Drop` raise when they end badly). A pulse: the gadget takes
+    /// it in the next fixed step.
+    pub gadget_cancel: bool,
 }
 
 /// What writes a car's [`PlayerIntent`] in the fixed step, before the cars

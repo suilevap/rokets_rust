@@ -144,7 +144,7 @@ impl BtAction<AiBlackboard, Orders> for SimpleFollowByTarget {
             return Orders::default();
         };
         let direction = direction_to(foe, ctx.pos, self.predict);
-        Orders { move_dir: Some(direction), aim_dir: Some(direction), fire: false }
+        Orders { move_dir: Some(direction), aim_dir: Some(direction), fire: false, ..Orders::default() }
     }
 }
 
@@ -440,7 +440,7 @@ impl BtAction<AiBlackboard, Orders> for AimToTarget {
         } else {
             None
         };
-        Orders { move_dir, aim_dir: Some(aim), fire: false }
+        Orders { move_dir, aim_dir: Some(aim), fire: false, ..Orders::default() }
     }
 
     fn complete(&self, _: &mut f64, ctx: &mut AiBlackboard, _: ()) -> bool {
@@ -480,6 +480,6 @@ impl BtAction<AiBlackboard, Orders> for MoveInInitDirection {
     }
 
     fn tick(&self, direction: &mut Vec2, _: &mut AiBlackboard, _: ()) -> Orders {
-        Orders { move_dir: Some(*direction), aim_dir: Some(*direction), fire: true }
+        Orders { move_dir: Some(*direction), aim_dir: Some(*direction), fire: true, ..Orders::default() }
     }
 }

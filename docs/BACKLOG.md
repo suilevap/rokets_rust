@@ -35,18 +35,13 @@ along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
    - `SupportAi*`: `SmartAttack` (below), `ExecuteOrders` (in, with the
      order queue), `FollowLeader`; `FindNearestLeader`, the `Leader` and
      the friends (`Mate`) are in with the zombies;
-   - the other AI orders (`ai/order_queue.rs` has the queue and
-     `MoveOrder`), each a map action that queues a behaviour for
-     `ExecuteOrders`: `MoveCargoOrder` (26 in 2WeeksAgo, Assembly,
-     FinalCredits, Friend, Race, Teleport, UnderPressure:
-     `BTActionFactory.CreateCarrierBehaviour`: grab the cargo with the
-     magnet, tow it to a point within `R`, drop it at `DropPosition` or a
-     place the AI finds), `GrabCargoOrder` (4: `CreateGrabCargoBehaviour`,
-     and `ActionOnGrab` as the blackboard's `MapActionOnTirgger`),
-     `PressButtonOrder` (Friend: `CreatePressButtonBehaviour`: drive onto
-     the button, wait 1.2 s, check it is pressed), `AttackTargetOrder`
-     (no map: `CreateAttackTargetBehaviour`); they need the AI to use the
-     magnet gadget. Also `MoveOrder`'s `DEBUG` build (`CustomAi.SmartMoveToPos`:
+   - the other AI orders: `ai/order_queue.rs` has the queue and
+     `MoveOrder`, `MoveCargoOrder`, `GrabCargoOrder` and `PressButtonOrder`
+     (`CreateCarrierBehaviour`, `CreateGrabCargoBehaviour`,
+     `CreatePressButtonBehaviour`: in; the AI works the magnet through the
+     player's intent). Left: `AttackTargetOrder` (no map:
+     `CreateAttackTargetBehaviour`); `CaptureTheBox*`'s own use of the
+     magnet; `MoveOrder`'s `DEBUG` build (`CustomAi.SmartMoveToPos`:
      a door in the way opened first by its button or a box pushed onto it;
      AiPathTest is its test map, where the release build's `MoveToPoint`,
      the one ported, finds the way shut and drops its `RemoveOnTry` order;
@@ -55,8 +50,7 @@ along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
    - `AttackAi*`'s slow-gun style (`SmartAttackTargetSlowWeapon`) is
      taken by the Plasma gun and the rocket launchers (`IsImmidiate` false,
      `Kind::is_immediate`);
-   - `CaptureTheBox*` (`CustomAi`): the chain gadget actions
-     (`GrabByChainGadget`, `DropByChainGadget`), `FixBlocker` (the path's
+   - `CaptureTheBox*` (`CustomAi`): `FixBlocker` (the path's
      `Blocker` is there), `MoveUntilPositionNonVisible`, custom data on the
      blackboard;
    - `ChaserTargetFromLocalVariable`: `GetTargetFromVariables` (map

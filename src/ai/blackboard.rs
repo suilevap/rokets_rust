@@ -63,15 +63,20 @@
 //! target) is looked at with the target, against the floor plan.
 //!
 //! The orders a map gives the car (`Orders`, `OrdersManager`) are its
-//! [`OrderQueue`](super::order_queue::OrderQueue).
+//! [`OrderQueue`](super::order_queue::OrderQueue); the one being carried
+//! out is [`executing`](AiBlackboard::executing), where the trees built
+//! for an order read its cargo, button and points (C# built each tree around
+//! them). The cargo, the button and what the magnet tows are the
+//! [`Thing`]s the gather copies in ([`AiBlackboard::watched`]), the magnet
+//! itself a [`MagnetState`].
 //!
 //! Not ported: `AiBlackboard`'s other states (`SeeTargetForward`: no tree
 //! reads it),
 //! `AdditionalTargetPosition`, `LastDamagerPosition` (copied by `Uii` in C#,
 //! read by no tree), `ActionData`
 //! (the one slot every action shared: an action keeps its own state), the
-//! custom data: the trees so far read none of them (they come with the trees
-//! that do). A friend that is deactivated (`IsActive` false) is not gathered
+//! custom data (`PutCustomData`: its one use, the grab's `Cargo`, is the
+//! order's). A friend that is deactivated (`IsActive` false) is not gathered
 //! (C#'s `GetFriends` did not ask), nor one further than its reach (twice
 //! `ScanDistance`, at least 8 and twice the gun's range: the farthest any
 //! tree asks), except the leader. `Draw`'s debug overlay (the path and the line to the target). A target that is deactivated (`IsActive` false)
@@ -90,7 +95,7 @@ use rand::{Rng, SeedableRng};
 use flatbt_bevy::Tick;
 
 use super::navigation::Navigation;
-use super::order_queue::OrderQueue;
+use super::order_queue::{Order, OrderKind, OrderQueue};
 use crate::map::nav::{Blocker, NavPath};
 use crate::map::terrain::Terrain;
 use crate::weapon::model::{FireRange, closer_by_chebyshev, due};
@@ -232,6 +237,31 @@ pub struct Body {
     pub shield: i32,
 }
 
+/// A thing the car's orders are about, as the blackboard last saw it (the
+/// `Entity` a `MoveCargoOrder` or `PressButtonOrder` named, or the one the
+/// magnet tows): what the trees read of it. A thing the blackboard cannot
+/// see is `Removed`.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Thing {
+    pub entity: Entity,
+    /// `Entity.Position`.
+    pub pos: Vec2,
+    /// `Entity.Radius`.
+    pub radius: f32,
+    /// A button's `IsActivated` (false for anything else).
+    pub pressed: bool,
+}
+
+/// The car's magnet, as the trees read it (`Car.Gadget as ChainGadget`);
+/// `None` on the blackboard for a car with another gadget or none.
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct MagnetState {
+    /// `Entity.LinkedSlave` (`IsInSpecialState`): what is on the rope.
+    pub towing: Option<Entity>,
+    /// `ChainGadget.Candidate`: what it would grab if let go now.
+    pub candidate: Option<Entity>,
+}
+
 /// `PathPeriodControl` and `EntityPreviousPeriodPosition`: every two seconds
 /// a car on an open path is checked for having moved. The check is made while
 /// asking whether the action is still in progress, which sees the blackboard
@@ -331,9 +361,22 @@ pub struct AiBlackboard {
     /// `Orders`: what the map has ordered the car to do (`MoveOrder`, …),
     /// carried out by `ExecuteOrders`.
     pub order_queue: OrderQueue,
+    /// The order `ExecuteOrders` is carrying out: the trees an order made
+    /// read what it says here (C# built them around the order's values).
+    pub executing: Option<Order>,
+    /// The car's magnet; `None` with no `ChainGadget` (`Entity is Car &&
+    /// Gadget is ChainGadget`).
+    pub magnet: Option<MagnetState>,
+    /// What the orders and the magnet are about, copied in every step by
+    /// `ai::gather_things`: the first order's cargo or button, the order
+    /// being carried out, and what the magnet tows.
+    pub things: Vec<Thing>,
     /// Map actions the tree asked for (`MapManager.Triggers.RunAction`),
     /// sent by `ai::send_trigger_actions`.
     actions: Vec<String>,
+    /// A tree ended a gadget action badly (`Fire = GadgetActivityCancel`):
+    /// `ai::carry_out` takes it.
+    gadget_cancel: bool,
     /// A tree ended an action that cleared the stick
     /// (`Control.ClearAxis`): `ai::carry_out` takes it.
     stick_cleared: bool,
@@ -423,6 +466,10 @@ impl AiBlackboard {
             blocker: None,
             map_action_on_trigger: None,
             order_queue: OrderQueue::default(),
+            executing: None,
+            magnet: None,
+            things: Vec::new(),
+            gadget_cancel: false,
             actions: Vec::new(),
             stick_cleared: false,
             watch: PathWatch::default(),
@@ -702,6 +749,42 @@ impl AiBlackboard {
         self.watch.with(|w| w.previous = pos);
     }
 
+    /// The entities this car's orders and magnet are about, for the gather
+    /// to look up: the subject of the first order and of the one being
+    /// carried out, and what is on the rope.
+    pub fn watched(&self) -> impl Iterator<Item = Entity> + '_ {
+        let order = |o: &Order| OrderKind::subject(&o.kind);
+        self.order_queue
+            .peek()
+            .and_then(order)
+            .into_iter()
+            .chain(self.executing.as_ref().and_then(order))
+            .chain(self.magnet.and_then(|m| m.towing))
+    }
+
+    /// A watched thing, as it was gathered; `None` for one that is gone
+    /// (`Removed`).
+    pub fn thing(&self, entity: Entity) -> Option<&Thing> {
+        self.things.iter().find(|t| t.entity == entity)
+    }
+
+    /// `MapManager.LineCollide` between two world points on the floor plan
+    /// (nothing is in the way with none).
+    pub fn line_collides(&self, a: Vec2, b: Vec2) -> bool {
+        self.terrain.as_ref().is_some_and(|t| t.line_collides(a, b))
+    }
+
+    /// `Control.Fire = FireType.GadgetActivityCancel`, to be carried out by
+    /// the car's gadget once the tree is done.
+    pub fn cancel_gadget(&mut self) {
+        self.gadget_cancel = true;
+    }
+
+    /// Whether the gadget is to be cancelled, and forgets it.
+    pub fn take_gadget_cancel(&mut self) -> bool {
+        std::mem::take(&mut self.gadget_cancel)
+    }
+
     /// `Control.ClearAxis()`, asked of the car after the tree has run.
     pub fn clear_stick(&mut self) {
         self.stick = Vec2::ZERO;
@@ -799,10 +882,16 @@ impl AiBlackboard {
     /// `MapManager.GetRandomFreeVisiblePoint(pos, maxDistance)`; the origin
     /// (no point) with no floor plan.
     pub fn random_free_visible_point(&mut self, pos: Vec2, max_distance: f32) -> Vec2 {
+        self.random_free_visible_point_from(pos, 0.0, max_distance)
+    }
+
+    /// `MapManager.GetRandomFreeVisiblePoint(pos, minDistance, maxDistance)`;
+    /// the origin (no point) with no floor plan.
+    pub fn random_free_visible_point_from(&mut self, pos: Vec2, min_distance: f32, max_distance: f32) -> Vec2 {
         let Some(terrain) = self.terrain.clone() else {
             return Vec2::ZERO;
         };
-        terrain.random_free_visible_point(pos, 0.0, max_distance, &mut || self.rng.random())
+        terrain.random_free_visible_point(pos, min_distance, max_distance, &mut || self.rng.random())
     }
 
     /// `MapManager.GetRandomFreeNonVisiblePoint(pos, from, maxDistance)`; the

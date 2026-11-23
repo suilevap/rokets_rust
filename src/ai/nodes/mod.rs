@@ -31,12 +31,14 @@
 //! | [`FindNearestLeader`] | `BTActions/FindNearestLeader` |
 //! | [`Power`], [`FireNow`], [`AlertFriends`] | the `Power`, `Fire!` and `Uii` actions of `BTActionFactory.ZombieFlocking` |
 //! | [`ExecuteOrders`] | `BTActions/ExecuteOrders` (a `BTLib.DynamicNode` over `OrdersManager`) |
+//! | [`GrabByChainGadget`], [`DropByChainGadget`] | `BTActions/GrabByChainGadget`, `DropByChainGadget`: work the magnet |
 //!
 //! The rest of `BTActions/` (`FindAngleNearestEnemy`,
-//! `GetTargetFromVariables`, the chain gadget ones, …)
+//! `GetTargetFromVariables`, …)
 //! comes with the trees that use it (`docs/BACKLOG.md` lists which).
 
 mod actions;
+mod cargo;
 mod condition;
 mod execute_orders;
 mod flocking;
@@ -50,7 +52,8 @@ pub use actions::{
     TriggerMapAction, TryFireToAnyone, find_nearest_enemy, sleep, stop_moving,
 };
 pub use flocking::{FlockState, Flocking, Power, TargetFn, alert_friends, find_nearest_leader, fire_now};
-pub use execute_orders::ExecuteOrders;
+pub use cargo::{DropByChainGadget, Dropping, GrabByChainGadget, Grabbing, HOLD_MAX, HOLD_MIN, NEAR, executing_cargo, executing_drop};
+pub use execute_orders::{ExecuteOrders, OrderState, execute_orders};
 pub use condition::{Condition, ThinkTimer, TimerState, WhileTargetAlive, has_live_target, never, time_limit, timer, while_target_alive};
 pub use optional::{Optional, optional, optional_required};
 pub use parallel::{All, all};
