@@ -41,6 +41,7 @@
 //! | `SimpleFlocking` | `BTActionFactory.SimpleFlocking`: flocks at half speed with an enemy near, else at a tenth |
 //! | `HammerAi`, `HammerAiFriend` | `BTActionFactory.HammerAi`: chases the nearest enemy within `ScanDistance` for a second, charges at full stick by a path to where it was then (up to 3 s), and, while it lives, backs off at half the stick to a random place in sight for a second before the next round; with nobody, sleeps 2 s and wanders ([`trees::hammer_ai`]) |
 //! | `OrderExecutorFriend`, `OrderExecutorAi` | `BTActionFactory.OrderExecutorAi` (`ExecuteOrders`): carries out the orders the map gives it (`MoveOrder`: drives by a path to a point; `MoveCargoOrder`, `GrabCargoOrder`: works the magnet, see [`nodes::GrabByChainGadget`]; `PressButtonOrder`: drives onto a button and waits for it), first to last, each dropped as its `OrderRemoveCondition` says; with none it does nothing ([`trees::order_executor_ai`], [`order_queue`]) |
+//! | `SupportAi`, `SupportAiFriend` | `BTActionFactory.SupportAi`: fights the nearest enemy within `ScanDistance` as `AttackAi` does (`SmartAttack`); with none carries out the map's orders (`ExecuteOrders`); with none follows its leader (the player's car, or a friend AI that may lead) by a path to where it will be in a second until within 10 of it, then wanders at a tenth of the stick to random places in sight; with no leader looks for one, else stands ([`trees::support_ai`], [`trees::follow_leader`]) |
 //! | `AlwaysShoot` | [`AlwaysShoot`]: the trigger always down, the gun where the car points |
 //! | `ShootPattern` | [`ShootPattern`]: a random pattern of quarter-second silences and bursts |
 //! | `NoneLocal`, `NoneEnemy`, `NoneFriend` | nothing (`AINone`; see `car::control`) |
@@ -231,6 +232,7 @@ impl Plugin for AiPlugin {
         ))
         .add_plugins((
             BehaviorPlugin::for_tree(trees::order_executor_ai).in_schedule(FixedUpdate).tick_mode(tick_mode),
+            BehaviorPlugin::for_tree(trees::support_ai).in_schedule(FixedUpdate).tick_mode(tick_mode),
             BehaviorPlugin::for_tree(trees::chaser_target_from_local_variable)
                 .in_schedule(FixedUpdate)
                 .tick_mode(tick_mode),
@@ -286,7 +288,8 @@ pub fn set_control(car: &mut EntityCommands, control: &str, seed: u64) {
         .stop_behavior(trees::zombie_flocking)
         .stop_behavior(trees::simple_flocking)
         .stop_behavior(trees::hammer_ai)
-        .stop_behavior(trees::order_executor_ai);
+        .stop_behavior(trees::order_executor_ai)
+        .stop_behavior(trees::support_ai);
     #[cfg(debug_assertions)]
     car.remove::<DebugBehavior>();
     // A control of its own starts with no button held (`Fire = None`).
@@ -359,6 +362,12 @@ pub fn set_control(car: &mut EntityCommands, control: &str, seed: u64) {
         "OrderExecutorFriend" | "OrderExecutorAi" => {
             car.insert((brain, Behavior::for_tree(trees::order_executor_ai)));
         }
+        // The default `ScanDistance`; the team is the control's (`car::control`).
+        // `FindNearestLeader` looks at the friends around.
+        "SupportAi" | "SupportAiFriend" => {
+            brain.watch_friends = true;
+            car.insert((brain, Behavior::for_tree(trees::support_ai)));
+        }
         "AlwaysShoot" => {
             car.insert(AlwaysShoot);
             return;
@@ -401,6 +410,8 @@ pub fn is_live(control: &str) -> bool {
             | "HammerAiFriend"
             | "OrderExecutorFriend"
             | "OrderExecutorAi"
+            | "SupportAi"
+            | "SupportAiFriend"
             | "AlwaysShoot"
             | "ShootPattern"
     )

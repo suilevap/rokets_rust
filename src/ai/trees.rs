@@ -475,6 +475,69 @@
 //! flags did; the rest are in [`nodes::GrabByChainGadget`] and
 //! [`nodes::DropByChainGadget`].
 //!
+//! `SupportAi` (`SupportAiFriend`, team 0, the default `ScanDistance` 16;
+//! `SupportAi`, team 1), the friendly cars The City gives the player in its
+//! third mission (its first `SupportAiFriend` car starts there, the second
+//! takes the control when the player reaches the gate), with its subtree
+//! `FollowLeader`:
+//!
+//! ```text
+//! C#                                              Rust
+//! SupportAi =                                     support_ai() =
+//!   bt.Selector("Support AI",                       select((
+//!     SmartAttack,                                    smart_attack(),
+//!     ExecuteOrders.Instance,                         order_executor_ai(),
+//!     FollowLeader,                                   follow_leader(),
+//!     bt.Idle)                                        action(Idle),
+//!                                                   ))
+//! FollowLeader =                                  follow_leader() =
+//!   bt.Selector("FollowLeader",                     select((
+//!     bt.Sequence("Follow",                           seq((
+//!       bt.Condition("Leader is far",                   check(a live leader),
+//!         Leader != null && Leader.Alive),
+//!       bt.Selector("Move",                             select((
+//!         bt.While("Close", null,                         if_else(the leader's place in 1 s is
+//!           !CloserThanByChebyshev(Position,                not within 10,
+//!             Leader.GetPredictionPosition(1), 10)          action(FollowBy(that place,
+//!             ? Running : Fail,                               1, 10)),
+//!           FollowBy("Follow leader",                       check(never)),
+//!             Leader.GetPredictionPosition(1), 1, 10)),
+//!         MoveToRandomVisiblePosition(                    action(MoveToRandomVisiblePosition(
+//!           b => ScanDistance, 0.1f))),                     own position, ScanDistance, 0.1, 1)),
+//!                                                       )),
+//!                                                     )),
+//!     bt.Sequence("Find Leader",                      leaf(find_nearest_leader),
+//!       FindNearestLeader))                         ))
+//! ```
+//!
+//! What it comes to (its history: `SupportAi` and the leader, December
+//! 2013; the attack `SimpleAttack` until `SmartAttack` took its place in
+//! January 2014; in February 2014 "supporter move in 10m": `Close` was
+//! `ScanDistance / 2`, `FollowBy` had no radius and the wander was at half
+//! speed): the supporter fights the nearest enemy within `ScanDistance` as
+//! `AttackAi` does (`SmartAttack`; the enemy the leader sees first); with
+//! none it carries out the orders the map gave it, if any; with none it
+//! follows its leader, the player's car or a friend AI with a high enough
+//! `Traits[0]` (`find_nearest_leader`, which also keeps the last leader): by
+//! a path to where the leader will be in a second while it is not within 10
+//! of that place, at a full stick; when it is, it wanders at a tenth of the
+//! stick to random places in sight within `ScanDistance`, a new one each time
+//! the last is reached, staying about the leader. With no leader it looks for
+//! one (the tree ends at once and is thought over again at the next step) and
+//! otherwise stands (`Idle`). The leader is looked for only when it is gone
+//! or dead, never while a living one is out of range: `Leader is far` asks
+//! only that it lives, so a supporter whose leader has left its
+//! `ScanDistance` still follows it.
+//!
+//! Differences from C# in `SupportAi`: none of its own. Its parts keep their
+//! own (`SmartAttack`, `ExecuteOrders`, `FindNearestLeader`, `FollowBy`,
+//! `MoveToRandomVisiblePosition`, the `Timer`s ending at a think); the
+//! leader's `Leader.GetPredictionPosition(1.0f)` has no `Removed` branch (a
+//! leader gone is no live leader, and its `Close` is asked of a live one
+//! only). `ExecuteOrders.Instance` is one node shared by every `SupportAi`
+//! car in C#; the port builds one per tree, each reading its own car's queue,
+//! as `order_executor_ai` does for its own controls.
+//!
 //! Not ported here: every other tree of `BTActionFactory` (`SimpleAttackDelayPos`,
 //! `Attack`, `SimpleAi`, `GuardAi`, `SmartAttack` (`AttackAi`'s: the
 //! first version of the smart attack, which `AttackAiVer2` replaced), … the
@@ -551,6 +614,14 @@ pub const FOLLOW_LEADER_MIN_DIST: f32 = 10.0;
 /// (`GetPredictionPosition(4.0f)`), s.
 pub const LEADER_FLOCK_TIME: f32 = 5.0;
 pub const LEADER_FLOCK_AHEAD: f32 = 4.0;
+
+/// `FollowLeader`'s `Close`: the supporter follows while it is not within
+/// this many units (on both axes) of where the leader will be in 1 s, and
+/// is as near as `FollowBy("Follow leader", …, 1.0f, 10)` needs to be.
+pub const SUPPORT_CLOSE_DIST: f32 = 10.0;
+/// `FollowLeader`'s `MoveToRandomVisiblePosition(…, 0.1f)`: how slowly a
+/// supporter near its leader wanders, as a share of the full stick.
+pub const SUPPORT_WANDER_SPEED_RATE: f32 = 0.1;
 
 /// `HammerAi`'s `Timer(1.0f, Chase)`: how long it chases before it charges, s.
 pub const HAMMER_CHASE_TIME: f32 = 1.0;
@@ -1012,6 +1083,44 @@ pub fn hammer_ai() -> impl BehaviorNode<AiBlackboard, Orders> {
 /// do nothing. See the module docs.
 pub fn order_executor_ai() -> impl BehaviorNode<AiBlackboard, Orders> {
     named("Order", execute_orders(move_order(), carrier(), grab_cargo(), press_button()))
+}
+
+/// `BTActionFactory.FollowLeader`: see the module docs.
+pub fn follow_leader() -> impl BehaviorNode<AiBlackboard, Orders> {
+    named("FollowLeader", select((
+        named("Follow", seq((
+            named("Leader is far", check(|bb: &AiBlackboard| bb.leader().is_some())),
+            named("Move", select((
+                // `While("Close", null, !CloserThanByChebyshev(..) ? Running : Fail)`.
+                named("Close", if_else(
+                    |bb: &AiBlackboard| {
+                        !closer_by_chebyshev(bb.pos, bb.leader_prediction(FOLLOW_LEADER_AHEAD), SUPPORT_CLOSE_DIST)
+                    },
+                    named("FollowBy_Follow leader", act(FollowBy::with_params(
+                        |bb| bb.leader_prediction(FOLLOW_LEADER_AHEAD),
+                        1.0,
+                        SUPPORT_CLOSE_DIST,
+                    ))),
+                    check(never),
+                )),
+                named("MoveTo_RandomPos", act(MoveToRandomVisiblePosition::new(
+                    |bb| bb.pos,
+                    |bb| bb.scan_distance,
+                    SUPPORT_WANDER_SPEED_RATE,
+                    1.0,
+                ))),
+            ))),
+        ))),
+        // `bt.Sequence("Find Leader", FindNearestLeader)`: a sequence of one is the leaf.
+        leaf(find_nearest_leader),
+    )))
+}
+
+/// `BTActionFactory.SupportAi` (`SupportAi`, `SupportAiFriend`): fight the
+/// nearest enemy, else carry out the map's orders, else follow the leader,
+/// else stand. See the module docs.
+pub fn support_ai() -> impl BehaviorNode<AiBlackboard, Orders> {
+    named("Support AI", select((smart_attack(), order_executor_ai(), follow_leader(), act(Idle))))
 }
 
 /// Where a `MoveOrder` goes: the order's point, or no point (the origin).
