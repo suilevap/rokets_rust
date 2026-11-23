@@ -1,6 +1,5 @@
 //! Debug text until the real HUD: map name, coins, controls, level end,
-//! frames per second, the additive light's strength, the text bound to
-//! splashes. `R` restarts the map;
+//! frames per second, the additive light's strength. `R` restarts the map;
 //! `N` skips to the next one.
 //! The frame rate is also logged every few seconds, to compare builds.
 
@@ -75,7 +74,7 @@ fn update_text(
     name: Res<CurrentMapName>,
     coins: Res<CoinCount>,
     scheme: Res<ActiveScheme>,
-    (end, respawn, bound): (Res<LevelEnd>, Res<crate::game_mode::Respawn>, Res<crate::actions::SplashBindText>),
+    (end, respawn): (Res<LevelEnd>, Res<crate::game_mode::Respawn>),
     mut text: Query<&mut Text, With<DebugText>>,
 ) {
     let done = if end.timer.is_some() { "\nLEVEL COMPLETE" } else { "" };
@@ -86,13 +85,8 @@ fn update_text(
     let fps = frame_rate(&diagnostics).map_or(String::new(), |(fps, ms)| format!("  {fps:.0} fps {ms:.1} ms"));
     // Lives count once there is somewhere to come back to.
     let lives = respawn.point.map_or(String::new(), |_| format!("  lives {}", respawn.lives.max(0)));
-    // What `SplashSetBindVariable` bound to splashes, which are not drawn yet.
-    let bound = bound.set_slots().fold(String::new(), |mut acc, (i, t)| {
-        acc.push_str(&format!("{}{i}={t}", if acc.is_empty() { "  splash " } else { " " }));
-        acc
-    });
     let s = format!(
-        "{}  gears {}/{}{lives}  [{:?}]  R restart, N next{fps}{glow}{bound}  flash {:.2}{}",
+        "{}  gears {}/{}{lives}  [{:?}]  R restart, N next{fps}{glow}  flash {:.2}{}",
         name.0, coins.collected, coins.total, *scheme, flash.0, done
     );
     for mut t in &mut text {

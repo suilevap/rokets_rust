@@ -1,7 +1,14 @@
-//! `ShowSplash` (`HideSplash()`), for now without the splash itself: its
-//! `ActionOnHide` runs when it would have hidden, `AutoHideTimeSec` later
-//! (two seconds for one left to a tap), so the maps that go on from a
-//! splash (an intro, then the camera back on the car) still do.
+//! `ShowSplash` (`HideSplash()`): hands the splash to what draws it
+//! (`crate::splash`, in `Update`) as a [`SplashCommand`], and runs its
+//! `ActionOnHide` `AutoHideTimeSec` later (two seconds for one with no time,
+//! left to a tap), so the maps that go on from a splash (an intro, then the
+//! camera back on the car) go on. The splash starts to hide at that same
+//! moment (`crate::splash` counts its own hold the same way), which is what
+//! C# did: `ActionOnHide` is the splash's hide callback.
+//!
+//! C# origin: `ActionRunner.ShowSplashRun` (no name: `SplashScreen.HideScreen`,
+//! else `SplashScreen.Show(name, clearPreviousState: true, …, autoHideTime)`
+//! and `Clickable = action.Clickable`).
 //!
 //! `SplashSetBindVariable` (`ActionRunner.SplashSetBindVariableRun`, added
 //! in 2014 with the Door's Dream map for its two scores) puts the value of
@@ -12,14 +19,24 @@
 //! or counter: Door's Dream's two scores (`PongScore`), the friends left
 //! in `Swarm` and the coins in `WinnersRoom` (`TimerAndCounter`). The
 //! action only stores the text, on the map's actions (`FixedUpdate`);
-//! what draws it reads `SplashBindText` in `Update`. Until splashes are
-//! drawn, the debug text (`hud`) shows the slots that are set.
+//! `crate::splash` reads `SplashBindText` in `Update`.
 //! `BindVariableNum` is 1 to 5 in C#; slot 0 belongs to the splash's
-//! countdown (`SplashScreen.DrawNormal`), which this port does not have.
+//! countdown (`SplashScreen.DrawNormal`), which `crate::splash` writes.
 //!
 //! Not ported:
-//! - drawing splashes (`Splashes/Splashes.xml`), taps, and so the
-//!   countdown in slot 0;
+//! - `ActionOnHide` timing is not C#'s: C# ran it when the splash began to
+//!   hide, `AutoHideTimeSec` after it had finished fading in; here it runs
+//!   `AutoHideTimeSec` after the action ran (the splash hides then too, see
+//!   `crate::splash`). A `HideSplash()` or another `ShowSplash` does not
+//!   run the shown splash's `ActionOnHide` at once (`SplashScreen.Init`
+//!   and `Hide` called the old hide callback), and a splash with no
+//!   `AutoHideTimeSec` that is not clickable runs it after two seconds
+//!   instead of never (none of the campaign's has an `ActionOnHide`);
+//! - `Clickable` and a tap hiding the splash (`ControlHandler_Pressed`): no
+//!   splash of the campaign is clickable (see `crate::splash`);
+//! - `ShowSplashRun`'s `!UIManager.IsActive` (the menus) and the
+//!   `World.GameMode.IsLevelInProgress` check before `ActionOnHide`: there
+//!   are no menus, and `crate::game_mode` has no such flag;
 //! - `Fifth` (5): C#'s `BindText` has five slots (0 to 4), so it throws
 //!   `IndexOutOfRangeException`; here it is logged and ignored (no map uses
 //!   it);
@@ -69,11 +86,23 @@ impl SplashBindText {
     }
 }
 
+/// What `ShowSplash` asks of the splash screen (`crate::splash`).
+#[derive(Message, Debug, Clone, PartialEq)]
+pub enum SplashCommand {
+    /// `SplashScreen.Show`: the splash of that name replaces the shown one;
+    /// it hides itself after `auto_hide` seconds, or stays when that is
+    /// not above zero.
+    Show { name: String, auto_hide: f32 },
+    /// `SplashScreen.HideScreen`.
+    Hide,
+}
+
 pub struct SplashActionsPlugin;
 
 impl Plugin for SplashActionsPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<SplashBindText>()
+            .add_message::<SplashCommand>()
             .add_map_action_fn::<ShowSplash>(show_splash)
             .add_map_action::<SplashSetBindVariable, _>(set_bind_variable)
             .add_systems(OnEnter(GameState::Playing), clear);
@@ -82,9 +111,11 @@ impl Plugin for SplashActionsPlugin {
 
 fn show_splash(world: &mut World, run: Run<ShowSplash>) -> bool {
     let d = run.data;
-    if d.splash_name.as_deref().is_none_or(|n| n.trim().is_empty()) {
+    let Some(name) = d.splash_name.filter(|n| !n.trim().is_empty()) else {
+        world.resource_mut::<Messages<SplashCommand>>().write(SplashCommand::Hide);
         return true;
-    }
+    };
+    world.resource_mut::<Messages<SplashCommand>>().write(SplashCommand::Show { name, auto_hide: d.auto_hide_time_sec });
     let after = if d.auto_hide_time_sec > 0.0 { d.auto_hide_time_sec } else { TAP_WAIT };
     if let Some(name) = d.action_on_hide.filter(|a| !a.trim().is_empty()) {
         run_later(world, after, RunAction { name, actor: run.actor });

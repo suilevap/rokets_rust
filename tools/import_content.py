@@ -7,8 +7,10 @@ Paths keep the original layout under assets/, so names in the map XML
 (e.g. "Entities\\CargoQuest", "Maps\\Singleplayer\\Middleware") resolve the
 same way they do in the C# game. Re-run it after changing maps in the editor.
 """
+import re
 import shutil
 import sys
+from xml.etree import ElementTree
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -64,7 +66,6 @@ def main() -> int:
             copied += 1
     # Sprites the maps name (`<Sprite>`) from folders not copied whole,
     # such as `UI\IconLikeCircle` for `AttachAdditionalView`.
-    import re
     named = set()
     for m in sorted((CONTENT / "Maps").glob("**/*.xml")):
         named.update(re.findall(r"<Sprite>([^<]+)</Sprite>", m.read_text(encoding="utf-8-sig")))
@@ -74,6 +75,27 @@ def main() -> int:
             (DEST / rel).parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(CONTENT / rel, DEST / rel)
             copied += 1
+    # The splashes (`ShowSplash`): their layout, and the sprites of the
+    # ones the maps show (the menus' and the credits' stay behind).
+    splashes = CONTENT / "Splashes" / "Splashes.xml"
+    target = DEST / "Splashes" / "Splashes.xml"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(splashes, target)
+    copied += 1
+    shown = set()
+    for m in sorted((CONTENT / "Maps").glob("**/*.xml")):
+        shown.update(re.findall(r"<SplashName>([^<]+)</SplashName>", m.read_text(encoding="utf-8-sig")))
+    shown.update(n + s for n in list(shown) for s in ("_Win", "_GamePad"))
+    tree = ElementTree.fromstring(splashes.read_text(encoding="utf-8-sig"))
+    for item in tree.findall("./Asset/Splashes/Item"):
+        if item.findtext("Name") not in shown:
+            continue
+        for sprite in item.findall("./Layers/Item/Sprite"):
+            rel = Path("Sprites") / ((sprite.text or "").strip().replace("\\", "/") + ".png")
+            if (sprite.text or "").strip() and (CONTENT / rel).is_file() and not (DEST / rel).exists():
+                (DEST / rel).parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(CONTENT / rel, DEST / rel)
+                copied += 1
     # The texts maps name by key (`ShowText`): the game's resources.
     strings = SRC / "PavXnaGame1" / "PavXnaGame1" / "Globalization"
     for path in sorted(strings.glob("Strings*.resx")):
