@@ -40,6 +40,7 @@ mod highlight;
 mod immortal;
 mod level;
 mod lifecycle;
+mod move_entity;
 mod path;
 mod silent;
 pub mod splash;
@@ -348,7 +349,7 @@ impl Plugin for ActionsPlugin {
                 variables::VariablesPlugin,
                 view::ViewActionsPlugin,
             ))
-            .add_plugins((area::AreaActionPlugin, immortal::ImmortalActionPlugin))
+            .add_plugins((area::AreaActionPlugin, immortal::ImmortalActionPlugin, move_entity::MoveEntityPlugin))
             .add_systems(OnEnter(GameState::Playing), run_on_map_start)
             // At the end of the fixed step: what the step set off runs in it.
             .configure_sets(FixedUpdate, ActionSystems.after(crate::explosion::ExplosionSystems))
