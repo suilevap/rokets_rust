@@ -84,8 +84,10 @@ along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
    LaserCollide`; `TheGate`'s three turrets and two collectors, whose beams
    are in (`weapon/laser.rs`) but touch the collector as a wall), the
    Laser's `CreateLaserEffect` (dirty-glass flash on the player's car), the
-   gadgets `SetWeapon` hands out that are not ported (`Accelerator`, in
-   Derby, Friend and Trophy; the car keeps its own gadget), the Tesla's `Guard` car (HiddenBox, TheLastStand)
+   gadgets that are not ported (`Bomb`, `EditorPointer`; no map hands them
+   out but the `HoverScout` car has the Bomb; the accelerator's HUD icon
+   `UI\GadgetIcons\Accelerator`, with the other gadgets' and the guns'
+   icons beside the health bar, is still to draw), the Tesla's `Guard` car (HiddenBox, TheLastStand)
    once `GuardAi` drives it, an
    inactive car's other guns (only the Plasma gun, the Tesla, the Laser and the Zombie's check
    `Inactive`: Trophy's deactivated `AlwaysShoot` turret had its trigger
@@ -128,7 +130,7 @@ along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
   would be a new control scheme writing `PlayerIntent`. About a day; test
   on a real phone through a pull request preview.
 - **Force feedback.** One event in C# (`ForceFeedback`): hard head-on hits
-  on walls (`Car.cs`, impact over 0.4), damage, the accelerator gadget. It
+  on walls (`Car.cs`, impact over 0.4), damage, the accelerator gadget (`rate × 0.1`; the camera's jolt of it is in). It
   vibrated the phone or gamepad and shook the camera. The shake is in
   (`feedback`); still to port: vibration via `navigator.vibrate` on Android
   browsers (none on iOS), the gamepad's `vibrationActuator` in Chrome, Bevy

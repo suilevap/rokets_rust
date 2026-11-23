@@ -470,11 +470,11 @@ fn spawn_fire_zone(mut commands: Commands) {
 fn show_fire_zone(
     scheme: Res<crate::controls::ActiveScheme>,
     touch: Res<crate::controls::FireTouch>,
-    guns: Query<(&Weapon, Has<crate::gadget::Magnet>), With<LocalPlayer>>,
+    guns: Query<(&Weapon, Has<crate::gadget::Magnet>, Has<crate::gadget::accelerator::Accelerator>), With<LocalPlayer>>,
     mut zones: Query<(&mut Node, &mut BorderColor, &mut BackgroundColor), With<FireZone>>,
 ) {
     // Not for a weapon that works by itself (`_hasControllableWeapon`).
-    let gun = guns.iter().find(|(w, _)| !w.kind.auto_fire()).map(|(_, magnet)| magnet);
+    let gun = guns.iter().find(|(w, ..)| !w.kind.auto_fire()).map(|(_, magnet, accelerator)| magnet || accelerator);
     let shown = *scheme == crate::controls::ActiveScheme::Touch && gun.is_some();
     let alpha = if !shown { 0.0 } else if touch.finger.is_some() { 0.6 } else { 0.25 };
     let top = Val::Percent(if gun == Some(true) { 75.0 } else { 50.0 });

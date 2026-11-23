@@ -47,6 +47,7 @@ use crate::actions::{OnDestroy, RunAction, destroy_action};
 use crate::controls::{LocalPlayer, PlayerIntent};
 use crate::explosion::{Destroyed, ExplosionSystems, Health};
 use crate::game::{GameState, LoadedMap, MapId};
+use crate::gadget::accelerator::Accelerator;
 use crate::gadget::{Linkable, Magnet};
 use crate::render::camera::CameraTarget;
 use crate::sound::CarSounds;
@@ -113,7 +114,7 @@ fn kill_cars(
         if ai_car {
             // The car is gone, its wreck a plain box that stays.
             crate::ai::set_control(&mut car, "", 0);
-            car.remove::<(Car, CarSounds, SmokePoints, CabinSway, Magnet, CameraTarget, MapId)>()
+            car.remove::<(Car, CarSounds, SmokePoints, CabinSway, Magnet, Accelerator, CameraTarget, MapId)>()
                 .remove::<(Team, AutoAimVisible, LocalDevice)>();
             // A static car's stays put: nothing to pull.
             if *body != RigidBody::Static {

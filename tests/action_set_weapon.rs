@@ -13,6 +13,7 @@ use tilerider::controls::LocalPlayer;
 use tilerider::explosion::Health;
 use tilerider::game::MapId;
 use tilerider::gadget::Magnet;
+use tilerider::gadget::accelerator::Accelerator;
 use tilerider::sound::{CarSounds, PlaySound};
 use tilerider::weapon::model::{Kind, for_type};
 use tilerider::weapon::swap::{SwapPlugin, WeaponCollected};
@@ -190,7 +191,7 @@ fn driving() -> Car {
 }
 
 #[test]
-fn the_magnet_is_given_to_a_car_and_taken_away() {
+fn the_magnet_and_the_accelerator_are_given_to_a_car_and_taken_away() {
     let gadget = |name: &str, g: &str, extra: &str| {
         format!(
             r#"<Item Type="GameLibrary.SetWeapon"><Name>{name}</Name><ItemId>4001</ItemId><NewWeapon>Default</NewWeapon><NewGadget>{g}</NewGadget>{extra}</Item>"#
@@ -212,10 +213,19 @@ fn the_magnet_is_given_to_a_car_and_taken_away() {
     assert_eq!(rings(&mut app), [WeaponCollected { gadget: true }]);
     run(app.world_mut(), "Quiet", None, 0);
     assert!(sounds(&mut app).is_empty());
-    run(app.world_mut(), "Boost", None, 0);
-    assert!(app.world().entity(player).contains::<Magnet>(), "the gadgets not ported leave the car's own");
-    run(app.world_mut(), "Drop", None, 0);
+    // One gadget a car: the accelerator takes the magnet's place, quietly,
+    // and the player's car gets the energy it spends.
+    assert!(run(app.world_mut(), "Boost", None, 0));
+    assert!(app.world().entity(player).contains::<Accelerator>());
     assert!(!app.world().entity(player).contains::<Magnet>());
+    assert!(app.world().entity(player).contains::<PlayerEnergy>());
+    assert!(sounds(&mut app).is_empty() && rings(&mut app).is_empty(), "only the magnet was announced");
+    run(app.world_mut(), "Link", None, 0);
+    assert!(app.world().entity(player).contains::<Magnet>());
+    assert!(!app.world().entity(player).contains::<Accelerator>());
+    run(app.world_mut(), "Boost", None, 0);
+    run(app.world_mut(), "Drop", None, 0);
+    assert!(!app.world().entity(player).contains::<Magnet>() && !app.world().entity(player).contains::<Accelerator>());
 }
 
 #[test]
@@ -248,4 +258,15 @@ fn the_maps_load_the_textures_of_the_guns_they_hand_out() {
     // The template, as an `ActionOnCreate` or a sequence's step.
     assert!(registry.sprites_of_text("SetWeapon(Hammer)").iter().any(|s| s == "Weapons\\Saw"));
     assert!(registry.sprites_of_text("NextMap()").is_empty());
+}
+
+#[test]
+fn the_maps_load_the_textures_of_the_accelerator_they_hand_out() {
+    let app = app(
+        r#"<Item Type="GameLibrary.SetWeapon"><Name>Boost</Name><ItemId>4001</ItemId><NewGadget>Accelerator</NewGadget></Item>"#,
+    );
+    let registry = app.world().resource::<ActionRegistry>();
+    let actions = app.world().resource::<CurrentActions>().0.0.clone();
+    let sprites = registry.sprites_of(&actions[0]);
+    assert!(sprites.iter().any(|s| s == "Particles\\flash") && sprites.iter().any(|s| s == "UI\\GadgetUsage"), "{sprites:?}");
 }

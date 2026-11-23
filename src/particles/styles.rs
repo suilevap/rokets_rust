@@ -111,6 +111,18 @@ pub static BOMB_BEEP: Style = Style {
     origin: CENTRE,
 };
 
+/// `_accelerationReadyEffect`: a white ring closing onto the accelerator's
+/// car when its energy is whole again.
+pub static ACCELERATION_READY: Style = Style {
+    begin: still(4.0, 0.0, color(1.0, 1.0, 1.0), OVER_BOMB),
+    end: still(0.5, 0.0, TRANSPARENT, OVER_BOMB),
+    lifetime: 0.2,
+    texture: "Particles\\Circle",
+    additive: true,
+    random_frame: false,
+    origin: CENTRE,
+};
+
 /// `_boomCircleEffect`: the blast's ring, sized to its range
 /// ([`ring_rate`]).
 pub static BOOM_RING: Style = Style {

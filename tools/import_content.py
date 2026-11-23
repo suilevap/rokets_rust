@@ -35,6 +35,9 @@ ITEMS = [
     # `CreateMagnetCollectedUI`).
     ("Sprites/UI", "BigCircleGun.png", "Sprites/UI"),
     ("Sprites/UI", "BigCircleGadget.png", "Sprites/UI"),
+    # The ring that closes onto the car while a gadget's button is held
+    # (`ActiveGadget.DrawControl`).
+    ("Sprites/UI", "GadgetUsage*.png", "Sprites/UI"),
     ("Sprites", "Gradient*.png", "Sprites"),
     ("Sprites", "WhitePixel.png", "Sprites"),
     ("Sounds", "*.wav", "Sounds"),

@@ -28,7 +28,11 @@
 //!   immediate, whether it is ready), so its attack style follows the gun.
 //! - **`NewGadget`** (a `Car` only: the player's and the other `Players`):
 //!   `Default` leaves it. `Link` gives the car the magnet, at its
-//!   `GadgetPosition`, unless it has one. `None` takes the magnet away.
+//!   `GadgetPosition`, unless it has one, and takes the accelerator
+//!   away. `Accelerator` gives it the accelerator (ready, as new), unless
+//!   it has one, and takes the magnet away; the player's car gets an
+//!   energy store for it if it had none, and nothing is shown or played
+//!   (C# only announced the magnet). `None` takes either away.
 //! - **Not silently** (`ChangeSilently` false), and only for a car held for
 //!   the player's devices: a new gun (not `None`) plays `WeaponReload` and
 //!   shows a ring of `UI\BigCircleGun` in the middle of the screen
@@ -36,9 +40,11 @@
 //!   `ChainBrake` with a ring of `UI\BigCircleGadget`.
 //!
 //! Not ported:
-//! - The other gadgets (`Accelerator`, `Bomb`, `EditorPointer`;
-//!   `Derby`, `Friend` and `Trophy` hand out the `Accelerator`): the car
-//!   keeps the gadget it has, none of them exist yet.
+//! - The other gadgets (`Bomb`, `EditorPointer`): the car keeps the gadget
+//!   it has, neither exists yet.
+//! - A gadget the car already has, given again, is not made anew (C#
+//!   built a new one: an accelerator that is ready again whatever the
+//!   energy, a magnet with no rope).
 //! - `AdjustWeaponMaxAngle` is not run again for a static car given a gun
 //!   (C# ran it only when the car was made, so neither does this).
 //! - A gun made at the car's first update when its hand is empty
@@ -68,6 +74,7 @@ use crate::content::node::Node;
 use crate::controls::LocalPlayer;
 use crate::explosion::Health;
 use crate::gadget::Magnet;
+use crate::gadget::accelerator::Accelerator;
 use crate::sound::{CarSounds, PlaySound};
 
 /// The player's car was handed something, not silently: a ring appears
@@ -91,6 +98,7 @@ struct Target {
     energy: Has<PlayerEnergy>,
     sounds: Has<CarSounds>,
     magnet: Option<&'static Magnet>,
+    accelerator: Has<Accelerator>,
 }
 
 pub struct SwapPlugin;
@@ -162,9 +170,28 @@ fn set_weapon(
                 if car.magnet.is_none() {
                     commands.entity(e).insert(Magnet::new(car.mounts.gadget));
                 }
+                // One gadget a car: the accelerator's views go with it.
+                if car.accelerator {
+                    commands.entity(e).remove::<Accelerator>();
+                }
                 if !silent && car.local_device {
                     play.write(PlaySound { name: "ChainBrake", at: None, pitch: 0.0, volume: 1.0 });
                     collected.write(WeaponCollected { gadget: true });
+                }
+            }
+            GadgetType::Accelerator => {
+                if !car.accelerator {
+                    commands.entity(e).insert(Accelerator::new());
+                }
+                if let Some(magnet) = car.magnet {
+                    for view in magnet.view_entities() {
+                        commands.entity(view).despawn();
+                    }
+                    commands.entity(e).remove::<Magnet>();
+                }
+                // `EnergyComponent` is every entity's; ours is the player's.
+                if car.local_player && !car.energy {
+                    commands.entity(e).insert(PlayerEnergy::default());
                 }
             }
             GadgetType::None => {
@@ -174,9 +201,12 @@ fn set_weapon(
                     }
                     commands.entity(e).remove::<Magnet>();
                 }
+                if car.accelerator {
+                    commands.entity(e).remove::<Accelerator>();
+                }
             }
             // `Default` keeps what the car has; the others are not ported.
-            GadgetType::Default | GadgetType::Bomb | GadgetType::Accelerator | GadgetType::EditorPointer => {}
+            GadgetType::Default | GadgetType::Bomb | GadgetType::EditorPointer => {}
         }
     }
     true
@@ -202,6 +232,9 @@ fn sprites(weapon: WeaponType, gadget: GadgetType, silent: bool) -> Vec<String> 
         if !silent {
             out.push(super::collected::GADGET_RING.to_string());
         }
+    }
+    if gadget == GadgetType::Accelerator {
+        out.extend(crate::gadget::accelerator::TEXTURES.map(String::from));
     }
     out
 }

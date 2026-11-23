@@ -237,7 +237,7 @@ fn read_touch(
     mut gadget: ResMut<GadgetTouch>,
     mut fire: ResMut<FireTouch>,
     windows: Query<&Window>,
-    with_gadget: Query<(), (With<LocalPlayer>, With<crate::gadget::Magnet>)>,
+    with_gadget: Query<(), (With<LocalPlayer>, crate::gadget::WithGadget)>,
     with_gun: Query<&crate::weapon::Weapon, With<LocalPlayer>>,
     mut readings: ResMut<SchemeReadings>,
     mut active: ResMut<ActiveScheme>,
@@ -400,11 +400,15 @@ fn read_weapon(
     mut keyboard_only: Local<bool>,
     mut arrows_before: Local<Vec2>,
     mut finger_before: Local<bool>,
-    mut players: Query<(&mut PlayerIntent, &crate::weapon::Weapon, Has<NoInput>, Has<crate::gadget::Magnet>), With<LocalPlayer>>,
+    mut players: Query<
+        (&mut PlayerIntent, &crate::weapon::Weapon, Has<NoInput>, Has<crate::gadget::Magnet>, Has<crate::gadget::accelerator::Accelerator>),
+        With<LocalPlayer>,
+    >,
 ) {
-    let Ok((mut intent, gun, off, has_gadget)) = players.single_mut() else {
+    let Ok((mut intent, gun, off, magnet, accelerator)) = players.single_mut() else {
         return;
     };
+    let has_gadget = magnet || accelerator;
     // `_hasControllableWeapon`: the mouse, the gamepad and the fire zone work
     // a weapon the player aims; one that works by itself (the Hammer) is
     // fired and aimed by the keys only (they still spend its energy).
