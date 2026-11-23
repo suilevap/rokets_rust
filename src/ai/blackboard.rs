@@ -352,6 +352,11 @@ pub struct AiBlackboard {
     pub target_position: Vec2,
     /// `LastKnowTargetPosition`: where the target was when it was last seen.
     pub last_known_target_position: Vec2,
+    /// The car the car's own `Target` variable names, if it is a car
+    /// alive and active (`ActionRunner.GetEntityByLocalVar`, for
+    /// `GetTargetFromVariables`): set before [`gather`](Self::gather), which
+    /// keeps it in sight wherever it is, as C#'s `Target` could be any car.
+    pub variable_target: Option<Entity>,
     /// `PathComputeTime`: when the path was made, s of game time.
     pub path_compute_time: f64,
     /// `Blocker`: what closed the way the last path found.
@@ -462,6 +467,7 @@ impl AiBlackboard {
             patrol_path: None,
             target_position: Vec2::ZERO,
             last_known_target_position: Vec2::ZERO,
+            variable_target: None,
             path_compute_time: 0.0,
             blocker: None,
             map_action_on_trigger: None,
@@ -535,9 +541,11 @@ impl AiBlackboard {
         let think = forced || !running;
         self.tick = if think { Tick::Evaluate } else { Tick::Resume };
         let (pos, scan, team, target, damager) = (self.pos, self.scan_distance, self.team, self.target, self.damager);
+        let named = self.variable_target;
         let watch = think || self.watch_enemies;
         let wanted = |f: &&Foe| {
             Some(f.entity) == target
+                || Some(f.entity) == named
                 || (think && Some(f.entity) == damager)
                 || (watch && f.team != team && closer_by_chebyshev(f.pos, pos, scan))
         };

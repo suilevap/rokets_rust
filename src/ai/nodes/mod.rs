@@ -49,7 +49,7 @@ mod act;
 
 pub use actions::{
     AimToTarget, FireToTarget, Idle, MoveInInitDirection, MoveTowardsTargetNoPath, Runaway, Scanning, SimpleFollowByTarget,
-    TriggerMapAction, TryFireToAnyone, find_nearest_enemy, sleep, stop_moving,
+    TriggerMapAction, TryFireToAnyone, find_nearest_enemy, get_target_from_variables, sleep, stop_moving,
 };
 pub use flocking::{FlockState, Flocking, Power, TargetFn, alert_friends, find_nearest_leader, fire_now};
 pub use cargo::{DropByChainGadget, Dropping, GrabByChainGadget, Grabbing, HOLD_MAX, HOLD_MIN, NEAR, executing_cargo, executing_drop};

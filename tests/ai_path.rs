@@ -10,7 +10,7 @@ use bevy::math::Vec2;
 use bevy::prelude::Entity;
 use flatbt_bevy::prelude::*;
 use tilerider::ai::nodes::{MoveBase, go_to_position, optional, optional_required};
-use tilerider::ai::trees::{CHASER_SCAN_DISTANCE, FIRE_TO_ANYONE_PERIOD, chaser_ai, follow_path_ai, follow_path_ai_safe};
+use tilerider::ai::trees::{CHASER_SCAN_DISTANCE, FIRE_TO_ANYONE_PERIOD, chaser_ai, chaser_target_from_local_variable, follow_path_ai, follow_path_ai_safe};
 use tilerider::ai::{AiBlackboard, Body, Foe, Gun, Navigation, Orders, tick_mode};
 use tilerider::content::map::MapData;
 use tilerider::map::grid::MapGrid;
@@ -429,4 +429,30 @@ fn a_blocked_way_is_refused_and_remembers_what_blocks_it() {
     assert!(!go_to_position(&mut bb, Vec2::ZERO));
     assert!(!go_to_position(&mut bb, Vec2::new(-50.0, 50.0)));
     assert_eq!(bb.blocker, None);
+}
+
+#[test]
+fn a_chaser_of_a_named_target_goes_after_that_car_whatever_its_team() {
+    let nav = nav_of(TWO_ROOMS);
+    let mut car = Car::new(chaser_target_from_local_variable, at(1.0, 1.0), Some(&nav));
+    car.walls = two_rooms();
+    // A car of its own team, and nearer, an enemy it does not care about.
+    let target = at(8.0, 1.0);
+    car.others = vec![foe(1, 1, target.x, target.y), foe(2, 0, at(2.0, 2.0).x, at(2.0, 2.0).y)];
+    car.bb.variable_target = Some(id(1));
+    car.run(25.0);
+    assert!(car.pos.distance(target) < 3.0, "{:?}", car.pos);
+    assert_eq!(car.bb.target(), Some(id(1)));
+}
+
+#[test]
+fn a_chaser_with_no_named_target_stays() {
+    let nav = nav_of(TWO_ROOMS);
+    let start = at(1.0, 1.0);
+    let mut car = Car::new(chaser_target_from_local_variable, start, Some(&nav));
+    car.walls = two_rooms();
+    car.others = vec![foe(1, 0, at(8.0, 1.0).x, at(8.0, 1.0).y)];
+    car.run(5.0);
+    assert_eq!(car.pos, start);
+    assert_eq!(car.bb.target(), None);
 }

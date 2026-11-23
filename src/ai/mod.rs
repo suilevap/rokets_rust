@@ -32,6 +32,7 @@
 //! | `MoveByPath`, `MoveByPathFriend` | `BTActionFactory.FollowPathAi`: follows the `Path` that `SetPath` gave it (`MoveBase`), firing at anyone in the gun's line at most every 3 s (`TryFireToAnyone`); with no path (or when an open one is done) it runs the action `AIAdjustment` gave it (`ActionOnBTTrigger`) once |
 //! | `MoveByPathSafelyFriend` | `FollowPathAiSafe`: the same, but runs from an enemy in sight |
 //! | `GoToEnemySimplePredictionPosition` | finds an enemy and goes straight at where it will be (`MoveTowardsTargetNoPath`) |
+//! | `ChaserTargetFromLocalVariable` | chases, by a path, firing when it can, the car its own `Target` variable names (`GetTargetFromVariables`), of any team and wherever it is, while it lives |
 //! | `AttackAiVer2` | `BTActionFactory.AttackerAiVer2`: under half health and hit, hides from the enemy (`PanicBehaviour`); else finds an enemy within `ScanDistance` and, in range and in sight, stands, turns to it (`AimToTarget`), fires 1.5 s and goes to a random place in sight of where it was last seen (`Maneur`; a hit car does so at once), or follows to that place when out of range; with nobody near, walks to a random navigation node and rests 2 s |
 //! | `SimpleAttackNearestEnemy` | `SimpleAttack` (the turret's attack, `ScanDistance` 20), else idle |
 //! | `SimpleFollowByEnemyAi` | finds an enemy (`ScanDistance` 20) and steers at where it will be, no firing; else idle |
@@ -141,8 +142,7 @@
 //! Everything else that is an `AIBTBaseControl` waits for the trees that use
 //! the nodes not yet ported (`docs/BACKLOG.md` says which node each needs):
 //! `Ai`, `AiFriend`, `AiSimpleTurretFriendFireAvailableTarget`, `GuardAi`,
-//! `SupportAi*`, `CaptureTheBox*`,
-//! `ChaserTargetFromLocalVariable`. Cars with those stand idle, as
+//! `SupportAi*`, `CaptureTheBox*`. Cars with those stand idle, as
 //! before, and `AIAdjustment` sets only their team. `AITurret` and
 //! `AISimpleCarControl` are not reached by any `ControlType`;
 //! `AIPathCarControl` (the base of `AISimpleCarControl`,
@@ -231,6 +231,9 @@ impl Plugin for AiPlugin {
         ))
         .add_plugins((
             BehaviorPlugin::for_tree(trees::order_executor_ai).in_schedule(FixedUpdate).tick_mode(tick_mode),
+            BehaviorPlugin::for_tree(trees::chaser_target_from_local_variable)
+                .in_schedule(FixedUpdate)
+                .tick_mode(tick_mode),
             order_queue::OrdersPlugin,
         ))
         .configure_sets(
@@ -273,6 +276,7 @@ pub fn set_control(car: &mut EntityCommands, control: &str, seed: u64) {
         .stop_behavior(trees::follow_path_ai)
         .stop_behavior(trees::follow_path_ai_safe)
         .stop_behavior(trees::go_to_enemy_simple_prediction_position)
+        .stop_behavior(trees::chaser_target_from_local_variable)
         .stop_behavior(trees::attacker_ai)
         .stop_behavior(trees::attacker_ai_ver2)
         .stop_behavior(trees::panic_behaviour)
@@ -312,6 +316,9 @@ pub fn set_control(car: &mut EntityCommands, control: &str, seed: u64) {
         }
         "GoToEnemySimplePredictionPosition" => {
             car.insert((brain, Behavior::for_tree(trees::go_to_enemy_simple_prediction_position)));
+        }
+        "ChaserTargetFromLocalVariable" => {
+            car.insert((brain, Behavior::for_tree(trees::chaser_target_from_local_variable)));
         }
         "AttackAi" | "AttackAiFriend" => {
             car.insert((brain, Behavior::for_tree(trees::attacker_ai)));
@@ -375,6 +382,7 @@ pub fn is_live(control: &str) -> bool {
         "AiSimpleTurret"
             | "AiSimpleTurretFriend"
             | "AiChaser"
+            | "ChaserTargetFromLocalVariable"
             | "MoveByPath"
             | "MoveByPathFriend"
             | "MoveByPathSafelyFriend"
@@ -412,6 +420,9 @@ pub fn tick_mode(bb: &AiBlackboard, _: TickAt) -> Tick {
     bb.tick
 }
 
+/// `GetTargetFromVariables`'s variable (`VarName`).
+const TARGET_VARIABLE: &str = "Target";
+
 /// Whether the game steps: not paused, and time moves.
 fn stepping(time: Res<Time>, physics: Res<Time<Physics>>) -> bool {
     !physics.is_paused() && time.delta_secs() > 0.0
@@ -444,7 +455,9 @@ fn gather_blackboards(
         &RigidBody,
         &PlayerIntent,
         Option<&Shield>,
+        Option<&MapId>,
     )>,
+    variables: Res<crate::actions::variables::Variables>,
     navigation: Option<Res<Navigation>>,
     terrain: Option<Res<SharedTerrain>>,
     mut foes: Local<Vec<Foe>>,
@@ -496,7 +509,7 @@ fn gather_blackboards(
         mates.extend(keyed.into_iter().map(|k| k.1));
     }
     let blocked = |a: Vec2, b: Vec2| map.line_collides(a, b);
-    for (own, mut blackboard, running, position, rotation, team, health, weapon, inactive, velocity, radius, rigid_body, intent, shield) in
+    for (own, mut blackboard, running, position, rotation, team, health, weapon, inactive, velocity, radius, rigid_body, intent, shield, id) in
         &mut brains
     {
         // `ControlableEntity.Update`: nothing for a car that is inactive
@@ -530,6 +543,9 @@ fn gather_blackboards(
         if blackboard.terrain.is_none() {
             blackboard.terrain = terrain.as_deref().map(|t| t.0.clone());
         }
+        // `GetTargetFromVariables`: the car its own `Target` variable names.
+        let named = id.and_then(|id| variables.get(crate::actions::variables::Owner::Item(id.0), TARGET_VARIABLE));
+        blackboard.variable_target = named.and_then(|t| cars.iter().find(|c| c.9.is_some_and(|m| m.0 == t)).map(|c| c.0));
         blackboard.gather(dt, running, body, &foes, &blocked);
         blackboard.gun_ready = weapon.is_some_and(Weapon::can_shoot);
         if blackboard.watch_friends {
