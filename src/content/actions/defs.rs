@@ -676,6 +676,8 @@ actions! {
     AttachDestroyOnContact("AttachDestroyOnContact", name = "AttachDestroyOnContact") {
         item_id "ItemId": i64 = 0, from(ITEM);
         subscribers "Subscribers": Vec<i64> = Vec::new(), from(ITEM);
+    } => templates {
+        "DestroyOnContact(sub)" => |a| Some(AttachDestroyOnContact { item_id: 0, subscribers: vec![a.int(0)?] }),
     }
 
     InstantCameraMove("InstantCameraMove", name = "InstantCameraMove") {
