@@ -32,6 +32,7 @@ mod body;
 mod camera_path;
 mod clone;
 mod control;
+pub mod destroy_on_contact;
 mod entity;
 mod focus;
 mod level;
@@ -332,6 +333,7 @@ impl Plugin for ActionsPlugin {
                 camera_path::CameraPathPlugin,
                 clone::CloneActionsPlugin,
                 control::ControlActionsPlugin,
+                destroy_on_contact::DestroyOnContactPlugin,
                 focus::FocusActionsPlugin,
                 level::LevelActionsPlugin,
                 lifecycle::LifecyclePlugin,
