@@ -136,6 +136,7 @@ fn parse_args() -> Args {
     let mut flash = None;
     let mut lang = None;
     let mut trace = Vec::new();
+    let mut run = Vec::new();
     let mut nav = false;
     let mut shot: Option<ScreenshotRequest> = None;
     let mut frames = 90;
@@ -187,6 +188,7 @@ fn parse_args() -> Args {
                     .map(|v| v.split(',').filter_map(|i| i.trim().parse().ok()).collect())
                     .unwrap_or_default();
             }
+            "--run" => run.extend(args.next()),
             "--nav" => nav = true,
             "--frames" => frames = args.next().and_then(|v| v.parse().ok()).unwrap_or(frames),
             _ => {}
@@ -194,6 +196,9 @@ fn parse_args() -> Args {
     }
     if let Some(s) = shot.as_mut() {
         s.frames = frames;
+    }
+    if let Some(drive) = drive.as_mut() {
+        drive.run = run;
     }
     let record = record_dir.map(|dir| RecordRequest {
         dir,

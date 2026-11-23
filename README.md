@@ -30,6 +30,7 @@ cargo run --release -- -m LetItSnowDay
 | `--flash X` | How much brighter additive effects (flashes, sparks, bullet trails, the aim line) are drawn (default 1.5; `;` and `'` turn it by 0.25 while playing, shown as `flash` in the top line) |
 | `--lang LANG` | The maps' texts in another language: `ru`, `de`, `es`, `it`, `be` (default English) |
 | `--drive SCRIPT` | Drive by script, `x,y:seconds;...` (stick in world directions, y up; `x,y,g:seconds` also holds the gadget, aimed ahead, `x,y,f:seconds` the trigger, the gun firing where it points), logging the car's path every 0.1 s |
+| `--run ACTION` | With `--drive`: run that map action on the script's first step (repeat it for several), as the C# game's debug server does with `/run?cmd=ACTION`, e.g. an AI's `MoveCargoOrder` |
 | `--trace a,b` | With `--drive`: also log these entities (map ids) every 0.1 s, as `trace t id x y angle speed` in the C# game's axes, for `tools/compare.py`, and their health as `health t id hp` |
 | `--nav` | Draw the navigation graph over the map (links in green, crossings in orange; red links are dear ones), as `NavGraph.Draw` did in the C# game's AI debug build |
 

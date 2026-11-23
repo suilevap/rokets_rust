@@ -7,7 +7,9 @@
 //! Values after the stick hold buttons meanwhile: `g` the gadget, aimed
 //! ahead of the car (`0,0,g:1` shoots the magnet out for a second), `f`
 //! the trigger, the gun firing where it points (`1,0,f:2`); the Railgun
-//! fires on the first step of it, as on the fire key's press.
+//! fires on the first step of it, as on the fire key's press. `--run NAME`
+//! runs a map action on the script's first step (what the C# game's debug
+//! server does with `/run?cmd=NAME`), e.g. an AI's `MoveCargoOrder`.
 
 use bevy::prelude::*;
 
@@ -32,6 +34,9 @@ pub struct DriveScript {
     fire_held: bool,
     /// Map ids to log every 0.1 s (`--trace`), as the C# game's `/trace`.
     pub trace: Vec<i64>,
+    /// Map actions to run on the script's first step (`--run`), as the C#
+    /// game's debug server `/run?cmd=`.
+    pub run: Vec<String>,
 }
 
 impl DriveScript {
@@ -56,7 +61,7 @@ impl DriveScript {
                 Some((v.clamp_length_max(1.0), buttons, (secs * 60.0).round() as u32))
             })
             .collect::<Option<Vec<_>>>()?;
-        Some(DriveScript { steps, tick: 0, fire_held: false, trace: Vec::new() })
+        Some(DriveScript { steps, tick: 0, fire_held: false, trace: Vec::new(), run: Vec::new() })
     }
 
     /// The stick and the buttons at the current tick; `None` once the
@@ -93,12 +98,18 @@ type ScriptedCar<'a> = (&'a mut PlayerIntent, &'a Transform, &'a avian2d::prelud
 
 fn run_script(
     mut script: ResMut<DriveScript>,
+    mut run: MessageWriter<crate::actions::RunAction>,
     mut cars: Query<ScriptedCar, With<LocalPlayer>>,
     traced: Query<(&crate::game::MapId, &Transform, Option<&avian2d::prelude::LinearVelocity>, Option<&crate::explosion::Health>)>,
 ) {
     let Some((stick, buttons)) = script.now() else {
         return;
     };
+    if script.tick == 0 {
+        for name in &script.run {
+            run.write(crate::actions::RunAction { name: name.clone(), actor: None });
+        }
+    }
     // `trace t id x y angle speed`, in the C# game's units and axes (y
     // down, angles the other way) for `tools/compare.py`.
     if script.tick.is_multiple_of(6) {

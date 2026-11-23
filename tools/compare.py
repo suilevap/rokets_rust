@@ -2,7 +2,7 @@
 """Run one driving scenario in the C# game and in the port, and compare.
 
 Usage:
-  tools/compare.py MAP --drive SCRIPT [--start X,Y] [--ids A,B] [--rokets PATH]
+  tools/compare.py MAP --drive SCRIPT [--start X,Y] [--ids A,B] [--run ACTION] [--rokets PATH]
 
   tools/compare.py AiTest --start 3.5,14.5 --ids 4001,1007 \\
       --drive "0,0,g:1;0,0:0.3;0,-1:2.5;0,0:2"
@@ -80,6 +80,8 @@ def run_port(args, ids, seconds):
            "--trace", ",".join(map(str, ids)), "--screenshot", "/tmp/compare_port.png", "--frames", str(frames)]
     if args.start:
         cmd += ["--start", args.start]
+    for action in args.run:
+        cmd += ["--run", action]
     if not os.environ.get("DISPLAY"):
         cmd = ["xvfb-run", "-a", "-s", "-screen 0 800x480x24"] + cmd
     print("port:", " ".join(cmd[-12:]), file=sys.stderr)
@@ -135,6 +137,8 @@ def run_cs(args, ids, seconds, heading):
         else:
             sys.exit("c#: the player's car did not appear (or would not move to --start)")
         # The car may not be there yet when the server first answers.
+        for action in args.run:
+            print("c#: run", action, get("/run?cmd=" + urllib.request.quote(action, safe="")).strip(), file=sys.stderr)
         for _ in range(60):
             answer = get("/drive?script=" + urllib.request.quote(args.drive, safe=",:") + "&ids=" + ",".join(map(str, ids)))
             if "no local car" not in answer:
@@ -165,6 +169,7 @@ def main():
     p.add_argument("--drive", required=True)
     p.add_argument("--start", help="map cell x,y for the player's car")
     p.add_argument("--ids", help="map ids to compare (default: the player's car)")
+    p.add_argument("--run", action="append", default=[], help="a map action to run when the script starts (repeatable)")
     p.add_argument("--rokets", default=str(ROOT.parent / "rokets"))
     args = p.parse_args()
 
