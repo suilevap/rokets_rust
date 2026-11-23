@@ -750,6 +750,16 @@ actions! {
     SetImmortal("SetImmortal", name = "SetImmortal") {
         item_id "ItemId": i64 = 0, from(&[PLAYERS, SIMPLE_CARS]);
         is_immortal "IsImmortal": bool = false;
+    } => templates {
+        // `bool.Parse` ignores case and surrounding blanks.
+        "SetImmortal(id,value)" => |a| Some(SetImmortal {
+            item_id: a.int(0)?,
+            is_immortal: match a.text(1)?.trim().to_ascii_lowercase().as_str() {
+                "true" => true,
+                "false" => false,
+                _ => return None,
+            },
+        }),
     }
 
     AdjustWepaonMaxAngle("AdjustWepaonMaxAngle") {

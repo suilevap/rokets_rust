@@ -28,6 +28,7 @@
 //! apart; `na` steps skipped) and `RunOnMapStart` (variables first, as
 //! C#'s `InitAllVariables`, then the rest in map order).
 
+pub mod area;
 mod body;
 mod camera_path;
 mod clone;
@@ -35,6 +36,7 @@ mod control;
 pub mod destroy_on_contact;
 mod entity;
 mod focus;
+mod immortal;
 mod level;
 mod lifecycle;
 mod path;
@@ -343,6 +345,7 @@ impl Plugin for ActionsPlugin {
                 variables::VariablesPlugin,
                 view::ViewActionsPlugin,
             ))
+            .add_plugins((area::AreaActionPlugin, immortal::ImmortalActionPlugin))
             .add_systems(OnEnter(GameState::Playing), run_on_map_start)
             // At the end of the fixed step: what the step set off runs in it.
             .configure_sets(FixedUpdate, ActionSystems.after(crate::explosion::ExplosionSystems))

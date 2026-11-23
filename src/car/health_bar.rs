@@ -14,7 +14,9 @@
 //! shield, the fill is the shield's share, in white. Drawn unlit and over
 //! the world (`DefaultWorldForeground`).
 //!
-//! Not ported: the `Immortal` shield that shows no bar (`SetImmortal`).
+//! A car whose shield is `Immortal` (`SetImmortal`) shows none, whether or
+//! not the shield has points left: `!Control.LocalDevice && (Shield == null
+//! || !Shield.Immortal)`.
 
 use bevy::prelude::*;
 
@@ -100,7 +102,9 @@ impl Plugin for HealthBarPlugin {
 /// A blow the car survived starts the two seconds again (`TakeDamage`).
 fn show_on_damage(mut damaged: MessageReader<Damaged>, mut bars: Query<&mut HealthBar>) {
     for hit in damaged.read() {
-        if let Ok(mut bar) = bars.get_mut(hit.target) {
+        if !hit.immortal
+            && let Ok(mut bar) = bars.get_mut(hit.target)
+        {
             bar.left = if hit.killed { 0.0 } else { SHOWN_FOR };
         }
     }
