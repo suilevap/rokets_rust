@@ -126,6 +126,8 @@ pub struct Damaged {
     pub taken: i32,
     /// It was the last of its health.
     pub killed: bool,
+    /// Its shield is `Immortal` (`SetImmortal`): no health bar.
+    pub immortal: bool,
     pub from: f32,
     pub by: Option<Entity>,
 }
@@ -322,6 +324,7 @@ fn take_hits(
             && h.hp > 0
         {
             // The shield takes what it can first (`Shield.Spend`).
+            let immortal = shield.as_ref().is_some_and(|s| s.is_immortal());
             let taken = shield.map_or(hit.damage, |mut s| s.spend(hit.damage));
             h.hp -= taken;
             let killed = h.hp <= 0;
@@ -330,6 +333,7 @@ fn take_hits(
                 damage: hit.damage,
                 taken,
                 killed,
+                immortal,
                 from: hit.from,
                 by: hit.by,
             });

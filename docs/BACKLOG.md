@@ -94,8 +94,9 @@ along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
    `Inactive`: Trophy's deactivated `AlwaysShoot` turret had its trigger
    down from its first step and fired its Plasma gun until it did), the red aim
    line of a static or enemy gun (`LaserVisiblityUpdate`: drawn for every
-   gun, not only the player's, with the Railgun's bounces), `SetImmortal`
-   and the `Immortal` shield, `HighlightEnemy` / `HighlightDeadEnemy`.
+   gun, not only the player's, with the Railgun's bounces), the shield's
+   bubble (full while `Immortal`) and its burst, `HighlightEnemy` /
+   `HighlightDeadEnemy`.
 3. Who drives which `Players` car: an AI control on the player's own car
    (`SetControl(player, AiChaser)`), and `SetControl(id, Local)` handing
    the devices (and the camera, the gun's preset, the energy store) to

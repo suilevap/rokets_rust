@@ -119,6 +119,40 @@ mod shield {
     }
 
     #[test]
+    fn an_immortal_shield_takes_blows_whole_and_loses_nothing() {
+        let mut s = Shield::new(4);
+        s.set_immortal(true);
+        assert_eq!(s.spend(3), 0);
+        assert_eq!(s.spend(100), 0, "however hard");
+        assert_eq!((s.points(), s.is_immortal()), (4, true));
+        // Mortal again, it takes damage as any shield does.
+        s.set_immortal(false);
+        assert_eq!(s.spend(5), 1);
+        assert_eq!(s.points(), 0);
+    }
+
+    #[test]
+    fn an_immortal_shield_that_is_down_passes_the_blow_on() {
+        // `Spend` guards on `Value > 0`: with nothing left, immortal or not,
+        // the health takes it.
+        let mut s = Shield::new(4);
+        s.spend(4);
+        s.set_immortal(true);
+        assert_eq!(s.spend(3), 3);
+    }
+
+    #[test]
+    fn a_blow_restarts_the_quiet_spell_even_on_an_immortal_shield() {
+        let mut s = Shield::new(4);
+        s.spend(2);
+        s.set_immortal(true);
+        s.step(3.0);
+        s.spend(1);
+        s.step(3.0);
+        assert_eq!(s.points(), 2, "no growing back yet");
+    }
+
+    #[test]
     fn a_new_shield_may_grow_at_once_but_has_nothing_to_grow() {
         let mut s = Shield::new(4);
         s.step(1.0);

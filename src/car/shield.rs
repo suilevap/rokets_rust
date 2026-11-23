@@ -10,10 +10,17 @@
 //!   until it is whole.
 //! - A car with a shield shows it instead of its health on its bar while
 //!   any of it is left (`DrawHealth`).
+//! - An `Immortal` shield (`SetImmortal`, set by `actions/immortal`) takes
+//!   a blow whole and loses nothing, as long as it has a point left: a
+//!   shield that is down passes everything on, immortal or not
+//!   (`Spend`'s `Value > 0` guard). A blow still restarts the quiet period.
+//!   The car shows no health bar then (`TakeDamage`, `health_bar`).
 //!
-//! Not ported: the bubble drawn as it comes back and its burst when it
-//! breaks (`Draw`, `CreateShieldDestroyEffect`) and the shield's
-//! `Immortal` switch (`SetImmortal`).
+//! Not ported: the bubble drawn as it comes back, in full while the shield
+//! is immortal, and its burst when it breaks or stops being immortal
+//! (`Draw`, `CreateShieldDestroyEffect`, the `Immortal` setter), and the
+//! shield's hit sound when it takes a whole blow (`TakeDamage` playing
+//! `ShieldDamage` when nothing passes on).
 
 use avian2d::prelude::{Physics, PhysicsTime};
 use bevy::prelude::*;
@@ -31,6 +38,8 @@ pub struct Shield {
     max: f32,
     /// Seconds since the last blow.
     quiet: f32,
+    /// `Immortal`: blows do it no harm while it has points.
+    immortal: bool,
 }
 
 impl Shield {
@@ -41,7 +50,18 @@ impl Shield {
             value: max as f32,
             max: max as f32,
             quiet: QUIET,
+            immortal: false,
         }
+    }
+
+    /// `Immortal`.
+    pub fn is_immortal(&self) -> bool {
+        self.immortal
+    }
+
+    /// `Immortal`'s setter.
+    pub fn set_immortal(&mut self, immortal: bool) {
+        self.immortal = immortal;
     }
 
     /// `Value`: whole points left.
@@ -61,11 +81,15 @@ impl Shield {
     }
 
     /// `Spend`: takes `damage` and returns what is left of it for the
-    /// health.
+    /// health. An immortal shield with points left takes it all and stays
+    /// as it was.
     pub fn spend(&mut self, damage: i32) -> i32 {
         self.quiet = 0.0;
         if self.points() == 0 {
             return damage;
+        }
+        if self.immortal {
+            return 0;
         }
         let left = self.points() as i32 - damage;
         if left < 0 {
