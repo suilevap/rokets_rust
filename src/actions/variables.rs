@@ -71,13 +71,14 @@ impl Variables {
         }
     }
 
-    /// `GetInt`: a number, or a variable's value (global, else the actor's).
-    fn int(&self, actor: Option<i64>, text: &str) -> i64 {
-        text.trim().parse().ok().unwrap_or_else(|| {
-            self.get(Owner::Global, text)
-                .or_else(|| actor.and_then(|a| self.get(Owner::Item(a), text)))
-                .unwrap_or(0)
-        })
+    /// `GetInt`: a number, or a variable's value (global, else the actor's;
+    /// looking makes the actor's set, with its `Id`, as C# did).
+    pub(super) fn int(&mut self, actor: Option<i64>, text: &str) -> i64 {
+        if let Ok(n) = text.trim().parse() {
+            return n;
+        }
+        let global = self.values(Owner::Global).get(text).copied();
+        global.or_else(|| actor.and_then(|a| self.values(Owner::Item(a)).get(text).copied())).unwrap_or(0)
     }
 }
 
