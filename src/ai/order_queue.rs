@@ -16,6 +16,22 @@
 //!   turned into the world as everything else on the map:
 //!   `Position * MapManager.CellSize`). `ItemId` 0 is the car that set the
 //!   action off (`GetId`), as for every action with an item.
+//! - `MoveCargoOrder(item, cargo, position, r, dropPosition)`: tow `cargo`
+//!   with the magnet to within `r` cells of `position`, and drop it (at
+//!   `dropPosition` if one is given, else where the AI finds a place:
+//!   [`trees::carrier`](super::trees::carrier)). `Position` and
+//!   `DropPosition` are cells, `R` a length in cells
+//!   (`LevelPositionToWorld`, `LevelLengthToWorld`); a `DropPosition` of
+//!   exactly `0 0` is "none". Not queued when the car or the cargo is not
+//!   there.
+//! - `GrabCargoOrder(item, cargo, actionOnGrab)`: take `cargo` on the magnet
+//!   ([`trees::grab_cargo`](super::trees::grab_cargo)); `ActionOnGrab`, when
+//!   there is one, becomes the car's `MapActionOnTirgger` *at once* (not
+//!   when the order's turn comes), and the grab runs it.
+//! - `PressButtonOrder(item, button)`: drive onto the button, stand there
+//!   for its time and check it is pressed
+//!   ([`trees::press_button`](super::trees::press_button)). Not queued when
+//!   the car or the button is not there.
 //! - `AIClearOrders(item)`: forget every order. What the car was doing for
 //!   the first is not stopped: it drives on until its tree next thinks, and
 //!   then stops giving orders (the stick stays where it was, as C#'s did).
@@ -26,14 +42,16 @@
 //! control (`SetControl`) starts with none (`AIBTBaseControl.Init` makes a
 //! new blackboard; the line that would carry `Orders` over is commented out).
 //!
+//! The cargo and the button are kept as the entities the ids named when the
+//! order was given (C# held the objects), whatever becomes of them: one that
+//! is gone by the order's turn is `Removed` to the tree, which fails.
+//!
 //! Not ported: `MoveOrder`'s `DEBUG` build, which went by
 //! `CustomAi.SmartMoveToPos` (an experiment of 2017 that first opens a
 //! door in the way by its button or a box on it); the release build's
-//! `MoveToPoint("MoveOrder", …)` is what the game shipped with. The other
-//! orders (`MoveCargoOrder`, `GrabCargoOrder`, `PressButtonOrder`,
-//! `AttackTargetOrder`) need the carrier, button and attack behaviours
-//! (`docs/BACKLOG.md`); until then they are logged as action types not
-//! ported. An order given to a car whose tree the port does not have yet
+//! `MoveToPoint("MoveOrder", …)` is what the game shipped with.
+//! `AttackTargetOrder` (no map uses it: `CreateAttackTargetBehaviour`) is
+//! logged as an action type not ported. An order given to a car whose tree the port does not have yet
 //! (`SupportAi*`, which also carries out orders) is lost, as the car has no
 //! blackboard.
 
@@ -42,7 +60,8 @@ use std::collections::VecDeque;
 use bevy::prelude::*;
 
 use crate::actions::{AddMapAction, MapIds, Run};
-use crate::content::actions::defs::{AIClearOrders, MoveOrder, OrderType};
+use crate::content::actions::defs::{AIClearOrders, GrabCargoOrder, MoveCargoOrder, MoveOrder, OrderType, PressButtonOrder};
+use crate::content::xna::XVec2;
 use crate::game::LoadedMap;
 
 use super::blackboard::AiBlackboard;
@@ -53,6 +72,25 @@ use super::blackboard::AiBlackboard;
 pub enum OrderKind {
     /// `MoveOrder`: `MoveToPoint` to this world point.
     Move { to: Vec2 },
+    /// `MoveCargoOrder`: `CreateCarrierBehaviour`: tow `cargo` to within
+    /// `radius` of `to` and drop it, at `drop_at` if there is one.
+    MoveCargo { cargo: Entity, to: Vec2, radius: f32, drop_at: Option<Vec2> },
+    /// `GrabCargoOrder`: `CreateGrabCargoBehaviour`.
+    GrabCargo { cargo: Entity },
+    /// `PressButtonOrder`: `CreatePressButtonBehaviour`.
+    PressButton { button: Entity },
+}
+
+impl OrderKind {
+    /// The entity the order is about (the cargo, the button): what the
+    /// gather keeps an eye on for the tree.
+    pub fn subject(&self) -> Option<Entity> {
+        match *self {
+            OrderKind::Move { .. } => None,
+            OrderKind::MoveCargo { cargo, .. } | OrderKind::GrabCargo { cargo } => Some(cargo),
+            OrderKind::PressButton { button } => Some(button),
+        }
+    }
 }
 
 /// One order in the queue (`OrdersManager.Order`).
@@ -126,12 +164,16 @@ impl OrderQueue {
     }
 }
 
-/// `MoveOrder` and `AIClearOrders`.
+/// The map actions that give and take orders.
 pub struct OrdersPlugin;
 
 impl Plugin for OrdersPlugin {
     fn build(&self, app: &mut App) {
-        app.add_map_action::<MoveOrder, _>(move_order).add_map_action::<AIClearOrders, _>(clear_orders);
+        app.add_map_action::<MoveOrder, _>(move_order)
+            .add_map_action::<MoveCargoOrder, _>(move_cargo_order)
+            .add_map_action::<GrabCargoOrder, _>(grab_cargo_order)
+            .add_map_action::<PressButtonOrder, _>(press_button_order)
+            .add_map_action::<AIClearOrders, _>(clear_orders);
     }
 }
 
@@ -143,6 +185,53 @@ fn move_order(In(run): In<Run<MoveOrder>>, ids: MapIds, map: Res<LoadedMap>, mut
     {
         let to = map.world(run.data.position.x, run.data.position.y);
         blackboard.order_queue.enqueue(OrderKind::Move { to }, run.data.order_remove_condition);
+    }
+    true
+}
+
+/// `ActionRunner.MoveCargoOrderRun`: the carrier behaviour for the car's
+/// tree, when the car (with a tree) and the cargo are there.
+fn move_cargo_order(In(run): In<Run<MoveCargoOrder>>, ids: MapIds, map: Res<LoadedMap>, mut brains: Query<&mut AiBlackboard>) -> bool {
+    let (car, cargo) = (ids.entity(run.target(run.data.item_id)), ids.entity(run.target(run.data.cargo_item_id)));
+    if let (Some(car), Some(cargo)) = (car, cargo)
+        && let Ok(mut blackboard) = brains.get_mut(car)
+    {
+        let data = &run.data;
+        let kind = OrderKind::MoveCargo {
+            cargo,
+            to: map.world(data.position.x, data.position.y),
+            // `LevelLengthToWorld`.
+            radius: data.r * map.cell.0,
+            drop_at: (data.drop_position != XVec2::ZERO).then(|| map.world(data.drop_position.x, data.drop_position.y)),
+        };
+        blackboard.order_queue.enqueue(kind, data.order_remove_condition);
+    }
+    true
+}
+
+/// `ActionRunner.GrabCargoOrderRun`: the grab behaviour, and `ActionOnGrab`
+/// as the car's `MapActionOnTirgger` straight away.
+fn grab_cargo_order(In(run): In<Run<GrabCargoOrder>>, ids: MapIds, mut brains: Query<&mut AiBlackboard>) -> bool {
+    let (car, cargo) = (ids.entity(run.target(run.data.item_id)), ids.entity(run.target(run.data.cargo_item_id)));
+    if let (Some(car), Some(cargo)) = (car, cargo)
+        && let Ok(mut blackboard) = brains.get_mut(car)
+    {
+        blackboard.order_queue.enqueue(OrderKind::GrabCargo { cargo }, run.data.order_remove_condition);
+        if let Some(action) = &run.data.action_on_grab {
+            blackboard.map_action_on_trigger = Some(action.clone());
+        }
+    }
+    true
+}
+
+/// `ActionRunner.PressButtonOrderRun`: the button is named by its own id
+/// (`GetEntity(action.ButtonId)`: no actor to stand for 0).
+fn press_button_order(In(run): In<Run<PressButtonOrder>>, ids: MapIds, mut brains: Query<&mut AiBlackboard>) -> bool {
+    let (car, button) = (ids.entity(run.target(run.data.item_id)), ids.entity(Some(run.data.button_id)));
+    if let (Some(car), Some(button)) = (car, button)
+        && let Ok(mut blackboard) = brains.get_mut(car)
+    {
+        blackboard.order_queue.enqueue(OrderKind::PressButton { button }, run.data.order_remove_condition);
     }
     true
 }

@@ -370,13 +370,77 @@
 //! ```text
 //! C#                                              Rust
 //! OrderExecutorAi = new ExecuteOrders()           order_executor_ai() =
-//!   (DynamicNode "Order": the first order's         action(ExecuteOrders)
-//!    tree, Fail with none; EndOrder(status)         (start: the first order's action,
-//!    when it ends)                                   fails with none; complete: the
-//!                                                    queue told)
-//! MoveOrderRun's order =                          OrderKind::Move { to } =
-//!   MoveToPoint("MoveOrder", b => p)                MoveToPoint(to), speed 1, within 1
+//!   (DynamicNode "Order": the first order's         execute_orders(move_order, carrier,
+//!    tree, Fail with none; EndOrder(status)           grab_cargo, press_button)
+//!    when it ends)                                  (the first order's tree by its kind,
+//!                                                    fails with none; the queue told
+//!                                                    when it ends)
+//! MoveOrderRun's order =                          move_order() =
+//!   MoveToPoint("MoveOrder", b => p)                MoveToPoint(the order's point),
+//!                                                   speed 1, within 1
 //! ```
+//!
+//! The orders of the cargo and the button (`ActionRunner.MoveCargoOrderRun`,
+//! `GrabCargoOrderRun`, `PressButtonOrderRun`), each the tree C# built when
+//! the order was given, here reading its values off the order being carried
+//! out ([`AiBlackboard::executing`]):
+//!
+//! ```text
+//! C#                                              Rust
+//! CreateCarrierBehaviour(cargo, p, r, dropPos) =  carrier() =
+//!   bt.Selector("Carrier",                          select((
+//!     dropNode,                                       drop_cargo(),
+//!     bt.Sequence("Seq", GrabCargo, dropNode))        seq((grab_cargo(), drop_cargo()))))
+//!
+//! CreateGrabCargoBehaviour(cargo) =               grab_cargo() =
+//!   bt.Sequence("GetCargo",                         seq((
+//!     Condition("HasNoCargo",                         check(nothing on the rope),
+//!       LinkedSlave == null),
+//!     Action("FindCargo", cargo != null &&            check(the cargo is there),
+//!       !cargo.Removed; PutCustomData),
+//!     MoveUntilPositionNonVisible(                    move_until_position_non_visible(
+//!       cargo.Position, null, 4, 7),                    cargo's position, the path's end or
+//!                                                       the cargo, 4, 7),
+//!     Timer(1.0f, bt.Idle),                           timer(1.0, act(Idle)),
+//!     GrabByChainGadget(cargo),                       act(GrabByChainGadget),
+//!     TriggerMapAction(true))                         act(TriggerMapAction(once))))
+//!
+//! CreateDropCargoBehaviour(p, r, dropPos) =       drop_cargo() =
+//!   bt.Sequence("DropCargo",                        seq((
+//!     Condition("HasCargo", LinkedSlave != null),     check(something on the rope),
+//!     Action("FindTargetPos", TargetPosition = p),    leaf(TargetPosition = the order's point),
+//!     Selector("WorkaroundForStat",                   select((
+//!       Condition("IsStat", IsStatic),                  check(the car cannot move),
+//!       dropPos given:                                  if_else(a drop point is given,
+//!         MoveToPoint("DropPos", dropPos)                 act(MoveToPoint(the drop point)),
+//!         else MoveUntilPositionNonVisible(               move_until_position_non_visible(
+//!           random free visible point 4..8                  a random free visible point 4..8
+//!             of TargetPosition,                              of TargetPosition,
+//!           TargetPosition, 4, 7.2)),                       TargetPosition, 4, 7.2)))),
+//!     DropByChainGadget(p, r))                        act(DropByChainGadget)))
+//!
+//! MoveUntilPositionNonVisible(pos, goal, lo, hi) = move_until_position_non_visible(..) =
+//!   bt.Sequence("MoveToActiveDist",                 seq((
+//!     bt.While("CheckDist", null,                     if_else(not (static, or goal within hi,
+//!       IsStatic => Ok;                                 not within lo, no wall between),
+//!       goal in (lo, hi) and in sight => Ok;            act(MoveToPoint(pos)),
+//!       else Running,                                   success),
+//!       MoveToPoint("MoveToDest", pos, 1, 1)),
+//!     StopAction)                                     stop()))
+//!
+//! CreatePressButtonBehaviour(button) =            press_button() =
+//!   bt.Sequence("PressButton",                      seq((
+//!     Condition(button != null && !Removed),          check(the button is there),
+//!     MoveToPoint(button.Position),                   act(MoveToPoint(button's position)),
+//!     Condition(CloserThanByChebyshev(pos,            check(Chebyshev-near the button within
+//!       button.Position, button.Radius)),               its radius),
+//!     Timer(button.ActivationTimeSec + 0.2f, Idle),   timer(1.2, act(Idle)),
+//!     Condition(button.IsActivated))                  check(the button is pressed)))
+//! ```
+//!
+//! In a `While`, `Ok` ends it at once without the child, as `Running` runs
+//! the child: `if_else`'s second arm is the `Ok` leaf. As every `While`, it
+//! asks its condition at a think only.
 //!
 //! What it comes to: with no order the car does nothing at all (its tree
 //! fails every step, so it is thought over every step; the stick stays
@@ -388,9 +452,28 @@
 //! step unless it is `RemoveOnTry`. The truck of Escort is such a car: the
 //! map orders it to the next stretch of road as the player clears it.
 //!
+//! With the cargo orders it drives to within 4 to 7 units of the cargo in
+//! sight, stands a second, shoots the magnet at it (the button held at least
+//! a second, then let go once the magnet has found something) and, with the
+//! cargo on the rope, drives (to the drop point if the order gives one, else
+//! to a random free place 4 to 7.2 units from the point, in sight of it),
+//! then holds the cargo over the point (the button held while it is further
+//! from the point than its radius plus the order's `R`, 5 s at most) and
+//! lets it go. A `GrabCargoOrder` stops after the grab and runs the
+//! `ActionOnGrab`; Assembly's buggy takes the player's car so (the cargo may
+//! be a car). A `PressButtonOrder` drives onto the button and waits 1.2 s for
+//! it to be pressed (it needs a second and its quarter-second look).
+//!
 //! Differences from C# in `OrderExecutorAi`: an order cleared and replaced
 //! within a quarter second starts afresh (see [`ExecuteOrders`]); the
-//! `DEBUG` build's `SmartMoveToPos` for a `MoveOrder` is not ported.
+//! `DEBUG` build's `SmartMoveToPos` for a `MoveOrder` is not ported;
+//! `AttackTargetOrder`'s `CreateAttackTargetBehaviour` (no map gives one) is
+//! not ported; the cargo's and the button's own state are read as the gather
+//! copied it at the start of the step; the magnet takes 0.2 s to charge for
+//! the AI as for the player (see `gadget`); the car carries the gadget's
+//! button over from tree to tree as its intent holds it, as C#'s `Fire`
+//! flags did; the rest are in [`nodes::GrabByChainGadget`] and
+//! [`nodes::DropByChainGadget`].
 //!
 //! Not ported here: every other tree of `BTActionFactory` (`SimpleAttackDelayPos`,
 //! `Attack`, `SimpleAi`, `GuardAi`, `SmartAttack` (`AttackAi`'s: the
@@ -405,11 +488,14 @@ use flatbt_bevy::prelude::*;
 
 use super::blackboard::AiBlackboard;
 use super::nodes::{
-    AimToTarget, ExecuteOrders, FireToTarget, Flocking, FollowBy, Idle, alert_friends, find_nearest_enemy, find_nearest_leader, fire_now,
+    AimToTarget, DropByChainGadget, FireToTarget, GrabByChainGadget, PositionFn, execute_orders, executing_drop, Flocking, FollowBy, Idle, alert_friends, find_nearest_enemy, find_nearest_leader, fire_now,
     MoveBase, MoveInInitDirection, MoveTowardsTargetNoPath, MoveToPoint, MoveToRandomVisiblePosition, Power,
     Runaway, Scanning, SimpleFollowByTarget, sleep, stop_moving, TriggerMapAction, TryFireToAnyone, all, optional,
     act, never, time_limit, timer, while_target_alive,
 };
+use super::order_queue::OrderKind;
+use crate::button::PRESS_AFTER;
+use crate::gadget::REACH;
 use crate::weapon::model::closer_by_chebyshev;
 use super::orders::Orders;
 
@@ -909,5 +995,183 @@ pub fn hammer_ai() -> impl BehaviorNode<AiBlackboard, Orders> {
 /// `OrderExecutorAi`): carry out the map's orders, first to last; with none,
 /// do nothing. See the module docs.
 pub fn order_executor_ai() -> impl BehaviorNode<AiBlackboard, Orders> {
-    named("Order", act(ExecuteOrders))
+    named("Order", execute_orders(move_order(), carrier(), grab_cargo(), press_button()))
+}
+
+/// Where a `MoveOrder` goes: the order's point, or no point (the origin).
+fn move_order_target(bb: &mut AiBlackboard) -> Vec2 {
+    match bb.executing.map(|order| order.kind) {
+        Some(OrderKind::Move { to }) => to,
+        _ => Vec2::ZERO,
+    }
+}
+
+/// `MoveOrderRun`'s order: `new MoveToPoint("MoveOrder", b => p)`, the
+/// defaults (speed rate 1, near enough within 1).
+pub fn move_order() -> impl BehaviorNode<AiBlackboard, Orders> {
+    named("MoveOrder", act(MoveToPoint::new(move_order_target)))
+}
+
+/// What a magnet reaches without the car moving (`ActiveDistance`) over two
+/// and `ActiveDistance - 1` (`MoveUntilPositionNonVisible`'s limits for a
+/// cargo).
+const GRAB_FROM: f32 = REACH * 0.5;
+const GRAB_TO: f32 = REACH - 1.0;
+/// `CreateDropCargoBehaviour`: where, from the point, the car looks for a
+/// place to drop at, and how near it must stand.
+const DROP_PLACE_FROM: f32 = REACH * 0.5;
+const DROP_PLACE_TO: f32 = REACH;
+const DROP_FROM: f32 = REACH * 0.5;
+const DROP_TO: f32 = REACH * 0.9;
+/// `Timer(1.0f, bt.Idle)` before the grab, s.
+pub const GRAB_WAIT: f32 = 1.0;
+/// `CreatePressButtonBehaviour`: the wait is the button's time and this, s.
+pub const PRESS_EXTRA: f32 = 0.2;
+
+/// `BTActionFactory.MoveUntilPositionNonVisible`'s `While`: whether the car
+/// is to go on moving: it can move, and the goal (`goal`) is not yet within
+/// `hi` and no nearer than `lo`, and in sight. (C#'s condition said `Ok` when
+/// it is, `Running` when not.)
+fn keep_moving(bb: &AiBlackboard, goal: fn(&AiBlackboard) -> Vec2, lo: f32, hi: f32) -> bool {
+    if !bb.can_move {
+        return false;
+    }
+    let goal = goal(bb);
+    let near = |d: f32| goal.distance_squared(bb.pos) < d * d;
+    !(near(hi) && !near(lo) && !bb.line_collides(goal, bb.pos))
+}
+
+/// `BTActionFactory.MoveUntilPositionNonVisible(posFunc, goalFunc, minL,
+/// maxL)`: drive (`MoveToPoint` to `pos`, picked when it starts) while the
+/// goal is not yet between `lo` and `hi` away in sight, then stop. `goal` is
+/// what the check measures to: C#'s `goalFunc`, else the end of the path, else
+/// `posFunc`.
+pub fn move_until_position_non_visible(pos: PositionFn, goal: fn(&AiBlackboard) -> Vec2, lo: f32, hi: f32) -> impl BehaviorNode<AiBlackboard, Orders> {
+    named("MoveToActiveDist", seq((
+        named("CheckDist", if_else(
+            move |bb: &AiBlackboard| keep_moving(bb, goal, lo, hi),
+            named("MoveToDest", act(MoveToPoint::new(pos))),
+            named("Ok", leaf(|_: &mut AiBlackboard| NodeResult::Success)),
+        )),
+        stop(),
+    )))
+}
+
+/// The cargo of the order being carried out, as the gather last saw it.
+fn cargo_position(bb: &AiBlackboard) -> Vec2 {
+    super::nodes::executing_cargo(bb).and_then(|cargo| bb.thing(cargo)).map_or(Vec2::ZERO, |cargo| cargo.pos)
+}
+
+fn cargo_position_mut(bb: &mut AiBlackboard) -> Vec2 {
+    cargo_position(bb)
+}
+
+/// `CreateGrabCargoBehaviour`'s check: C# had no goal function, so the end of
+/// the path the car is on, or else the cargo.
+fn grab_goal(bb: &AiBlackboard) -> Vec2 {
+    bb.path.as_ref().map_or_else(|| cargo_position(bb), |path| path.last_position())
+}
+
+/// `CreateGrabCargoBehaviour(findCargoFunc)` (`GrabCargoOrder`): with nothing
+/// on the rope, find the cargo, drive to within reach of it in sight, stand a
+/// second, shoot the magnet at it and take it, then run the car's
+/// `MapActionOnTirgger` once. Fails when the cargo is gone, there is no way
+/// to it, or the magnet does not take it in 5 s.
+pub fn grab_cargo() -> impl BehaviorNode<AiBlackboard, Orders> {
+    named("GetCargo", seq((
+        named("HasNoCargo", check(|bb: &AiBlackboard| bb.magnet.is_none_or(|m| m.towing.is_none()))),
+        // `findCargoFunc(b)`, `cargo != null && !cargo.Removed`; `PutCustomData`
+        // is not needed (the cargo is the order's).
+        named("FindCargo", check(|bb: &AiBlackboard| super::nodes::executing_cargo(bb).is_some_and(|c| bb.thing(c).is_some()))),
+        move_until_position_non_visible(cargo_position_mut, grab_goal, GRAB_FROM, GRAB_TO),
+        named("Timer_1s", timer(GRAB_WAIT, act(Idle))),
+        act(GrabByChainGadget),
+        named("Trigger", act(TriggerMapAction::new(true))),
+    )))
+}
+
+/// `CreateDropCargoBehaviour`'s `FindTargetPos`: `TargetPosition` is the
+/// order's point.
+fn find_target_position(bb: &mut AiBlackboard) -> NodeResult<Orders> {
+    match executing_drop(bb) {
+        Some((to, _)) => {
+            bb.target_position = to;
+            NodeResult::Success
+        }
+        None => NodeResult::Failure,
+    }
+}
+
+/// The order's `DropPosition`, if it gives one.
+fn drop_position(bb: &AiBlackboard) -> Option<Vec2> {
+    match bb.executing?.kind {
+        OrderKind::MoveCargo { drop_at, .. } => drop_at,
+        _ => None,
+    }
+}
+
+fn drop_position_or_origin(bb: &mut AiBlackboard) -> Vec2 {
+    drop_position(bb).unwrap_or(Vec2::ZERO)
+}
+
+/// `MapManager.GetRandomFreeVisiblePoint(TargetPosition, ActiveDistance * 0.5,
+/// ActiveDistance)`: where the AI finds a place to drop the cargo.
+fn random_drop_place(bb: &mut AiBlackboard) -> Vec2 {
+    let target = bb.target_position;
+    bb.random_free_visible_point_from(target, DROP_PLACE_FROM, DROP_PLACE_TO)
+}
+
+fn target_position(bb: &AiBlackboard) -> Vec2 {
+    bb.target_position
+}
+
+/// `CreateDropCargoBehaviour` (`MoveCargoOrder`'s second half): with cargo on
+/// the rope, drive to the drop point, or to a place the AI finds within
+/// reach of the order's point in sight of it; then hold the cargo over the
+/// point and drop it. A car that cannot move skips the drive.
+pub fn drop_cargo() -> impl BehaviorNode<AiBlackboard, Orders> {
+    named("DropCargo", seq((
+        named("HasCargo", check(|bb: &AiBlackboard| bb.magnet.is_some_and(|m| m.towing.is_some()))),
+        named("FindTargetPos", leaf(find_target_position)),
+        named("WorkaroundForStat", select((
+            named("IsStat", check(|bb: &AiBlackboard| !bb.can_move)),
+            if_else(
+                |bb: &AiBlackboard| drop_position(bb).is_some(),
+                named("DropPos", act(MoveToPoint::new(drop_position_or_origin))),
+                move_until_position_non_visible(random_drop_place, target_position, DROP_FROM, DROP_TO),
+            ),
+        ))),
+        act(DropByChainGadget),
+    )))
+}
+
+/// `CreateCarrierBehaviour` (`MoveCargoOrder`): drop the cargo the car has on
+/// the rope, else grab the cargo and then drop it.
+pub fn carrier() -> impl BehaviorNode<AiBlackboard, Orders> {
+    named("Carrier", select((drop_cargo(), named("Seq", seq((grab_cargo(), drop_cargo()))))))
+}
+
+/// The button of the order being carried out, as the gather last saw it.
+fn button(bb: &AiBlackboard) -> Option<super::blackboard::Thing> {
+    let OrderKind::PressButton { button } = bb.executing?.kind else {
+        return None;
+    };
+    bb.thing(button).copied()
+}
+
+fn button_position(bb: &mut AiBlackboard) -> Vec2 {
+    button(bb).map_or(Vec2::ZERO, |b| b.pos)
+}
+
+/// `CreatePressButtonBehaviour(button)` (`PressButtonOrder`): drive onto the
+/// button, check the car is on it, stand for its time and a fifth of a
+/// second, and check it is pressed.
+pub fn press_button() -> impl BehaviorNode<AiBlackboard, Orders> {
+    named("PressButton", seq((
+        named("Check", check(|bb: &AiBlackboard| button(bb).is_some())),
+        named("MoveTo", act(MoveToPoint::new(button_position))),
+        named("Check that pressing", check(|bb: &AiBlackboard| button(bb).is_some_and(|b| closer_by_chebyshev(bb.pos, b.pos, b.radius)))),
+        named("Timer", timer(PRESS_AFTER + PRESS_EXTRA, act(Idle))),
+        named("Check state", check(|bb: &AiBlackboard| button(bb).is_some_and(|b| b.pressed))),
+    )))
 }

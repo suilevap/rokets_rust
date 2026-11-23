@@ -29,8 +29,8 @@ use crate::sound::PlaySound;
 
 /// How often a button looks at what stands on it (`_periodic`).
 const LOOK_EVERY: f32 = 0.25;
-/// How long it must be stood on (`_activateButtonTimeDest`).
-const PRESS_AFTER: f32 = 1.0;
+/// How long it must be stood on (`_activateButtonTimeDest`, `ActivationTimeSec`).
+pub const PRESS_AFTER: f32 = 1.0;
 /// The physics shape against the sprite (`GeometryScale`: the rim is not
 /// the button).
 const BODY_SCALE: f32 = 1.0 - 18.0 / 64.0;
@@ -133,6 +133,14 @@ pub struct Button {
     pressed_view: Entity,
     lights: [Entity; 4],
     radius: f32,
+}
+
+impl Button {
+    /// `Entity.Radius`: half the longer side of its sprite (the physics
+    /// shape is a little smaller), world units.
+    pub fn radius(&self) -> f32 {
+        self.radius / BODY_SCALE
+    }
 }
 
 pub struct ButtonPlugin;

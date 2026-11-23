@@ -39,7 +39,7 @@
 //! | `ZombieFlocking`, `ZombieFlockingFriend` | `BTActionFactory.ZombieFlocking` (`ScanDistance` 12): alone near its target with its wave ready, stands 2 s and fires it; hurt with nobody to fight, tells its idle friends who did it; flocks at the nearest enemy; else follows a leader (the player first: runs `ActionOnBTTrigger` once, follows by a path when out of sight) or wanders with its flock ([`trees::zombie_flocking`]) |
 //! | `SimpleFlocking` | `BTActionFactory.SimpleFlocking`: flocks at half speed with an enemy near, else at a tenth |
 //! | `HammerAi`, `HammerAiFriend` | `BTActionFactory.HammerAi`: chases the nearest enemy within `ScanDistance` for a second, charges at full stick by a path to where it was then (up to 3 s), and, while it lives, backs off at half the stick to a random place in sight for a second before the next round; with nobody, sleeps 2 s and wanders ([`trees::hammer_ai`]) |
-//! | `OrderExecutorFriend`, `OrderExecutorAi` | `BTActionFactory.OrderExecutorAi` (`ExecuteOrders`): carries out the orders the map gives it (`MoveOrder`: drives by a path to a point), first to last, each dropped as its `OrderRemoveCondition` says; with none it does nothing ([`trees::order_executor_ai`], [`order_queue`]) |
+//! | `OrderExecutorFriend`, `OrderExecutorAi` | `BTActionFactory.OrderExecutorAi` (`ExecuteOrders`): carries out the orders the map gives it (`MoveOrder`: drives by a path to a point; `MoveCargoOrder`, `GrabCargoOrder`: works the magnet, see [`nodes::GrabByChainGadget`]; `PressButtonOrder`: drives onto a button and waits for it), first to last, each dropped as its `OrderRemoveCondition` says; with none it does nothing ([`trees::order_executor_ai`], [`order_queue`]) |
 //! | `AlwaysShoot` | [`AlwaysShoot`]: the trigger always down, the gun where the car points |
 //! | `ShootPattern` | [`ShootPattern`]: a random pattern of quarter-second silences and bursts |
 //! | `NoneLocal`, `NoneEnemy`, `NoneFriend` | nothing (`AINone`; see `car::control`) |
@@ -192,14 +192,16 @@ use crate::particles::styles::{BOMB_BEEP, TELEPORT_STREAK};
 use crate::render::camera::MainCamera;
 use crate::render::particles::Particles;
 use crate::weapon::aim_help::in_view;
+use crate::button::Button;
 use crate::explosion::{Damaged, ExplosionSystems, Health};
+use crate::gadget::{GadgetSystems, Magnet};
 use crate::game::{GameState, LoadedMap, MapId};
 use crate::weapon::Weapon;
 pub use fire::{AlwaysShoot, ShootPattern};
-pub use blackboard::{AiBlackboard, Alert, Body, Effect, Foe, Gun, Mate, Mind};
+pub use blackboard::{AiBlackboard, Alert, Body, Effect, Foe, Gun, MagnetState, Mate, Mind, Thing};
 pub use navigation::{Navigation, SharedTerrain};
 pub use order_queue::{Order, OrderKind, OrderQueue};
-pub use orders::Orders;
+pub use orders::{GadgetButton, Orders};
 
 pub struct AiPlugin;
 
@@ -239,7 +241,9 @@ impl Plugin for AiPlugin {
             FixedUpdate,
             (
                 gather_blackboards.before(BehaviorSystems),
-                (carry_out.in_set(crate::controls::IntentSystems), send_trigger_actions, (alert_friends, draw_effects).chain())
+                gather_things.after(gather_blackboards).before(BehaviorSystems).run_if(stepping),
+                // The gadget reads the intent the tree wrote this step.
+                (carry_out.in_set(crate::controls::IntentSystems).before(GadgetSystems), send_trigger_actions, (alert_friends, draw_effects).chain())
                     .after(BehaviorSystems)
                     .run_if(stepping),
                 (run_always_shoot, run_shoot_patterns).in_set(crate::controls::IntentSystems),
@@ -281,6 +285,12 @@ pub fn set_control(car: &mut EntityCommands, control: &str, seed: u64) {
         .stop_behavior(trees::order_executor_ai);
     #[cfg(debug_assertions)]
     car.remove::<DebugBehavior>();
+    // A control of its own starts with no button held (`Fire = None`).
+    car.queue(|mut car: EntityWorldMut| {
+        if let Some(mut intent) = car.get_mut::<PlayerIntent>() {
+            set(&mut intent.gadget, false);
+        }
+    });
     let mut brain = AiBlackboard::new(seed);
     match control.trim() {
         "AiSimpleTurret" | "AiSimpleTurretFriend" => {
@@ -528,6 +538,41 @@ fn gather_blackboards(
     }
 }
 
+/// What the orders and the magnet are about, copied into each blackboard
+/// that watches something ([`AiBlackboard::watched`]), and the car's own
+/// magnet: where the cargo or the button is (a thing that is gone is
+/// `Removed`: it is not in the list), what is on the rope, what the magnet
+/// would grab.
+#[allow(clippy::type_complexity)]
+fn gather_things(
+    mut brains: Query<(&mut AiBlackboard, Option<&Magnet>)>,
+    things: Query<(&Position, Option<&CarRadius>, Option<&Collider>, Option<&Button>)>,
+) {
+    for (mut blackboard, magnet) in &mut brains {
+        // Nothing here is a change the car's tree reacts to.
+        let blackboard = blackboard.bypass_change_detection();
+        blackboard.magnet = magnet.map(|m| MagnetState { towing: m.towing(), candidate: m.candidate() });
+        let watched: Vec<Entity> = blackboard.watched().collect();
+        blackboard.things.clear();
+        for entity in watched {
+            if blackboard.things.iter().any(|t| t.entity == entity) {
+                continue;
+            }
+            let Ok((position, car, collider, button)) = things.get(entity) else {
+                continue;
+            };
+            // `Entity.Radius`: half the longer side.
+            let radius = match (car, button, collider) {
+                (Some(car), _, _) => car.0,
+                (_, Some(button), _) => button.radius(),
+                (_, _, Some(collider)) => collider.shape_scaled().compute_local_aabb().half_extents().max_element(),
+                _ => 0.0,
+            };
+            blackboard.things.push(Thing { entity, pos: position.0, radius, pressed: button.is_some_and(|b| b.state.pressed) });
+        }
+    }
+}
+
 /// `AIBTBaseControl.UpdateControl`, its second half: writes the act of each
 /// tree into the car's intent. A car whose tree ended this step has no act and
 /// writes nothing (its trigger is let go).
@@ -556,6 +601,15 @@ fn carry_out(mut brains: Query<(&mut PlayerIntent, Option<&Orders>, &Health, Has
         }
         if let Some(a) = orders.aim_dir {
             set(&mut intent.aim_dir, a);
+        }
+        // The gadget's button, as C#'s `Fire` flags (`Orders::write_gadget`).
+        if health.hp > 0 && !inactive {
+            let cancel = blackboard.bypass_change_detection().take_gadget_cancel();
+            if cancel || orders.gadget.is_some() || orders.gadget_dir.is_some() {
+                let mut written = *intent;
+                orders.write_gadget(&mut written, cancel);
+                set(&mut *intent, written);
+            }
         }
     }
 }
