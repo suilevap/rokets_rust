@@ -7,8 +7,10 @@
 //! hit, up to the gun's range, and on for a gun that bounces its bullets
 //! (the Railgun) along the bounce, as `LaserRenderer`'s `ReflectionCount`
 //! did (as far as the range is left; not off what can be hurt, or at a
-//! head-on blow). Normally it is a thin green line (3 C#
-//! pixels) of a noise strip (`Special\LaserLine`) whose rows scroll once
+//! head-on blow). Normally it is a thin line (3 C#
+//! pixels), green on the player's gun and red on an enemy's (`SetLaserNormal`:
+//! `Color.Green` for `LocalDevice`, `Color.Red` otherwise), cut from a
+//! noise strip (`Special\LaserLine`) whose rows scroll once
 //! a second, so it shimmers, with a wider faint glow (`LaserLine2`, the
 //! `ImprovedLaserView` the desktop had). While the gun cannot fire (out
 //! of energy, or between pulls), it is white, pulsing once a second and
@@ -16,6 +18,13 @@
 //! its end otherwise. A gun that fires only accurately shows its reload
 //! the same way, white, as wide as 26 pixels at the start of it and
 //! narrowing to 3 as it runs out, brightening (`SetLaserReload`).
+//! An enemy's line (`LaserVisiblityUpdate`: `Team != 0`, the friends' lines
+//! were dropped in 2014; the player's own since 2013) shows while its car is
+//! alive, active and not charging a gadget, and a turret that cannot move
+//! (`IsStatic`) shows it always, the others while they aim
+//! (`EnableWeaponLineDraw`, [`model::aim_line_on`]). It is the same line in
+//! every other respect, white when it cannot fire. The enemy's guns have no
+//! energy store, so only a Railgun-like reload turns it white.
 //! Drawing it asked the energy whether it could fire at all
 //! (`CheckEnergy`), which reset the bar's last-asked mark; so does this.
 //!
@@ -26,7 +35,12 @@
 //! jolt when it is spent, runs dry or fills. Full, it fades out over
 //! 3 s.
 //!
-//! Not ported: the laser's sparkles on the
+//! Not ported: `Camera.IsInView` is asked of a whole line (its gun within
+//! its reach of the picture) rather than of each leg's start, middle and
+//! end; the `DelayWeaponDecorator`'s opacity (`WeaponLineDrawOpacity`, only
+//! the Laser has that decorator, and its red line is [`super::laser`]'s);
+//! `Settings.EnableAdvancedScanRangeDraw` (a constant `true`, its old plain
+//! line is not kept); the laser's sparkles on the
 //! player's own car (`CreateLaserEffect`); the extra offset C# gave the bar in hot-seat games
 //! (`PlayerUIOffset`).
 
@@ -38,7 +52,11 @@ use rand::Rng;
 use super::beam;
 use super::model::{self, AimLook, Energy, Kind, MAX_ENERGY, SHOW_FULL};
 use super::{BULLET_REACH, Hurt, PassedByBullets, PlayerEnergy, Weapon, WeaponSystems, sprite_of};
+use crate::actions::Inactive;
+use crate::car::control::Team;
 use crate::controls::{LocalPlayer, PlayerIntent};
+use crate::explosion::Health;
+use crate::render::camera::MainCamera;
 use crate::game::{GameState, LoadedMap, MapEntity};
 use crate::render::layers::Layer;
 use crate::render::sprite::{SpriteTint, UnitQuad, sprite_bundle};
@@ -63,11 +81,12 @@ struct GunView(Kind);
 /// bounces its bullets once; more would be cut short).
 const MAX_LEGS: usize = 4;
 
-/// One leg of the aim line: its line or its glow.
+/// One leg of an aim line, of any gun: its line or its glow. The quads are
+/// pooled; `slot` counts the legs of every gun shown this frame.
 #[derive(Component)]
 struct AimLine {
     glow: bool,
-    leg: usize,
+    slot: usize,
 }
 
 /// A leg of the aim line.
@@ -258,6 +277,14 @@ pub(super) fn paint(m: &mut StandardMaterial, image: Option<Handle<Image>>, colo
     m.uv_transform = uv;
 }
 
+/// A gun's aim line, drawn by [`draw_aim_lines`].
+struct Shown {
+    legs: Vec<Leg>,
+    look: AimLook,
+    /// The local player's gun (green); an enemy's is red.
+    local: bool,
+}
+
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 fn draw_aim_lines(
     mut commands: Commands,
@@ -268,54 +295,87 @@ fn draw_aim_lines(
     quad: Res<UnitQuad>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     (mut images, mut premultiplied): (ResMut<Assets<Image>>, ResMut<crate::render::premultiply::Premultiplied>),
-    mut guns: Query<(Entity, &Weapon, &PlayerIntent, Option<&mut PlayerEnergy>), With<LocalPlayer>>,
+    mut guns: Query<(
+        Entity,
+        &Weapon,
+        &PlayerIntent,
+        Option<&mut PlayerEnergy>,
+        Has<LocalPlayer>,
+        Option<&Team>,
+        &Health,
+        &RigidBody,
+        Has<Inactive>,
+    )>,
+    cameras: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     skipped: Query<(), PassedByBullets>,
     hurt: Query<(), Hurt>,
     mut lines: Query<(&AimLine, &mut Transform, &mut Visibility, &MeshMaterial3d<StandardMaterial>)>,
 ) {
-    if lines.is_empty() {
-        for leg in 0..MAX_LEGS {
-            for glow in [false, true] {
-                let material = materials.add(StandardMaterial {
-                    base_color_texture: map.sprites.get(LASER_LINE).map(|s| premultiplied.of(&s.image, &mut images)),
-                    alpha_mode: AlphaMode::Add,
-                    unlit: true,
-                    double_sided: true,
-                    cull_mode: None,
-                    depth_bias: Layer::Glow.depth_bias(),
-                    ..default()
-                });
-                commands.spawn((
-                    Name::new("Aim line"),
-                    MapEntity,
-                    AimLine { glow, leg },
-                    Mesh3d(quad.0.clone()),
-                    MeshMaterial3d(material),
-                    Transform::default(),
-                    Visibility::Hidden,
-                ));
-            }
+    let camera = cameras.single().ok();
+    let mut shown: Vec<Shown> = Vec::new();
+    for (car, gun, intent, energy, local, team, health, body, inactive) in &mut guns {
+        // `LaserVisiblityUpdate`: a turret always, the others while aiming;
+        // not while the gadget charges.
+        if !super::has_aim_line(gun.kind)
+            || !model::aim_line_on(
+                local,
+                team.map_or(0, |t| t.0),
+                *body != RigidBody::Static,
+                gun.aiming,
+                health.hp > 0,
+                !inactive,
+                intent.gadget,
+            )
+        {
+            continue;
         }
-        return;
-    }
-    let shown = guns.iter_mut().next().and_then(|(car, gun, intent, energy)| {
-        // `LaserVisiblityUpdate`: while aiming, not while the gadget charges.
-        if !super::has_aim_line(gun.kind) || !gun.aiming || intent.gadget {
-            return None;
+        // `Camera.IsInView`: an enemy's line is made only where the camera
+        // can see some of it.
+        let reach = gun.options.range.min(BULLET_REACH);
+        if !local && camera.is_some_and(|(c, t)| !super::aim_help::in_view(c, t, gun.at, reach)) {
+            continue;
         }
         // `UpdateLaser`: low while it cannot fire, wide while it reloads.
         let look = gun.aim_look(energy.map(|e| &mut e.into_inner().0));
-        Some((aim_legs(gun, car, &spatial, &skipped, &hurt), look))
-    });
+        shown.push(Shown { legs: aim_legs(gun, car, &spatial, &skipped, &hurt), look, local });
+    }
+    // One pair of quads (line and glow) a leg shown, as many as there are.
+    let needed: usize = shown.iter().map(|s| s.legs.len()).sum();
+    let have = lines.iter().count() / 2;
+    for slot in have..needed {
+        for glow in [false, true] {
+            let material = materials.add(StandardMaterial {
+                base_color_texture: map.sprites.get(LASER_LINE).map(|s| premultiplied.of(&s.image, &mut images)),
+                alpha_mode: AlphaMode::Add,
+                unlit: true,
+                double_sided: true,
+                cull_mode: None,
+                depth_bias: Layer::Glow.depth_bias(),
+                ..default()
+            });
+            commands.spawn((
+                Name::new("Aim line"),
+                MapEntity,
+                AimLine { glow, slot },
+                Mesh3d(quad.0.clone()),
+                MeshMaterial3d(material),
+                Transform::default(),
+                Visibility::Hidden,
+            ));
+        }
+    }
+    let segments: Vec<(Leg, AimLook, bool)> = shown
+        .iter()
+        .flat_map(|s| s.legs.iter().map(|l| (*l, s.look, s.local)))
+        .collect();
     let t = time.elapsed_secs();
     for (line, mut transform, mut visibility, material) in &mut lines {
-        let Some(leg) = shown.as_ref().and_then(|(legs, look)| legs.get(line.leg).map(|l| (*l, *look))) else {
+        let Some(&(Leg { start, end, hit }, look, local)) = segments.get(line.slot) else {
             *visibility = Visibility::Hidden;
             continue;
         };
-        let (Leg { start, end, hit }, look) = leg;
         let length = start.distance(end);
-        // The glow goes with the green line only.
+        // The glow goes with the normal line only.
         if length <= 0.0 || (look != AimLook::Normal && line.glow) {
             *visibility = Visibility::Hidden;
             continue;
@@ -325,7 +385,12 @@ fn draw_aim_lines(
         };
         let white = |alpha: f32| Color::srgba(1.0, 1.0, 1.0, alpha);
         let (width, color) = match look {
-            AimLook::Normal => (3.0, Color::srgba(0.0, 128.0 / 255.0 * if line.glow { 0.5 } else { 1.0 }, 0.0, 1.0)),
+            // `SetLaserNormal`: `Color.Green` (0, 128, 0) for the local
+            // player, `Color.Red` for the others.
+            AimLook::Normal => {
+                let k = if line.glow { 0.5 } else { 1.0 };
+                (3.0, if local { Color::srgba(0.0, 128.0 / 255.0 * k, 0.0, 1.0) } else { Color::srgba(k, 0.0, 0.0, 1.0) })
+            }
             AimLook::Low => {
                 let tri = triangle(t);
                 (3.0 + 5.0 * (1.0 - tri), white(0.1 + 0.9 * tri))

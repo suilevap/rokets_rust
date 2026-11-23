@@ -127,6 +127,10 @@ fn sprites_for(map: &MapData, cars: &CarCatalog, registry: &crate::actions::Acti
         let weapon = crate::car::weapon_type(sc.weapon_override(), car.weapon.as_deref());
         if let Some((kind, _)) = weapon.and_then(|w| crate::weapon::model::for_type(w, false)) {
             names.extend(crate::weapon::textures_of(kind).into_iter().map(String::from));
+            // An enemy's aim line (`LaserVisiblityUpdate`).
+            if crate::weapon::has_aim_line(kind) {
+                names.extend(crate::weapon::AIM_LINE_TEXTURES.map(String::from));
+            }
         }
         names.push("WhitePixel".to_string());
     }
