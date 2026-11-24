@@ -13,7 +13,8 @@
 //! - **The player's car** ([`Role::Player`], `Car`): angular damping 9,
 //!   driven by [`drive::drive_step`]; two front wheels that turn towards
 //!   the stick and the cabin (`Body`) on top, swaying on springs
-//!   (`cabin`); smoke (`smoke`), sparks when it hits something (`impact`),
+//!   (`cabin`); smoke (`smoke`), a speed trail on a plain map
+//!   (`speed_trail`), sparks when it hits something (`impact`),
 //!   engine and tyre sounds; the camera, the devices, the energy store and
 //!   the magnet. It is the one with `LocalPlayer`.
 //! - **The other `Players` cars** ([`Role::AiCar`]): every one of the
@@ -97,6 +98,7 @@ pub mod impact;
 pub mod shield;
 pub mod simple;
 pub mod smoke;
+pub mod speed_trail;
 
 use avian2d::prelude::*;
 use bevy::prelude::*;
@@ -183,7 +185,7 @@ impl Plugin for CarPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(smoke::SmokeRng(rand::SeedableRng::seed_from_u64(7)))
             .add_systems(OnEnter(GameState::Playing), (spawn_player_car, spawn_ai_players, spawn_simple_cars).chain())
-            .add_plugins((shield::ShieldPlugin, health_bar::HealthBarPlugin, death::DeathPlugin))
+            .add_plugins((shield::ShieldPlugin, health_bar::HealthBarPlugin, death::DeathPlugin, speed_trail::SpeedTrailPlugin))
             .add_message::<impact::CarImpact>()
             .add_systems(
                 FixedUpdate,
@@ -529,6 +531,10 @@ pub fn spawn_car(
     }
     if full {
         insert_car_parts(&mut entity, car, radius, friction, kind);
+        // `CreateCar`: the speed trail, on a plain map.
+        if speed_trail::shows(map.data.level_effect) {
+            entity.insert(speed_trail::SpeedTrail { size });
+        }
     }
     if player {
         insert_player_parts(&mut entity, car, radius, friction, control);

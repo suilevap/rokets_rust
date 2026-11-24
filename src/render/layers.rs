@@ -62,6 +62,9 @@ pub enum Layer {
     /// `Tile` entities on the floor: finish markings, signs, grass
     /// (`DepthConst.Tile`).
     GroundDecor,
+    /// The pale streak behind a fast car (`CarBase + 0.1`, behind the
+    /// pads and the shadows, in front of the floor's tiles).
+    Trail,
     /// Accelerator pads (`DepthConst.Accelerator`, just under the ground).
     Accelerator,
     /// Shadows of cars and loose objects (`DepthConst.DynamicShadow`):
@@ -99,8 +102,9 @@ pub enum Layer {
 }
 
 impl Layer {
-    pub const ALL: [Layer; 14] = [
+    pub const ALL: [Layer; 15] = [
         Layer::GroundDecor,
+        Layer::Trail,
         Layer::Accelerator,
         Layer::Shadow,
         Layer::GroundParticles,

@@ -15,6 +15,9 @@
 //! [`blend_alpha`] gives the alpha that comes out as XNA's over a middling
 //! picture.
 //!
+//! A plain map has the canvas too, for the cars' speed lines
+//! ([`needed`]).
+//!
 //! Not ported: the effects' render targets and `Drawer.ViewWidth`
 //! changing at run time (`Drawer.Init` ran once; the canvas follows the
 //! window).
@@ -38,6 +41,12 @@ pub const MIDDLING_PICTURE: f32 = 0.5;
 /// in the world).
 pub fn shows(effect: LevelEffect) -> bool {
     effect == LevelEffect::Snow
+}
+
+/// Whether a level has a canvas at all: the snow's screen effects, or a
+/// plain map's speed lines (`car::speed_trail`).
+pub fn needed(effect: LevelEffect) -> bool {
+    shows(effect) || crate::car::speed_trail::shows(effect)
 }
 
 /// The canvas for a window of `window` logical pixels: the landscape shape
@@ -94,7 +103,7 @@ impl Plugin for EffectCanvasPlugin {
 }
 
 fn spawn_canvas(mut commands: Commands, map: Res<LoadedMap>) {
-    if !shows(map.data.level_effect) {
+    if !needed(map.data.level_effect) {
         commands.remove_resource::<Canvas>();
         return;
     }
