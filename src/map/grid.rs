@@ -5,6 +5,7 @@
 //! the background), at or above it is a wall, and how far above sets the
 //! wall's height. Rows go down the map (y down), as in the XML.
 
+use super::random_walls;
 use crate::content::map::MapData;
 use crate::content::xna::XColor;
 
@@ -87,6 +88,10 @@ impl MapGrid {
                 }
             }
         }
+
+        // `MapImageModifierManager.Modify`: before anything is built from it.
+        let mut walls_rng = random_walls::UnitRng::new(random_walls::seed_of(&map.name));
+        random_walls::apply(&map.actions, &mut pixels, width, height, &mut walls_rng);
 
         let threshold = map.image_wall_treshold;
         let cells = pixels

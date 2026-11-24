@@ -43,6 +43,7 @@ mod immortal;
 mod level;
 mod lifecycle;
 mod move_entity;
+mod particle_effect;
 mod path;
 mod silent;
 pub mod splash;
@@ -353,7 +354,7 @@ impl Plugin for ActionsPlugin {
                 variables::VariablesPlugin,
                 view::ViewActionsPlugin,
             ))
-            .add_plugins((area::AreaActionPlugin, check_alive::CheckAlivePlugin, conserve_speed::ConserveSpeedPlugin, immortal::ImmortalActionPlugin, move_entity::MoveEntityPlugin, trigger_by::TriggerByPlugin))
+            .add_plugins((area::AreaActionPlugin, check_alive::CheckAlivePlugin, conserve_speed::ConserveSpeedPlugin, immortal::ImmortalActionPlugin, move_entity::MoveEntityPlugin, particle_effect::ParticleEffectActionsPlugin, trigger_by::TriggerByPlugin))
             .add_systems(OnEnter(GameState::Playing), run_on_map_start)
             // At the end of the fixed step: what the step set off runs in it.
             .configure_sets(FixedUpdate, ActionSystems.after(crate::explosion::ExplosionSystems))
