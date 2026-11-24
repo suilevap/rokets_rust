@@ -53,6 +53,10 @@ pub struct MapData {
     pub music_dynamic2: Option<String>,
     #[serde(default = "default_ambient")]
     pub ambient_light: XColor,
+    /// The screen effect the level has (`MapData.LevelEffect`): the dirty
+    /// lens over a plain map, falling snow and frozen glass on the snow ones.
+    #[serde(default)]
+    pub level_effect: LevelEffect,
     #[serde(default)]
     pub lights: Items<LightData>,
     #[serde(default)]
@@ -71,6 +75,15 @@ pub struct MapData {
     pub char_map_dictionary: Option<String>,
     #[serde(default)]
     pub char_map: Option<String>,
+}
+
+/// `MapDataInternal.LevelEffectType`.
+#[derive(Clone, Copy, Debug, Default, Deserialize, PartialEq, Eq)]
+pub enum LevelEffect {
+    #[default]
+    None,
+    Snow,
+    SnowWind,
 }
 
 /// `MapData.OutlandColor*` defaults: Black, DeepSkyBlue, Orange, Yellow.

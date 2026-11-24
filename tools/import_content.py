@@ -47,6 +47,10 @@ ITEMS = [
     ("Sprites/UI/GadgetIcons", "*.png", "Sprites/UI/GadgetIcons"),
     ("Sprites", "Gradient*.png", "Sprites"),
     ("Sprites", "WhitePixel.png", "Sprites"),
+    # The screen effects over every map: the vignette (`World.ViewDarkCorners`)
+    # and the dirty lens's glass (`DirtyLensEffectDualTexture`).
+    ("Sprites", "DarkCorners.png", "Sprites"),
+    ("Sprites", "DirtyGlass.png", "Sprites"),
     ("Sounds", "*.wav", "Sounds"),
     # The game's own font (`FontX1`, …; it has Cyrillic).
     ("Fonts", "Pixar Two.ttf", "Fonts"),
