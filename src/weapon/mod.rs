@@ -18,6 +18,12 @@
 //!   it hits at the point, off the line by up to 45°, damages what can be
 //!   hurt ([`Hit`]), and flashes ([`shoot`]). The gun kicks back 2 pixels
 //!   a bullet.
+//!   Whatever it hits is pushed, a car with a gun of its own too
+//!   (`SimulateBullet` pushed any physical thing): `fire_weapons` reads the
+//!   shooter's speed for a rocket through its `bodies` query rather than
+//!   through the gun query, so the two stay apart without a filter on
+//!   [`Weapon`], and the impulses are applied where the bullet ends, in
+//!   the order the guns are stepped.
 //! - The Railgun fires only on [`PlayerIntent::fire_accurate`]
 //!   (`_fireOnlyAccurate`, `FireType.ShootAccurate`): one beam a reload
 //!   (1.5 s) that costs 0.6 of the energy, a ray of 25 damage and a big
@@ -402,7 +408,13 @@ pub struct IgnoresWeapons;
 
 /// The weapons' gameplay draws, in the fixed steps only.
 #[derive(Resource)]
-struct WeaponRng(SmallRng);
+pub struct WeaponRng(SmallRng);
+
+impl WeaponRng {
+    pub fn new(seed: u64) -> WeaponRng {
+        WeaponRng(SmallRng::seed_from_u64(seed))
+    }
+}
 
 /// What only the views draw (the energy bar's jolt, the zombie's line), a
 /// frame at a time: apart from [`WeaponRng`], or the frame rate would
@@ -418,7 +430,7 @@ pub struct WeaponPlugin;
 
 impl Plugin for WeaponPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(WeaponRng(SmallRng::seed_from_u64(11)))
+        app.insert_resource(WeaponRng::new(11))
             .insert_resource(ViewRng(SmallRng::seed_from_u64(12)))
             .add_systems(
                 FixedUpdate,
@@ -480,20 +492,19 @@ type Gun<'a> = (
     Option<&'a CabinSway>,
     Option<&'a mut PlayerEnergy>,
     Has<crate::actions::Inactive>,
-    Option<&'a LinearVelocity>,
 );
 
 /// `ControlableEntity.ControlHandle` and `HandleControlEvent`, then the
 /// weapon's `Update`, every step the game is not paused.
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
-fn fire_weapons(
+pub fn fire_weapons(
     time: Res<Time>,
     physics: Res<Time<Physics>>,
     spatial: SpatialQuery,
     mut guns: Query<Gun>,
     places: Query<&Position>,
     skipped: Query<(), PassedByBullets>,
-    mut bodies: Query<(&RigidBody, Forces), Without<Weapon>>,
+    mut bodies: Query<(&RigidBody, Forces)>,
     hurt: Query<Option<&Health>, Hurt>,
     teams: Query<&Team>,
     mut rng: ResMut<WeaponRng>,
@@ -520,7 +531,7 @@ fn fire_weapons(
         passes: &passes,
         hurt: &can_hurt,
     };
-    for (car, mut gun, mut intent, position, rotation, sway, mut energy, inactive, car_velocity) in &mut guns {
+    for (car, mut gun, mut intent, position, rotation, sway, mut energy, inactive) in &mut guns {
         let angle = rotation.as_radians();
         let gun = &mut *gun;
         if let Some(e) = energy.as_mut() {
@@ -630,7 +641,7 @@ fn fire_weapons(
                     // Set, not added to.
                     gun.aim.recoil.current = model::RAILGUN_RECOIL;
                     let team = teams.get(car).ok().copied();
-                    let rocket = rocket::launch(gun, car, team, car_velocity.map_or(Vec2::ZERO, |v| v.0));
+                    let rocket = rocket::launch(gun, car, team, bodies.get(car).map_or(Vec2::ZERO, |(_, forces)| forces.linear_velocity()));
                     // In C#'s axes and degrees, as `/trace`.
                     debug!("rocket from {:.3} {:.3} at {:.1}", rocket.at.x, -rocket.at.y, -gun.direction.to_degrees());
                     launched.write(rocket::RocketLaunched {
@@ -777,7 +788,7 @@ fn strike(
     impulse: f32,
     damage: i32,
     shooter: Entity,
-    bodies: &mut Query<(&RigidBody, Forces), Without<Weapon>>,
+    bodies: &mut Query<(&RigidBody, Forces)>,
     hurt: &Query<Option<&Health>, Hurt>,
     teams: &Query<&Team>,
     rng: &mut SmallRng,
@@ -825,7 +836,7 @@ fn shoot(
     shooter: Entity,
     spatial: &SpatialQuery,
     targets: Targets,
-    bodies: &mut Query<(&RigidBody, Forces), Without<Weapon>>,
+    bodies: &mut Query<(&RigidBody, Forces)>,
     hurt: &Query<Option<&Health>, Hurt>,
     teams: &Query<&Team>,
     rng: &mut SmallRng,
@@ -869,7 +880,7 @@ fn shoot_beam(
     shooter: Entity,
     spatial: &SpatialQuery,
     targets: Targets,
-    bodies: &mut Query<(&RigidBody, Forces), Without<Weapon>>,
+    bodies: &mut Query<(&RigidBody, Forces)>,
     hurt: &Query<Option<&Health>, Hurt>,
     teams: &Query<&Team>,
     rng: &mut SmallRng,
