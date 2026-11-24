@@ -69,6 +69,11 @@ impl Shield {
         self.value as u8
     }
 
+    /// `FloatValue`: the points with the part that has grown back.
+    pub fn float_value(&self) -> f32 {
+        self.value
+    }
+
     /// `MaxValue`.
     pub fn max(&self) -> u8 {
         self.max as u8

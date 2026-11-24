@@ -24,8 +24,10 @@
 //!
 //! Other cars' deaths are `car::death`'s.
 //!
-//! Not ported: the respawn flashes (`CreateRespawn`), the lives shown on
-//! screen (`ShowEnergy`; the top line shows them). The car that comes back
+//! A spent life is announced ([`LifeSpent`]) for the HUD's battery
+//! (`ShowEnergy`, [`crate::player_hud`]).
+//!
+//! Not ported: the respawn flashes (`CreateRespawn`). The car that comes back
 //! is a new entity built from the map's car and then given the gun and
 //! gadget of the one that died, made anew: a gun's reload and an
 //! accelerator's charge start over (C# kept the objects, `Cancel`ed), a
@@ -60,6 +62,13 @@ use crate::units::map_degrees_to_world;
 const RESTART_AFTER: f32 = 2.0;
 /// `_maxLives`.
 const LIVES: i32 = 3;
+
+/// A life was spent at a respawn point (`UpdateLives`): how many are left,
+/// below 0 when there were none (the level starts again).
+#[derive(Message, Debug, Clone, Copy, PartialEq, Eq)]
+pub struct LifeSpent {
+    pub lives: i32,
+}
 
 /// Where the player's car comes back (`LastRespawnPoint`), and its lives.
 #[derive(Resource, Debug, Clone, PartialEq)]
@@ -139,6 +148,7 @@ impl Plugin for GameModePlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(WreckRng(rand::SeedableRng::seed_from_u64(5)))
             .init_resource::<Respawn>()
+            .add_message::<LifeSpent>()
             .add_map_action::<SetRespawnPoint, _>(set_respawn_point)
             .add_map_action::<SaveAction, _>(save)
             .add_systems(OnEnter(GameState::Playing), |mut r: ResMut<Respawn>| *r = Respawn::default())
@@ -290,6 +300,7 @@ fn restart_after_wreck(
     targets: Query<Entity, With<CameraTarget>>,
     mut change: MessageWriter<ChangeMap>,
     mut run: MessageWriter<RunAction>,
+    mut spent: MessageWriter<LifeSpent>,
 ) {
     let dt = time.delta_secs();
     for (e, mut wreck, transform, no_input, mounts) in &mut wrecks {
@@ -325,7 +336,11 @@ fn restart_after_wreck(
             continue;
         }
         wreck.restart_in = f32::INFINITY;
-        if respawn.on_death() {
+        let alive = respawn.on_death();
+        if respawn.point.is_some() {
+            spent.write(LifeSpent { lives: respawn.lives });
+        }
+        if alive {
             info!("{} lives left", respawn.lives);
             wreck.back_in = Some(RESTART_AFTER);
             if let Some(action) = respawn.action.clone() {

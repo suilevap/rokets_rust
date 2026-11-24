@@ -95,6 +95,7 @@ main
 | `animation` | Animation as plain data: `Wave` (sawtooth / triangle phase over game time), `ColorTrack` (colour keyframes, stepped or blended), `Pulse` (one-shot blend). Unit-tested | `PhaseHelper`, `PeriodicUpdate.RemainPart` |
 | `render/animate` | `TintLoop` (a colour track on a wave, per sprite) and `TintPulse` (a one-shot blend over an entity's sprites); game time pauses and slows with the game, and loops on the same wave stay in step | `PhaseHelper` users |
 | `hud` | Debug text, `R` / `N` keys | — |
+| `player_hud` | What the player sees all level, Bevy UI in `Update`: the health cells (damage trail, heal fade, shimmer), the shield's thin cells, the gadget's and weapon's icons beside them (not on touch) and the lives battery when a life is spent (`game_mode::LifeSpent`); `model` is the layout as plain data (tested). The energy bar under the cells is `weapon::view`'s. No hot-seat offsets, no score | `PlayerCarControlBase.DrawUI`, `ParticleSystemManager.ShowEnergy` |
 | `script` | `--drive`: scripted stick input and a logged path, and `--trace`: other entities' paths (and health), for comparing driving with the C# game (`tools/compare.py`, against its `/drive` and `/trace`) | `DriveCommand`, `ScriptedCarControl` (debug only, added for this) |
 
 ## Conventions

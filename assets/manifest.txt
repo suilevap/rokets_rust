@@ -397,6 +397,9 @@ Sprites/UI/BigCircleGadget.png
 Sprites/UI/BigCircleGun.png
 Sprites/UI/DottedCircle.png
 Sprites/UI/Equal.png
+Sprites/UI/GadgetIcons/Accelerator.png
+Sprites/UI/GadgetIcons/Magnet.png
+Sprites/UI/GadgetIcons/Weapon.png
 Sprites/UI/GadgetUsage.png
 Sprites/UI/GadgetUsageInactive.png
 Sprites/UI/Gamepad/Gamepad_Back.png

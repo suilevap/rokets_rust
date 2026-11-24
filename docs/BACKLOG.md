@@ -83,9 +83,8 @@ along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
    gadgets that are not ported (`Bomb`, `EditorPointer`, which also need
    their `ApplyGadgetToPosition` answer, `ActiveGadget`'s default, as the
    magnet and the accelerator have in `gadget/apply.rs`; no map hands them
-   out but the `HoverScout` car has the Bomb; the accelerator's HUD icon
-   `UI\GadgetIcons\Accelerator`, with the other gadgets' and the guns'
-   icons beside the health bar, is still to draw), the Tesla's `Guard` car (HiddenBox, TheLastStand)
+   out but the `HoverScout` car has the Bomb; their HUD icons
+   (`PreciseGrabGadget` reuses the magnet's) are not drawn either), the Tesla's `Guard` car (HiddenBox, TheLastStand)
    once `GuardAi` drives it, an
    inactive car's other guns (only the Plasma gun, the Tesla, the Laser and the Zombie's check
    `Inactive`: Trophy's deactivated `AlwaysShoot` turret had its trigger

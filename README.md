@@ -80,6 +80,8 @@ into things with it. It hurts bombs, red boxes and cars by the car's speed
 (4 to 8) and shoves what it hits; it has no aim line, no fire zone and the
 mouse and the gamepad do not fire it (the fire keys only spend its energy).
 
+The HUD at the top shows the car's health (a cell for each 4 points; lost ones fade out red, a shimmer runs along) and its shield (thin cells), with the gadget's and the gun's icons to the left of them (not while the last device is touch), and when a life is spent at a respawn point a battery with the lives left appears in the middle of the screen. The score is not shown yet.
+
 The map's `SimpleCars` (targets, turrets, enemy buggies) are there: you can
 shoot them, ram them and saw them. A hurt one shows a health bar over it for
 two seconds, and when it is destroyed it bursts, lies smoking as a wreck for
