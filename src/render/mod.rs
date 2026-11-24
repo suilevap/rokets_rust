@@ -8,6 +8,8 @@
 pub mod additive_light;
 pub mod animate;
 pub mod camera;
+pub mod dark_corners;
+pub mod dirty_lens;
 pub mod layers;
 pub mod light_layer;
 pub mod lines;
@@ -39,6 +41,8 @@ impl Plugin for RenderPlugin {
                 sprite::SpritePlugin,
                 lines::LinePlugin,
                 additive_light::AdditiveLightPlugin,
+                dirty_lens::DirtyLensPlugin,
+                dark_corners::DarkCornersPlugin,
                 wall_ao::WallAoPlugin,
                 shadow::ShadowPlugin,
                 particles::ParticlesPlugin,
