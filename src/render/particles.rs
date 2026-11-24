@@ -82,12 +82,18 @@ impl Particles {
         self.pool(style).try_add(style, at, direction, view_direction);
     }
 
+    /// An effect that lives out its life ([`Pool::add`]).
+    pub fn add(&mut self, style: &'static Style, at: Vec2, direction: f32, view_direction: f32) {
+        self.pool(style).add(style, at, direction, view_direction);
+    }
+
     /// An effect that lives out its life ([`Pool::add_scaled`]).
     pub fn add_scaled(&mut self, style: &'static Style, at: Vec2, direction: f32, view_direction: f32, rate: f32) {
         self.pool(style).add_scaled(style, at, direction, view_direction, rate);
     }
 
-    fn iter(&self) -> impl Iterator<Item = &Particle> {
+    /// The live particles, blended first, then additive.
+    pub fn iter(&self) -> impl Iterator<Item = &Particle> {
         self.blended.iter().chain(self.additive.iter())
     }
 }

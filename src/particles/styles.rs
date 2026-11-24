@@ -719,8 +719,26 @@ pub static TESLA_TRAIL_STATIC: Style = Style {
 /// pixels long.
 pub const TESLA_LINK_LENGTH: f32 = 64.0 / 32.0;
 
+/// `DepthConst.SpeedTrailParticleStart` and `…End` (-4): high enough to be
+/// drawn over the cars.
+const SPEED_TRAIL_PARTICLE: f32 = -4.0 / 32.0 / 16.0;
+
+/// `_newZombieFriendStyle`: the ring a zombie's outline makes when a car
+/// joins the player's horde (`CreateParticleEffect`, `NewZombieFriend`),
+/// flaring from 0.65 to 12 times the border sprite's size and fading in
+/// 0.3 s. It stays still; the sprite is turned the way the car faces.
+pub static NEW_ZOMBIE_FRIEND: Style = Style {
+    begin: still(0.65, 0.0, color(1.0, 1.0, 1.0), SPEED_TRAIL_PARTICLE),
+    end: still(12.0, 0.0, TRANSPARENT, SPEED_TRAIL_PARTICLE),
+    lifetime: 0.3,
+    texture: "Cars\\Zombie\\Border",
+    additive: true,
+    random_frame: false,
+    origin: CENTRE,
+};
+
 /// Every texture a style here draws with, to load with the map.
-pub const TEXTURES: [&str; 20] = [
+pub const TEXTURES: [&str; 21] = [
     WHEEL_TRAIL.texture,
     EXHAUST.texture,
     BOMB_BEEP.texture,
@@ -741,4 +759,5 @@ pub const TEXTURES: [&str; 20] = [
     ZOMBIE_CIRCLE_START.texture,
     PLASMA_END.texture,
     TESLA_TRAIL.texture,
+    NEW_ZOMBIE_FRIEND.texture,
 ];
