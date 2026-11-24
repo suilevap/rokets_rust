@@ -70,7 +70,8 @@
 //!   points, to the first thing in the way, up to its range (`view`); the
 //!   Railgun's bounces where its beam will. White and pulsing while the
 //!   energy is too low to fire; the Railgun's, wide and fading, while it
-//!   reloads.
+//!   reloads. An enemy's is red, always on a turret that cannot move and
+//!   while aiming on the others (not the friends'; see `view`).
 //!
 //! - A bullet or beam does not hurt a car of the shooter's own team
 //!   (`SimulateBullet`'s `ignoreDamage`): it still pushes it, but no damage

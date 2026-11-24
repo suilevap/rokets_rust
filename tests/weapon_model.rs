@@ -370,3 +370,21 @@ fn an_enemy_fires_when_the_barrel_points_at_the_target_within_range() {
     // From the muzzle, not the car's middle; right on it counts.
     assert!(in_range(at(5.0, 5.0), 0.0, range, spread, at(5.0, 5.0), 1.0));
 }
+
+#[test]
+fn an_enemys_aim_line_shows_by_the_c_sharp_rules() {
+    use tilerider::weapon::model::aim_line_on;
+    // (local, team, can_move, aiming, alive, active, gadget)
+    // A turret that cannot move always shows it, even not aiming.
+    assert!(aim_line_on(false, 1, false, false, true, true, false));
+    // A car that moves shows it only while aiming.
+    assert!(!aim_line_on(false, 1, true, false, true, true, false));
+    assert!(aim_line_on(false, 1, true, true, true, true, false));
+    // The friends' (team 0, not the player) do not, not even turrets.
+    assert!(!aim_line_on(false, 0, false, true, true, true, false));
+    assert!(aim_line_on(true, 0, true, true, true, true, false));
+    // Dead, inactive or charging a gadget: no line.
+    assert!(!aim_line_on(false, 1, false, true, false, true, false));
+    assert!(!aim_line_on(false, 1, false, true, true, false, false));
+    assert!(!aim_line_on(true, 0, true, true, true, true, true));
+}

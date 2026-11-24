@@ -857,6 +857,15 @@ impl Minigun {
     }
 }
 
+/// Whether a gun's aim line is on (`BaseComplexWeapon.LaserVisiblityUpdate`):
+/// the car is alive, active and not charging its gadget, it is a turret that
+/// cannot move (`IsStatic`: always) or it aims now (`EnableWeaponLineDraw`),
+/// and it is the local player's or an enemy's (`Team != 0`; the friends'
+/// lines were dropped in 2014).
+pub fn aim_line_on(local: bool, team: u8, can_move: bool, aiming: bool, alive: bool, active: bool, gadget: bool) -> bool {
+    (!can_move || aiming) && (team != 0 || local) && alive && !gadget && active
+}
+
 /// How the aim line looks (`BaseComplexWeapon.UpdateLaser`).
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum AimLook {
