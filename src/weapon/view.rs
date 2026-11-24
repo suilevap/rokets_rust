@@ -478,7 +478,8 @@ fn draw_energy_bar(
         e.shake.step(time.delta_secs());
         jolt = e.shake.current * (rng.0.random::<f32>() * 2.0 - 1.0) * e.shake_amount * k;
     }
-    bar.top = Val::Px(16.0 * 2.0 * k + jolt);
+    // The bar's y is its middle (`Origin = (0, 0.5)`), 32 px down.
+    bar.top = Val::Px((16.0 * 2.0 - 2.0) * k + jolt);
     bar.margin.left = Val::Px(-width / 2.0);
     let flashing = e.current < e.last_check;
     let t = time.elapsed_secs();

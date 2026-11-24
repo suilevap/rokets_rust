@@ -24,6 +24,7 @@ pub mod markers;
 pub mod particles;
 pub mod pickups;
 pub mod platform;
+pub mod player_hud;
 pub mod render;
 pub mod script;
 pub mod sound;
@@ -62,7 +63,7 @@ impl Plugin for TileRiderPlugin {
                 render::spin::SpinPlugin,
                 render::animate::AnimatePlugin,
                 (triggers::TriggersPlugin, actions::ActionsPlugin, door::DoorPlugin, button::ButtonPlugin, teleport::TeleportPlugin, platform::PlatformPlugin, info::InfoPlugin, markers::MarkersPlugin, gadget::GadgetPlugin, weapon::WeaponPlugin, stun::StunPlugin, ai::AiPlugin),
-                (hud::HudPlugin, splash::SplashPlugin, control_highlight::ControlHighlightPlugin),
+                (hud::HudPlugin, splash::SplashPlugin, control_highlight::ControlHighlightPlugin, player_hud::PlayerHudPlugin),
                 script::ScriptPlugin,
             ));
     }

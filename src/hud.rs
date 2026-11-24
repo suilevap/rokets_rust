@@ -38,7 +38,9 @@ fn spawn_text(mut commands: Commands) {
         TextColor(Color::WHITE),
         Node {
             position_type: PositionType::Absolute,
-            top: Val::Px(8.0),
+            // At the bottom: the player's HUD and the splashes' top
+            // layers are at the top, scaled with the window.
+            bottom: Val::Px(8.0),
             left: Val::Px(8.0),
             ..default()
         },

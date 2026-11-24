@@ -42,6 +42,9 @@ ITEMS = [
     # The ring that closes onto the car while a gadget's button is held
     # (`ActiveGadget.DrawControl`).
     ("Sprites/UI", "GadgetUsage*.png", "Sprites/UI"),
+    # The weapon's and gadget's icons beside the health bar
+    # (`PlayerCarControlBase.DrawGadgetIcon`).
+    ("Sprites/UI/GadgetIcons", "*.png", "Sprites/UI/GadgetIcons"),
     ("Sprites", "Gradient*.png", "Sprites"),
     ("Sprites", "WhitePixel.png", "Sprites"),
     ("Sounds", "*.wav", "Sounds"),
