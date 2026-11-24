@@ -2,12 +2,14 @@
 //! sounds that despawn when done, faded by distance from the camera's
 //! focus ([`heard`]); the car's loops as looping players steered every
 //! frame. Sounds missing from `assets/` are skipped with a warning.
+//! The level music is one more player ([`MusicPlaybackPlugin`]).
 
 use std::collections::HashMap;
 
 use bevy::audio::{AudioSink, AudioSinkPlayback, PlaybackMode, Volume};
 use bevy::prelude::*;
 
+use super::music::{Jukebox, MusicCue, send_cues};
 use super::{CarSounds, LoopCue, NAMES, PlaySound, heard};
 use crate::game::MapEntity;
 use crate::render::camera::MainCamera;
@@ -140,5 +142,85 @@ fn steer(
             }
         }
         (None, None) => {}
+    }
+}
+
+/// The level's songs, loaded when a map names them (the web build fetches
+/// only the songs the map in play uses), and the player of the one playing.
+#[derive(Resource, Default)]
+struct Songs {
+    /// By the song's name in lower case; `None`: not in `assets/`.
+    clips: HashMap<String, Option<Handle<AudioSource>>>,
+    player: Option<Entity>,
+}
+
+/// Plays the [`Jukebox`]'s songs (`MediaPlayer`), at its volume.
+pub struct MusicPlaybackPlugin;
+
+impl Plugin for MusicPlaybackPlugin {
+    fn build(&self, app: &mut App) {
+        app.init_resource::<Songs>()
+            .add_systems(Update, (load_songs, play_music).chain().after(send_cues));
+    }
+}
+
+fn load_songs(jukebox: Res<Jukebox>, server: Res<AssetServer>, mut songs: ResMut<Songs>) {
+    for name in jukebox.level_tracks() {
+        let key = name.to_ascii_lowercase();
+        if songs.clips.contains_key(&key) {
+            continue;
+        }
+        let clip = crate::assets::resolve(&format!("Sounds/Music/{name}"), "ogg").map(|path| server.load(path));
+        if clip.is_none() {
+            warn!("song {name:?} not in assets/");
+        }
+        songs.clips.insert(key, clip);
+    }
+}
+
+fn play_music(
+    mut commands: Commands,
+    mut cues: MessageReader<MusicCue>,
+    mut songs: ResMut<Songs>,
+    mut jukebox: ResMut<Jukebox>,
+    mut sinks: Query<&mut AudioSink>,
+) {
+    for cue in cues.read() {
+        if let Some(old) = songs.player.take() {
+            commands.entity(old).despawn();
+        }
+        let MusicCue::Play { track, looped } = cue else {
+            continue;
+        };
+        let Some(Some(clip)) = songs.clips.get(&track.to_ascii_lowercase()) else {
+            // A song that cannot play is a song that has ended.
+            jukebox.song_ended();
+            continue;
+        };
+        let player = commands
+            .spawn((
+                Name::new(format!("Music {track}")),
+                AudioPlayer::new(clip.clone()),
+                PlaybackSettings {
+                    mode: if *looped { PlaybackMode::Loop } else { PlaybackMode::Once },
+                    volume: Volume::Linear(jukebox.volume()),
+                    ..default()
+                },
+            ))
+            .id();
+        songs.player = Some(player);
+    }
+    let Some(player) = songs.player else {
+        return;
+    };
+    // The sink is there once the song has loaded and started.
+    let Ok(mut sink) = sinks.get_mut(player) else {
+        return;
+    };
+    sink.set_volume(Volume::Linear(jukebox.volume()));
+    if sink.empty() {
+        commands.entity(player).despawn();
+        songs.player = None;
+        jukebox.song_ended();
     }
 }

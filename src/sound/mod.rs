@@ -22,15 +22,19 @@
 //!   - A car the AI drives is quieter (`Car.Control`): the engine at half,
 //!     the tyres' speed part at 0.7 ([`CarSounds::loudness`]).
 //!
+//! The level's songs are [`music`].
+//!
 //! Playing them is `playback`, behind the `sound` cargo feature (on by
 //! default; `--no-default-features` builds a silent game without the
-//! audio code). The WAVs come with the content (`Sounds/*.wav`, 2.6 MB).
+//! audio code). The WAVs come with the content (`Sounds/*.wav`, 2.6 MB), the
+//! songs too (`Sounds/Music/*.ogg`, 16 MB).
 //! `RUST_LOG=tilerider::sound=debug` lists the cues.
 //!
 //! In the browser, sound starts with the first touch, click or key press
 //! (`web/index.html` resumes the audio then; browsers keep it off until
 //! the page is used).
 
+pub mod music;
 #[cfg(feature = "sound")]
 mod playback;
 
@@ -229,7 +233,7 @@ pub struct SoundPlugin;
 
 impl Plugin for SoundPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(SoundActionsPlugin)
+        app.add_plugins((SoundActionsPlugin, music::MusicPlugin))
             .add_systems(
                 Update,
                 (

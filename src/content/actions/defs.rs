@@ -348,9 +348,13 @@ actions! {
         relative_position "RelativePosition": XVec2 = XVec2::ZERO;
     }
 
+    /// Plays one of the map's songs (`None` fades the music out).
     PlayLevelMusic("PlayLevelMusic", name = "PlayLevelMusic") {
         level_music_type "LevelMusicType": LevelMusicType = LevelMusicType::None;
         looped "Looped": bool = true, optional;
+    } => templates {
+        "PlayMusic(musicType)" => |a| Some(PlayLevelMusic { level_music_type: LevelMusicType::from_name(a.text(0)?)?, looped: false }),
+        "PlayMusicLooped(musicType)" => |a| Some(PlayLevelMusic { level_music_type: LevelMusicType::from_name(a.text(0)?)?, looped: true }),
     }
 
     SetPath("SetPath", name = "SetPath") {

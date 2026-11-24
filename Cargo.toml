@@ -8,9 +8,10 @@ rust-version = "1.97.1"
 
 [features]
 default = ["sound"]
-# Sound effects (`src/sound/playback.rs`, the WAVs in `assets/Sounds`).
+# Sound effects and music (`src/sound/playback.rs`, the WAVs in
+# `assets/Sounds` and the Ogg Vorbis songs in `assets/Sounds/Music`).
 # `--no-default-features` builds without them.
-sound = ["bevy/bevy_audio", "bevy/wav"]
+sound = ["bevy/bevy_audio", "bevy/wav", "bevy/vorbis"]
 
 [dependencies]
 bevy = { version = "0.20.1", default-features = false, features = [
