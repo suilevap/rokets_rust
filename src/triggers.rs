@@ -18,6 +18,7 @@ use bevy::prelude::*;
 
 use crate::actions::{AddMapAction, CloneOf, Inactive, Run, RunAction, source_id};
 use crate::content::actions::defs::ActivateTrigger;
+use crate::content::map::TriggerData;
 use crate::controls::LocalPlayer;
 use crate::game::{ChangeMap, GameState, LoadedMap, MapId};
 
@@ -31,17 +32,17 @@ struct TriggerState {
     active: bool,
     enter: Vec<String>,
     leave: Vec<String>,
-    /// Who sets it off (map ids, a clone by its source's); none listed:
-    /// the player's car only (`GetTriggerByEntity`).
-    subscribers: Vec<i64>,
+    /// Who sets it off (map ids, a clone by its source's); `None`: the
+    /// player's car only (`GetTriggerByEntity`). `Some` of an empty list
+    /// is nobody (`ChangeSubscribers` took the player off).
+    subscribers: Option<Vec<i64>>,
 }
 
 impl TriggerState {
     fn set_off_by(&self, id: Option<i64>, player: bool) -> bool {
-        if self.subscribers.is_empty() {
-            player
-        } else {
-            id.is_some_and(|id| self.subscribers.contains(&id))
+        match &self.subscribers {
+            None => player,
+            Some(list) => id.is_some_and(|id| list.contains(&id)),
         }
     }
 }
@@ -66,6 +67,58 @@ impl Triggers {
                 self.cells[y as usize * self.width + x as usize] = value;
             }
         }
+    }
+
+    /// `AddSubscriberToTrigger`: `ent`, a map id, joins those that set
+    /// the trigger off (by its own id, not its source's, as in C#), if not
+    /// there yet. A trigger with none listed was the player's alone
+    /// (`main`, the player's map id): that becomes `main` and `ent`.
+    /// Returns whether the trigger exists.
+    pub fn add_subscriber(&mut self, trigger: i64, ent: i64, main: i64) -> bool {
+        let Some(t) = self.list.iter_mut().find(|t| t.id == trigger) else {
+            return false;
+        };
+        match &mut t.subscribers {
+            Some(list) => {
+                if !list.contains(&ent) {
+                    list.push(ent);
+                }
+            }
+            None => {
+                if main != ent {
+                    t.subscribers = Some(vec![main, ent]);
+                }
+            }
+        }
+        true
+    }
+
+    /// `RemoveSubscriberFromTrigger`: the first entry of `ent` goes. The
+    /// player's own trigger (none listed) becomes one nobody sets off
+    /// when `ent` is `main`. Returns whether the trigger exists.
+    pub fn remove_subscriber(&mut self, trigger: i64, ent: i64, main: i64) -> bool {
+        let Some(t) = self.list.iter_mut().find(|t| t.id == trigger) else {
+            return false;
+        };
+        match &mut t.subscribers {
+            Some(list) => {
+                if let Some(i) = list.iter().position(|&s| s == ent) {
+                    list.remove(i);
+                }
+            }
+            None => {
+                if main == ent {
+                    t.subscribers = Some(Vec::new());
+                }
+            }
+        }
+        true
+    }
+
+    /// Who sets a trigger off: `None` for the player's car only, else the
+    /// listed ids (an outer `None`: no such trigger).
+    pub fn subscribers_of(&self, trigger: i64) -> Option<Option<&[i64]>> {
+        self.list.iter().find(|t| t.id == trigger).map(|t| t.subscribers.as_deref())
     }
 
     /// The trigger at a point in map cells, if any.
@@ -117,29 +170,35 @@ impl Plugin for TriggersPlugin {
 
 fn build_triggers(mut commands: Commands, map: Res<LoadedMap>, mut end: ResMut<LevelEnd>) {
     end.timer = None;
-    let (w, h) = (map.grid.width, map.grid.height);
-    let mut t = Triggers {
-        width: w,
-        height: h,
-        cells: vec![0; w * h],
-        list: Vec::new(),
-        subscribers: Vec::new(),
-    };
-    for data in map.data.triggers.iter() {
-        t.list.push(TriggerState {
-            id: data.id,
-            area: data.area,
-            remaining: data.amount,
-            active: data.active,
-            enter: data.actions.items.clone(),
-            leave: data.leave_actions.items.clone(),
-            subscribers: data.subscribers.clone(),
-        });
-        let i = t.list.len() - 1;
-        t.paint(i, i + 1);
-        t.subscribers.extend(&data.subscribers);
+    commands.insert_resource(Triggers::new(map.grid.width, map.grid.height, &map.data.triggers.items));
+}
+
+impl Triggers {
+    /// The map's triggers over a map of `w` × `h` cells.
+    pub fn new(w: usize, h: usize, data: &[TriggerData]) -> Triggers {
+        let mut t = Triggers {
+            width: w,
+            height: h,
+            cells: vec![0; w * h],
+            list: Vec::new(),
+            subscribers: Vec::new(),
+        };
+        for data in data {
+            t.list.push(TriggerState {
+                id: data.id,
+                area: data.area,
+                remaining: data.amount,
+                active: data.active,
+                enter: data.actions.items.clone(),
+                leave: data.leave_actions.items.clone(),
+                subscribers: (!data.subscribers.is_empty()).then(|| data.subscribers.clone()),
+            });
+            let i = t.list.len() - 1;
+            t.paint(i, i + 1);
+            t.subscribers.extend(&data.subscribers);
+        }
+        t
     }
-    commands.insert_resource(t);
 }
 
 /// Subscribers and the player get an [`InTrigger`] once they exist.
