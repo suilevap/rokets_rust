@@ -2,13 +2,20 @@
 
 use bevy::math::Vec2;
 use tilerider::content::map::LevelEffect;
-use tilerider::render::effect_canvas::{MIDDLING_PICTURE, blend_alpha, canvas_size, shows, ui_scale};
+use tilerider::render::effect_canvas::{MIDDLING_PICTURE, blend_alpha, canvas_size, needed, shows, ui_scale};
 
 #[test]
 fn only_a_snow_map_has_the_screen_effects() {
     assert!(shows(LevelEffect::Snow));
     assert!(!shows(LevelEffect::None));
     assert!(!shows(LevelEffect::SnowWind));
+}
+
+#[test]
+fn a_plain_map_has_a_canvas_for_the_speed_lines_only() {
+    assert!(needed(LevelEffect::None));
+    assert!(needed(LevelEffect::Snow));
+    assert!(!needed(LevelEffect::SnowWind));
 }
 
 #[test]

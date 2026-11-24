@@ -123,9 +123,10 @@ impl Plugin for FrozenGlassPlugin {
 }
 
 /// Starts the frost at 0 and adds the panes over the snow in the canvas.
-fn start(mut commands: Commands, canvas: Option<Res<Canvas>>) {
+fn start(mut commands: Commands, canvas: Option<Res<Canvas>>, map: Res<LoadedMap>) {
     commands.remove_resource::<FrozenGlass>();
-    let Some(canvas) = canvas else {
+    // The canvas is also there for a plain map's speed lines.
+    let Some(canvas) = canvas.filter(|_| super::effect_canvas::shows(map.data.level_effect)) else {
         return;
     };
     commands.insert_resource(FrozenGlass::default());

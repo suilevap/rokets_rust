@@ -272,9 +272,10 @@ impl Plugin for SnowPlugin {
     }
 }
 
-fn start_screen_snow(mut commands: Commands, canvas: Option<Res<Canvas>>) {
+fn start_screen_snow(mut commands: Commands, canvas: Option<Res<Canvas>>, map: Res<LoadedMap>) {
     commands.remove_resource::<ScreenSnow>();
-    let Some(canvas) = canvas else {
+    // The canvas is also there for a plain map's speed lines.
+    let Some(canvas) = canvas.filter(|_| map.data.level_effect == LevelEffect::Snow) else {
         return;
     };
     commands.insert_resource(ScreenSnow { pool: Pool::new(SCREEN_POOL), amount: 1.0 });
@@ -350,15 +351,22 @@ fn spawn_flakes(
 
 type FlakeNode = (&'static mut Node, &'static mut ImageNode, &'static mut UiTransform, &'static mut Visibility);
 
-fn show_flakes(
-    snow: Res<ScreenSnow>,
-    canvas: Res<Canvas>,
-    map: Res<LoadedMap>,
-    mut nodes: Query<FlakeNode, With<Flake>>,
+fn show_flakes(snow: Res<ScreenSnow>, canvas: Res<Canvas>, map: Res<LoadedMap>, mut nodes: Query<FlakeNode, With<Flake>>) {
+    show_pool(&snow.pool, &canvas, &map, nodes.iter_mut());
+}
+
+/// Puts the pool's particles in the canvas's nodes, one slot each (the
+/// rest hidden): the screen's particles, the snow's and the cars' speed
+/// lines.
+pub fn show_pool<'a>(
+    pool: &Pool,
+    canvas: &Canvas,
+    map: &LoadedMap,
+    nodes: impl Iterator<Item = (Mut<'a, Node>, Mut<'a, ImageNode>, Mut<'a, UiTransform>, Mut<'a, Visibility>)>,
 ) {
     let k = canvas.scale();
-    let mut particles = snow.pool.iter();
-    for (mut node, mut image, mut transform, mut visibility) in &mut nodes {
+    let mut particles = pool.iter();
+    for (mut node, mut image, mut transform, mut visibility) in nodes {
         let drawn = particles.next().and_then(|p| Some((p, map.sprites.get(p.style.texture)?)));
         let Some((p, sprite)) = drawn else {
             if *visibility != Visibility::Hidden {

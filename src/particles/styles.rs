@@ -887,6 +887,35 @@ pub static SCREEN_SNOW: [&Style; 11] = [
     &SCREEN_SNOW_SPECK,
 ];
 
+/// `_speedTrailStyle`: a pale streak flying across the screen against the
+/// way a car at its top speed goes (`CreateSpeedTrails`, the interface's
+/// pool), growing from nothing to 196 × 16 times the three-pixel sprite
+/// while it fades, at 1024 pixels a second. Scale and speed are the
+/// canvas's, as the screen snow's.
+pub static SPEED_LINE: Style = Style {
+    begin: State {
+        speed: 1024.0,
+        scale: Vec2::ZERO,
+        view_rotation: 0.0,
+        rotation: 0.0,
+        color: [0.5; 4],
+        height: SPEED_TRAIL_PARTICLE,
+    },
+    end: State {
+        speed: 1024.0,
+        scale: Vec2::new(196.0, 16.0),
+        view_rotation: 0.0,
+        rotation: 0.0,
+        color: TRANSPARENT,
+        height: SPEED_TRAIL_PARTICLE,
+    },
+    lifetime: 1.0,
+    texture: "Particles\\3Pixel",
+    additive: false,
+    random_frame: false,
+    origin: CENTRE,
+};
+
 /// Every texture a style here draws with, to load with the map.
 pub const TEXTURES: [&str; 21] = [
     WHEEL_TRAIL.texture,
