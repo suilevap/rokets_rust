@@ -129,8 +129,7 @@ pub(super) fn hammer_blows(
     others: Query<(&Position, &Collider, Has<Sensor>, Option<&Team>), With<MapId>>,
     teams: Query<&Team>,
     hurt: Query<(), Hurt>,
-    mut bodies: Query<(&RigidBody, Forces), Without<Weapon>>,
-    mut owners: Query<Forces, With<Weapon>>,
+    mut bodies: Query<(&RigidBody, Forces)>,
     mut rng: ResMut<WeaponRng>,
     mut particles: ResMut<Particles>,
     mut hits: MessageWriter<Hit>,
@@ -193,7 +192,7 @@ pub(super) fn hammer_blows(
             }
             if brain
                 && body.is_dynamic()
-                && let Ok(mut forces) = owners.get_mut(car)
+                && let Ok((_, mut forces)) = bodies.get_mut(car)
             {
                 forces.apply_linear_impulse_at_point(-push * 0.5, point);
             }

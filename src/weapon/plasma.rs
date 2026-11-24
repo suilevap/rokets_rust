@@ -56,7 +56,7 @@
 use avian2d::prelude::*;
 use bevy::prelude::*;
 
-use super::{Hurt, PassedByBullets, Weapon, WeaponSystems};
+use super::{Hurt, PassedByBullets, WeaponSystems};
 use crate::car::control::{Team, spares};
 use crate::explosion::Hit;
 use crate::game::{GameState, LoadedMap, MapEntity};
@@ -200,7 +200,7 @@ pub fn move_bullets(
     map: Option<Res<LoadedMap>>,
     mut bullets: Query<(Entity, &mut PlasmaBullet)>,
     skipped: Query<(), PassedByBullets>,
-    mut bodies: Query<(&RigidBody, Forces), Without<Weapon>>,
+    mut bodies: Query<(&RigidBody, Forces)>,
     hurt: Query<(), Hurt>,
     teams: Query<&Team>,
     mut hits: MessageWriter<Hit>,

@@ -44,10 +44,6 @@
 //!   preset (damage 7, push 12, half the dispersion): commented out in C#.
 //! - The sound pool of two instances (`RegisterSound("Shotgun", 2)`): every
 //!   blast sounds.
-//! - A pellet that hits a car with a gun still pushes it (C#'s did); the
-//!   Minigun's and the Railgun's bullets of this port do not push such
-//!   cars, `fire_weapons` leaving them out of its bodies; this is not a
-//!   difference from C#.
 //! - The view checks that skip effects off screen (the particle pool takes
 //!   them all), and the slow-motion extras of `CreateBulletTrailBetween`
 //!   (no slow motion yet).
