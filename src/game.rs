@@ -153,6 +153,9 @@ fn sprites_for(map: &MapData, cars: &CarCatalog, registry: &crate::actions::Acti
     // Shadows of cars and loose objects (`render/shadow`).
     names.extend(["Gradient4Pixel", "Gradient4PixelUniform"].map(String::from));
     names.extend(crate::particles::styles::TEXTURES.map(String::from));
+    // The snow maps' falling snow, mist and frozen glass.
+    names.extend(crate::render::snow::textures(map.level_effect).into_iter().map(String::from));
+    names.extend(crate::render::frozen_glass::textures(map.level_effect).into_iter().map(String::from));
     let mut skipped: std::collections::BTreeMap<_, usize> = Default::default();
     for e in map.entities.iter() {
         match crate::map::templates::template_for(e) {

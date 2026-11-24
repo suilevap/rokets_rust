@@ -257,6 +257,8 @@ Sprites/Entities/SmallWall.png
 Sprites/Entities/TeslaGenInner.png
 Sprites/Entities/TeslaGenOuter.png
 Sprites/Entities/box.png
+Sprites/FrozenGlass.png
+Sprites/FrozenGlass2.png
 Sprites/Gadget/ChainActive.png
 Sprites/Gadget/ChainInactive.png
 Sprites/Gadget/bomb.png

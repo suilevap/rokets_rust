@@ -51,6 +51,9 @@ ITEMS = [
     # and the dirty lens's glass (`DirtyLensEffectDualTexture`).
     ("Sprites", "DarkCorners.png", "Sprites"),
     ("Sprites", "DirtyGlass.png", "Sprites"),
+    # The snow maps' frozen glass (`FrozenGlassEffect`); the snow and the
+    # mist are particle sprites, copied with `Sprites/Particles`.
+    ("Sprites", "FrozenGlass*.png", "Sprites"),
     ("Sounds", "*.wav", "Sounds"),
     # The game's own font (`FontX1`, …; it has Cyrillic).
     ("Fonts", "Pixar Two.ttf", "Fonts"),

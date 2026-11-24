@@ -10,6 +10,8 @@ pub mod animate;
 pub mod camera;
 pub mod dark_corners;
 pub mod dirty_lens;
+pub mod effect_canvas;
+pub mod frozen_glass;
 pub mod layers;
 pub mod light_layer;
 pub mod lines;
@@ -18,6 +20,7 @@ pub mod outland;
 pub mod particles;
 pub mod premultiply;
 pub mod shadow;
+pub mod snow;
 pub mod spin;
 pub mod sprite;
 pub mod wall_ao;
@@ -43,6 +46,9 @@ impl Plugin for RenderPlugin {
                 additive_light::AdditiveLightPlugin,
                 dirty_lens::DirtyLensPlugin,
                 dark_corners::DarkCornersPlugin,
+                effect_canvas::EffectCanvasPlugin,
+                snow::SnowPlugin,
+                frozen_glass::FrozenGlassPlugin,
                 wall_ao::WallAoPlugin,
                 shadow::ShadowPlugin,
                 particles::ParticlesPlugin,
