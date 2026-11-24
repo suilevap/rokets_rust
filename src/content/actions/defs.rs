@@ -577,6 +577,8 @@ actions! {
     ChangeMapEffectAmount("ChangeMapEffectAmount", name = "ChangeMapEffectAmount") {
         /// 0 - disable, 1- full
         amount "Amount": f32 = 0.0;
+    } => templates {
+        "MapEffect(amount)" => |a| Some(ChangeMapEffectAmount { amount: a.num(0)? }),
     }
 
     AttachAdditionalView("AttachAdditionalView", name = "AttachAdditionalView") {

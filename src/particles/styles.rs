@@ -737,6 +737,156 @@ pub static NEW_ZOMBIE_FRIEND: Style = Style {
     origin: CENTRE,
 };
 
+/// `_snowStyle`: a streak of wind-blown snow (`SnowWind` maps,
+/// `WindSnowEffect`), growing from nothing to 128 × 24 times the three-pixel
+/// sprite and quickening as it fades.
+pub static WIND_SNOW: Style = Style {
+    begin: State {
+        speed: 256.0 / 32.0,
+        scale: Vec2::ZERO,
+        view_rotation: 0.0,
+        rotation: 0.0,
+        color: [0.5; 4],
+        height: SPEED_TRAIL_PARTICLE,
+    },
+    end: State {
+        speed: 512.0 / 32.0,
+        scale: Vec2::new(128.0, 24.0),
+        view_rotation: 0.0,
+        rotation: 0.0,
+        color: TRANSPARENT,
+        height: SPEED_TRAIL_PARTICLE,
+    },
+    lifetime: 1.0,
+    texture: "Particles\\3Pixel",
+    additive: false,
+    random_frame: false,
+    origin: CENTRE,
+};
+
+/// `_snowStyleWithRotate`: a swirl of snow dust, a random frame of the
+/// `SnowEffect` sprite, that curves as it flies and straightens.
+pub static WIND_SNOW_TURNING: Style = Style {
+    begin: State {
+        speed: 256.0 / 32.0 * 2.0,
+        scale: Vec2::ZERO,
+        view_rotation: -1.4,
+        rotation: -1.4,
+        color: [0.5; 4],
+        height: SPEED_TRAIL_PARTICLE,
+    },
+    end: State {
+        speed: 512.0 / 32.0 * 4.0,
+        scale: Vec2::new(32.0, 16.0),
+        view_rotation: 0.0,
+        rotation: 0.0,
+        color: TRANSPARENT,
+        height: SPEED_TRAIL_PARTICLE,
+    },
+    lifetime: 1.0,
+    texture: "Particles\\SnowEffect",
+    additive: false,
+    random_frame: true,
+    origin: CENTRE,
+};
+
+/// The screen snow's styles (`SnowEffect`, `CreateSnowUI`) are in the
+/// screen's pixels, not world units: a speed is pixels per second and a
+/// scale is times the sprite's size, both before the interface's scale.
+///
+/// `_snowStyleUI`: a long streak, curving one way.
+pub static SCREEN_SNOW_STREAK: Style = Style {
+    begin: State {
+        speed: 256.0,
+        scale: Vec2::ZERO,
+        view_rotation: -1.4,
+        rotation: -1.4,
+        color: [0.5; 4],
+        height: SPEED_TRAIL_PARTICLE,
+    },
+    end: State {
+        speed: 512.0,
+        scale: Vec2::new(64.0, 12.0),
+        view_rotation: 0.0,
+        rotation: 0.0,
+        color: TRANSPARENT,
+        height: SPEED_TRAIL_PARTICLE,
+    },
+    lifetime: 1.0,
+    texture: "Particles\\3Pixel",
+    additive: false,
+    random_frame: false,
+    origin: CENTRE,
+};
+
+/// `_snowStyleUI2`: a soft flake (a random frame of `SnowEffect`), faster
+/// than the streak and curving the other way.
+pub static SCREEN_SNOW_FLAKE: Style = Style {
+    begin: State {
+        speed: 256.0 * 2.0,
+        scale: Vec2::ZERO,
+        view_rotation: 1.4,
+        rotation: 1.4,
+        color: [0.5; 4],
+        height: SPEED_TRAIL_PARTICLE,
+    },
+    end: State {
+        speed: 512.0 * 2.0,
+        scale: Vec2::new(16.0, 12.0),
+        view_rotation: 0.0,
+        rotation: 0.0,
+        color: TRANSPARENT,
+        height: SPEED_TRAIL_PARTICLE,
+    },
+    lifetime: 1.0,
+    texture: "Particles\\SnowEffect",
+    additive: false,
+    random_frame: true,
+    origin: CENTRE,
+};
+
+/// `_snowStyleUI3`: a speck of dirt on the glass (a random frame of
+/// `GlassDirt`) that stays where it is two seconds and fades.
+pub static SCREEN_SNOW_SPECK: Style = Style {
+    begin: State {
+        speed: 0.0,
+        scale: Vec2::splat(4.0),
+        view_rotation: 0.0,
+        rotation: 0.0,
+        color: [0.4; 4],
+        height: SPEED_TRAIL_PARTICLE,
+    },
+    end: State {
+        speed: 0.0,
+        scale: Vec2::splat(4.0),
+        view_rotation: 0.0,
+        rotation: 0.0,
+        color: TRANSPARENT,
+        height: SPEED_TRAIL_PARTICLE,
+    },
+    lifetime: 2.0,
+    texture: "Particles\\GlassDirt",
+    additive: false,
+    random_frame: true,
+    origin: CENTRE,
+};
+
+/// `_snowUIStyles`: what `CreateSnowUI` picks from, at random: two streaks,
+/// eight flakes and a speck in eleven.
+pub static SCREEN_SNOW: [&Style; 11] = [
+    &SCREEN_SNOW_STREAK,
+    &SCREEN_SNOW_STREAK,
+    &SCREEN_SNOW_FLAKE,
+    &SCREEN_SNOW_FLAKE,
+    &SCREEN_SNOW_FLAKE,
+    &SCREEN_SNOW_FLAKE,
+    &SCREEN_SNOW_FLAKE,
+    &SCREEN_SNOW_FLAKE,
+    &SCREEN_SNOW_FLAKE,
+    &SCREEN_SNOW_FLAKE,
+    &SCREEN_SNOW_SPECK,
+];
+
 /// Every texture a style here draws with, to load with the map.
 pub const TEXTURES: [&str; 21] = [
     WHEEL_TRAIL.texture,
