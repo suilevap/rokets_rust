@@ -33,6 +33,7 @@ cargo run --release -- -m LetItSnowDay
 | `--run ACTION` | With `--drive`: run that map action on the script's first step (repeat it for several), as the C# game's debug server does with `/run?cmd=ACTION`, e.g. an AI's `MoveCargoOrder` |
 | `--trace a,b` | With `--drive`: also log these entities (map ids) every 0.1 s, as `trace t id x y angle speed` in the C# game's axes, for `tools/compare.py`, and their health as `health t id hp` |
 | `--nav` | Draw the navigation graph over the map (links in green, crossings in orange; red links are dear ones), as `NavGraph.Draw` did in the C# game's AI debug build |
+| `--no-music` | Start with the level music off (`M` switches it while playing). The maps' `PlayLevelMusic` actions play the songs of `assets/Sounds/Music` |
 
 Portrait screens (a phone held upright) show the landscape view turned a
 quarter turn: up on the screen is right on the map, and the controls follow

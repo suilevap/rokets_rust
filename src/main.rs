@@ -5,7 +5,8 @@
 //! (default 90) and exits, for comparing with the C# game. `--drive`
 //! drives the car by a script and logs its path (see `script.rs`);
 //! `--trace a,b` also logs those entities (map ids), for `tools/compare.py`.
-//! `--nav` draws the AI's navigation graph.
+//! `--nav` draws the AI's navigation graph. `--no-music` starts with the
+//! level music off (`M` switches it).
 //! `--record DIR` saves every frame of play as `DIR/frame_NNNNN.png`, with
 //! time stepped exactly 1/30 s per frame (whatever the rendering speed),
 //! for `--frames N` frames, then exits: turn them into a video with ffmpeg.
@@ -20,7 +21,7 @@
 //!
 //! In the browser the page's URL parameters are the options, without `--`:
 //! `?map=Middleware&start=84,9.5&drive=1,0:3&glow=4&lang=ru`. Only `map`,
-//! `start`, `car`, `drive`, `glow`, `flash` and `lang` apply there; the file-writing options are native only.
+//! `start`, `car`, `drive`, `glow`, `flash`, `lang`, `nav` and `no-music` apply there; the file-writing options are native only.
 
 use bevy::prelude::*;
 use bevy::render::view::screenshot::{Screenshot, save_to_disk};
@@ -58,6 +59,7 @@ struct Args {
     lang: Option<String>,
     trace: Vec<i64>,
     nav: bool,
+    no_music: bool,
 }
 
 /// The command line, or the page's URL parameters in the browser.
@@ -82,7 +84,7 @@ mod web {
     }
 
     /// Options the browser build accepts, as URL parameters.
-    const WEB_OPTIONS: &[&str] = &["map", "start", "car", "drive", "glow", "flash", "lang", "nav"];
+    const WEB_OPTIONS: &[&str] = &["map", "start", "car", "drive", "glow", "flash", "lang", "nav", "no-music"];
 
     /// `?map=Middleware&start=84,9.5` → `["--map", "Middleware", "--start", "84,9.5"]`.
     pub fn url_args() -> Vec<String> {
@@ -138,6 +140,7 @@ fn parse_args() -> Args {
     let mut trace = Vec::new();
     let mut run = Vec::new();
     let mut nav = false;
+    let mut no_music = false;
     let mut shot: Option<ScreenshotRequest> = None;
     let mut frames = 90;
     let mut args = raw_args().into_iter();
@@ -190,6 +193,7 @@ fn parse_args() -> Args {
             }
             "--run" => run.extend(args.next()),
             "--nav" => nav = true,
+            "--no-music" => no_music = true,
             "--frames" => frames = args.next().and_then(|v| v.parse().ok()).unwrap_or(frames),
             _ => {}
         }
@@ -218,6 +222,7 @@ fn parse_args() -> Args {
         lang,
         trace,
         nav,
+        no_music,
     }
 }
 
@@ -235,6 +240,7 @@ fn main() {
         lang,
         trace,
         nav,
+        no_music,
     } = parse_args();
     let mut app = App::new();
     app.add_plugins(
@@ -270,6 +276,9 @@ fn main() {
     }
     if let Some(flash) = flash {
         app.insert_resource(tilerider::render::particles::FlashBoost(flash));
+    }
+    if no_music {
+        app.insert_resource(tilerider::sound::music::Jukebox::new(false));
     }
     if nav {
         app.init_resource::<tilerider::ai::navigation::NavDebug>();

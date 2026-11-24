@@ -41,6 +41,16 @@ pub struct MapData {
     pub outland_color_l_b: XColor,
     #[serde(default)]
     pub friction: Option<f32>,
+    /// The songs of the level (`MusicAmbient`, `MusicDynamic1`, `MusicDynamic2`):
+    /// file names under `Sounds/Music` without the extension. The ambient one
+    /// plays when the map starts, `PlayLevelMusic` plays the others. An empty
+    /// element is the same as none.
+    #[serde(default)]
+    pub music_ambient: Option<String>,
+    #[serde(default)]
+    pub music_dynamic1: Option<String>,
+    #[serde(default)]
+    pub music_dynamic2: Option<String>,
     #[serde(default = "default_ambient")]
     pub ambient_light: XColor,
     #[serde(default)]

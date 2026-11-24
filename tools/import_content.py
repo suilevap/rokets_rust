@@ -78,6 +78,22 @@ def main() -> int:
             (DEST / rel).parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(CONTENT / rel, DEST / rel)
             copied += 1
+    # The songs the single-player maps play (`MusicAmbient`, `MusicDynamic1`,
+    # `MusicDynamic2`, by file name; as `PlayLevelMusic` plays them): the
+    # `.ogg` the DesktopGL content project builds. The menus' and the level
+    # end's songs stay behind, as do other maps' (not in the content folder).
+    songs = set()
+    for m in sorted((CONTENT / "Maps" / "Singleplayer").glob("*.xml")):
+        songs.update(
+            s.strip()
+            for s in re.findall(r"<Music(?:Ambient|Dynamic1|Dynamic2)>([^<]*)<", m.read_text(encoding="utf-8-sig"))
+        )
+    for name in sorted(songs - {""}):
+        rel = Path("Sounds") / "Music" / (name + ".ogg")
+        if (CONTENT / rel).is_file():
+            (DEST / rel).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(CONTENT / rel, DEST / rel)
+            copied += 1
     # The splashes (`ShowSplash`): their layout, and the sprites of the
     # ones the maps show (the menus' and the credits' stay behind).
     splashes = CONTENT / "Splashes" / "Splashes.xml"
