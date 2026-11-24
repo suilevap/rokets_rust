@@ -156,8 +156,7 @@ main
 
 ## Not ported yet
 
-Everything outside MVP 0.1: menus and HUD, localisation, saves; the pause menu's music pause, the menu and level-end songs and the battle-driven `MusicDirector` (`sound/music` says why);
-the `Bomb` and `EditorPointer` gadgets; the `LaserCollector` button; the other behaviour trees (the `SimpleCars` and the AI's `Players` cars are there; turrets, chasers, path followers, attackers, zombies, hammer cars and order executors (flatbt trees), `AlwaysShoot` and `ShootPattern` act, the other controls stand idle), the enemies' red aim lines; fake walls; the other action types (the AI's attack order, the splash's taps, menu fades and layer sounds, …); most particle effects (the pool and the car's smoke are in);
+Everything outside MVP 0.1: menus, localisation, saves; the pause menu's music pause, the menu and level-end songs and the battle-driven `MusicDirector` (`sound/music` says why);
+the `Bomb` and `EditorPointer` gadgets; the `LaserCollector` button; the other behaviour trees (the `SimpleCars` and the AI's `Players` cars are there; turrets, chasers, path followers, attackers, zombies, hammer cars and order executors (flatbt trees), `AlwaysShoot` and `ShootPattern` act, the other controls stand idle); fake walls; the other action types (the AI's attack order, the splash's taps, menu fades and layer sounds, …); most particle effects (the pool and the car's smoke are in);
 slow motion; the agent/command server; editor hot reload. Rendering gaps:
-tyre marks,
-dynamic lights, the dirty lens's dynamic flashes, per-map camera zoom.
+the dirty lens's dynamic flashes. (The C# game has no per-map camera zoom: the zoom depends only on the targets and the speed, see `render/camera`.)

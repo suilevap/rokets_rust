@@ -165,8 +165,14 @@ along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
   close. Exact only with the glow added in sRGB (a small post-process
   pass) or the whole picture drawn in sRGB numbers as XNA did.
 - The dirty lens's dynamic glass flashes (explosions, the laser, the
-  `LaserCollectorButton` pulse; see `render/dirty_lens.rs`); dynamic lights;
-  tyre marks.
+  `LaserCollectorButton` pulse; see `render/dirty_lens.rs`).
+  (Tyre marks are not here: C# has no lasting skid marks, only the
+  one-second wheel streaks `car/smoke.rs` already ports. Nor are dynamic
+  lights: `LightManager.AddDynamicLight` was added for a cursor-following
+  light test in 2012 (`ddf5f055`, `f8bdad3d`) and has had no caller since;
+  no action, weapon, explosion or car adds or moves a light. The flashes
+  and glows that look like lights are additive sprites, which are ported:
+  `flash`, the accelerator's tail, the buttons' lamps.)
 
 ## Web
 
