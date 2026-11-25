@@ -10,6 +10,12 @@ the C# repository: `docs/plans/RUST_BEVY_MIGRATION.md`.
   from, work out what it was for (its git history goes back to 2009 and
   says why), and build what is natural in Bevy. Name the C# origin in the
   module's doc comment.
+- **The port is a starting point, not a museum.** The game will be
+  improved and developed further, so do not carry the old engine's
+  quirks over: no imitating C# bugs, XNA's sRGB sums, fake random tables,
+  dead code or workarounds for its platforms. Keep what the player sees
+  and feels (the look, timings, handling); where C# got there by a bug or
+  a hack, get there the clean way and name the difference.
 - The C# game is the reference: compare screenshots (`--screenshot`) and
   driving with it rather than copying its structure.
 - **C# space is not ours**: it has y down and depth away from the

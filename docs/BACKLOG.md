@@ -159,10 +159,6 @@ along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
 
 ## Rendering and camera
 
-- The additive light adds in linear colour here and in sRGB numbers in
-  C# (XNA has no gamma); a fixed ×2 boost (`GLOW_BOOST`) brings the look
-  close. Exact only with the glow added in sRGB (a small post-process
-  pass) or the whole picture drawn in sRGB numbers as XNA did.
 - The dirty lens's `LaserCollectorButton` pulse (a white glass flash while
   the button is lit; it waits for the button, see `render/dirty_lens.rs`
   for the `GlassFlash` message it would send), and the plain screen-space
