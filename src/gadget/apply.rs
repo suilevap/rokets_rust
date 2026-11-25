@@ -85,14 +85,14 @@
 //! - A `_candidate` kept from the button's aiming (C# let a ray that hit
 //!   nothing keep it): here the candidate lasts only while the button is
 //!   held, so a ray that hits nothing takes nothing.
-//! - Where on the cargo the rope holds. C# stepped the hit point inside
-//!   the surface by the *previous* ray's normal (`_targetPos`, set before
-//!   `_targetNormal` was), which is the zero vector for a gadget's first
-//!   ray: the point stayed on the surface, `LinkTo`'s `Fix.TestPoint`
-//!   missed it and it held the cargo by its middle (Derby's turret sits
-//!   about half a unit further from the truck than the button's grab
-//!   would leave it). Here it is always the middle; a second application
-//!   by the same gadget, which C# held at a surface point, does the same.
+//! - Where on the cargo the rope holds: always its middle, by design. A
+//!   cargo hung by its middle tows steadily and the same way every time,
+//!   and maps are laid out for it (Derby's turret sits where a middle
+//!   grab leaves it). C# reached the middle by a bug for a gadget's first
+//!   ray (it stepped the hit point inside by the *previous* ray's normal,
+//!   zero at first, so `LinkTo`'s `Fix.TestPoint` missed and fell back to
+//!   the middle) and held a later grab by the same gadget at a surface
+//!   point; here every grab holds the middle.
 //! - `ActiveGadget._isOnActiveDistance` left set to `true` afterwards
 //!   (nothing reads it without the button) and the other gadgets:
 //!   `Bomb` and `EditorPointer` are not ported.

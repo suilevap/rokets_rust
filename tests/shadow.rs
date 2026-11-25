@@ -110,3 +110,12 @@ fn walls_cut_the_streak_short() {
     let walled = streak_shape(Vec2::new(10.0, 0.0), 0.0, car, Vec2::ZERO, 20.0, 1.0).unwrap();
     assert!(walled.texel.x < open.texel.x / 2.0);
 }
+
+#[test]
+fn a_lamp_claims_its_whole_box_up_to_the_far_edge() {
+    // Box from x 1 to 7 cells: the spots up to its far edge are the lamp's.
+    let (_, lamps) = lamps_of(&[lamp(4.0, 2.0, 3.0, true)]);
+    assert_eq!(lamps.lamp_at(1.2, 2.5, CELL), Some(0));
+    assert_eq!(lamps.lamp_at(6.9, 2.5, CELL), Some(0));
+    assert_eq!(lamps.lamp_at(8.5, 2.5, CELL), None, "beyond the box");
+}
