@@ -86,7 +86,7 @@ struct Pending {
     list: Handle<XmlText>,
     parsed: Option<(MapData, CarCatalog, MapList)>,
     image: Option<Handle<Image>>,
-    /// The lamp sprite the light is baked with (`Particles\flash2`).
+    /// The lamp sprite the light is baked with (`Particles/flash2`).
     flash: Handle<Image>,
     sprites: Vec<(String, Handle<Image>)>,
 }
@@ -167,8 +167,8 @@ fn sprites_for(map: &MapData, cars: &CarCatalog, registry: &crate::actions::Acti
     if !skipped.is_empty() {
         info!("entities not supported yet (skipped): {skipped:?}");
     }
-    names.sort_by_key(|n| n.to_ascii_lowercase());
-    names.dedup_by_key(|n| n.to_ascii_lowercase());
+    names.sort();
+    names.dedup();
     names
 }
 
@@ -199,12 +199,8 @@ fn start_loading(
     mut commands: Commands,
     server: Res<AssetServer>,
     name: Res<CurrentMapName>,
-    mut next: ResMut<NextState<GameState>>,
 ) {
-    let Some(map_path) = assets::map_path(&name.0) else {
-        fail(&mut commands, &mut next, format!("no map named {:?} in assets/Maps/Singleplayer", name.0));
-        return;
-    };
+    let map_path = assets::map_path(&name.0);
     info!("loading map {}", map_path);
     commands.insert_resource(Pending {
         map: server.load(map_path),
@@ -256,21 +252,11 @@ fn poll_loading(
                     }
                 }
                 if let Some(image) = p.0.image.as_deref().filter(|s| !s.trim().is_empty()) {
-                    match assets::sprite_path(image) {
-                        Some(path) => {
-                            pending.image = Some(load_cpu_image(&server, path));
-                        }
-                        None => warn!("map image {image:?} not found; using the CharMap only"),
-                    }
+                    pending.image = Some(load_cpu_image(&server, assets::sprite_path(image)));
                 }
                 for name in sprites_for(&p.0, &p.1, &registry) {
-                    match assets::sprite_path(&name) {
-                        Some(path) => {
-                            let handle = server.load(path);
-                            pending.sprites.push((name, handle));
-                        }
-                        None => warn!("sprite {name:?} not found"),
-                    }
+                    let handle = server.load(assets::sprite_path(&name));
+                    pending.sprites.push((name, handle));
                 }
                 pending.parsed = Some(p);
             }

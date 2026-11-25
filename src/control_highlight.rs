@@ -281,10 +281,7 @@ impl Plugin for ControlHighlightPlugin {
 
 fn load(mut sprites: ResMut<HintSprites>, server: Res<AssetServer>) {
     for name in ALL {
-        match sprite_path(name) {
-            Some(path) => sprites.0.push((name, server.load(path))),
-            None => warn!("control highlight: no sprite {name}"),
-        }
+        sprites.0.push((name, server.load(sprite_path(name))));
     }
 }
 

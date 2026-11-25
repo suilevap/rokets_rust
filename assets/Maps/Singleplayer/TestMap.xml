@@ -3,7 +3,7 @@
   <Asset Type="GameLibrary.MapData">
     <Name>EdgeTest</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Singleplayer\EdgeTest</Image>
+    <Image>Maps/Singleplayer/EdgeTest</Image>
     <Scale>48</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>true</HaveOutlandVizualization>

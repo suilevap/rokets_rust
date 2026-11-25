@@ -27,7 +27,6 @@ fn swarm_has_the_action_and_its_texture_is_loaded() {
     let (map, _) = common::load_map("Swarm");
     assert!(map.actions.0.iter().any(|a| a.kind == "CreateParticleEffect"));
     assert!(TEXTURES.contains(&NEW_ZOMBIE_FRIEND.texture));
-    assert!(tilerider::assets::sprite_path(NEW_ZOMBIE_FRIEND.texture).is_some());
 }
 
 #[test]

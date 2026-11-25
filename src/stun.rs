@@ -14,7 +14,7 @@
 //!   devices write theirs before the step. The gadget is not touched, as
 //!   in C#. The stun is over at the first step after its time, which
 //!   still held it (`NeedUpdate` was asked after the control was cleared).
-//! - A star, a rotating, pulsing sprite (`Particles\Stun`, 3 radii wide
+//! - A star, a rotating, pulsing sprite (`Particles/Stun`, 3 radii wide
 //!   at most), is drawn over the car meanwhile.
 //!
 //! Not ported:
@@ -78,8 +78,8 @@ pub fn hold(intent: &mut PlayerIntent) {
 #[derive(Component)]
 struct StunView;
 
-/// `Particles\Stun`: the star's sprite.
-const STUN_TEXTURE: &str = "Particles\\Stun";
+/// `Particles/Stun`: the star's sprite.
+const STUN_TEXTURE: &str = "Particles/Stun";
 
 pub struct StunPlugin;
 

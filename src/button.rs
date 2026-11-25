@@ -37,12 +37,12 @@ const BODY_SCALE: f32 = 1.0 - 18.0 / 64.0;
 /// The pull on loose things away from its middle (Farseer newtons).
 const PULL: f32 = 8.0;
 
-const LIGHT: &str = "Entities\\ButtonLight";
+const LIGHT: &str = "Entities/ButtonLight";
 const SPRITES: &[&str] = &[
-    "Entities\\Button",
-    "Entities\\ButtonPressed",
-    "Entities\\ButtonWithoutRelease",
-    "Entities\\ButtonWithoutReleasePressed",
+    "Entities/Button",
+    "Entities/ButtonPressed",
+    "Entities/ButtonWithoutRelease",
+    "Entities/ButtonWithoutReleasePressed",
     LIGHT,
 ];
 
@@ -175,9 +175,9 @@ fn create_button(
     }
     let plain = d.action_release.as_deref().is_none_or(|r| r.trim().is_empty());
     let (released, pressed) = if plain {
-        ("Entities\\ButtonWithoutRelease", "Entities\\ButtonWithoutReleasePressed")
+        ("Entities/ButtonWithoutRelease", "Entities/ButtonWithoutReleasePressed")
     } else {
-        ("Entities\\Button", "Entities\\ButtonPressed")
+        ("Entities/Button", "Entities/ButtonPressed")
     };
     let (Some(released), Some(pressed), Some(light)) =
         (map.sprites.get(released), map.sprites.get(pressed), map.sprites.get(LIGHT))

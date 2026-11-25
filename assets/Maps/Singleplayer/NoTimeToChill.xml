@@ -3,8 +3,8 @@
   <Asset Type="GameLibrary.MapData">
     <Name>NoTimeToChill</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Singleplayer\NoTimeToChill</Image>
-    <PreviewImage>Maps\Preview\NoTimeToChill</PreviewImage>
+    <Image>Maps/Singleplayer/NoTimeToChill</Image>
+    <PreviewImage>Maps/Preview/NoTimeToChill</PreviewImage>
     <Scale>128</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>
@@ -182,7 +182,7 @@
       <Item>
         <Id>1001</Id>
         <Position>9.890625 13.46875</Position>
-        <Sprite>Cars\Truck\Destroyed2</Sprite>
+        <Sprite>Cars/Truck/Destroyed2</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>10</DirectionDeg>
@@ -196,7 +196,7 @@
       <Item>
         <Id>1002</Id>
         <Position>12.515625 8.34375</Position>
-        <Sprite>Entities\CargoQuest</Sprite>
+        <Sprite>Entities/CargoQuest</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>19</DirectionDeg>
@@ -210,7 +210,7 @@
       <Item>
         <Id>1004</Id>
         <Position>12.765625 8.875</Position>
-        <Sprite>Entities\CargoQuest</Sprite>
+        <Sprite>Entities/CargoQuest</Sprite>
         <Animated>false</Animated>
         <Scale>0.8</Scale>
         <DirectionDeg>-5</DirectionDeg>
@@ -224,7 +224,7 @@
       <Item>
         <Id>1005</Id>
         <Position>13.58438 11.59375</Position>
-        <Sprite>Entities\HeavyBox</Sprite>
+        <Sprite>Entities/HeavyBox</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>45</DirectionDeg>
@@ -238,7 +238,7 @@
       <Item>
         <Id>1006</Id>
         <Position>13.64688 12.4125</Position>
-        <Sprite>Entities\HeavyBox</Sprite>
+        <Sprite>Entities/HeavyBox</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>45</DirectionDeg>
@@ -252,7 +252,7 @@
       <Item>
         <Id>1007</Id>
         <Position>22 8</Position>
-        <Sprite>Entities\CargoQuest</Sprite>
+        <Sprite>Entities/CargoQuest</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -266,7 +266,7 @@
       <Item>
         <Id>1008</Id>
         <Position>12.953125 12.6875</Position>
-        <Sprite>Entities\HeavyBox</Sprite>
+        <Sprite>Entities/HeavyBox</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -280,7 +280,7 @@
       <Item>
         <Id>1009</Id>
         <Position>12.953125 11.28125</Position>
-        <Sprite>Entities\HeavyBox</Sprite>
+        <Sprite>Entities/HeavyBox</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -294,7 +294,7 @@
       <Item>
         <Id>1010</Id>
         <Position>12.953125 11.96875</Position>
-        <Sprite>Entities\HeavyBox</Sprite>
+        <Sprite>Entities/HeavyBox</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -308,7 +308,7 @@
       <Item>
         <Id>1011</Id>
         <Position>21.5 7.5</Position>
-        <Sprite>Entities\CargoQuest</Sprite>
+        <Sprite>Entities/CargoQuest</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -322,7 +322,7 @@
       <Item>
         <Id>1013</Id>
         <Position>21.5 6.5</Position>
-        <Sprite>Entities\CargoQuest</Sprite>
+        <Sprite>Entities/CargoQuest</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -336,7 +336,7 @@
       <Item>
         <Id>1014</Id>
         <Position>21.5 7</Position>
-        <Sprite>Entities\CargoQuest</Sprite>
+        <Sprite>Entities/CargoQuest</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -350,7 +350,7 @@
       <Item>
         <Id>1015</Id>
         <Position>22.5 8</Position>
-        <Sprite>Entities\CargoQuest</Sprite>
+        <Sprite>Entities/CargoQuest</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -364,7 +364,7 @@
       <Item>
         <Id>1016</Id>
         <Position>10.4490929 13.7641125</Position>
-        <Sprite>Gadget\Bomb</Sprite>
+        <Sprite>Gadget/bomb</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -378,7 +378,7 @@
       <Item>
         <Id>1017</Id>
         <Position>10.828125 13.5625</Position>
-        <Sprite>Gadget\Bomb</Sprite>
+        <Sprite>Gadget/bomb</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -392,7 +392,7 @@
       <Item>
         <Id>1018</Id>
         <Position>9.879032 13.8629036</Position>
-        <Sprite>Gadget\Bomb</Sprite>
+        <Sprite>Gadget/bomb</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -406,7 +406,7 @@
       <Item>
         <Id>1019</Id>
         <Position>9.25 14.0080643</Position>
-        <Sprite>Gadget\Bomb</Sprite>
+        <Sprite>Gadget/bomb</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -420,7 +420,7 @@
       <Item>
         <Id>1020</Id>
         <Position>6.4375 13.09375</Position>
-        <Sprite>Gadget\Bomb</Sprite>
+        <Sprite>Gadget/bomb</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -434,7 +434,7 @@
       <Item>
         <Id>1021</Id>
         <Position>8.701612 14.1209679</Position>
-        <Sprite>Gadget\Bomb</Sprite>
+        <Sprite>Gadget/bomb</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -448,7 +448,7 @@
       <Item>
         <Id>1022</Id>
         <Position>8.153226 14.2661295</Position>
-        <Sprite>Gadget\Bomb</Sprite>
+        <Sprite>Gadget/bomb</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -462,7 +462,7 @@
       <Item>
         <Id>1023</Id>
         <Position>4 15.5</Position>
-        <Sprite>Gadget\Bomb</Sprite>
+        <Sprite>Gadget/bomb</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -476,7 +476,7 @@
       <Item>
         <Id>1025</Id>
         <Position>9.5 15</Position>
-        <Sprite>Entities\CargoQuest</Sprite>
+        <Sprite>Entities/CargoQuest</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>22</DirectionDeg>
@@ -490,7 +490,7 @@
       <Item>
         <Id>1027</Id>
         <Position>7.563508 14.30746</Position>
-        <Sprite>Gadget\Bomb</Sprite>
+        <Sprite>Gadget/bomb</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -504,7 +504,7 @@
       <Item>
         <Id>1028</Id>
         <Position>4.5 14.5</Position>
-        <Sprite>Entities\CargoQuest</Sprite>
+        <Sprite>Entities/CargoQuest</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>-10</DirectionDeg>
@@ -518,7 +518,7 @@
       <Item>
         <Id>1029</Id>
         <Position>7.52233171 12.4141941</Position>
-        <Sprite>Gadget\Bomb</Sprite>
+        <Sprite>Gadget/bomb</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -532,7 +532,7 @@
       <Item>
         <Id>1030</Id>
         <Position>19.5 25.5</Position>
-        <Sprite>Entities\FinishTile</Sprite>
+        <Sprite>Entities/FinishTile</Sprite>
         <Animated>false</Animated>
         <Scale>2</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -546,7 +546,7 @@
       <Item>
         <Id>1031</Id>
         <Position>22.265625 7.203125</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -560,7 +560,7 @@
       <Item>
         <Id>1032</Id>
         <Position>3 14.5</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -574,7 +574,7 @@
       <Item>
         <Id>1034</Id>
         <Position>10.3790932 14.6441126</Position>
-        <Sprite>Gadget\Bomb</Sprite>
+        <Sprite>Gadget/bomb</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -588,7 +588,7 @@
       <Item>
         <Id>1035</Id>
         <Position>10.079093 14.2241125</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -602,7 +602,7 @@
       <Item>
         <Id>1036</Id>
         <Position>19.5 19.5</Position>
-        <Sprite>Entities\Accelerator</Sprite>
+        <Sprite>Entities/Accelerator</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>270</DirectionDeg>
@@ -616,7 +616,7 @@
       <Item>
         <Id>1043</Id>
         <Position>11.5 21.5</Position>
-        <Sprite>Entities\HeavyBox</Sprite>
+        <Sprite>Entities/HeavyBox</Sprite>
         <Animated>false</Animated>
         <Scale>1.6</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -631,7 +631,7 @@
       <Item>
         <Id>1048</Id>
         <Position>7 19.5</Position>
-        <Sprite>Entities\CargoQuest</Sprite>
+        <Sprite>Entities/CargoQuest</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -645,7 +645,7 @@
       <Item>
         <Id>1049</Id>
         <Position>14 23.7</Position>
-        <Sprite>Entities\CargoQuest</Sprite>
+        <Sprite>Entities/CargoQuest</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -659,7 +659,7 @@
       <Item>
         <Id>1051</Id>
         <Position>10.6 22.5</Position>
-        <Sprite>Entities\Accelerator</Sprite>
+        <Sprite>Entities/Accelerator</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>180</DirectionDeg>
@@ -673,7 +673,7 @@
       <Item>
         <Id>1052</Id>
         <Position>9.5 21.5</Position>
-        <Sprite>Entities\HeavyBox</Sprite>
+        <Sprite>Entities/HeavyBox</Sprite>
         <Animated>false</Animated>
         <Scale>1.6</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -688,7 +688,7 @@
       <Item>
         <Id>1053</Id>
         <Position>9.5 22</Position>
-        <Sprite>UI\Splash\Controls\ZonesDelimiter</Sprite>
+        <Sprite>UI/Splash/Controls/ZonesDelimiter</Sprite>
         <Animated>false</Animated>
         <Scale>1.1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -702,7 +702,7 @@
       <Item>
         <Id>1054</Id>
         <Position>11.5 21.5</Position>
-        <Sprite>UI\Splash\Controls\ZonesDelimiter</Sprite>
+        <Sprite>UI/Splash/Controls/ZonesDelimiter</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -717,7 +717,7 @@
       <Item>
         <Id>1055</Id>
         <Position>7.5 20.5</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -731,7 +731,7 @@
       <Item>
         <Id>1056</Id>
         <Position>21 17</Position>
-        <Sprite>Cars\Buggy\Destroyed2</Sprite>
+        <Sprite>Cars/Buggy/Destroyed2</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>225</DirectionDeg>
@@ -745,7 +745,7 @@
       <Item>
         <Id>1057</Id>
         <Position>5 16.5</Position>
-        <Sprite>Gadget\Bomb</Sprite>
+        <Sprite>Gadget/bomb</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -759,7 +759,7 @@
       <Item>
         <Id>1058</Id>
         <Position>5 13.5</Position>
-        <Sprite>Gadget\Bomb</Sprite>
+        <Sprite>Gadget/bomb</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -773,7 +773,7 @@
       <Item>
         <Id>1059</Id>
         <Position>6 15.5</Position>
-        <Sprite>Gadget\Bomb</Sprite>
+        <Sprite>Gadget/bomb</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -999,7 +999,7 @@
         </Groups>
         <RunOnMapStart>false</RunOnMapStart>
         <Position>11.5 20.5</Position>
-        <Sprite>Hints\ArrowAnimation</Sprite>
+        <Sprite>Hints/ArrowAnimation</Sprite>
         <Scale>0.7</Scale>
         <DirectionDeg>270</DirectionDeg>
         <Animated>false</Animated>
@@ -1015,7 +1015,7 @@
         </Groups>
         <RunOnMapStart>false</RunOnMapStart>
         <Position>11.5 22.6</Position>
-        <Sprite>Hints\ArrowAnimation</Sprite>
+        <Sprite>Hints/ArrowAnimation</Sprite>
         <Scale>0.7</Scale>
         <DirectionDeg>270</DirectionDeg>
         <Animated>false</Animated>
@@ -1031,7 +1031,7 @@
         </Groups>
         <RunOnMapStart>false</RunOnMapStart>
         <Position>9.5 21</Position>
-        <Sprite>Hints\ArrowAnimation</Sprite>
+        <Sprite>Hints/ArrowAnimation</Sprite>
         <Scale>0.7</Scale>
         <DirectionDeg>270</DirectionDeg>
         <Animated>false</Animated>
@@ -1047,7 +1047,7 @@
         </Groups>
         <RunOnMapStart>false</RunOnMapStart>
         <Position>9.5 23.1</Position>
-        <Sprite>Hints\ArrowAnimation</Sprite>
+        <Sprite>Hints/ArrowAnimation</Sprite>
         <Scale>0.7</Scale>
         <DirectionDeg>270</DirectionDeg>
         <Animated>false</Animated>
@@ -1072,7 +1072,7 @@
       <Item>
         <Id>2001</Id>
         <Position>12 12</Position>
-        <Sprite>Hints\MagnetGadgetAnimation</Sprite>
+        <Sprite>Hints/MagnetGadgetAnimation</Sprite>
         <DirectionDeg>180</DirectionDeg>
         <Animated>true</Animated>
         <Timer>0</Timer>
@@ -1084,7 +1084,7 @@
       <Item>
         <Id>2002</Id>
         <Position>17.453125 11.8125</Position>
-        <Sprite>Hints\ArrowAnimation</Sprite>
+        <Sprite>Hints/ArrowAnimation</Sprite>
         <DirectionDeg>180</DirectionDeg>
         <Animated>true</Animated>
         <Timer>0</Timer>
@@ -1096,7 +1096,7 @@
       <Item>
         <Id>2003</Id>
         <Position>6.078125 8.03125</Position>
-        <Sprite>Hints\ArrowAnimation</Sprite>
+        <Sprite>Hints/ArrowAnimation</Sprite>
         <DirectionDeg>0</DirectionDeg>
         <Animated>true</Animated>
         <Timer>0</Timer>
@@ -1108,7 +1108,7 @@
       <Item>
         <Id>2004</Id>
         <Position>10.546875 15</Position>
-        <Sprite>Hints\ArrowAnimation</Sprite>
+        <Sprite>Hints/ArrowAnimation</Sprite>
         <DirectionDeg>0</DirectionDeg>
         <Animated>true</Animated>
         <Timer>0</Timer>
@@ -1133,7 +1133,7 @@
       <Item>
         <Id>2007</Id>
         <Position>10.5 21.5</Position>
-        <Sprite>Hints\MagnetGadgetAnimation</Sprite>
+        <Sprite>Hints/MagnetGadgetAnimation</Sprite>
         <DirectionDeg>180</DirectionDeg>
         <Animated>true</Animated>
         <Timer>0</Timer>

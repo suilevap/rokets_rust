@@ -114,7 +114,8 @@ pub struct Splashes(pub SplashesData);
 #[derive(Resource)]
 struct SplashesFile(Handle<XmlText>);
 
-/// The sprites the splashes name, by lower-case content name.
+/// The sprites the splashes name, by content name; loaded when first shown
+/// (only the splashes the campaign shows have their sprites imported).
 #[derive(Resource, Default)]
 struct SplashSprites(HashMap<String, Handle<Image>>);
 
@@ -164,14 +165,8 @@ fn load(mut commands: Commands, server: Res<AssetServer>) {
     commands.insert_resource(SplashFont(server.load("Fonts/Pixar Two.ttf")));
 }
 
-/// Parses `Splashes.xml` and starts loading the sprites it names.
-fn read_file(
-    mut commands: Commands,
-    file: Res<SplashesFile>,
-    assets: Res<Assets<XmlText>>,
-    server: Res<AssetServer>,
-    mut sprites: ResMut<SplashSprites>,
-) {
+/// Parses `Splashes.xml`.
+fn read_file(mut commands: Commands, file: Res<SplashesFile>, assets: Res<Assets<XmlText>>) {
     let Some(xml) = assets.get(&file.0) else {
         return;
     };
@@ -183,15 +178,6 @@ fn read_file(
             return;
         }
     };
-    // Only the splashes the campaign shows have their sprites imported.
-    for layer in data.splashes.iter().flat_map(|s| s.layers.iter()) {
-        let Some(name) = layer.sprite_name() else {
-            continue;
-        };
-        if let Some(path) = sprite_path(name) {
-            sprites.0.entry(name.to_ascii_lowercase()).or_insert_with(|| server.load(path));
-        }
-    }
     commands.insert_resource(Splashes(data));
 }
 
@@ -206,7 +192,7 @@ fn commands(
     mut requests: MessageReader<SplashCommand>,
     mut state: ResMut<SplashState>,
     (splashes, scheme): (Res<Splashes>, Res<ActiveScheme>),
-    (sprites, font): (Res<SplashSprites>, Res<SplashFont>),
+    (mut sprites, font, server): (ResMut<SplashSprites>, Res<SplashFont>, Res<AssetServer>),
     roots: Query<Entity, With<SplashRoot>>,
 ) {
     for request in requests.read() {
@@ -227,24 +213,28 @@ fn commands(
                 for root in &roots {
                     commands.entity(root).despawn();
                 }
-                spawn(&mut commands, data, &sprites, &font);
+                spawn(&mut commands, data, &mut sprites, &server, &font);
             }
         }
     }
 }
 
 /// The root and one node for each thing each layer draws, back to front.
-fn spawn(commands: &mut Commands, data: &crate::content::splashes::SplashData, sprites: &SplashSprites, font: &SplashFont) {
+fn spawn(
+    commands: &mut Commands,
+    data: &crate::content::splashes::SplashData,
+    sprites: &mut SplashSprites,
+    server: &AssetServer,
+    font: &SplashFont,
+) {
     let layers = &data.layers.items;
     let mut pieces = Vec::new();
     for (rank, &i) in draw_order(data).iter().enumerate() {
         let layer = &layers[i];
         let mut kinds = Vec::new();
         if let Some(name) = layer.sprite_name() {
-            match sprites.0.get(&name.to_ascii_lowercase()) {
-                Some(handle) => kinds.push(Kind::Sprite(handle.clone())),
-                None => warn!("splash {}: no sprite {name}", data.name),
-            }
+            let handle = sprites.0.entry(name.to_string()).or_insert_with(|| server.load(sprite_path(name)));
+            kinds.push(Kind::Sprite(handle.clone()));
         }
         if let Some(key) = layer.text_key() {
             kinds.push(Kind::Text(key.to_string()));

@@ -15,7 +15,7 @@
 //! The line:
 //!
 //! - Each leg of the path is a strip of the one-pixel-high sprite
-//!   `Special\DottedLine` (128 texels, 3 lit then 1 dark, so a period of 4),
+//!   `Special/DottedLine` (128 texels, 3 lit then 1 dark, so a period of 4),
 //!   starting at the leg's first point and running to its second, `Width`
 //!   pixels thick, centred on the leg, `Color` times the texture, blended
 //!   additively over the lit world (`DefaultWorldAdditive`).
@@ -60,7 +60,7 @@ use crate::render::sprite::UnitQuad;
 use crate::units::PX_PER_UNIT;
 
 /// The dotted strip: 128 texels wide, one high.
-const DOTTED: &str = "Special\\DottedLine";
+const DOTTED: &str = "Special/DottedLine";
 
 /// `DottedSpritePath._period`: texels from one dot to the next.
 const PERIOD: u32 = 4;

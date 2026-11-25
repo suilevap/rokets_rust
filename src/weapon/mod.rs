@@ -162,50 +162,50 @@ pub struct GunSprite {
     pub origin: Vec2,
 }
 
-/// `MinigunWeapon`: `Weapons\Minigun`, turned about pixel (9, 5).
+/// `MinigunWeapon`: `Weapons/Minigun`, turned about pixel (9, 5).
 pub const MINIGUN_SPRITE: GunSprite = GunSprite {
-    name: "Weapons\\Minigun",
+    name: "Weapons/Minigun",
     size: Vec2::new(40.0, 11.0),
     origin: Vec2::new(9.0, 5.0),
 };
-/// `RailgunWeapon`: `Weapons\Railgun`, turned about pixel (6, 6).
+/// `RailgunWeapon`: `Weapons/Railgun`, turned about pixel (6, 6).
 pub const RAILGUN_SPRITE: GunSprite = GunSprite {
-    name: "Weapons\\Railgun",
+    name: "Weapons/Railgun",
     size: Vec2::new(42.0, 13.0),
     origin: Vec2::new(6.0, 6.0),
 };
 
-/// `PlasmaGun`: `Weapons\Plasmagun`, turned about pixel (9, 5).
+/// `PlasmaGun`: `Weapons/Plasmagun`, turned about pixel (9, 5).
 pub const PLASMA_SPRITE: GunSprite = GunSprite {
-    name: "Weapons\\Plasmagun",
+    name: "Weapons/Plasmagun",
     size: Vec2::new(44.0, 11.0),
     origin: Vec2::new(9.0, 5.0),
 };
 
-/// `HammerWeapon`: `Weapons\Saw`, round and turned about its middle.
+/// `HammerWeapon`: `Weapons/Saw`, round and turned about its middle.
 pub const HAMMER_SPRITE: GunSprite = GunSprite {
-    name: "Weapons\\Saw",
+    name: "Weapons/Saw",
     size: Vec2::new(128.0, 128.0),
     origin: Vec2::new(64.0, 64.0),
 };
 
-/// `LaserWeapon`: `Weapons\Laser`, turned about pixel (9, 5).
+/// `LaserWeapon`: `Weapons/Laser`, turned about pixel (9, 5).
 pub const LASER_SPRITE: GunSprite = GunSprite {
-    name: "Weapons\\Laser",
+    name: "Weapons/Laser",
     size: Vec2::new(42.0, 13.0),
     origin: Vec2::new(9.0, 5.0),
 };
 
-/// `RocketLauncherWeapon`: `Weapons\RocketLauncher`, turned about pixel (9, 5).
+/// `RocketLauncherWeapon`: `Weapons/RocketLauncher`, turned about pixel (9, 5).
 pub const ROCKET_SPRITE: GunSprite = GunSprite {
-    name: "Weapons\\RocketLauncher",
+    name: "Weapons/RocketLauncher",
     size: Vec2::new(40.0, 10.0),
     origin: Vec2::new(9.0, 5.0),
 };
 
-/// `ShotgunWeapon`: `Weapons\Shotgun`, turned about pixel (9, 5).
+/// `ShotgunWeapon`: `Weapons/Shotgun`, turned about pixel (9, 5).
 pub const SHOTGUN_SPRITE: GunSprite = GunSprite {
-    name: "Weapons\\Shotgun",
+    name: "Weapons/Shotgun",
     size: Vec2::new(40.0, 11.0),
     origin: Vec2::new(9.0, 5.0),
 };

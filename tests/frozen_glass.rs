@@ -14,8 +14,8 @@ use tilerider::render::frozen_glass::{
 fn the_glass_has_both_sprites_only_on_snow_maps() {
     assert_eq!(textures(LevelEffect::Snow).len(), 2);
     for name in textures(LevelEffect::Snow) {
-        let path = assets::sprite_path(name).unwrap_or_else(|| panic!("{name} is not in the assets"));
-        assert!(common::assets_root().join(path).is_file(), "{path}");
+        let path = assets::sprite_path(name);
+        assert!(common::assets_root().join(&path).is_file(), "{path}");
     }
     assert!(textures(LevelEffect::None).is_empty());
     // Wind snow is the wind's alone, as `MapEffectFactory` made it.

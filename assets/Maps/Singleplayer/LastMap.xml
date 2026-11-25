@@ -3,7 +3,7 @@
   <Asset Type="GameLibrary.MapData">
     <Name>LastMap</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Singleplayer\LastMap</Image>
+    <Image>Maps/Singleplayer/LastMap</Image>
     <Scale>48</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>

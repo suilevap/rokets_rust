@@ -1,43 +1,35 @@
-//! Asset names as the C# content uses them, and loading XML as text.
+//! Asset names, and loading XML as text.
 //!
-//! Content paths in the map XML (`Entities\CargoQuest`) have backslashes,
-//! no extension and arbitrary case: Windows and the XNA content pipeline
-//! ignored case, Linux and the web do not. `assets/manifest.txt` (written by
-//! `tools/import_content.py`) lists the real files; names are resolved
-//! through it.
-
-use std::collections::HashMap;
-use std::sync::LazyLock;
+//! The C# content names assets the Windows way (backslashes, any case) and
+//! relies on Windows ignoring case. `tools/import_content.py` normalises the
+//! names once, when it imports: every name in `assets/` content is written
+//! with forward slashes and the exact case of its file, and the Rust
+//! constants are written the same way. Names are therefore used as they are;
+//! the helpers below only add the folder and the extension Bevy needs.
+//! `tests/asset_names.rs` checks that every name the content uses is a file.
 
 use bevy::asset::{AssetLoader, LoadContext, io::Reader};
 use bevy::prelude::*;
 
-static MANIFEST: LazyLock<HashMap<String, &'static str>> = LazyLock::new(|| {
-    include_str!("../assets/manifest.txt")
-        .lines()
-        .filter(|l| !l.is_empty())
-        .map(|l| (l.to_ascii_lowercase(), l))
-        .collect()
-});
-
-/// Resolves a content path (relative to `assets/`, any slashes or case,
-/// with or without extension) to the real asset path.
-pub fn resolve(path: &str, default_ext: &str) -> Option<&'static str> {
-    let norm = path.trim().replace('\\', "/").to_ascii_lowercase();
-    MANIFEST
-        .get(&norm)
-        .or_else(|| MANIFEST.get(&format!("{norm}.{default_ext}")))
-        .copied()
+/// A sprite under `Sprites/`, by its content name (`Cars/SandBuggy/Base`).
+pub fn sprite_path(content_name: &str) -> String {
+    format!("Sprites/{content_name}.png")
 }
 
-/// A sprite under `Sprites/`, by its content name (`Cars\SandBuggy\Base`).
-pub fn sprite_path(content_name: &str) -> Option<&'static str> {
-    resolve(&format!("Sprites/{content_name}"), "png")
+/// A sound effect under `Sounds/` by name (`CoinCollected`).
+pub fn sound_path(name: &str) -> String {
+    format!("Sounds/{name}.wav")
 }
 
-/// The XML of a single-player map by name.
-pub fn map_path(name: &str) -> Option<&'static str> {
-    resolve(&format!("Maps/Singleplayer/{name}"), "xml")
+/// A song under `Sounds/Music/` by name (`2_1`).
+pub fn music_path(name: &str) -> String {
+    format!("Sounds/Music/{name}.ogg")
+}
+
+/// The XML of a single-player map by name. The name is case-sensitive, as
+/// the file is (`-m escape` does not find `Escape.xml`).
+pub fn map_path(name: &str) -> String {
+    format!("Maps/Singleplayer/{name}.xml")
 }
 
 /// Raw text of an XML file.
@@ -76,20 +68,5 @@ impl Plugin for ContentAssetsPlugin {
     fn build(&self, app: &mut App) {
         app.init_asset::<XmlText>()
             .init_asset_loader::<XmlTextLoader>();
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn resolves_any_case_and_slashes() {
-        assert_eq!(
-            sprite_path("cars\\sandbuggy\\base"),
-            Some("Sprites/Cars/SandBuggy/Base.png")
-        );
-        assert_eq!(map_path("editortest"), Some("Maps/Singleplayer/EditorTest.xml"));
-        assert_eq!(sprite_path("Nope\\Missing"), None);
     }
 }

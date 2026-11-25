@@ -3,7 +3,7 @@
   <Asset Type="GameLibrary.MapData">
     <Name>Part_OneWay</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Parts\Part_OneWay</Image>
+    <Image>Maps/Parts/Part_OneWay</Image>
     <Scale>48</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>
@@ -32,7 +32,7 @@
       <Item>
         <Id>1001</Id>
         <Position>3 4</Position>
-        <Sprite>Entities\Accelerator</Sprite>
+        <Sprite>Entities/Accelerator</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>

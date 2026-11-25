@@ -3,7 +3,7 @@
   <Asset Type="GameLibrary.MapData">
     <Name>PartCorridorByPath</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Parts\PartCorridorByPath</Image>
+    <Image>Maps/Parts/PartCorridorByPath</Image>
     <Scale>48</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>

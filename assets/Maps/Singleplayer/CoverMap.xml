@@ -3,7 +3,7 @@
   <Asset Type="GameLibrary.MapData">
     <Name>CoverMap</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Singleplayer\CoverMap</Image>
+    <Image>Maps/Singleplayer/CoverMap</Image>
     <Scale>64</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>
@@ -71,7 +71,7 @@
       <Item>
         <Id>1001</Id>
         <Position>28.5 10</Position>
-        <Sprite>Entities\CargoQuest</Sprite>
+        <Sprite>Entities/CargoQuest</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -84,7 +84,7 @@
       <Item>
         <Id>1002</Id>
         <Position>18.5 9</Position>
-        <Sprite>Entities\DamagableBox</Sprite>
+        <Sprite>Entities/DamagableBox</Sprite>
         <Animated>false</Animated>
         <Scale>0.8121212</Scale>
         <DirectionDeg>153.370682</DirectionDeg>
@@ -97,7 +97,7 @@
       <Item>
         <Id>1003</Id>
         <Position>22 5</Position>
-        <Sprite>Entities\CargoQuest</Sprite>
+        <Sprite>Entities/CargoQuest</Sprite>
         <Animated>false</Animated>
         <Scale>0.86195457</Scale>
         <DirectionDeg>300.001862</DirectionDeg>
@@ -110,7 +110,7 @@
       <Item>
         <Id>1004</Id>
         <Position>26.5 6</Position>
-        <Sprite>Entities\HeavyBox</Sprite>
+        <Sprite>Entities/HeavyBox</Sprite>
         <Animated>false</Animated>
         <Scale>0.816581666</Scale>
         <DirectionDeg>188.047424</DirectionDeg>
@@ -123,7 +123,7 @@
       <Item>
         <Id>1005</Id>
         <Position>19 26</Position>
-        <Sprite>Entities\CargoQuest</Sprite>
+        <Sprite>Entities/CargoQuest</Sprite>
         <Animated>false</Animated>
         <Scale>0.8020272</Scale>
         <DirectionDeg>206.2607</DirectionDeg>
@@ -136,7 +136,7 @@
       <Item>
         <Id>1006</Id>
         <Position>11.3913031 10.73913</Position>
-        <Sprite>Entities\HeavyBox</Sprite>
+        <Sprite>Entities/HeavyBox</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>323.7818</DirectionDeg>
@@ -149,7 +149,7 @@
       <Item>
         <Id>1007</Id>
         <Position>29 28.5</Position>
-        <Sprite>Entities\CargoQuest</Sprite>
+        <Sprite>Entities/CargoQuest</Sprite>
         <Animated>false</Animated>
         <Scale>0.8020272</Scale>
         <DirectionDeg>206.2607</DirectionDeg>
@@ -162,7 +162,7 @@
       <Item>
         <Id>1008</Id>
         <Position>25 22</Position>
-        <Sprite>Entities\CargoQuest</Sprite>
+        <Sprite>Entities/CargoQuest</Sprite>
         <Animated>false</Animated>
         <Scale>0.8020272</Scale>
         <DirectionDeg>206.2607</DirectionDeg>
@@ -175,7 +175,7 @@
       <Item>
         <Id>1009</Id>
         <Position>22.5 32</Position>
-        <Sprite>Entities\CargoQuest</Sprite>
+        <Sprite>Entities/CargoQuest</Sprite>
         <Animated>false</Animated>
         <Scale>0.8020272</Scale>
         <DirectionDeg>206.2607</DirectionDeg>
@@ -194,7 +194,7 @@
         </Groups>
         <RunOnMapStart>true</RunOnMapStart>
         <Position>11.3913031 10.73913</Position>
-        <Sprite>UI\IconLikeCircle</Sprite>
+        <Sprite>UI/IconLikeCircle</Sprite>
         <Scale>0.6</Scale>
         <DirectionDeg>0</DirectionDeg>
         <Animated>false</Animated>
@@ -214,7 +214,7 @@
       <Item>
         <Id>2001</Id>
         <Position>24 27</Position>
-        <Sprite>Entities\ButtonBorder</Sprite>
+        <Sprite>Entities/ButtonBorder</Sprite>
         <DirectionDeg>0</DirectionDeg>
         <Animated>false</Animated>
         <Timer>0</Timer>

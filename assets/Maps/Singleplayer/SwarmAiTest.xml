@@ -3,7 +3,7 @@
   <Asset Type="GameLibrary.MapData">
     <Name>SwarmAiTest</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Singleplayer\SwarmAiTest</Image>
+    <Image>Maps/Singleplayer/SwarmAiTest</Image>
     <Scale>48</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>

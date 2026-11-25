@@ -2,7 +2,7 @@
 <XnaContent>
   <Asset Type="GameLibrary.MapData">
     <Name>The Gate</Name>
-    <Image>Maps\Singleplayer\Map01</Image>
+    <Image>Maps/Singleplayer/Map01</Image>
     <Scale>64</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <MusicAmbient>NostalgySummer</MusicAmbient>
@@ -51,7 +51,7 @@
       <Item>
         <Id>1</Id>
         <Position>38.5 16</Position>
-        <Sprite>Entities\DoorBox</Sprite>
+        <Sprite>Entities/DoorBox</Sprite>
         <Scale>1</Scale>
         <DirectionDeg>90</DirectionDeg>
         <Type>HeavyBox</Type>
@@ -132,14 +132,14 @@
       <Item>
         <Id>100</Id>
         <Position>32 16</Position>
-        <Sprite>Hints\Arrow</Sprite>
+        <Sprite>Hints/Arrow</Sprite>
         <DirectionDeg>-90</DirectionDeg>
         <Scale>1</Scale>
       </Item>
       <Item>
         <Id>101</Id>
         <Position>34 22</Position>
-        <Sprite>Hints\DragDoor</Sprite>
+        <Sprite>Hints/DragDoor</Sprite>
         <DirectionDeg>0</DirectionDeg>
         <Animated>true</Animated>
         <Scale>2</Scale>

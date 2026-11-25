@@ -3,7 +3,7 @@
   <Asset Type="GameLibrary.MapData">
     <Name>Part_DeadEnd4</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Parts\Part_DeadEnd4</Image>
+    <Image>Maps/Parts/Part_DeadEnd4</Image>
     <Scale>48</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>
@@ -32,7 +32,7 @@
       <Item>
         <Id>1001</Id>
         <Position>6 6</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>

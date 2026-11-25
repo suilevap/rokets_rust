@@ -3,7 +3,7 @@
   <Asset Type="GameLibrary.MapData">
     <Name>Arena</Name>
     <GameMode>SinglePlayerRespawnAll</GameMode>
-    <Image>Maps\Singleplayer\Arena</Image>
+    <Image>Maps/Singleplayer/Arena</Image>
     <Scale>64</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>

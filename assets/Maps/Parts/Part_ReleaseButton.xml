@@ -3,7 +3,7 @@
   <Asset Type="GameLibrary.MapData">
     <Name>Part_ReleaseButton</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Parts\Part_ReleaseButton</Image>
+    <Image>Maps/Parts/Part_ReleaseButton</Image>
     <Scale>48</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>
@@ -76,7 +76,7 @@
       <Item>
         <Id>1001</Id>
         <Position>12 5</Position>
-        <Sprite>Entities\CargoQuest</Sprite>
+        <Sprite>Entities/CargoQuest</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -89,7 +89,7 @@
       <Item>
         <Id>1003</Id>
         <Position>5.5 9.5</Position>
-        <Sprite>Entities\SmallWall</Sprite>
+        <Sprite>Entities/SmallWall</Sprite>
         <Animated>false</Animated>
         <Scale>1.2</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -102,7 +102,7 @@
       <Item>
         <Id>1004</Id>
         <Position>7.5 9.5</Position>
-        <Sprite>Entities\SmallWall</Sprite>
+        <Sprite>Entities/SmallWall</Sprite>
         <Animated>false</Animated>
         <Scale>1.2</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -115,7 +115,7 @@
       <Item>
         <Id>1005</Id>
         <Position>9.5 9.5</Position>
-        <Sprite>Entities\SmallWall</Sprite>
+        <Sprite>Entities/SmallWall</Sprite>
         <Animated>false</Animated>
         <Scale>1.2</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -128,7 +128,7 @@
       <Item>
         <Id>1006</Id>
         <Position>9.5 11.5</Position>
-        <Sprite>Entities\SmallWall</Sprite>
+        <Sprite>Entities/SmallWall</Sprite>
         <Animated>false</Animated>
         <Scale>1.2</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -141,7 +141,7 @@
       <Item>
         <Id>1007</Id>
         <Position>9.5 13.5</Position>
-        <Sprite>Entities\SmallWall</Sprite>
+        <Sprite>Entities/SmallWall</Sprite>
         <Animated>false</Animated>
         <Scale>1.2</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -154,7 +154,7 @@
       <Item>
         <Id>1008</Id>
         <Position>12 18</Position>
-        <Sprite>Entities\SmallWall</Sprite>
+        <Sprite>Entities/SmallWall</Sprite>
         <Animated>false</Animated>
         <Scale>1.2</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -167,7 +167,7 @@
       <Item>
         <Id>1009</Id>
         <Position>12 20</Position>
-        <Sprite>Entities\Accelerator</Sprite>
+        <Sprite>Entities/Accelerator</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>180</DirectionDeg>
@@ -180,7 +180,7 @@
       <Item>
         <Id>1010</Id>
         <Position>2 5</Position>
-        <Sprite>Entities\DoorBoxNonLinkable</Sprite>
+        <Sprite>Entities/DoorBoxNonLinkable</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>270</DirectionDeg>

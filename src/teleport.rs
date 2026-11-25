@@ -36,7 +36,7 @@ use crate::render::particles::Particles;
 use crate::render::sprite::{SpriteTint, UnitQuad, sprite_bundle};
 use crate::sound::PlaySound;
 
-const HOLE: &str = "Particles\\flash2";
+const HOLE: &str = "Particles/flash2";
 /// How long what arrives stays hidden.
 const HIDDEN_FOR: f32 = 0.5;
 /// Streaks a second while in sight (`RandomEvent(0.25f)` a frame at 60).

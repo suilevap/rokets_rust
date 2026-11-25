@@ -4,7 +4,7 @@ use bevy::math::Vec2;
 use tilerider::actions::{legs, offset, uv};
 use tilerider::content::map::MapData;
 
-/// `Special\DottedLine`'s width.
+/// `Special/DottedLine`'s width.
 const WIDTH: u32 = 128;
 
 #[test]

@@ -26,10 +26,10 @@ use super::swap::WeaponCollected;
 use super::view::ui_scale;
 use crate::game::{GameState, LoadedMap, MapEntity};
 
-/// The ring of a gun (`UI\BigCircleGun`).
-pub const GUN_RING: &str = "UI\\BigCircleGun";
-/// The ring of the magnet (`UI\BigCircleGadget`).
-pub const GADGET_RING: &str = "UI\\BigCircleGadget";
+/// The ring of a gun (`UI/BigCircleGun`).
+pub const GUN_RING: &str = "UI/BigCircleGun";
+/// The ring of the magnet (`UI/BigCircleGadget`).
+pub const GADGET_RING: &str = "UI/BigCircleGadget";
 
 /// One ring, in its life.
 #[derive(Component, Debug)]

@@ -17,7 +17,7 @@ use super::{ContentError, parse_asset};
 pub struct MapData {
     #[serde(default)]
     pub name: String,
-    /// Content path of the map image (`Maps\Singleplayer\Middleware`), under
+    /// Content path of the map image (`Maps/Singleplayer/Middleware`), under
     /// `Sprites/`. Empty for maps made only of a `CharMap`.
     #[serde(default)]
     pub image: Option<String>,
@@ -197,7 +197,7 @@ impl SimpleCarData {
 pub struct EntityData {
     pub id: i64,
     pub position: XVec2,
-    /// Content path under `Sprites/` (`Entities\CargoQuest`).
+    /// Content path under `Sprites/` (`Entities/CargoQuest`).
     #[serde(default)]
     pub sprite: String,
     #[serde(default = "one")]

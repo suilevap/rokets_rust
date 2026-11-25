@@ -173,7 +173,7 @@ pub fn template_for(e: &EntityData) -> Option<EntityTemplate> {
                 blast: DAMAGABLE_BOX_BLAST,
                 trigger: Trigger::Hit { fuse: 0.2 },
             }),
-            ..plain(SpriteSpec::new("Entities\\DamagableBox", 1.0, Layer::Prop))
+            ..plain(SpriteSpec::new("Entities/DamagableBox", 1.0, Layer::Prop))
         },
         // As heavy as while nothing tows it.
         EntityType::HeavyBox => EntityTemplate {
@@ -286,7 +286,7 @@ fn accelerator_arrows(scale: f32) -> Vec<SpriteSpec> {
     let arrow = |ahead, track| SpriteSpec {
         ahead,
         tint_loop: Some((wave, track)),
-        ..SpriteSpec::new("Entities\\Accelerator", scale, Layer::Accelerator)
+        ..SpriteSpec::new("Entities/Accelerator", scale, Layer::Accelerator)
     };
     vec![
         arrow(0.0, ColorTrack::steps(&[(0.0, YELLOW), (0.4, GRAY)])),

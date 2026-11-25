@@ -3,7 +3,7 @@
   <Asset Type="GameLibrary.MapData">
     <Name>Part_Tesla</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Parts\Part_Tesla</Image>
+    <Image>Maps/Parts/Part_Tesla</Image>
     <Scale>48</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>

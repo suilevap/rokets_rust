@@ -30,10 +30,10 @@
 //!   player's devices (`!LocalDevice`) has no energy to spend: its gadget
 //!   is always whole again a step later, and every press boosts in full.
 //! - **Drawn**: while ready, a blue-violet flash glows at the tail
-//!   (`DrawLight`: the `Particles\flash` sprite, twice its size, added over
+//!   (`DrawLight`: the `Particles/flash` sprite, twice its size, added over
 //!   the world, trembling by 0.05 units); while the button is held past
-//!   0.06 s a ring of `UI\GadgetUsageInactive` (white at 0.6) closes onto
-//!   the car as the charge fills and, once it has worked, `UI\GadgetUsage`
+//!   0.06 s a ring of `UI/GadgetUsageInactive` (white at 0.6) closes onto
+//!   the car as the charge fills and, once it has worked, `UI/GadgetUsage`
 //!   points towards the aim (`DrawControl`, scale `1 + rate`).
 //!   On a touch screen the gadget's zone shows only while it is ready
 //!   (`GetTouchView`: `BigCircleAccelerator`; the other state has none).
@@ -48,7 +48,7 @@
 //!   place within a unit of the car: the same boost, ready or not, with no
 //!   charge and no regard for the aim; a held button still works it again.
 //!
-//! Not ported: the gadget's HUD icon (`UI\GadgetIcons\Accelerator`, drawn
+//! Not ported: the gadget's HUD icon (`UI/GadgetIcons/Accelerator`, drawn
 //! beside the health bar; no weapon or gadget icon is drawn yet), the move
 //! arrow C# draws while the gadget is active (`DrawMoveControlWhenGadgetIsActive`;
 //! the movement arrow is not drawn at all), the gamepad's rumble
@@ -108,9 +108,9 @@ const GLOW_SCALE: f32 = 2.0;
 /// `RandomHelper.NextVector2Fake() * 0.05f`: how far the glow trembles.
 const GLOW_TREMBLE: f32 = 0.05;
 
-const FLASH: &str = "Particles\\flash";
-const RING_IDLE: &str = "UI\\GadgetUsageInactive";
-const RING_WORKING: &str = "UI\\GadgetUsage";
+const FLASH: &str = "Particles/flash";
+const RING_IDLE: &str = "UI/GadgetUsageInactive";
+const RING_WORKING: &str = "UI/GadgetUsage";
 
 /// Every texture the accelerator draws with, to load with a map that gives
 /// a car one.

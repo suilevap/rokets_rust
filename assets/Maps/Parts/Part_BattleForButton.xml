@@ -3,7 +3,7 @@
   <Asset Type="GameLibrary.MapData">
     <Name>Part_BattleForButton</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Parts\Part_BattleForButton</Image>
+    <Image>Maps/Parts/Part_BattleForButton</Image>
     <Scale>48</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>
@@ -105,7 +105,7 @@
       <Item>
         <Id>1002</Id>
         <Position>21.5 13</Position>
-        <Sprite>Entities\HeavyBox</Sprite>
+        <Sprite>Entities/HeavyBox</Sprite>
         <Animated>false</Animated>
         <Scale>0.899106145</Scale>
         <DirectionDeg>32.502346</DirectionDeg>
@@ -118,7 +118,7 @@
       <Item>
         <Id>1003</Id>
         <Position>32.5 39.5</Position>
-        <Sprite>Entities\Accelerator</Sprite>
+        <Sprite>Entities/Accelerator</Sprite>
         <Animated>false</Animated>
         <Scale>0.8821785</Scale>
         <DirectionDeg>90</DirectionDeg>
@@ -131,7 +131,7 @@
       <Item>
         <Id>1005</Id>
         <Position>33 4</Position>
-        <Sprite>Entities\DoorBoxNonLinkable</Sprite>
+        <Sprite>Entities/DoorBoxNonLinkable</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -144,7 +144,7 @@
       <Item>
         <Id>1007</Id>
         <Position>21 24</Position>
-        <Sprite>Entities\DoorBoxNoArrow</Sprite>
+        <Sprite>Entities/DoorBoxNoArrow</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>90</DirectionDeg>
@@ -157,7 +157,7 @@
       <Item>
         <Id>1008</Id>
         <Position>26.5 42.5</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -170,7 +170,7 @@
       <Item>
         <Id>1009</Id>
         <Position>33 7</Position>
-        <Sprite>Entities\DoorBoxNonLinkable</Sprite>
+        <Sprite>Entities/DoorBoxNonLinkable</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -183,7 +183,7 @@
       <Item>
         <Id>1012</Id>
         <Position>32.5 34.5</Position>
-        <Sprite>Entities\Accelerator</Sprite>
+        <Sprite>Entities/Accelerator</Sprite>
         <Animated>false</Animated>
         <Scale>0.8821785</Scale>
         <DirectionDeg>90</DirectionDeg>
@@ -196,7 +196,7 @@
       <Item>
         <Id>1013</Id>
         <Position>3.5 3.5</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -209,7 +209,7 @@
       <Item>
         <Id>1014</Id>
         <Position>27 30.5</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>

@@ -27,16 +27,12 @@ pub struct SpriteSet(HashMap<String, SpriteInfo>);
 
 impl SpriteSet {
     pub fn insert(&mut self, name: &str, info: SpriteInfo) {
-        self.0.insert(key(name), info);
+        self.0.insert(name.to_string(), info);
     }
 
     pub fn get(&self, name: &str) -> Option<&SpriteInfo> {
-        self.0.get(&key(name))
+        self.0.get(name)
     }
-}
-
-fn key(name: &str) -> String {
-    name.trim().replace('/', "\\").to_ascii_lowercase()
 }
 
 /// How a sprite is coloured each frame.

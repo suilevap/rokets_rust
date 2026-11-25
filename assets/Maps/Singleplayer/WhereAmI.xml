@@ -3,8 +3,8 @@
   <Asset Type="GameLibrary.MapData">
     <Name>WhereAmI</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Singleplayer\WhereAmI</Image>
-    <PreviewImage>Maps\Preview\WhereAmI</PreviewImage>
+    <Image>Maps/Singleplayer/WhereAmI</Image>
+    <PreviewImage>Maps/Preview/WhereAmI</PreviewImage>
     <Scale>64</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>
@@ -121,7 +121,7 @@
       <Item>
         <Id>1002</Id>
         <Position>6.5 14.5</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -134,7 +134,7 @@
       <Item>
         <Id>1009</Id>
         <Position>10.5 18.5</Position>
-        <Sprite>Entities\FinishTile</Sprite>
+        <Sprite>Entities/FinishTile</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -147,7 +147,7 @@
       <Item>
         <Id>1010</Id>
         <Position>11.5 18.5</Position>
-        <Sprite>Entities\FinishTile</Sprite>
+        <Sprite>Entities/FinishTile</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -160,7 +160,7 @@
       <Item>
         <Id>1011</Id>
         <Position>12.5 18.5</Position>
-        <Sprite>Entities\FinishTile</Sprite>
+        <Sprite>Entities/FinishTile</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -173,7 +173,7 @@
       <Item>
         <Id>1012</Id>
         <Position>13.5 18.5</Position>
-        <Sprite>Entities\FinishTile</Sprite>
+        <Sprite>Entities/FinishTile</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -186,7 +186,7 @@
       <Item>
         <Id>1015</Id>
         <Position>19 16</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -199,7 +199,7 @@
       <Item>
         <Id>1016</Id>
         <Position>12.5 13.5</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -212,7 +212,7 @@
       <Item>
         <Id>1017</Id>
         <Position>18.2096767 5.935484</Position>
-        <Sprite>Entities\CargoQuest</Sprite>
+        <Sprite>Entities/CargoQuest</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>45</DirectionDeg>
@@ -225,7 +225,7 @@
       <Item>
         <Id>1018</Id>
         <Position>19 18.5</Position>
-        <Sprite>Cars\Truck\Destroyed1</Sprite>
+        <Sprite>Cars/Truck/Destroyed1</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>80</DirectionDeg>
@@ -352,7 +352,7 @@
       <Item>
         <Id>2001</Id>
         <Position>17.5 18.5</Position>
-        <Sprite>Hints\ArrowAnimation</Sprite>
+        <Sprite>Hints/ArrowAnimation</Sprite>
         <DirectionDeg>180</DirectionDeg>
         <Animated>true</Animated>
         <Timer>0</Timer>
@@ -363,7 +363,7 @@
       <Item>
         <Id>2002</Id>
         <Position>5.972077 11.813283</Position>
-        <Sprite>Hints\ArrowAnimation</Sprite>
+        <Sprite>Hints/ArrowAnimation</Sprite>
         <DirectionDeg>0</DirectionDeg>
         <Animated>true</Animated>
         <Timer>0</Timer>

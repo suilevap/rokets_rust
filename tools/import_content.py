@@ -3,9 +3,12 @@
 
 Usage: tools/import_content.py [path/to/rokets]   (default: ../rokets)
 
-Paths keep the original layout under assets/, so names in the map XML
-(e.g. "Entities\\CargoQuest", "Maps\\Singleplayer\\Middleware") resolve the
-same way they do in the C# game. Re-run it after changing maps in the editor.
+Paths keep the original layout under assets/. The C# content names assets
+the Windows way (backslashes, any case); this script normalises the names
+once, here: every name in the copied XML that points at a sprite or a sound
+is rewritten to forward slashes and the exact case of the file it names
+(`Entities\\cargoquest` becomes `Entities/CargoQuest`), so the game loads
+names as they are. Re-run it after changing maps in the editor.
 """
 import re
 import shutil
@@ -60,11 +63,100 @@ ITEMS = [
 ]
 
 
+def index_of(root: Path) -> dict:
+    """Lower-case relative path (forward slashes) -> the path with its real case."""
+    return {
+        p.relative_to(root).as_posix().lower(): p.relative_to(root).as_posix()
+        for p in root.rglob("*")
+        if p.is_file()
+    }
+
+
+# Elements whose text names a sprite (under `Sprites/`, without `.png`).
+SPRITE_ELEMENTS = ("Sprite", "Image", "PreviewImage", "BaseSpritePath")
+# Elements whose text names a folder of sprites (a car's parts).
+SPRITE_FOLDER_ELEMENTS = ("SpritesPath",)
+SOUND_ELEMENTS = ("Sound", "EngineSound")
+MUSIC_ELEMENTS = ("MusicAmbient", "MusicDynamic1", "MusicDynamic2")
+
+PLAY_SOUND_TEXT = re.compile(r"(PlaySound\()([^)]*)(\))")
+
+
+def normalise_xml(path: Path, files: dict, folders: dict, missing: set) -> bool:
+    """Rewrites the asset names in one copied XML file; True if it changed."""
+    text = path.read_bytes().decode("utf-8")
+
+    def fix(kind: str, prefix: str, ext: str):
+        def sub(m):
+            raw = m.group(3)
+            name = raw.strip().replace("\\", "/")
+            if not name:
+                return m.group(0)
+            if kind == "folder":
+                exact = folders.get((prefix + name).lower())
+                exact = exact[len(prefix):] if exact else None
+            else:
+                exact = files.get((prefix + name + ext).lower())
+                exact = exact[len(prefix): -len(ext)] if exact else None
+            if exact is None:
+                missing.add((path.name, m.group(2), name))
+                return m.group(1) + name + m.group(4)
+            return m.group(1) + exact + m.group(4)
+
+        return sub
+
+    def element(names, kind, prefix, ext):
+        nonlocal text
+        pattern = re.compile(r"(<(%s)>)([^<]*)(</\2>)" % "|".join(names))
+        text = pattern.sub(fix(kind, prefix, ext), text)
+
+    element(SPRITE_ELEMENTS, "file", "Sprites/", ".png")
+    element(SPRITE_FOLDER_ELEMENTS, "folder", "Sprites/", "")
+    element(SOUND_ELEMENTS, "file", "Sounds/", ".wav")
+    element(MUSIC_ELEMENTS, "file", "Sounds/Music/", ".ogg")
+
+    def play_sound(m):
+        name = m.group(2).strip()
+        exact = files.get(("sounds/" + name + ".wav").lower())
+        if exact is None:
+            missing.add((path.name, "PlaySound()", name))
+            return m.group(0)
+        return m.group(1) + exact[len("Sounds/"): -len(".wav")] + m.group(3)
+
+    text = PLAY_SOUND_TEXT.sub(play_sound, text)
+    data = text.encode("utf-8")
+    if data == path.read_bytes():
+        return False
+    path.write_bytes(data)
+    return True
+
+
+def normalise_names() -> None:
+    files = index_of(DEST)
+    folders = {
+        str(Path(f).parent.as_posix()).lower(): str(Path(f).parent.as_posix())
+        for f in files.values()
+    }
+    missing: set = set()
+    changed = 0
+    for path in sorted(DEST.rglob("*.xml")):
+        changed += normalise_xml(path, files, folders, missing)
+    print(f"normalised asset names in {changed} XML files")
+    for where, element, name in sorted(missing):
+        print(f"  not found: {where} <{element}> {name!r}", file=sys.stderr)
+
+
 def main() -> int:
     if not CONTENT.is_dir():
         print(f"content folder not found: {CONTENT}", file=sys.stderr)
         return 1
     copied = 0
+
+    def copy_sprite(real: str) -> None:
+        target = DEST / "Sprites" / real
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(CONTENT / "Sprites" / real, target)
+
     for src_dir, pattern, dest_dir in ITEMS:
         base = CONTENT / src_dir
         for path in sorted(base.glob(pattern)):
@@ -76,14 +168,14 @@ def main() -> int:
             copied += 1
     # Sprites the maps name (`<Sprite>`) from folders not copied whole,
     # such as `UI\IconLikeCircle` for `AttachAdditionalView`.
+    source_sprites = index_of(CONTENT / "Sprites")
     named = set()
     for m in sorted((CONTENT / "Maps").glob("**/*.xml")):
         named.update(re.findall(r"<Sprite>([^<]+)</Sprite>", m.read_text(encoding="utf-8-sig")))
     for name in sorted(named):
-        rel = Path("Sprites") / (name.strip().replace("\\", "/") + ".png")
-        if (CONTENT / rel).is_file() and not (DEST / rel).exists():
-            (DEST / rel).parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(CONTENT / rel, DEST / rel)
+        real = source_sprites.get((name.strip().replace("\\", "/") + ".png").lower())
+        if real and not (DEST / "Sprites" / real).exists():
+            copy_sprite(real)
             copied += 1
     # The songs the single-player maps play (`MusicAmbient`, `MusicDynamic1`,
     # `MusicDynamic2`, by file name; as `PlayLevelMusic` plays them): the
@@ -95,11 +187,13 @@ def main() -> int:
             s.strip()
             for s in re.findall(r"<Music(?:Ambient|Dynamic1|Dynamic2)>([^<]*)<", m.read_text(encoding="utf-8-sig"))
         )
+    source_music = index_of(CONTENT / "Sounds" / "Music")
     for name in sorted(songs - {""}):
-        rel = Path("Sounds") / "Music" / (name + ".ogg")
-        if (CONTENT / rel).is_file():
-            (DEST / rel).parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(CONTENT / rel, DEST / rel)
+        real = source_music.get((name + ".ogg").lower())
+        if real:
+            target = DEST / "Sounds" / "Music" / real
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(CONTENT / "Sounds" / "Music" / real, target)
             copied += 1
     # The splashes (`ShowSplash`): their layout, and the sprites of the
     # ones the maps show (the menus' and the credits' stay behind).
@@ -117,10 +211,9 @@ def main() -> int:
         if item.findtext("Name") not in shown:
             continue
         for sprite in item.findall("./Layers/Item/Sprite"):
-            rel = Path("Sprites") / ((sprite.text or "").strip().replace("\\", "/") + ".png")
-            if (sprite.text or "").strip() and (CONTENT / rel).is_file() and not (DEST / rel).exists():
-                (DEST / rel).parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(CONTENT / rel, DEST / rel)
+            real = source_sprites.get(((sprite.text or "").strip().replace("\\", "/") + ".png").lower())
+            if real and not (DEST / "Sprites" / real).exists():
+                copy_sprite(real)
                 copied += 1
     # The texts maps name by key (`ShowText`): the game's resources.
     strings = SRC / "PavXnaGame1" / "PavXnaGame1" / "Globalization"
@@ -129,14 +222,9 @@ def main() -> int:
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(path, target)
         copied += 1
-    # The C# content paths ignore case; Linux and the web do not. The game
-    # resolves names through this list (see src/assets.rs).
-    files = sorted(
-        str(p.relative_to(DEST)).replace("\\", "/")
-        for p in DEST.rglob("*")
-        if p.is_file() and p.name != "manifest.txt"
-    )
-    (DEST / "manifest.txt").write_text("\n".join(files) + "\n")
+    normalise_names()
+    # The names are exact now; a manifest of the files is not needed.
+    (DEST / "manifest.txt").unlink(missing_ok=True)
     print(f"copied {copied} files from {CONTENT} to {DEST}")
     return 0
 

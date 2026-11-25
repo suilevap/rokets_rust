@@ -3,7 +3,7 @@
   <Asset Type="GameLibrary.MapData">
     <Name>HappyNewYear</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Singleplayer\HappyNewYear</Image>
+    <Image>Maps/Singleplayer/HappyNewYear</Image>
     <Scale>48</Scale>
     <ImageWallTreshold>98</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>
@@ -257,7 +257,7 @@
       <Item>
         <Id>1001</Id>
         <Position>22.5 8.5</Position>
-        <Sprite>Entities\GearChristmas</Sprite>
+        <Sprite>Entities/GearChristmas</Sprite>
         <Animated>false</Animated>
         <Scale>0.75</Scale>
         <DirectionDeg>29.7448311</DirectionDeg>
@@ -271,7 +271,7 @@
       <Item>
         <Id>1002</Id>
         <Position>27 12.5</Position>
-        <Sprite>Entities\GearChristmas</Sprite>
+        <Sprite>Entities/GearChristmas</Sprite>
         <Animated>false</Animated>
         <Scale>0.75</Scale>
         <DirectionDeg>29.7448311</DirectionDeg>
@@ -285,7 +285,7 @@
       <Item>
         <Id>1003</Id>
         <Position>20.5 17</Position>
-        <Sprite>Entities\GearChristmas</Sprite>
+        <Sprite>Entities/GearChristmas</Sprite>
         <Animated>false</Animated>
         <Scale>0.75</Scale>
         <DirectionDeg>29.7448311</DirectionDeg>
@@ -299,7 +299,7 @@
       <Item>
         <Id>1004</Id>
         <Position>28.3333321 16.666666</Position>
-        <Sprite>Entities\GearChristmas</Sprite>
+        <Sprite>Entities/GearChristmas</Sprite>
         <Animated>false</Animated>
         <Scale>0.75</Scale>
         <DirectionDeg>59.5344849</DirectionDeg>
@@ -313,7 +313,7 @@
       <Item>
         <Id>1005</Id>
         <Position>28.5 22.5</Position>
-        <Sprite>Entities\GearChristmas</Sprite>
+        <Sprite>Entities/GearChristmas</Sprite>
         <Animated>false</Animated>
         <Scale>0.75</Scale>
         <DirectionDeg>59.5344849</DirectionDeg>
@@ -327,7 +327,7 @@
       <Item>
         <Id>1006</Id>
         <Position>18.5 22</Position>
-        <Sprite>Entities\GearChristmas</Sprite>
+        <Sprite>Entities/GearChristmas</Sprite>
         <Animated>false</Animated>
         <Scale>0.75</Scale>
         <DirectionDeg>45</DirectionDeg>
@@ -341,7 +341,7 @@
       <Item>
         <Id>1007</Id>
         <Position>16.025 26.75</Position>
-        <Sprite>Entities\GearChristmas</Sprite>
+        <Sprite>Entities/GearChristmas</Sprite>
         <Animated>false</Animated>
         <Scale>0.75</Scale>
         <DirectionDeg>45</DirectionDeg>
@@ -355,7 +355,7 @@
       <Item>
         <Id>1008</Id>
         <Position>19.666666 27.7333336</Position>
-        <Sprite>Entities\GearChristmas</Sprite>
+        <Sprite>Entities/GearChristmas</Sprite>
         <Animated>false</Animated>
         <Scale>0.5999994</Scale>
         <DirectionDeg>22.7509956</DirectionDeg>
@@ -369,7 +369,7 @@
       <Item>
         <Id>1009</Id>
         <Position>22.083334 27.1666679</Position>
-        <Sprite>Entities\HeavyBox</Sprite>
+        <Sprite>Entities/HeavyBox</Sprite>
         <Animated>false</Animated>
         <Scale>1.187499</Scale>
         <DirectionDeg>360</DirectionDeg>
@@ -383,7 +383,7 @@
       <Item>
         <Id>1010</Id>
         <Position>20.6249981 27.2916679</Position>
-        <Sprite>Entities\CargoQuest</Sprite>
+        <Sprite>Entities/CargoQuest</Sprite>
         <Animated>false</Animated>
         <Scale>0.84375</Scale>
         <DirectionDeg>117.407524</DirectionDeg>
@@ -397,7 +397,7 @@
       <Item>
         <Id>1011</Id>
         <Position>26.833334 27.125</Position>
-        <Sprite>Entities\CargoQuest</Sprite>
+        <Sprite>Entities/CargoQuest</Sprite>
         <Animated>false</Animated>
         <Scale>0.999999046</Scale>
         <DirectionDeg>107.927948</DirectionDeg>
@@ -411,7 +411,7 @@
       <Item>
         <Id>1012</Id>
         <Position>19.0416641 27.25</Position>
-        <Sprite>Entities\SmallWall</Sprite>
+        <Sprite>Entities/SmallWall</Sprite>
         <Animated>false</Animated>
         <Scale>0.999999046</Scale>
         <DirectionDeg>40.0302773</DirectionDeg>
@@ -425,7 +425,7 @@
       <Item>
         <Id>1013</Id>
         <Position>37.9666672 10.2666664</Position>
-        <Sprite>Entities\DamagableBox</Sprite>
+        <Sprite>Entities/DamagableBox</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>303.111359</DirectionDeg>
@@ -440,7 +440,7 @@
       <Item>
         <Id>1014</Id>
         <Position>36.7 12.9333324</Position>
-        <Sprite>Entities\DamagableBox</Sprite>
+        <Sprite>Entities/DamagableBox</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>224.999969</DirectionDeg>
@@ -455,7 +455,7 @@
       <Item>
         <Id>1015</Id>
         <Position>39.1 12.4666662</Position>
-        <Sprite>Entities\DamagableBox</Sprite>
+        <Sprite>Entities/DamagableBox</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>263.157349</DirectionDeg>
@@ -470,7 +470,7 @@
       <Item>
         <Id>1016</Id>
         <Position>36.23333 11.0666666</Position>
-        <Sprite>Entities\DamagableBox</Sprite>
+        <Sprite>Entities/DamagableBox</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>252.8973</DirectionDeg>
@@ -485,7 +485,7 @@
       <Item>
         <Id>1017</Id>
         <Position>40.7666664 10.5333328</Position>
-        <Sprite>Entities\DamagableBox</Sprite>
+        <Sprite>Entities/DamagableBox</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>115.11483</DirectionDeg>
@@ -506,7 +506,7 @@
         </Groups>
         <RunOnMapStart>true</RunOnMapStart>
         <Position>21.5 12.5</Position>
-        <Sprite>Entities\GearChristmas</Sprite>
+        <Sprite>Entities/GearChristmas</Sprite>
         <Scale>0.687500954</Scale>
         <DirectionDeg>55.6196976</DirectionDeg>
         <Animated>false</Animated>
@@ -522,7 +522,7 @@
         </Groups>
         <RunOnMapStart>true</RunOnMapStart>
         <Position>26 15.5</Position>
-        <Sprite>Entities\Gear</Sprite>
+        <Sprite>Entities/Gear</Sprite>
         <Scale>0.687500954</Scale>
         <DirectionDeg>55.6196976</DirectionDeg>
         <Animated>false</Animated>
@@ -538,7 +538,7 @@
         </Groups>
         <RunOnMapStart>true</RunOnMapStart>
         <Position>23 14.5</Position>
-        <Sprite>Entities\GearChristmas</Sprite>
+        <Sprite>Entities/GearChristmas</Sprite>
         <Scale>0.687500954</Scale>
         <DirectionDeg>55.6196976</DirectionDeg>
         <Animated>false</Animated>
@@ -554,7 +554,7 @@
         </Groups>
         <RunOnMapStart>true</RunOnMapStart>
         <Position>25.5 18.5</Position>
-        <Sprite>Entities\GearChristmas</Sprite>
+        <Sprite>Entities/GearChristmas</Sprite>
         <Scale>0.687500954</Scale>
         <DirectionDeg>55.6196976</DirectionDeg>
         <Animated>false</Animated>
@@ -570,7 +570,7 @@
         </Groups>
         <RunOnMapStart>true</RunOnMapStart>
         <Position>22 20</Position>
-        <Sprite>Entities\GearChristmas</Sprite>
+        <Sprite>Entities/GearChristmas</Sprite>
         <Scale>0.687500954</Scale>
         <DirectionDeg>60.751133</DirectionDeg>
         <Animated>false</Animated>
@@ -586,7 +586,7 @@
         </Groups>
         <RunOnMapStart>true</RunOnMapStart>
         <Position>22.5 23.5</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Scale>0.687500954</Scale>
         <DirectionDeg>55.6196976</DirectionDeg>
         <Animated>false</Animated>
@@ -602,7 +602,7 @@
         </Groups>
         <RunOnMapStart>true</RunOnMapStart>
         <Position>27.5 20.5</Position>
-        <Sprite>Entities\GearChristmas</Sprite>
+        <Sprite>Entities/GearChristmas</Sprite>
         <Scale>0.875000954</Scale>
         <DirectionDeg>77.7638855</DirectionDeg>
         <Animated>false</Animated>
@@ -618,7 +618,7 @@
         </Groups>
         <RunOnMapStart>true</RunOnMapStart>
         <Position>25.791666 8.666667</Position>
-        <Sprite>UI\AddealsButton</Sprite>
+        <Sprite>UI/AddealsButton</Sprite>
         <Scale>0.687500954</Scale>
         <DirectionDeg>-0</DirectionDeg>
         <Animated>false</Animated>
@@ -634,7 +634,7 @@
         </Groups>
         <RunOnMapStart>true</RunOnMapStart>
         <Position>19.916666 20.708334</Position>
-        <Sprite>UI\AddealsButton</Sprite>
+        <Sprite>UI/AddealsButton</Sprite>
         <Scale>0.687500954</Scale>
         <DirectionDeg>338.766144</DirectionDeg>
         <Animated>false</Animated>
@@ -650,7 +650,7 @@
         </Groups>
         <RunOnMapStart>true</RunOnMapStart>
         <Position>30.5 26</Position>
-        <Sprite>UI\AddealsButton</Sprite>
+        <Sprite>UI/AddealsButton</Sprite>
         <Scale>0.687500954</Scale>
         <DirectionDeg>8.176177</DirectionDeg>
         <Animated>false</Animated>
@@ -666,7 +666,7 @@
         </Groups>
         <RunOnMapStart>true</RunOnMapStart>
         <Position>19 26.1333332</Position>
-        <Sprite>UI\Sock</Sprite>
+        <Sprite>UI/Sock</Sprite>
         <Scale>0.687500954</Scale>
         <DirectionDeg>351.339417</DirectionDeg>
         <Animated>false</Animated>
@@ -682,7 +682,7 @@
         </Groups>
         <RunOnMapStart>true</RunOnMapStart>
         <Position>30.5 21.5</Position>
-        <Sprite>UI\Sock</Sprite>
+        <Sprite>UI/Sock</Sprite>
         <Scale>0.687500954</Scale>
         <DirectionDeg>351.339417</DirectionDeg>
         <Animated>false</Animated>
@@ -698,7 +698,7 @@
         </Groups>
         <RunOnMapStart>true</RunOnMapStart>
         <Position>24.5 5</Position>
-        <Sprite>UI\SimpleArrow</Sprite>
+        <Sprite>UI/SimpleArrow</Sprite>
         <Scale>2</Scale>
         <DirectionDeg>90</DirectionDeg>
         <Animated>false</Animated>
@@ -714,7 +714,7 @@
         </Groups>
         <RunOnMapStart>true</RunOnMapStart>
         <Position>24.333334 24.0666656</Position>
-        <Sprite>UI\Logo</Sprite>
+        <Sprite>UI/Logo</Sprite>
         <Scale>2</Scale>
         <DirectionDeg>360</DirectionDeg>
         <Animated>false</Animated>
@@ -730,7 +730,7 @@
         </Groups>
         <RunOnMapStart>true</RunOnMapStart>
         <Position>22.0833321 27.1666679</Position>
-        <Sprite>UI\IconLikeCircle</Sprite>
+        <Sprite>UI/IconLikeCircle</Sprite>
         <Scale>0.687500954</Scale>
         <DirectionDeg>351.339417</DirectionDeg>
         <Animated>false</Animated>
@@ -746,7 +746,7 @@
         </Groups>
         <RunOnMapStart>true</RunOnMapStart>
         <Position>20.625 27.208334</Position>
-        <Sprite>UI\IconLikeCircle</Sprite>
+        <Sprite>UI/IconLikeCircle</Sprite>
         <Scale>0.687500954</Scale>
         <DirectionDeg>32.676693</DirectionDeg>
         <Animated>false</Animated>
@@ -762,7 +762,7 @@
         </Groups>
         <RunOnMapStart>true</RunOnMapStart>
         <Position>23.166666 22.1999989</Position>
-        <Sprite>UI\SimpleArrow</Sprite>
+        <Sprite>UI/SimpleArrow</Sprite>
         <Scale>1</Scale>
         <DirectionDeg>127.266396</DirectionDeg>
         <Animated>false</Animated>

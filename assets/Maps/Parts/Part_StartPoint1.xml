@@ -3,7 +3,7 @@
   <Asset Type="GameLibrary.MapData">
     <Name>Part_StartPoint1</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Parts\Part_StartPoint1</Image>
+    <Image>Maps/Parts/Part_StartPoint1</Image>
     <Scale>48</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>

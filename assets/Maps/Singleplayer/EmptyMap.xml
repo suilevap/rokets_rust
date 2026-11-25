@@ -3,7 +3,7 @@
   <Asset Type="GameLibrary.MapData">
     <Name>VeryVeryBigMap</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Singleplayer\EmptyMap</Image>
+    <Image>Maps/Singleplayer/EmptyMap</Image>
     <Scale>48</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>
@@ -28,7 +28,7 @@
       <Item>
         <Id>1002</Id>
         <Position>33.5 23.5</Position>
-        <Sprite>Entities\CargoQuest</Sprite>
+        <Sprite>Entities/CargoQuest</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>170.852921</DirectionDeg>

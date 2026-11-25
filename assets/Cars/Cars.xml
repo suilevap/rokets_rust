@@ -4,7 +4,7 @@
     <Cars>
       <Item>
         <Name>Buggy</Name>
-        <SpritesPath>Cars\Buggy</SpritesPath>
+        <SpritesPath>Cars/Buggy</SpritesPath>
         <Speed>1.0</Speed>
         <!--Max 2.0...-->
         <Acceleration>1</Acceleration>
@@ -87,7 +87,7 @@
       </Item>
       <Item>
         <Name>SandBuggyNoGadget</Name>
-        <SpritesPath>Cars\SandBuggy</SpritesPath>
+        <SpritesPath>Cars/SandBuggy</SpritesPath>
         <Speed>0.6</Speed>
         <Acceleration>1</Acceleration>
         <Mass>2.97</Mass>
@@ -104,8 +104,8 @@
       </Item>
       <Item>
         <Name>SandBuggyDestroyedNoGadget</Name>
-        <SpritesPath>Cars\SandBuggy</SpritesPath>
-        <BaseSpritePath>Cars\SandBuggy\Destroyed2</BaseSpritePath>
+        <SpritesPath>Cars/SandBuggy</SpritesPath>
+        <BaseSpritePath>Cars/SandBuggy/Destroyed2</BaseSpritePath>
         <Speed>0.6</Speed>
         <Mass>2.97</Mass>
         <MaxHealth>20</MaxHealth>
@@ -117,8 +117,8 @@
       </Item>
       <Item>
         <Name>SandBuggyDestroyedNoGadgetCanMove</Name>
-        <SpritesPath>Cars\SandBuggy</SpritesPath>
-        <BaseSpritePath>Cars\SandBuggy\Destroyed2</BaseSpritePath>
+        <SpritesPath>Cars/SandBuggy</SpritesPath>
+        <BaseSpritePath>Cars/SandBuggy/Destroyed2</BaseSpritePath>
         <Speed>0.6</Speed>
         <Mass>2.97</Mass>
         <MaxHealth>20</MaxHealth>
@@ -137,7 +137,7 @@
       </Item>
       <Item>
         <Name>SandBuggyNoGadgetWinter</Name>
-        <SpritesPath>Cars\SandBuggy</SpritesPath>
+        <SpritesPath>Cars/SandBuggy</SpritesPath>
         <Speed>0.6</Speed>
         <Acceleration>0.7</Acceleration>
         <Mass>3.5</Mass>
@@ -152,7 +152,7 @@
       </Item>
       <Item>
         <Name>HoverScoutNoGadget</Name>
-        <SpritesPath>Cars\HoverScout</SpritesPath>
+        <SpritesPath>Cars/HoverScout</SpritesPath>
         <Speed>0.9</Speed>
         <Acceleration>0.9</Acceleration>
         <Mass>2.66</Mass>
@@ -169,7 +169,7 @@
       </Item>
       <Item>
         <Name>HoverScoutNoGadgetSlow</Name>
-        <SpritesPath>Cars\HoverScout</SpritesPath>
+        <SpritesPath>Cars/HoverScout</SpritesPath>
         <Speed>0.6</Speed>
         <Acceleration>0.9</Acceleration>
         <Mass>2.66</Mass>
@@ -186,7 +186,7 @@
       </Item>
       <Item>
         <Name>HoverScoutNoGadgetMidSpeed</Name>
-        <SpritesPath>Cars\HoverScout</SpritesPath>
+        <SpritesPath>Cars/HoverScout</SpritesPath>
         <Speed>0.75</Speed>
         <Acceleration>0.9</Acceleration>
         <Mass>2.66</Mass>
@@ -217,7 +217,7 @@
       </Item>
       <Item>
         <Name>Truck</Name>
-        <SpritesPath>Cars\Truck</SpritesPath>
+        <SpritesPath>Cars/Truck</SpritesPath>
         <Speed>0.7</Speed>
         <Acceleration>1.65</Acceleration>
         <Mass>6.2</Mass>
@@ -235,7 +235,7 @@
       </Item>
       <Item>
         <Name>TruckNoGadget</Name>
-        <SpritesPath>Cars\Truck</SpritesPath>
+        <SpritesPath>Cars/Truck</SpritesPath>
         <Speed>0.7</Speed>
         <Acceleration>1.65</Acceleration>
         <Mass>6.2</Mass>
@@ -266,7 +266,7 @@
       </Item>
       <Item>
         <Name>TruckSlow</Name>
-        <SpritesPath>Cars\Truck</SpritesPath>
+        <SpritesPath>Cars/Truck</SpritesPath>
         <Speed>0.18</Speed>
         <!--Max checked-->
         <Acceleration>0.4</Acceleration>
@@ -286,7 +286,7 @@
       </Item>
       <Item>
         <Name>TruckSlowTank</Name>
-        <SpritesPath>Cars\Truck</SpritesPath>
+        <SpritesPath>Cars/Truck</SpritesPath>
         <Speed>0.08</Speed>
         <!--Max checked-->
         <Acceleration>0.4</Acceleration>
@@ -305,7 +305,7 @@
       </Item>
       <Item>
         <Name>Scout</Name>
-        <SpritesPath>Cars\Scout</SpritesPath>
+        <SpritesPath>Cars/Scout</SpritesPath>
         <Speed>0.86</Speed>
         <!--max checked-->
         <Acceleration>1</Acceleration>
@@ -338,7 +338,7 @@
       </Item>
       <Item>
         <Name>TurretLoaderStat</Name>
-        <SpritesPath>Cars\TurretStat</SpritesPath>
+        <SpritesPath>Cars/TurretStat</SpritesPath>
         <Speed>1</Speed>
         <!--Max 2.0...-->
         <Acceleration>1</Acceleration>
@@ -355,7 +355,7 @@
       </Item>
       <Item>
         <Name>TurretLoader</Name>
-        <SpritesPath>Cars\Turret</SpritesPath>
+        <SpritesPath>Cars/Turret</SpritesPath>
         <!--Max checked -->
         <Speed>0.37</Speed>
         <Acceleration>1</Acceleration>
@@ -376,7 +376,7 @@
     <SimpleCars>
       <Item>
         <Name>SimpleBuggy</Name>
-        <SpritesPath>Cars\SimpleBuggy</SpritesPath>
+        <SpritesPath>Cars/SimpleBuggy</SpritesPath>
         <Speed>0.92</Speed>
         <!--Max checked -->
         <Acceleration>1.0</Acceleration>
@@ -387,7 +387,7 @@
       </Item>
       <Item>
         <Name>SimpleBuggyMiddle</Name>
-        <SpritesPath>Cars\SimpleBuggy</SpritesPath>
+        <SpritesPath>Cars/SimpleBuggy</SpritesPath>
         <Speed>0.7</Speed>
         <Acceleration>0.9</Acceleration>
         <Mass>2</Mass>
@@ -397,7 +397,7 @@
       </Item>
       <Item>
         <Name>SimpleBuggySlow</Name>
-        <SpritesPath>Cars\SimpleBuggy</SpritesPath>
+        <SpritesPath>Cars/SimpleBuggy</SpritesPath>
         <Speed>0.1</Speed>
         <!--Max checked -->
         <Acceleration>0.2</Acceleration>
@@ -439,7 +439,7 @@
       </Item>
       <Item>
         <Name>Turret</Name>
-        <SpritesPath>Cars\Turret</SpritesPath>
+        <SpritesPath>Cars/Turret</SpritesPath>
         <Speed>1</Speed>
         <Acceleration>1</Acceleration>
         <Mass>3.875</Mass>
@@ -484,7 +484,7 @@
       </Item>
       <Item>
         <Name>TurretStat</Name>
-        <SpritesPath>Cars\TurretStat</SpritesPath>
+        <SpritesPath>Cars/TurretStat</SpritesPath>
         <Speed>1</Speed>
         <Acceleration>1</Acceleration>
         <Mass>3.875</Mass>
@@ -536,7 +536,7 @@
       </Item>
       <Item>
         <Name>SimpleTarget</Name>
-        <SpritesPath>Cars\SimpleTarget</SpritesPath>
+        <SpritesPath>Cars/SimpleTarget</SpritesPath>
         <Speed>1</Speed>
         <Acceleration>1</Acceleration>
         <Mass>-1</Mass>
@@ -547,7 +547,7 @@
       </Item>
       <Item>
         <Name>SimpleTarget10HP</Name>
-        <SpritesPath>Cars\SimpleTarget</SpritesPath>
+        <SpritesPath>Cars/SimpleTarget</SpritesPath>
         <Speed>1</Speed>
         <Acceleration>1</Acceleration>
         <Mass>-1</Mass>
@@ -558,7 +558,7 @@
       </Item>
       <Item>
         <Name>SimpleTarget8HP</Name>
-        <SpritesPath>Cars\SimpleTarget</SpritesPath>
+        <SpritesPath>Cars/SimpleTarget</SpritesPath>
         <Speed>1</Speed>
         <Acceleration>1</Acceleration>
         <Mass>-1</Mass>
@@ -569,7 +569,7 @@
       </Item>
       <Item>
         <Name>SimpleTarget50HP</Name>
-        <SpritesPath>Cars\SimpleTarget</SpritesPath>
+        <SpritesPath>Cars/SimpleTarget</SpritesPath>
         <Speed>1</Speed>
         <Acceleration>1</Acceleration>
         <Mass>-1</Mass>
@@ -580,7 +580,7 @@
       </Item>
       <Item>
         <Name>SimpleTargetSmall</Name>
-        <SpritesPath>Cars\SimpleTarget</SpritesPath>
+        <SpritesPath>Cars/SimpleTarget</SpritesPath>
         <Speed>1</Speed>
         <Acceleration>0.5</Acceleration>
         <Mass>-1</Mass>
@@ -590,7 +590,7 @@
       </Item>
       <Item>
         <Name>SimpleTargetStat</Name>
-        <SpritesPath>Cars\SimpleTarget</SpritesPath>
+        <SpritesPath>Cars/SimpleTarget</SpritesPath>
         <Speed>1</Speed>
         <Acceleration>1</Acceleration>
         <Mass>-1</Mass>
@@ -602,7 +602,7 @@
       </Item>
       <Item>
         <Name>SimpleTargetStatHealthy</Name>
-        <SpritesPath>Cars\SimpleTarget</SpritesPath>
+        <SpritesPath>Cars/SimpleTarget</SpritesPath>
         <Speed>1</Speed>
         <Acceleration>1</Acceleration>
         <Mass>-1</Mass>
@@ -614,7 +614,7 @@
       </Item>
       <Item>
         <Name>SimpleTargetStat6HP</Name>
-        <SpritesPath>Cars\SimpleTarget</SpritesPath>
+        <SpritesPath>Cars/SimpleTarget</SpritesPath>
         <Speed>1</Speed>
         <Acceleration>1</Acceleration>
         <Mass>-1</Mass>
@@ -626,7 +626,7 @@
       </Item>
       <Item>
         <Name>SimpleTargetDoorsDream</Name>
-        <SpritesPath>Cars\SimpleTarget</SpritesPath>
+        <SpritesPath>Cars/SimpleTarget</SpritesPath>
         <Speed>1</Speed>
         <Acceleration>1</Acceleration>
         <Mass>0.1</Mass>
@@ -637,7 +637,7 @@
       </Item>
       <Item>
         <Name>SimpleBoid</Name>
-        <SpritesPath>Cars\SimpleBuggy</SpritesPath>
+        <SpritesPath>Cars/SimpleBuggy</SpritesPath>
         <Speed>1.5</Speed>
         <Acceleration>0.1</Acceleration>
         <Mass>0.1</Mass>
@@ -649,7 +649,7 @@
 
       <Item>
         <Name>Zombie</Name>
-        <SpritesPath>Cars\Zombie</SpritesPath>
+        <SpritesPath>Cars/Zombie</SpritesPath>
         <Speed>0.62</Speed>
         <!-- max checked-->
         <Acceleration>1.0</Acceleration>
@@ -662,7 +662,7 @@
       </Item>
       <Item>
         <Name>ZombieFast</Name>
-        <SpritesPath>Cars\Zombie</SpritesPath>
+        <SpritesPath>Cars/Zombie</SpritesPath>
         <Speed>2.0</Speed>
         <!-- max checked-->
         <Acceleration>2.0</Acceleration>
@@ -675,7 +675,7 @@
       </Item>
       <Item>
         <Name>Guard</Name>
-        <SpritesPath>Cars\Zombie</SpritesPath>
+        <SpritesPath>Cars/Zombie</SpritesPath>
         <Speed>0.8</Speed>
         <Acceleration>0.5</Acceleration>
         <Mass>0.5</Mass>
@@ -687,7 +687,7 @@
 
       <Item>
         <Name>TurretPlayer</Name>
-        <SpritesPath>Cars\Turret</SpritesPath>
+        <SpritesPath>Cars/Turret</SpritesPath>
         <!--Max checked -->
         <Speed>0.37</Speed>
         <Acceleration>1</Acceleration>
@@ -703,7 +703,7 @@
       </Item>
       <Item>
         <Name>TurretPlayer20HP</Name>
-        <SpritesPath>Cars\Turret</SpritesPath>
+        <SpritesPath>Cars/Turret</SpritesPath>
         <!--Max checked -->
         <Speed>0.37</Speed>
         <Acceleration>1</Acceleration>
@@ -718,7 +718,7 @@
       </Item>
       <Item>
         <Name>DoorPlayer</Name>
-        <SpritesPath>Cars\Turret</SpritesPath>
+        <SpritesPath>Cars/Turret</SpritesPath>
         <BaseSpritePath>Entities/DoorBoxNoArrow</BaseSpritePath>
         <!--Max checked -->
         <Speed>0.6</Speed>
@@ -733,7 +733,7 @@
       </Item>
       <Item>
         <Name>EnemyGenerator</Name>
-        <SpritesPath>Cars\EnemyGenerator</SpritesPath>
+        <SpritesPath>Cars/EnemyGenerator</SpritesPath>
         <!--Max checked -->
         <Speed>0.0</Speed>
         <Acceleration>10</Acceleration>
@@ -749,7 +749,7 @@
       </Item>
       <Item>
         <Name>Kamikaze</Name>
-        <SpritesPath>Cars\Kamikaze</SpritesPath>
+        <SpritesPath>Cars/Kamikaze</SpritesPath>
         <Speed>0.7</Speed>
         <!--Max checked -->
         <Acceleration>0.5</Acceleration>

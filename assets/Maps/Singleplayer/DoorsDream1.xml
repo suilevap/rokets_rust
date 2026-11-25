@@ -3,7 +3,7 @@
   <Asset Type="GameLibrary.MapData">
     <Name>DoorsDream</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Singleplayer\DoorsDream</Image>
+    <Image>Maps/Singleplayer/DoorsDream</Image>
     <Scale>256</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>
@@ -56,7 +56,7 @@
       <Item>
         <Id>1004</Id>
         <Position>1.2 0.8</Position>
-        <Sprite>Entities\CargoQuest</Sprite>
+        <Sprite>Entities/CargoQuest</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -70,7 +70,7 @@
       <Item>
         <Id>1005</Id>
         <Position>6.8 4.2</Position>
-        <Sprite>Entities\CargoQuest</Sprite>
+        <Sprite>Entities/CargoQuest</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -84,7 +84,7 @@
       <Item>
         <Id>1006</Id>
         <Position>4 2.5</Position>
-        <Sprite>UI\Splash\Controls\ZonesDelimiter</Sprite>
+        <Sprite>UI/Splash/Controls/ZonesDelimiter</Sprite>
         <Animated>false</Animated>
         <Scale>1.7</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -412,7 +412,7 @@
         <RunOnMapStart>false</RunOnMapStart>
         <NextAction>HighlightControllerOff()</NextAction>
         <Position>6.3 2.3</Position>
-        <Sprite>UI\MapBack\Star</Sprite>
+        <Sprite>UI/MapBack/Star</Sprite>
         <Scale>0.35</Scale>
         <DirectionDeg>0</DirectionDeg>
         <Animated>false</Animated>
@@ -428,7 +428,7 @@
         </Groups>
         <RunOnMapStart>false</RunOnMapStart>
         <Position>6.3 2.55</Position>
-        <Sprite>UI\MapBack\Star</Sprite>
+        <Sprite>UI/MapBack/Star</Sprite>
         <Scale>0.35</Scale>
         <DirectionDeg>0</DirectionDeg>
         <Animated>false</Animated>
@@ -445,7 +445,7 @@
         <RunOnMapStart>false</RunOnMapStart>
         <NextAction>CompareScores</NextAction>
         <Position>6.3 2.8</Position>
-        <Sprite>UI\MapBack\Star</Sprite>
+        <Sprite>UI/MapBack/Star</Sprite>
         <Scale>0.35</Scale>
         <DirectionDeg>0</DirectionDeg>
         <Animated>false</Animated>
@@ -495,7 +495,7 @@
         </Groups>
         <RunOnMapStart>false</RunOnMapStart>
         <Position>1.7 2.17</Position>
-        <Sprite>UI\MapBack\Star</Sprite>
+        <Sprite>UI/MapBack/Star</Sprite>
         <Scale>0.35</Scale>
         <DirectionDeg>0</DirectionDeg>
         <Animated>false</Animated>
@@ -511,7 +511,7 @@
         </Groups>
         <RunOnMapStart>false</RunOnMapStart>
         <Position>1.7 2.42</Position>
-        <Sprite>UI\MapBack\Star</Sprite>
+        <Sprite>UI/MapBack/Star</Sprite>
         <Scale>0.35</Scale>
         <DirectionDeg>0</DirectionDeg>
         <Animated>false</Animated>
@@ -528,7 +528,7 @@
         <RunOnMapStart>false</RunOnMapStart>
         <NextAction>CompareScores</NextAction>
         <Position>1.7 2.67</Position>
-        <Sprite>UI\MapBack\Star</Sprite>
+        <Sprite>UI/MapBack/Star</Sprite>
         <Scale>0.35</Scale>
         <DirectionDeg>0</DirectionDeg>
         <Animated>false</Animated>

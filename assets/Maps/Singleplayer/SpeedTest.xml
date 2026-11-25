@@ -3,7 +3,7 @@
   <Asset Type="GameLibrary.MapData">
     <Name>Speed Test</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Singleplayer\SpeedTest</Image>
+    <Image>Maps/Singleplayer/SpeedTest</Image>
     <Scale>196</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>

@@ -103,12 +103,7 @@ impl Plugin for PlayerHudPlugin {
 
 fn load(mut sprites: ResMut<HudSprites>, server: Res<AssetServer>) {
     for name in model::SPRITES {
-        match sprite_path(name) {
-            Some(path) => {
-                sprites.0.insert(name, server.load(path));
-            }
-            None => warn!("player hud: no sprite {name}"),
-        }
+        sprites.0.insert(name, server.load(sprite_path(name)));
     }
 }
 

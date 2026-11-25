@@ -3,7 +3,7 @@
   <Asset Type="GameLibrary.MapData">
     <Name>Part_EnemyGenerator1</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Parts\Part_EnemyGenerator1</Image>
+    <Image>Maps/Parts/Part_EnemyGenerator1</Image>
     <Scale>48</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>
@@ -60,7 +60,7 @@
       <Item>
         <Id>1001</Id>
         <Position>3 10</Position>
-        <Sprite>Entities\DamagableBox</Sprite>
+        <Sprite>Entities/DamagableBox</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>333.434937</DirectionDeg>

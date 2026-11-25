@@ -28,7 +28,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Farseer\FarseerPhysics</Sprite>
+            <Sprite>UI/Splash/Farseer/FarseerPhysics</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>52 37</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -41,7 +41,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Farseer\FarseerPhysicsCube</Sprite>
+            <Sprite>UI/Splash/Farseer/FarseerPhysicsCube</Sprite>
             <BindTextId>1</BindTextId>
             <Offset>0 0</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -68,7 +68,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>UI\Splash\Logo\0_1</Sprite>
+            <Sprite>UI/Splash/Logo/0_1</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>270 13</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -81,7 +81,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Logo\1_1</Sprite>
+            <Sprite>UI/Splash/Logo/1_1</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>268 152</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -94,7 +94,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Logo\2_1</Sprite>
+            <Sprite>UI/Splash/Logo/2_1</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>331 116</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -107,7 +107,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Logo\3_1</Sprite>
+            <Sprite>UI/Splash/Logo/3_1</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>268 186</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -160,7 +160,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>UI\Splash\CarEyes\CarEyes</Sprite>
+            <Sprite>UI/Splash/CarEyes/CarEyes</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>0 0</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -200,7 +200,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>UI\Splash\MenuBackground\Teleport</Sprite>
+            <Sprite>UI/Splash/MenuBackground/Teleport</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>-112 -64</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -213,7 +213,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Splash1\Trail1</Sprite>
+            <Sprite>UI/Splash/Splash1/Trail1</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>240 160</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -226,7 +226,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Splash1\Trail2</Sprite>
+            <Sprite>UI/Splash/Splash1/Trail2</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>512 368</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -253,7 +253,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>UI\Splash\Controls\ZonesDelimiter</Sprite>
+            <Sprite>UI/Splash/Controls/ZonesDelimiter</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>387 0</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -266,7 +266,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Controls\ZonesDelimiter</Sprite>
+            <Sprite>UI/Splash/Controls/ZonesDelimiter</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>400 240</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -318,7 +318,7 @@
             <DirectionRad>0.05</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\BigCircle</Sprite>
+            <Sprite>UI/BigCircle</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>73 246</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -331,7 +331,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\BigCircle</Sprite>
+            <Sprite>UI/BigCircle</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>416 112</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -344,7 +344,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\BigCircle</Sprite>
+            <Sprite>UI/BigCircle</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>576 320</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -357,7 +357,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Controls\Car</Sprite>
+            <Sprite>UI/Splash/Controls/Car</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>172 192</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -370,7 +370,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Controls\Gadget</Sprite>
+            <Sprite>UI/Splash/Controls/Gadget</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>450 6</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -383,7 +383,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Controls\Shoot</Sprite>
+            <Sprite>UI/Splash/Controls/Shoot</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>192 320</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -396,7 +396,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Controls\Thumbs</Sprite>
+            <Sprite>UI/Splash/Controls/Thumbs</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>-80 480</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -409,7 +409,7 @@
             <DirectionRad>0.7853982</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Controls\Thumbs</Sprite>
+            <Sprite>UI/Splash/Controls/Thumbs</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>752 624</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -436,7 +436,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>UI\Splash\Controls\ZonesDelimiter</Sprite>
+            <Sprite>UI/Splash/Controls/ZonesDelimiter</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>387 0</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -449,7 +449,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Controls\ZonesDelimiter</Sprite>
+            <Sprite>UI/Splash/Controls/ZonesDelimiter</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>400 240</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -475,7 +475,7 @@
             <DirectionRad>6.28318548</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\BigCircle</Sprite>
+            <Sprite>UI/BigCircle</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>418 116</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -488,7 +488,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Stick</Sprite>
+            <Sprite>UI/Stick</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>445 141</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -501,7 +501,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Controls\Gadget</Sprite>
+            <Sprite>UI/Splash/Controls/Gadget</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>450 6</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -528,7 +528,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>UI\Splash\Controls\ZonesDelimiter</Sprite>
+            <Sprite>UI/Splash/Controls/ZonesDelimiter</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>387 0</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -541,7 +541,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Controls\ZonesDelimiter</Sprite>
+            <Sprite>UI/Splash/Controls/ZonesDelimiter</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>400 240</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -567,7 +567,7 @@
             <DirectionRad>0.05</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\BigCircle</Sprite>
+            <Sprite>UI/BigCircle</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>576 304</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -580,7 +580,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Controls\Shoot</Sprite>
+            <Sprite>UI/Splash/Controls/Shoot</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>208 320</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -593,7 +593,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Controls\Thumbs</Sprite>
+            <Sprite>UI/Splash/Controls/Thumbs</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>752 608</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -606,7 +606,7 @@
             <DirectionRad>2.3561945</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Controls\Thumbs</Sprite>
+            <Sprite>UI/Splash/Controls/Thumbs</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>-112 464</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -633,7 +633,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>UI\Splash\Controls\ZonesDelimiter</Sprite>
+            <Sprite>UI/Splash/Controls/ZonesDelimiter</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>387 0</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -659,7 +659,7 @@
             <DirectionRad>0.3</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\ArrowStatic</Sprite>
+            <Sprite>UI/ArrowStatic</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>180 210</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -672,7 +672,7 @@
             <DirectionRad>4.4</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Controls\Thumbs</Sprite>
+            <Sprite>UI/Splash/Controls/Thumbs</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>-64 448</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -685,7 +685,7 @@
             <DirectionRad>0.7853982</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Controls\Thumbs</Sprite>
+            <Sprite>UI/Splash/Controls/Thumbs</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>736 576</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -712,7 +712,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>UI\Splash\Controls\ZonesDelimiter</Sprite>
+            <Sprite>UI/Splash/Controls/ZonesDelimiter</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>387 0</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -725,7 +725,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Controls\ZonesDelimiter</Sprite>
+            <Sprite>UI/Splash/Controls/ZonesDelimiter</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>400 240</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -751,7 +751,7 @@
             <DirectionRad>-0.05</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\ArrowStatic</Sprite>
+            <Sprite>UI/ArrowStatic</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>500 320</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -764,7 +764,7 @@
             <DirectionRad>-0.2</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Controls\Thumbs</Sprite>
+            <Sprite>UI/Splash/Controls/Thumbs</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>736 608</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -952,7 +952,7 @@
             <DirectionRad>0.05</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\KeyboardControlsLeftRight</Sprite>
+            <Sprite>UI/KeyboardControlsLeftRight</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>64 112</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -965,7 +965,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\KeyboardControlsUpDown</Sprite>
+            <Sprite>UI/KeyboardControlsUpDown</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>64 112</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -978,7 +978,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\MouseRightButton</Sprite>
+            <Sprite>UI/MouseRightButton</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>384 112</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -991,7 +991,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\MouseLeftButton</Sprite>
+            <Sprite>UI/MouseLeftButton</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>448 326</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -1004,7 +1004,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Controls\Gadget</Sprite>
+            <Sprite>UI/Splash/Controls/Gadget</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>450 6</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -1017,7 +1017,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Controls\Shoot</Sprite>
+            <Sprite>UI/Splash/Controls/Shoot</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>358 316</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -1084,7 +1084,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Entities\GearStar</Sprite>
+            <Sprite>Entities/GearStar</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>660 120</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -1258,7 +1258,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Farseer\MonoGame</Sprite>
+            <Sprite>UI/Splash/Farseer/MonoGame</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>656 448</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -1271,7 +1271,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Farseer\XNA</Sprite>
+            <Sprite>UI/Splash/Farseer/XNA</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>720 416</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -1284,7 +1284,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Farseer\FarseerPhysicsCube</Sprite>
+            <Sprite>UI/Splash/Farseer/FarseerPhysicsCube</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>698 366</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -1297,7 +1297,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Farseer\FarseerPhysics</Sprite>
+            <Sprite>UI/Splash/Farseer/FarseerPhysics</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>720 384</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -1324,7 +1324,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>UI\Splash\PushBoxes\BoxesBefore</Sprite>
+            <Sprite>UI/Splash/PushBoxes/BoxesBefore</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>240 159</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -1337,7 +1337,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\PushBoxes\Car2</Sprite>
+            <Sprite>UI/Splash/PushBoxes/Car2</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>463 225</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -1350,7 +1350,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\ArrowStatic</Sprite>
+            <Sprite>UI/ArrowStatic</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>359 225</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -1363,7 +1363,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\PushBoxes\Car1</Sprite>
+            <Sprite>UI/Splash/PushBoxes/Car1</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>106 217</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -1376,7 +1376,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\PushBoxes\BoxesAfter</Sprite>
+            <Sprite>UI/Splash/PushBoxes/BoxesAfter</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>427 137</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -1416,7 +1416,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\EndLevel\Line13x1</Sprite>
+            <Sprite>UI/Splash/EndLevel/Line13x1</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>-128 192</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -1430,7 +1430,7 @@
           </Item>
           <Item>
             <Name>Menu</Name>
-            <Sprite>UI\IconMenuCircle</Sprite>
+            <Sprite>UI/IconMenuCircle</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>235 377</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -1444,7 +1444,7 @@
           </Item>
           <Item>
             <Name>Continue</Name>
-            <Sprite>UI\IconPlayCircle</Sprite>
+            <Sprite>UI/IconPlayCircle</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>336 352</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -1458,7 +1458,7 @@
           </Item>
           <Item>
             <Name>Restart</Name>
-            <Sprite>UI\IconPlayAgainCircle</Sprite>
+            <Sprite>UI/IconPlayAgainCircle</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>480 368</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -1472,7 +1472,7 @@
           </Item>
           <Item>
             <Name>Star1e</Name>
-            <Sprite>UI\MapBack\StarEmpty</Sprite>
+            <Sprite>UI/MapBack/StarEmpty</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>236 160</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -1486,7 +1486,7 @@
           </Item>
           <Item>
             <Name>Star2e</Name>
-            <Sprite>UI\MapBack\StarEmpty</Sprite>
+            <Sprite>UI/MapBack/StarEmpty</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>424 160</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -1500,7 +1500,7 @@
           </Item>
           <Item>
             <Name>Star3e</Name>
-            <Sprite>UI\MapBack\StarEmpty</Sprite>
+            <Sprite>UI/MapBack/StarEmpty</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>330 137</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -1514,7 +1514,7 @@
           </Item>
           <Item>
             <Name>Star1</Name>
-            <Sprite>UI\MapBack\Star</Sprite>
+            <Sprite>UI/MapBack/Star</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>236 160</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -1529,7 +1529,7 @@
           </Item>
           <Item>
             <Name>Star3</Name>
-            <Sprite>UI\MapBack\Star</Sprite>
+            <Sprite>UI/MapBack/Star</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>424 160</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -1544,7 +1544,7 @@
           </Item>
           <Item>
             <Name>Star2</Name>
-            <Sprite>UI\MapBack\Star</Sprite>
+            <Sprite>UI/MapBack/Star</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>330 137</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -1559,7 +1559,7 @@
           </Item>
           <Item>
             <Name>Coin</Name>
-            <Sprite>Entities\GearStar</Sprite>
+            <Sprite>Entities/GearStar</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>32 208</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -1602,7 +1602,7 @@
           </Item>
           <Item>
             <Name>ShareButton</Name>
-            <Sprite>UI\IconShareCircle</Sprite>
+            <Sprite>UI/IconShareCircle</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>510 14</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -1707,7 +1707,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>true</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>UI\ArrowStatic</Sprite>
+            <Sprite>UI/ArrowStatic</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>620 220</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -1773,7 +1773,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>true</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>Cars\Zombie\Base</Sprite>
+            <Sprite>Cars/Zombie/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>728 135</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2249,7 +2249,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\StoryIntro\1</Sprite>
+            <Sprite>UI/Splash/StoryIntro/1</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>0 0</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2262,7 +2262,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\StoryIntro\1light</Sprite>
+            <Sprite>UI/Splash/StoryIntro/1light</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>61 170</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2275,7 +2275,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\StoryIntro\2</Sprite>
+            <Sprite>UI/Splash/StoryIntro/2</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>248 0</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2289,7 +2289,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\StoryIntro\3</Sprite>
+            <Sprite>UI/Splash/StoryIntro/3</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>548 0</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2303,7 +2303,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\StoryIntro\3man</Sprite>
+            <Sprite>UI/Splash/StoryIntro/3man</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>545 88</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2316,7 +2316,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\StoryIntro\3fore</Sprite>
+            <Sprite>UI/Splash/StoryIntro/3fore</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>548 0</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2329,7 +2329,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\StoryIntro\Tapok1</Sprite>
+            <Sprite>UI/Splash/StoryIntro/Tapok1</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>420 40</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2342,7 +2342,7 @@
             <DirectionRad>0.2</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\StoryIntro\Tapok2</Sprite>
+            <Sprite>UI/Splash/StoryIntro/Tapok2</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>243 60</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2355,7 +2355,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Border800_480</Sprite>
+            <Sprite>UI/Splash/Border800_480</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>0 0</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2382,7 +2382,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>Weapons\Saw</Sprite>
+            <Sprite>Weapons/Saw</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>368 208</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2395,7 +2395,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SimpleBuggy\Base</Sprite>
+            <Sprite>Cars/SimpleBuggy/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>224 224</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2408,7 +2408,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Hints\Danger</Sprite>
+            <Sprite>Hints/Danger</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>368 96</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2421,7 +2421,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SimpleBuggy\Destroyed1</Sprite>
+            <Sprite>Cars/SimpleBuggy/Destroyed1</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>565 208</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2434,7 +2434,7 @@
             <DirectionRad>5.49778748</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\TurretStat\Base</Sprite>
+            <Sprite>Cars/TurretStat/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>444 267</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2447,7 +2447,7 @@
             <DirectionRad>3.14159274</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Plus</Sprite>
+            <Sprite>UI/Plus</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>304 224</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2460,7 +2460,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Equal</Sprite>
+            <Sprite>UI/Equal</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>464 224</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2473,7 +2473,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Particles\Explosion</Sprite>
+            <Sprite>Particles/Explosion</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>541 190</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2486,7 +2486,7 @@
             <DirectionRad>5.49778748</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Particles\Smoke</Sprite>
+            <Sprite>Particles/Smoke</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>557 238</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2499,7 +2499,7 @@
             <DirectionRad>4.712389</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Particles\Smoke</Sprite>
+            <Sprite>Particles/Smoke</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>525 238</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2526,7 +2526,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>Weapons\Saw</Sprite>
+            <Sprite>Weapons/Saw</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>262 208</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2539,7 +2539,7 @@
             <DirectionRad>5.49778748</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SimpleBuggy\Base</Sprite>
+            <Sprite>Cars/SimpleBuggy/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>224 224</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2552,7 +2552,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Particles\Success</Sprite>
+            <Sprite>Particles/Success</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>368 112</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2565,7 +2565,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SimpleBuggy\Destroyed2</Sprite>
+            <Sprite>Cars/SimpleBuggy/Destroyed2</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>556.8 208</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2578,7 +2578,7 @@
             <DirectionRad>5.49778748</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Entities\DamagableBox</Sprite>
+            <Sprite>Entities/DamagableBox</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>368 208</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2591,7 +2591,7 @@
             <DirectionRad>6.18773174</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Plus</Sprite>
+            <Sprite>UI/Plus</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>304 224</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2604,7 +2604,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Equal</Sprite>
+            <Sprite>UI/Equal</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>464 224</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2617,7 +2617,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Particles\Explosion</Sprite>
+            <Sprite>Particles/Explosion</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>541 190</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2630,7 +2630,7 @@
             <DirectionRad>5.49778748</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Particles\Smoke</Sprite>
+            <Sprite>Particles/Smoke</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>557 238</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2643,7 +2643,7 @@
             <DirectionRad>4.712389</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Particles\Smoke</Sprite>
+            <Sprite>Particles/Smoke</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>525 238</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2656,7 +2656,7 @@
             <DirectionRad>2.3561945</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Particles\Explosion</Sprite>
+            <Sprite>Particles/Explosion</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>336 208</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2669,7 +2669,7 @@
             <DirectionRad>6.28318548</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Entities\CargoQuest</Sprite>
+            <Sprite>Entities/CargoQuest</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>304 320</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2696,7 +2696,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>Cars\TurretStat\Base</Sprite>
+            <Sprite>Cars/TurretStat/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>579 207</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2709,7 +2709,7 @@
             <DirectionRad>4.712389</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Particles\TeslaTrail</Sprite>
+            <Sprite>Particles/TeslaTrail</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>547 239</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2722,7 +2722,7 @@
             <DirectionRad>5.21365356</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\DottedCircle</Sprite>
+            <Sprite>UI/DottedCircle</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>764 244</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2735,7 +2735,7 @@
             <DirectionRad>3.926991</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Particles\TeslaTrail</Sprite>
+            <Sprite>Particles/TeslaTrail</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>579 287</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2748,7 +2748,7 @@
             <DirectionRad>4.09651947</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Particles\TeslaTrail</Sprite>
+            <Sprite>Particles/TeslaTrail</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>547 239</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2761,7 +2761,7 @@
             <DirectionRad>0.9878828</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Particles\TeslaTrail</Sprite>
+            <Sprite>Particles/TeslaTrail</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>579 191</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2774,7 +2774,7 @@
             <DirectionRad>5.49778748</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Particles\TeslaTrail</Sprite>
+            <Sprite>Particles/TeslaTrail</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>515 287</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2787,7 +2787,7 @@
             <DirectionRad>5.49778748</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Particles\TeslaTrail</Sprite>
+            <Sprite>Particles/TeslaTrail</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>515 287</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2800,7 +2800,7 @@
             <DirectionRad>4.273736</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Particles\TeslaTrail</Sprite>
+            <Sprite>Particles/TeslaTrail</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>547 239</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2813,7 +2813,7 @@
             <DirectionRad>2.59649324</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Particles\TeslaTrail</Sprite>
+            <Sprite>Particles/TeslaTrail</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>501 210</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2839,7 +2839,7 @@
             <DirectionRad>6.258264</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\TurretStat\Base</Sprite>
+            <Sprite>Cars/TurretStat/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>155 231</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2852,7 +2852,7 @@
             <DirectionRad>1.57079637</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\TurretStat\Base</Sprite>
+            <Sprite>Cars/TurretStat/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>259 331</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2878,7 +2878,7 @@
             <DirectionRad>0.144588336</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\TurretStat\Border</Sprite>
+            <Sprite>Cars/TurretStat/Border</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>256 334</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2891,7 +2891,7 @@
             <DirectionRad>1.57079637</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\TurretStat\Border</Sprite>
+            <Sprite>Cars/TurretStat/Border</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>582 203</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2930,7 +2930,7 @@
             <DirectionRad>0.144588336</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Plus</Sprite>
+            <Sprite>UI/Plus</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>478 118</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2943,7 +2943,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Weapons\Minigun</Sprite>
+            <Sprite>Weapons/Minigun</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>181 187</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2956,7 +2956,7 @@
             <DirectionRad>6.02147245</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Weapons\Minigun</Sprite>
+            <Sprite>Weapons/Minigun</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>287 300</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2969,7 +2969,7 @@
             <DirectionRad>1.81908619</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Entities\TeslaGenInner</Sprite>
+            <Sprite>Entities/TeslaGenInner</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>521.6 282.88</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -2982,7 +2982,7 @@
             <DirectionRad>1.81908619</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Entities\TeslaGenOuter</Sprite>
+            <Sprite>Entities/TeslaGenOuter</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>521.6 282.88</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3009,7 +3009,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>UI\Splash\StoryEnd\1</Sprite>
+            <Sprite>UI/Splash/StoryEnd/1</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>0 0</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3022,7 +3022,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\StoryEnd\2</Sprite>
+            <Sprite>UI/Splash/StoryEnd/2</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>246 0</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3036,7 +3036,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\StoryEnd\2Light</Sprite>
+            <Sprite>UI/Splash/StoryEnd/2Light</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>211 154</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3049,7 +3049,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\StoryEnd\3</Sprite>
+            <Sprite>UI/Splash/StoryEnd/3</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>497 0</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3063,7 +3063,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\StoryEnd\3Car</Sprite>
+            <Sprite>UI/Splash/StoryEnd/3Car</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>560 105</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3076,7 +3076,7 @@
             <DirectionRad>0.170883387</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\StoryEnd\Oblomok</Sprite>
+            <Sprite>UI/Splash/StoryEnd/Oblomok</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>618 171</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3089,7 +3089,7 @@
             <DirectionRad>0.312901229</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\StoryEnd\Oblomok</Sprite>
+            <Sprite>UI/Splash/StoryEnd/Oblomok</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>688 160</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3102,7 +3102,7 @@
             <DirectionRad>6.17645</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\StoryEnd\Oblomok</Sprite>
+            <Sprite>UI/Splash/StoryEnd/Oblomok</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>640 128</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3115,7 +3115,7 @@
             <DirectionRad>0.7853982</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\StoryEnd\Raven</Sprite>
+            <Sprite>UI/Splash/StoryEnd/Raven</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>432 64</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3128,7 +3128,7 @@
             <DirectionRad>6.123447</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Border800_480</Sprite>
+            <Sprite>UI/Splash/Border800_480</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>0 0</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3183,7 +3183,7 @@
           </Item>
           <Item>
             <Name>Text</Name>
-            <Sprite>UI\GameNameText</Sprite>
+            <Sprite>UI/GameNameText</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>192 288</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3211,7 +3211,7 @@
           </Item>
           <Item>
             <Name>Text</Name>
-            <Sprite>UI\GameNameText</Sprite>
+            <Sprite>UI/GameNameText</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>192 288</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3252,7 +3252,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>UI\Splash\Concepts\1</Sprite>
+            <Sprite>UI/Splash/Concepts/1</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>128 128</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3279,7 +3279,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>UI\Splash\Concepts\1Side</Sprite>
+            <Sprite>UI/Splash/Concepts/1Side</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>32 96</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3319,7 +3319,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>UI\Splash\Concepts\1Face</Sprite>
+            <Sprite>UI/Splash/Concepts/1Face</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>64 144</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3345,7 +3345,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Concepts\1Back</Sprite>
+            <Sprite>UI/Splash/Concepts/1Back</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>416 144</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3372,7 +3372,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>UI\Splash\Concepts\1Goodbye</Sprite>
+            <Sprite>UI/Splash/Concepts/1Goodbye</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>80 32</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3399,7 +3399,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>Particles\Success</Sprite>
+            <Sprite>Particles/Success</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>560 256</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3412,7 +3412,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SimpleBuggy\Destroyed2</Sprite>
+            <Sprite>Cars/SimpleBuggy/Destroyed2</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>558.079956 111.479996</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3425,7 +3425,7 @@
             <DirectionRad>5.49778748</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Special\DottedLine</Sprite>
+            <Sprite>Special/DottedLine</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>203.28 139.48</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3438,7 +3438,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Particles\Explosion</Sprite>
+            <Sprite>Particles/Explosion</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>542.279968 93.4799957</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3451,7 +3451,7 @@
             <DirectionRad>5.49778748</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Particles\Smoke</Sprite>
+            <Sprite>Particles/Smoke</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>558.279968 130.48</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3464,7 +3464,7 @@
             <DirectionRad>4.712389</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Particles\Smoke</Sprite>
+            <Sprite>Particles/Smoke</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>526.279968 141.48</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3477,7 +3477,7 @@
             <DirectionRad>2.3561945</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Particles\Explosion</Sprite>
+            <Sprite>Particles/Explosion</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>353.28 196.480011</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3490,7 +3490,7 @@
             <DirectionRad>6.28318548</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Entities\DoorBoxNoArrow</Sprite>
+            <Sprite>Entities/DoorBoxNoArrow</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>433.279968 212.48</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3503,7 +3503,7 @@
             <DirectionRad>4.712389</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\TurretStat\Base</Sprite>
+            <Sprite>Cars/TurretStat/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>152.28 110.479996</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3516,7 +3516,7 @@
             <DirectionRad>6.048463</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Weapons\RocketLauncher</Sprite>
+            <Sprite>Weapons/RocketLauncher</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>169.28 136.48</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3529,7 +3529,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Entities\SmallWall</Sprite>
+            <Sprite>Entities/SmallWall</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>416 64</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3542,7 +3542,7 @@
             <DirectionRad>4.712389</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SimpleBuggy\Base</Sprite>
+            <Sprite>Cars/SimpleBuggy/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>515.839966 267.52002</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3555,7 +3555,7 @@
             <DirectionRad>4.91183043</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Special\DottedLine</Sprite>
+            <Sprite>Special/DottedLine</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>177.28 141.48</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3582,7 +3582,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>Entities\HeavyBox</Sprite>
+            <Sprite>Entities/HeavyBox</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>368 208</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3595,7 +3595,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\IconLikeCircle</Sprite>
+            <Sprite>UI/IconLikeCircle</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>380 221</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3608,7 +3608,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SimpleBuggy\Base</Sprite>
+            <Sprite>Cars/SimpleBuggy/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>512 336</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3621,7 +3621,7 @@
             <DirectionRad>2.3561945</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SimpleBuggy\Base</Sprite>
+            <Sprite>Cars/SimpleBuggy/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>240 224</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3634,7 +3634,7 @@
             <DirectionRad>6.28318548</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SimpleBuggy\Base</Sprite>
+            <Sprite>Cars/SimpleBuggy/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>528 144</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3661,7 +3661,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>UI\Splash\Concepts\1Face</Sprite>
+            <Sprite>UI/Splash/Concepts/1Face</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>448 96</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3674,7 +3674,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Concepts\1Back</Sprite>
+            <Sprite>UI/Splash/Concepts/1Back</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>432 240</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3687,7 +3687,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Concepts\1Side</Sprite>
+            <Sprite>UI/Splash/Concepts/1Side</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>48 160</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3714,7 +3714,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>Cars\Truck\Destroyed1</Sprite>
+            <Sprite>Cars/Truck/Destroyed1</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>336 192</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3727,7 +3727,7 @@
             <DirectionRad>5.883185</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\Zombie\Base</Sprite>
+            <Sprite>Cars/Zombie/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>496 384</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3740,7 +3740,7 @@
             <DirectionRad>2.3561945</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\Zombie\Base</Sprite>
+            <Sprite>Cars/Zombie/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>288 96</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3753,7 +3753,7 @@
             <DirectionRad>5.362063</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\Zombie\Base</Sprite>
+            <Sprite>Cars/Zombie/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>544 144</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3766,7 +3766,7 @@
             <DirectionRad>3.926991</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\Zombie\Base</Sprite>
+            <Sprite>Cars/Zombie/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>240 336</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3779,7 +3779,7 @@
             <DirectionRad>0.7853982</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\Zombie\Base</Sprite>
+            <Sprite>Cars/Zombie/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>176 208</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3806,7 +3806,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>UI\Splash\Controls\ZonesDelimiter</Sprite>
+            <Sprite>UI/Splash/Controls/ZonesDelimiter</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>387 0</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3819,7 +3819,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Controls\ZonesDelimiter</Sprite>
+            <Sprite>UI/Splash/Controls/ZonesDelimiter</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>400 240</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3845,7 +3845,7 @@
             <DirectionRad>0.05</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\BigCircle</Sprite>
+            <Sprite>UI/BigCircle</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>448 326</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3858,7 +3858,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Stick</Sprite>
+            <Sprite>UI/Stick</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>475 351</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3871,7 +3871,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Controls\Shoot</Sprite>
+            <Sprite>UI/Splash/Controls/Shoot</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>358 316</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3924,7 +3924,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>UI\Splash\Controls\ZonesDelimiter</Sprite>
+            <Sprite>UI/Splash/Controls/ZonesDelimiter</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>384 0</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3937,7 +3937,7 @@
             <DirectionRad>6.28318548</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SimpleTarget\Base</Sprite>
+            <Sprite>Cars/SimpleTarget/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>363 208</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3950,7 +3950,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SimpleTarget\Base</Sprite>
+            <Sprite>Cars/SimpleTarget/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>283 208</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3963,7 +3963,7 @@
             <DirectionRad>6.28318548</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SimpleTarget\Base</Sprite>
+            <Sprite>Cars/SimpleTarget/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>443 208</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3976,7 +3976,7 @@
             <DirectionRad>6.28318548</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Controls\ZonesDelimiter</Sprite>
+            <Sprite>UI/Splash/Controls/ZonesDelimiter</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>464 0</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -3989,7 +3989,7 @@
             <DirectionRad>6.28318548</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Controls\ZonesDelimiter</Sprite>
+            <Sprite>UI/Splash/Controls/ZonesDelimiter</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>304 0</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4002,7 +4002,7 @@
             <DirectionRad>6.28318548</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Weapons\Minigun</Sprite>
+            <Sprite>Weapons/Minigun</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>160 240</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4029,7 +4029,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>Entities\Button</Sprite>
+            <Sprite>Entities/Button</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>272 96</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4042,7 +4042,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SimpleBuggy\Base</Sprite>
+            <Sprite>Cars/SimpleBuggy/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>80 304</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4055,7 +4055,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Entities\CargoQuest</Sprite>
+            <Sprite>Entities/CargoQuest</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>80 144</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4068,7 +4068,7 @@
             <DirectionRad>0.415004462</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Entities\ButtonWithoutRelease</Sprite>
+            <Sprite>Entities/ButtonWithoutRelease</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>272 256</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4081,7 +4081,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Particles\Success</Sprite>
+            <Sprite>Particles/Success</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>592 64</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4094,7 +4094,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Particles\Success</Sprite>
+            <Sprite>Particles/Success</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>592 224</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4107,7 +4107,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Entities\ButtonPressed</Sprite>
+            <Sprite>Entities/ButtonPressed</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>496 96</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4120,7 +4120,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Entities\CargoQuest</Sprite>
+            <Sprite>Entities/CargoQuest</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>528 128</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4133,7 +4133,7 @@
             <DirectionRad>0.415004462</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Entities\ButtonWithoutReleasePressed</Sprite>
+            <Sprite>Entities/ButtonWithoutReleasePressed</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>496 256</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4146,7 +4146,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SimpleBuggy\Base</Sprite>
+            <Sprite>Cars/SimpleBuggy/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>624 304</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4159,7 +4159,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Plus</Sprite>
+            <Sprite>UI/Plus</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>192 144</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4172,7 +4172,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Plus</Sprite>
+            <Sprite>UI/Plus</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>192 304</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4185,7 +4185,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Equal</Sprite>
+            <Sprite>UI/Equal</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>432 144</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4198,7 +4198,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Equal</Sprite>
+            <Sprite>UI/Equal</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>432 304</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4225,7 +4225,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>Cars\Zombie\Base</Sprite>
+            <Sprite>Cars/Zombie/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>368 160</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4238,7 +4238,7 @@
             <DirectionRad>0.7853982</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\Zombie\Base</Sprite>
+            <Sprite>Cars/Zombie/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>194 135</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4251,7 +4251,7 @@
             <DirectionRad>6.28318548</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Plus</Sprite>
+            <Sprite>UI/Plus</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>306 135</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4264,7 +4264,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Plus</Sprite>
+            <Sprite>UI/Plus</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>466 135</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4277,7 +4277,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\Zombie\Base</Sprite>
+            <Sprite>Cars/Zombie/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>530 135</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4290,7 +4290,7 @@
             <DirectionRad>0.125102922</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Equal</Sprite>
+            <Sprite>UI/Equal</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>384 208</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4303,7 +4303,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\Zombie\Base</Sprite>
+            <Sprite>Cars/Zombie/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>544 256</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4316,7 +4316,7 @@
             <DirectionRad>3.43305</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\Zombie\Base</Sprite>
+            <Sprite>Cars/Zombie/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>240 272</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4329,7 +4329,7 @@
             <DirectionRad>6.28318548</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\Zombie\Base</Sprite>
+            <Sprite>Cars/Zombie/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>384 400</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4342,7 +4342,7 @@
             <DirectionRad>1.66024315</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\Truck\Destroyed1</Sprite>
+            <Sprite>Cars/Truck/Destroyed1</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>448 288</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4408,7 +4408,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>Cars\Zombie\Base</Sprite>
+            <Sprite>Cars/Zombie/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>592 288</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4421,7 +4421,7 @@
             <DirectionRad>0.7853982</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Splash1\Car</Sprite>
+            <Sprite>UI/Splash/Splash1/Car</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>352 320</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4434,7 +4434,7 @@
             <DirectionRad>2.3561945</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\Zombie\Base</Sprite>
+            <Sprite>Cars/Zombie/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>192 96</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4447,7 +4447,7 @@
             <DirectionRad>0.125102922</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Splash1\Trail1</Sprite>
+            <Sprite>UI/Splash/Splash1/Trail1</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>336 240</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4460,7 +4460,7 @@
             <DirectionRad>2.3561945</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\Turret\Base</Sprite>
+            <Sprite>Cars/Turret/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>407 240</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4473,7 +4473,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Weapons\RocketLauncher</Sprite>
+            <Sprite>Weapons/RocketLauncher</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>440 267</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4486,7 +4486,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Weapons\roket</Sprite>
+            <Sprite>Weapons/roket</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>523 269</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4499,7 +4499,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\Zombie\Base</Sprite>
+            <Sprite>Cars/Zombie/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>208 368</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4512,7 +4512,7 @@
             <DirectionRad>0.7853982</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\Zombie\Destroyed1</Sprite>
+            <Sprite>Cars/Zombie/Destroyed1</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>608 160</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4539,7 +4539,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>Cars\SimpleBuggy\Base</Sprite>
+            <Sprite>Cars/SimpleBuggy/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>128 96</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4552,7 +4552,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SimpleBuggy\Base</Sprite>
+            <Sprite>Cars/SimpleBuggy/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>144 160</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4565,7 +4565,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Special\DottedLine</Sprite>
+            <Sprite>Special/DottedLine</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>272 144</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4578,7 +4578,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Special\DottedLine</Sprite>
+            <Sprite>Special/DottedLine</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>528 144</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4591,7 +4591,7 @@
             <DirectionRad>-1.57079637</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Special\DottedLine</Sprite>
+            <Sprite>Special/DottedLine</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>272 336</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4604,7 +4604,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Special\DottedLine</Sprite>
+            <Sprite>Special/DottedLine</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>272 144</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4617,7 +4617,7 @@
             <DirectionRad>-1.57079637</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\IconCupCircle</Sprite>
+            <Sprite>UI/IconCupCircle</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>368 208</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4630,7 +4630,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\ControllerOn</Sprite>
+            <Sprite>UI/ControllerOn</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>432 176</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4643,7 +4643,7 @@
             <DirectionRad>3.14159274</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Entities\Accelerator</Sprite>
+            <Sprite>Entities/Accelerator</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>256 128</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4656,7 +4656,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Entities\Accelerator</Sprite>
+            <Sprite>Entities/Accelerator</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>544 352</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4683,7 +4683,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>Particles\Star</Sprite>
+            <Sprite>Particles/Star</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>432 336</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4696,7 +4696,7 @@
             <DirectionRad>0.7853982</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Particles\Star</Sprite>
+            <Sprite>Particles/Star</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>288 368</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4709,7 +4709,7 @@
             <DirectionRad>2.3561945</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Particles\Star</Sprite>
+            <Sprite>Particles/Star</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>384 144</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4722,7 +4722,7 @@
             <DirectionRad>0.125102922</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Particles\Star</Sprite>
+            <Sprite>Particles/Star</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>240 128</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4735,7 +4735,7 @@
             <DirectionRad>2.3561945</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SimpleBuggy\Base</Sprite>
+            <Sprite>Cars/SimpleBuggy/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>379 264</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4748,7 +4748,7 @@
             <DirectionRad>1.44144142</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Particles\Star</Sprite>
+            <Sprite>Particles/Star</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>576 336</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4761,7 +4761,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Particles\Star</Sprite>
+            <Sprite>Particles/Star</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>176 240</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4774,7 +4774,7 @@
             <DirectionRad>0.7853982</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Particles\Star</Sprite>
+            <Sprite>Particles/Star</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>576 144</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4801,7 +4801,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>UI\Splash\Concepts\HoverGoodbye</Sprite>
+            <Sprite>UI/Splash/Concepts/HoverGoodbye</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>96 96</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4843,7 +4843,7 @@
           </Item>
           <Item>
             <Name>Text</Name>
-            <Sprite>UI\Splash\Concepts\Hover</Sprite>
+            <Sprite>UI/Splash/Concepts/Hover</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>416 128</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4871,7 +4871,7 @@
           </Item>
           <Item>
             <Name>Text</Name>
-            <Sprite>UI\Splash\Concepts\1</Sprite>
+            <Sprite>UI/Splash/Concepts/1</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>32 128</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4885,7 +4885,7 @@
           </Item>
           <Item>
             <Name>Text</Name>
-            <Sprite>UI\Splash\Concepts\1Side</Sprite>
+            <Sprite>UI/Splash/Concepts/1Side</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>144 272</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4913,7 +4913,7 @@
         <Layers>
           <Item>
             <Name>Text</Name>
-            <Sprite>UI\Splash\Concepts\Hover</Sprite>
+            <Sprite>UI/Splash/Concepts/Hover</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>400 176</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4927,7 +4927,7 @@
           </Item>
           <Item>
             <Name>Text</Name>
-            <Sprite>UI\Splash\Concepts\1</Sprite>
+            <Sprite>UI/Splash/Concepts/1</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>48 128</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -4983,7 +4983,7 @@
           </Item>
           <Item>
             <Name>Text</Name>
-            <Sprite>UI\Splash\Concepts\1Side</Sprite>
+            <Sprite>UI/Splash/Concepts/1Side</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>144 128</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5010,7 +5010,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>Entities\DoorBoxNoArrow</Sprite>
+            <Sprite>Entities/DoorBoxNoArrow</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>496 144</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5023,7 +5023,7 @@
             <DirectionRad>3.14159274</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Weapons\Railgun</Sprite>
+            <Sprite>Weapons/Railgun</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>191.483871 340.645142</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5036,7 +5036,7 @@
             <DirectionRad>0.7853982</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Special\DottedLine</Sprite>
+            <Sprite>Special/DottedLine</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>215.2258 326.193542</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5049,7 +5049,7 @@
             <DirectionRad>0.7853982</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Special\DottedLine</Sprite>
+            <Sprite>Special/DottedLine</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>400 144</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5062,7 +5062,7 @@
             <DirectionRad>5.49778748</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SimpleTarget\Destroyed1</Sprite>
+            <Sprite>Cars/SimpleTarget/Destroyed1</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>544 336</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5075,7 +5075,7 @@
             <DirectionRad>0.7853982</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Entities\HeavyBox</Sprite>
+            <Sprite>Entities/HeavyBox</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>432 224</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5088,7 +5088,7 @@
             <DirectionRad>4.712389</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SimpleBuggy\Base</Sprite>
+            <Sprite>Cars/SimpleBuggy/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>165.677414 355.0968</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5101,7 +5101,7 @@
             <DirectionRad>1.26957071</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SimpleTarget\Base</Sprite>
+            <Sprite>Cars/SimpleTarget/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>464 400</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5114,7 +5114,7 @@
             <DirectionRad>0.7853982</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Entities\HeavyBox</Sprite>
+            <Sprite>Entities/HeavyBox</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>432 278.709656</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5127,7 +5127,7 @@
             <DirectionRad>4.712389</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Entities\HeavyBox</Sprite>
+            <Sprite>Entities/HeavyBox</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>432.516144 331.354858</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5140,7 +5140,7 @@
             <DirectionRad>4.712389</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Entities\HeavyBox</Sprite>
+            <Sprite>Entities/HeavyBox</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>432 384</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5167,7 +5167,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>Particles\Explosion</Sprite>
+            <Sprite>Particles/Explosion</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>254 241</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5180,7 +5180,7 @@
             <DirectionRad>0.7853982</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Special\DottedLine</Sprite>
+            <Sprite>Special/DottedLine</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>357 241</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5193,7 +5193,7 @@
             <DirectionRad>6.28318548</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SimpleBuggy\Base</Sprite>
+            <Sprite>Cars/SimpleBuggy/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>133 225</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5206,7 +5206,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Entities\DoorBoxNoArrow</Sprite>
+            <Sprite>Entities/DoorBoxNoArrow</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>485 145</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5219,7 +5219,7 @@
             <DirectionRad>4.712389</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Particles\Explosion</Sprite>
+            <Sprite>Particles/Explosion</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>302 193</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5232,7 +5232,7 @@
             <DirectionRad>6.28318548</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SimpleBuggy\Base</Sprite>
+            <Sprite>Cars/SimpleBuggy/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>592 224</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5272,7 +5272,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SimpleBuggy\Border</Sprite>
+            <Sprite>Cars/SimpleBuggy/Border</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>592 224</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5299,7 +5299,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>UI\Splash\Concepts\HoverFace</Sprite>
+            <Sprite>UI/Splash/Concepts/HoverFace</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>464 80</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5312,7 +5312,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Concepts\HoverBack</Sprite>
+            <Sprite>UI/Splash/Concepts/HoverBack</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>464 256</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5325,7 +5325,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Concepts\HoverSide</Sprite>
+            <Sprite>UI/Splash/Concepts/HoverSide</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>48 144</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5378,7 +5378,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SimpleBuggy\Base</Sprite>
+            <Sprite>Cars/SimpleBuggy/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>368 64</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5391,7 +5391,7 @@
             <DirectionRad>4.712389</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SimpleBuggy\Base</Sprite>
+            <Sprite>Cars/SimpleBuggy/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>272 112</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5404,7 +5404,7 @@
             <DirectionRad>4.712389</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SimpleBuggy\Base</Sprite>
+            <Sprite>Cars/SimpleBuggy/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>320 64</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5417,7 +5417,7 @@
             <DirectionRad>4.712389</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SimpleBuggy\Base</Sprite>
+            <Sprite>Cars/SimpleBuggy/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>512 64</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5430,7 +5430,7 @@
             <DirectionRad>4.712389</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SimpleBuggy\Base</Sprite>
+            <Sprite>Cars/SimpleBuggy/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>368 112</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5443,7 +5443,7 @@
             <DirectionRad>4.712389</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SimpleBuggy\Base</Sprite>
+            <Sprite>Cars/SimpleBuggy/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>416 112</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5456,7 +5456,7 @@
             <DirectionRad>4.712389</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SimpleBuggy\Base</Sprite>
+            <Sprite>Cars/SimpleBuggy/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>416 160</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5469,7 +5469,7 @@
             <DirectionRad>4.712389</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\Turret\Base</Sprite>
+            <Sprite>Cars/Turret/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>367 422</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5482,7 +5482,7 @@
             <DirectionRad>1.57079637</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Weapons\Minigun</Sprite>
+            <Sprite>Weapons/Minigun</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>394 386</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5495,7 +5495,7 @@
             <DirectionRad>1.57079637</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Weapons\roket</Sprite>
+            <Sprite>Weapons/roket</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>304 272</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5508,7 +5508,7 @@
             <DirectionRad>1.57079637</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SimpleBuggy\Base</Sprite>
+            <Sprite>Cars/SimpleBuggy/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>416 64</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5535,7 +5535,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>true</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>UI\ArrowStatic</Sprite>
+            <Sprite>UI/ArrowStatic</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>288 224</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5575,7 +5575,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>UI\Splash\DoorsDream\1-moon-stars</Sprite>
+            <Sprite>UI/Splash/DoorsDream/1-moon-stars</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>332 86</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5588,7 +5588,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\DoorsDream\2-window-blue</Sprite>
+            <Sprite>UI/Splash/DoorsDream/2-window-blue</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>270 54</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5601,7 +5601,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\DoorsDream\3-curtains</Sprite>
+            <Sprite>UI/Splash/DoorsDream/3-curtains</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>224 21</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5614,7 +5614,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\DoorsDream\4-cap-door-bed</Sprite>
+            <Sprite>UI/Splash/DoorsDream/4-cap-door-bed</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>253 244</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5693,7 +5693,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>UI\Splash\Concepts\Hover</Sprite>
+            <Sprite>UI/Splash/Concepts/Hover</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>128 128</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5733,7 +5733,7 @@
             <DirectionRad>0.05</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\MouseLeftButton</Sprite>
+            <Sprite>UI/MouseLeftButton</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>368 112</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5746,7 +5746,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Controls\Shoot</Sprite>
+            <Sprite>UI/Splash/Controls/Shoot</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>112 272</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5786,7 +5786,7 @@
             <DirectionRad>6.28318548</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Controls\Gadget</Sprite>
+            <Sprite>UI/Splash/Controls/Gadget</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>208 240</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5799,7 +5799,7 @@
             <DirectionRad>0.136893526</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\MouseRightButton</Sprite>
+            <Sprite>UI/MouseRightButton</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>373 80</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5865,7 +5865,7 @@
             <DirectionRad>0.05</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Controls\Car</Sprite>
+            <Sprite>UI/Splash/Controls/Car</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>80 240</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5878,7 +5878,7 @@
             <DirectionRad>1.57079637</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Controls\Gadget</Sprite>
+            <Sprite>UI/Splash/Controls/Gadget</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>736 352</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5891,7 +5891,7 @@
             <DirectionRad>3.926991</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Controls\Shoot</Sprite>
+            <Sprite>UI/Splash/Controls/Shoot</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>272 32</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5904,7 +5904,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Gamepad\Gamepad_Back</Sprite>
+            <Sprite>UI/Gamepad/Gamepad_Back</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>208 160</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5917,7 +5917,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Gamepad\Gamepad_Stick</Sprite>
+            <Sprite>UI/Gamepad/Gamepad_Stick</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>236 230</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5930,7 +5930,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Gamepad\Gamepad_Stick</Sprite>
+            <Sprite>UI/Gamepad/Gamepad_Stick</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>352.516144 267.032257</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5943,7 +5943,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Gamepad\Gamepad_RBumper</Sprite>
+            <Sprite>UI/Gamepad/Gamepad_RBumper</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>388 184</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5956,7 +5956,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Gamepad\Gamepad_RTrigger</Sprite>
+            <Sprite>UI/Gamepad/Gamepad_RTrigger</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>398 158</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5982,7 +5982,7 @@
             <DirectionRad>0.274167448</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Special\DottedLine</Sprite>
+            <Sprite>Special/DottedLine</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>433 197</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -5995,7 +5995,7 @@
             <DirectionRad>5.292495</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Special\DottedLine</Sprite>
+            <Sprite>Special/DottedLine</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>416 176</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6022,7 +6022,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>UI\Splash\Controls\Gadget</Sprite>
+            <Sprite>UI/Splash/Controls/Gadget</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>588 323</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6035,7 +6035,7 @@
             <DirectionRad>3.926991</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Gamepad\Gamepad_Back</Sprite>
+            <Sprite>UI/Gamepad/Gamepad_Back</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>270 133</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6048,7 +6048,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Gamepad\Gamepad_Stick</Sprite>
+            <Sprite>UI/Gamepad/Gamepad_Stick</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>414 239</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6061,7 +6061,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Gamepad\Gamepad_RBumper</Sprite>
+            <Sprite>UI/Gamepad/Gamepad_RBumper</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>450 157</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6114,7 +6114,7 @@
             <DirectionRad>0.05</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Controls\Shoot</Sprite>
+            <Sprite>UI/Splash/Controls/Shoot</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>240 336</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6127,7 +6127,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Gamepad\Gamepad_Back</Sprite>
+            <Sprite>UI/Gamepad/Gamepad_Back</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>271 159</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6140,7 +6140,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Gamepad\Gamepad_Stick</Sprite>
+            <Sprite>UI/Gamepad/Gamepad_Stick</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>415 265</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6153,7 +6153,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Gamepad\Gamepad_RTrigger</Sprite>
+            <Sprite>UI/Gamepad/Gamepad_RTrigger</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>461 157</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6180,7 +6180,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>Cars\Buggy\Destroyed2</Sprite>
+            <Sprite>Cars/Buggy/Destroyed2</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>368 128</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6193,7 +6193,7 @@
             <DirectionRad>0.7853982</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SandBuggy\Destroyed2</Sprite>
+            <Sprite>Cars/SandBuggy/Destroyed2</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>352 256</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6206,7 +6206,7 @@
             <DirectionRad>0.7853982</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\Buggy\Destroyed2</Sprite>
+            <Sprite>Cars/Buggy/Destroyed2</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>208 304</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6219,7 +6219,7 @@
             <DirectionRad>0.04101237</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\Buggy\Destroyed1</Sprite>
+            <Sprite>Cars/Buggy/Destroyed1</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>592 304</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6232,7 +6232,7 @@
             <DirectionRad>4.68209648</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\HoverScout\Destroyed1</Sprite>
+            <Sprite>Cars/HoverScout/Destroyed1</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>240 144</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6245,7 +6245,7 @@
             <DirectionRad>5.49778748</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\Truck\Destroyed2</Sprite>
+            <Sprite>Cars/Truck/Destroyed2</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>560 208</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6258,7 +6258,7 @@
             <DirectionRad>2.3561945</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\Truck\Destroyed1</Sprite>
+            <Sprite>Cars/Truck/Destroyed1</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>320 368</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6271,7 +6271,7 @@
             <DirectionRad>0.351444781</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Weapons\RocketLauncher</Sprite>
+            <Sprite>Weapons/RocketLauncher</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>402 242</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6284,7 +6284,7 @@
             <DirectionRad>5.759006</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SimpleBuggy\Base</Sprite>
+            <Sprite>Cars/SimpleBuggy/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>640 256</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6297,7 +6297,7 @@
             <DirectionRad>3.14159274</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SimpleBuggy\Base</Sprite>
+            <Sprite>Cars/SimpleBuggy/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>688 336</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6310,7 +6310,7 @@
             <DirectionRad>2.77408385</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SimpleBuggy\Base</Sprite>
+            <Sprite>Cars/SimpleBuggy/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>704 176</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6323,7 +6323,7 @@
             <DirectionRad>3.298821</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Particles\flash2</Sprite>
+            <Sprite>Particles/flash2</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>48 256</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6350,7 +6350,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>Cars\Buggy\Destroyed2</Sprite>
+            <Sprite>Cars/Buggy/Destroyed2</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>368 128</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6363,7 +6363,7 @@
             <DirectionRad>0.7853982</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SandBuggy\Destroyed2</Sprite>
+            <Sprite>Cars/SandBuggy/Destroyed2</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>352 256</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6376,7 +6376,7 @@
             <DirectionRad>0.7853982</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\Buggy\Destroyed2</Sprite>
+            <Sprite>Cars/Buggy/Destroyed2</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>208 304</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6389,7 +6389,7 @@
             <DirectionRad>0.04101237</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\Buggy\Destroyed1</Sprite>
+            <Sprite>Cars/Buggy/Destroyed1</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>592 304</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6402,7 +6402,7 @@
             <DirectionRad>4.68209648</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\HoverScout\Destroyed1</Sprite>
+            <Sprite>Cars/HoverScout/Destroyed1</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>240 144</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6415,7 +6415,7 @@
             <DirectionRad>5.49778748</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\Truck\Destroyed2</Sprite>
+            <Sprite>Cars/Truck/Destroyed2</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>560 208</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6428,7 +6428,7 @@
             <DirectionRad>2.3561945</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\Truck\Destroyed1</Sprite>
+            <Sprite>Cars/Truck/Destroyed1</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>320 368</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6441,7 +6441,7 @@
             <DirectionRad>0.351444781</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Weapons\RocketLauncher</Sprite>
+            <Sprite>Weapons/RocketLauncher</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>402 242</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6454,7 +6454,7 @@
             <DirectionRad>5.759006</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SimpleBuggy\Base</Sprite>
+            <Sprite>Cars/SimpleBuggy/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>640 256</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6467,7 +6467,7 @@
             <DirectionRad>3.14159274</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SimpleBuggy\Base</Sprite>
+            <Sprite>Cars/SimpleBuggy/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>688 336</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6480,7 +6480,7 @@
             <DirectionRad>2.77408385</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Cars\SimpleBuggy\Base</Sprite>
+            <Sprite>Cars/SimpleBuggy/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>704 176</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6493,7 +6493,7 @@
             <DirectionRad>3.298821</DirectionRad>
           </Item>
           <Item>
-            <Sprite>Particles\flash2</Sprite>
+            <Sprite>Particles/flash2</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>48 256</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6638,7 +6638,7 @@
           </Item>
           <Item>
             <Name>BuyButton</Name>
-            <Sprite>UI\IconBuyCircle</Sprite>
+            <Sprite>UI/IconBuyCircle</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>160 112</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6652,7 +6652,7 @@
           </Item>
           <Item>
             <Name>RewardButton</Name>
-            <Sprite>UI\IconSteamCircle</Sprite>
+            <Sprite>UI/IconSteamCircle</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>224 176</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6693,7 +6693,7 @@
           </Item>
           <Item>
             <Name>AdBack</Name>
-            <Sprite>UI\Splash\BuyGame\AdBack</Sprite>
+            <Sprite>UI/Splash/BuyGame/AdBack</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>0 192</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6707,7 +6707,7 @@
           </Item>
           <Item>
             <Name>AdBack</Name>
-            <Sprite>UI\Splash\BuyGame\AdBack</Sprite>
+            <Sprite>UI/Splash/BuyGame/AdBack</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>0 -80</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6748,7 +6748,7 @@
         <ScaleUpOnlyOffsetWhenNeeded>false</ScaleUpOnlyOffsetWhenNeeded>
         <Layers>
           <Item>
-            <Sprite>UI\Splash\MenuBackground\Red</Sprite>
+            <Sprite>UI/Splash/MenuBackground/Red</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>-24 -11.52</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6801,7 +6801,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Farseer\FarseerPhysics</Sprite>
+            <Sprite>UI/Splash/Farseer/FarseerPhysics</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>256.759979 437.12</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6814,7 +6814,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Farseer\FarseerPhysicsCube</Sprite>
+            <Sprite>UI/Splash/Farseer/FarseerPhysicsCube</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>236.279968 419.2</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6827,7 +6827,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Farseer\XNA</Sprite>
+            <Sprite>UI/Splash/Farseer/XNA</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>337.4 435.2</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6840,7 +6840,7 @@
             <DirectionRad>0</DirectionRad>
           </Item>
           <Item>
-            <Sprite>UI\Splash\Farseer\MonoGame</Sprite>
+            <Sprite>UI/Splash/Farseer/MonoGame</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>425.719971 439.679962</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6907,7 +6907,7 @@
           </Item>
           <Item>
             <Name>Text</Name>
-            <Sprite>UI\Splash\Logo\StoryBeginSketch</Sprite>
+            <Sprite>UI/Splash/Logo/StoryBeginSketch</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>320 112</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6921,7 +6921,7 @@
           </Item>
           <Item>
             <Name>Text</Name>
-            <Sprite>UI\GameNameText</Sprite>
+            <Sprite>UI/GameNameText</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>304 352</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6949,7 +6949,7 @@
         <Layers>
           <Item>
             <Name>Text</Name>
-            <Sprite>Entities\Accelerator</Sprite>
+            <Sprite>Entities/Accelerator</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>288 208</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6964,7 +6964,7 @@
           </Item>
           <Item>
             <Name>Text</Name>
-            <Sprite>Entities\Accelerator</Sprite>
+            <Sprite>Entities/Accelerator</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>368 208</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6979,7 +6979,7 @@
           </Item>
           <Item>
             <Name>Text</Name>
-            <Sprite>Entities\Accelerator</Sprite>
+            <Sprite>Entities/Accelerator</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>448 208</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -6994,7 +6994,7 @@
           </Item>
           <Item>
             <Name>Text</Name>
-            <Sprite>Entities\FinishTile</Sprite>
+            <Sprite>Entities/FinishTile</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>544 144</Offset>
             <StretchToScreen>false</StretchToScreen>
@@ -7009,7 +7009,7 @@
           </Item>
           <Item>
             <Name>Text</Name>
-            <Sprite>Cars\SimpleBuggy\Base</Sprite>
+            <Sprite>Cars/SimpleBuggy/Base</Sprite>
             <BindTextId>-1</BindTextId>
             <Offset>208 224</Offset>
             <StretchToScreen>false</StretchToScreen>

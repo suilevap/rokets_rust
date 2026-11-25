@@ -17,7 +17,7 @@ use crate::render::camera::CameraTarget;
 use crate::render::layers::Layer;
 use crate::render::sprite::{SpriteTint, UnitQuad, sprite_bundle};
 
-const ARROW: &str = "Minimap\\minimap_goal";
+const ARROW: &str = "Minimap/minimap_goal";
 /// `ScanLength`: nearer than this, no arrow.
 const SCAN: f32 = 128.0 / 32.0;
 /// `ScanLengthBig`: the arrow fades in over this.

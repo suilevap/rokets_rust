@@ -3,7 +3,7 @@
   <Asset Type="GameLibrary.MapData">
     <Name>ThoWeeksEarlier</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Singleplayer\2WeeksAgo</Image>
+    <Image>Maps/Singleplayer/2WeeksAgo</Image>
     <Scale>48</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>
@@ -185,7 +185,7 @@
       <Item>
         <Id>1001</Id>
         <Position>29.5 17.5</Position>
-        <Sprite>Cars\HoverScout\Base</Sprite>
+        <Sprite>Cars/HoverScout/Base</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>12</DirectionDeg>
@@ -200,7 +200,7 @@
       <Item>
         <Id>1002</Id>
         <Position>33 17.5</Position>
-        <Sprite>Cars\HoverScout\Wheel</Sprite>
+        <Sprite>Cars/HoverScout/Wheel</Sprite>
         <Animated>false</Animated>
         <Scale>2</Scale>
         <DirectionDeg>-12</DirectionDeg>
@@ -215,7 +215,7 @@
       <Item>
         <Id>1003</Id>
         <Position>36 17.5</Position>
-        <Sprite>Cars\HoverScout\Body</Sprite>
+        <Sprite>Cars/HoverScout/Body</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>135</DirectionDeg>
@@ -230,7 +230,7 @@
       <Item>
         <Id>1005</Id>
         <Position>31.5 17.5</Position>
-        <Sprite>Entities\DamagableBox</Sprite>
+        <Sprite>Entities/DamagableBox</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -245,7 +245,7 @@
       <Item>
         <Id>1006</Id>
         <Position>7.5 22</Position>
-        <Sprite>Cars\HoverScout\Base</Sprite>
+        <Sprite>Cars/HoverScout/Base</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>-90</DirectionDeg>
@@ -260,7 +260,7 @@
       <Item>
         <Id>1008</Id>
         <Position>7.266069 21.11111</Position>
-        <Sprite>Cars\HoverScout\Wheel</Sprite>
+        <Sprite>Cars/HoverScout/Wheel</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>-90</DirectionDeg>
@@ -275,7 +275,7 @@
       <Item>
         <Id>1009</Id>
         <Position>7.790633 21.11111</Position>
-        <Sprite>Cars\HoverScout\Wheel</Sprite>
+        <Sprite>Cars/HoverScout/Wheel</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>-90</DirectionDeg>
@@ -290,7 +290,7 @@
       <Item>
         <Id>1010</Id>
         <Position>7.5 7</Position>
-        <Sprite>Cars\HoverScout\Base</Sprite>
+        <Sprite>Cars/HoverScout/Base</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>90</DirectionDeg>
@@ -304,7 +304,7 @@
       <Item>
         <Id>1011</Id>
         <Position>7.236111 7.90476227</Position>
-        <Sprite>Cars\HoverScout\Wheel</Sprite>
+        <Sprite>Cars/HoverScout/Wheel</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>90</DirectionDeg>
@@ -318,7 +318,7 @@
       <Item>
         <Id>1012</Id>
         <Position>7.763889 7.90476227</Position>
-        <Sprite>Cars\HoverScout\Wheel</Sprite>
+        <Sprite>Cars/HoverScout/Wheel</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>90</DirectionDeg>
@@ -332,7 +332,7 @@
       <Item>
         <Id>1013</Id>
         <Position>30.5 13</Position>
-        <Sprite>Cars\HoverScout\Body</Sprite>
+        <Sprite>Cars/HoverScout/Body</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>32</DirectionDeg>
@@ -346,7 +346,7 @@
       <Item>
         <Id>1015</Id>
         <Position>18.5 7</Position>
-        <Sprite>Entities\CargoQuest</Sprite>
+        <Sprite>Entities/CargoQuest</Sprite>
         <Animated>false</Animated>
         <Scale>0.5067525</Scale>
         <DirectionDeg>110.666939</DirectionDeg>
@@ -360,7 +360,7 @@
       <Item>
         <Id>1016</Id>
         <Position>7.6875 21.85992</Position>
-        <Sprite>Entities\ButtonBorder</Sprite>
+        <Sprite>Entities/ButtonBorder</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -374,7 +374,7 @@
       <Item>
         <Id>1017</Id>
         <Position>7.791666 7.145833</Position>
-        <Sprite>Entities\ButtonBorder</Sprite>
+        <Sprite>Entities/ButtonBorder</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -986,7 +986,7 @@
         </Groups>
         <RunOnMapStart>false</RunOnMapStart>
         <Position>17.5 24</Position>
-        <Sprite>Hints\Danger</Sprite>
+        <Sprite>Hints/Danger</Sprite>
         <Scale>0.7</Scale>
         <DirectionDeg>0</DirectionDeg>
         <Animated>false</Animated>
@@ -1028,7 +1028,7 @@
       <Item>
         <Id>2001</Id>
         <Position>21 20</Position>
-        <Sprite>Hints\Danger</Sprite>
+        <Sprite>Hints/Danger</Sprite>
         <DirectionDeg>0</DirectionDeg>
         <Animated>false</Animated>
         <Timer>0</Timer>
@@ -1040,7 +1040,7 @@
       <Item>
         <Id>2002</Id>
         <Position>19.5 21.5</Position>
-        <Sprite>Hints\ArrowAnimation2</Sprite>
+        <Sprite>Hints/ArrowAnimation2</Sprite>
         <DirectionDeg>-135</DirectionDeg>
         <Animated>true</Animated>
         <Timer>0</Timer>
@@ -1052,7 +1052,7 @@
       <Item>
         <Id>2003</Id>
         <Position>13.5 18</Position>
-        <Sprite>Hints\ArrowAnimation2</Sprite>
+        <Sprite>Hints/ArrowAnimation2</Sprite>
         <DirectionDeg>270</DirectionDeg>
         <Animated>true</Animated>
         <Timer>0</Timer>
@@ -1064,7 +1064,7 @@
       <Item>
         <Id>2004</Id>
         <Position>17.5 18.45</Position>
-        <Sprite>Hints\ArrowAnimation2</Sprite>
+        <Sprite>Hints/ArrowAnimation2</Sprite>
         <DirectionDeg>270</DirectionDeg>
         <Animated>true</Animated>
         <Timer>0</Timer>
@@ -1128,7 +1128,7 @@
       <Item>
         <Id>2009</Id>
         <Position>13.55 24.42</Position>
-        <Sprite>UI\Splash\Controls\ZonesDelimiter</Sprite>
+        <Sprite>UI/Splash/Controls/ZonesDelimiter</Sprite>
         <DirectionDeg>90</DirectionDeg>
         <Animated>false</Animated>
         <Timer>0</Timer>
@@ -1140,7 +1140,7 @@
       <Item>
         <Id>2010</Id>
         <Position>18.645834 24.416666</Position>
-        <Sprite>UI\SimpleArrow</Sprite>
+        <Sprite>UI/SimpleArrow</Sprite>
         <DirectionDeg>360</DirectionDeg>
         <Animated>false</Animated>
         <Timer>0</Timer>

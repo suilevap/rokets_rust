@@ -3,8 +3,8 @@
   <Asset Type="GameLibrary.MapData">
     <Name>NewDay</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Singleplayer\LetItSnowDay</Image>
-    <PreviewImage>Maps\Singleplayer\LetItSnowDay</PreviewImage>
+    <Image>Maps/Singleplayer/LetItSnowDay</Image>
+    <PreviewImage>Maps/Singleplayer/LetItSnowDay</PreviewImage>
     <Scale>96</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>
@@ -144,7 +144,7 @@
       <Item>
         <Id>1002</Id>
         <Position>44.5 4.5</Position>
-        <Sprite>Entities\DoorBox</Sprite>
+        <Sprite>Entities/DoorBox</Sprite>
         <Animated>false</Animated>
         <Scale>1.05</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -159,7 +159,7 @@
       <Item>
         <Id>1003</Id>
         <Position>44.5 5.5</Position>
-        <Sprite>Entities\DoorBox</Sprite>
+        <Sprite>Entities/DoorBox</Sprite>
         <Animated>false</Animated>
         <Scale>1.05</Scale>
         <DirectionDeg>180</DirectionDeg>
@@ -174,7 +174,7 @@
       <Item>
         <Id>1004</Id>
         <Position>47.6287346 1.95833337</Position>
-        <Sprite>Entities\IceBoxAlpha</Sprite>
+        <Sprite>Entities/IceBoxAlpha</Sprite>
         <Animated>false</Animated>
         <Scale>1.4</Scale>
         <DirectionDeg>-110.792648</DirectionDeg>
@@ -188,7 +188,7 @@
       <Item>
         <Id>1005</Id>
         <Position>48 7</Position>
-        <Sprite>Entities\IceBoxAlpha</Sprite>
+        <Sprite>Entities/IceBoxAlpha</Sprite>
         <Animated>false</Animated>
         <Scale>1.25</Scale>
         <DirectionDeg>-71.4624</DirectionDeg>
@@ -202,7 +202,7 @@
       <Item>
         <Id>1006</Id>
         <Position>29.5 24.5</Position>
-        <Sprite>Entities\IceBoxAlpha</Sprite>
+        <Sprite>Entities/IceBoxAlpha</Sprite>
         <Animated>false</Animated>
         <Scale>1.4</Scale>
         <DirectionDeg>180</DirectionDeg>
@@ -216,7 +216,7 @@
       <Item>
         <Id>1007</Id>
         <Position>30.5 20.5</Position>
-        <Sprite>Entities\IceBox</Sprite>
+        <Sprite>Entities/IceBox</Sprite>
         <Animated>false</Animated>
         <Scale>1.4</Scale>
         <DirectionDeg>180</DirectionDeg>
@@ -230,7 +230,7 @@
       <Item>
         <Id>1008</Id>
         <Position>37.5 20.5</Position>
-        <Sprite>Entities\IceBox</Sprite>
+        <Sprite>Entities/IceBox</Sprite>
         <Animated>false</Animated>
         <Scale>1.4</Scale>
         <DirectionDeg>180</DirectionDeg>
@@ -244,7 +244,7 @@
       <Item>
         <Id>1009</Id>
         <Position>41.5 15.5</Position>
-        <Sprite>Entities\IceBox</Sprite>
+        <Sprite>Entities/IceBox</Sprite>
         <Animated>false</Animated>
         <Scale>1.4</Scale>
         <DirectionDeg>180</DirectionDeg>
@@ -258,7 +258,7 @@
       <Item>
         <Id>1010</Id>
         <Position>37.5 25.5</Position>
-        <Sprite>Entities\IceBox</Sprite>
+        <Sprite>Entities/IceBox</Sprite>
         <Animated>false</Animated>
         <Scale>1.4</Scale>
         <DirectionDeg>180</DirectionDeg>
@@ -272,7 +272,7 @@
       <Item>
         <Id>1011</Id>
         <Position>31.5 15.5</Position>
-        <Sprite>Entities\IceBox</Sprite>
+        <Sprite>Entities/IceBox</Sprite>
         <Animated>false</Animated>
         <Scale>1.4</Scale>
         <DirectionDeg>180</DirectionDeg>
@@ -286,7 +286,7 @@
       <Item>
         <Id>1012</Id>
         <Position>42.5 17.5</Position>
-        <Sprite>Entities\IceBox</Sprite>
+        <Sprite>Entities/IceBox</Sprite>
         <Animated>false</Animated>
         <Scale>1.4</Scale>
         <DirectionDeg>180</DirectionDeg>
@@ -300,7 +300,7 @@
       <Item>
         <Id>1013</Id>
         <Position>41.5 14.5</Position>
-        <Sprite>Entities\IceBoxAlpha</Sprite>
+        <Sprite>Entities/IceBoxAlpha</Sprite>
         <Animated>false</Animated>
         <Scale>1.4</Scale>
         <DirectionDeg>180</DirectionDeg>
@@ -314,7 +314,7 @@
       <Item>
         <Id>1014</Id>
         <Position>43.5 17.5</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -328,7 +328,7 @@
       <Item>
         <Id>1015</Id>
         <Position>30 15.5</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -342,7 +342,7 @@
       <Item>
         <Id>1016</Id>
         <Position>28 25</Position>
-        <Sprite>Entities\IceBoxAlpha</Sprite>
+        <Sprite>Entities/IceBoxAlpha</Sprite>
         <Animated>false</Animated>
         <Scale>2.75</Scale>
         <DirectionDeg>180</DirectionDeg>
@@ -356,7 +356,7 @@
       <Item>
         <Id>1017</Id>
         <Position>29.5 24.5</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -370,7 +370,7 @@
       <Item>
         <Id>1018</Id>
         <Position>44 7.5</Position>
-        <Sprite>Entities\IceBoxAlpha</Sprite>
+        <Sprite>Entities/IceBoxAlpha</Sprite>
         <Animated>false</Animated>
         <Scale>1.4</Scale>
         <DirectionDeg>180</DirectionDeg>
@@ -384,7 +384,7 @@
       <Item>
         <Id>1019</Id>
         <Position>45 7.5</Position>
-        <Sprite>Entities\IceBox</Sprite>
+        <Sprite>Entities/IceBox</Sprite>
         <Animated>false</Animated>
         <Scale>1.4</Scale>
         <DirectionDeg>180</DirectionDeg>
@@ -398,7 +398,7 @@
       <Item>
         <Id>1020</Id>
         <Position>69.37814 16.291666</Position>
-        <Sprite>Entities\IceBox</Sprite>
+        <Sprite>Entities/IceBox</Sprite>
         <Animated>false</Animated>
         <Scale>2.75</Scale>
         <DirectionDeg>-147.571609</DirectionDeg>
@@ -412,7 +412,7 @@
       <Item>
         <Id>1021</Id>
         <Position>69.62814 18.666666</Position>
-        <Sprite>Entities\IceBox</Sprite>
+        <Sprite>Entities/IceBox</Sprite>
         <Animated>false</Animated>
         <Scale>2.75</Scale>
         <DirectionDeg>-6.58197546</DirectionDeg>
@@ -426,7 +426,7 @@
       <Item>
         <Id>1022</Id>
         <Position>71.96148 17.166666</Position>
-        <Sprite>Entities\IceBox</Sprite>
+        <Sprite>Entities/IceBox</Sprite>
         <Animated>false</Animated>
         <Scale>3.874998</Scale>
         <DirectionDeg>50.90585</DirectionDeg>
@@ -440,7 +440,7 @@
       <Item>
         <Id>1023</Id>
         <Position>74.54481 15.791667</Position>
-        <Sprite>Entities\IceBox</Sprite>
+        <Sprite>Entities/IceBox</Sprite>
         <Animated>false</Animated>
         <Scale>3.874998</Scale>
         <DirectionDeg>50.90585</DirectionDeg>
@@ -454,7 +454,7 @@
       <Item>
         <Id>1024</Id>
         <Position>74.08648 18.708334</Position>
-        <Sprite>Entities\IceBox</Sprite>
+        <Sprite>Entities/IceBox</Sprite>
         <Animated>false</Animated>
         <Scale>2.75</Scale>
         <DirectionDeg>-156.801331</DirectionDeg>
@@ -468,7 +468,7 @@
       <Item>
         <Id>1025</Id>
         <Position>55.7478638 37.375</Position>
-        <Sprite>Entities\IceBox</Sprite>
+        <Sprite>Entities/IceBox</Sprite>
         <Animated>false</Animated>
         <Scale>3.2</Scale>
         <DirectionDeg>50</DirectionDeg>
@@ -482,7 +482,7 @@
       <Item>
         <Id>1026</Id>
         <Position>53 39</Position>
-        <Sprite>Entities\IceBox</Sprite>
+        <Sprite>Entities/IceBox</Sprite>
         <Animated>false</Animated>
         <Scale>3.5</Scale>
         <DirectionDeg>-16.3494949</DirectionDeg>
@@ -496,7 +496,7 @@
       <Item>
         <Id>1027</Id>
         <Position>50 39.5</Position>
-        <Sprite>Entities\IceBox</Sprite>
+        <Sprite>Entities/IceBox</Sprite>
         <Animated>false</Animated>
         <Scale>3.874998</Scale>
         <DirectionDeg>16.5859928</DirectionDeg>
@@ -510,7 +510,7 @@
       <Item>
         <Id>1028</Id>
         <Position>30.5 40</Position>
-        <Sprite>Entities\IceBox</Sprite>
+        <Sprite>Entities/IceBox</Sprite>
         <Animated>false</Animated>
         <Scale>3.25</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -524,7 +524,7 @@
       <Item>
         <Id>1029</Id>
         <Position>1.5 43.5</Position>
-        <Sprite>Entities\IceBox</Sprite>
+        <Sprite>Entities/IceBox</Sprite>
         <Animated>false</Animated>
         <Scale>5</Scale>
         <DirectionDeg>-6.98863363</DirectionDeg>
@@ -538,7 +538,7 @@
       <Item>
         <Id>1030</Id>
         <Position>7.5 45.5</Position>
-        <Sprite>Entities\IceBox</Sprite>
+        <Sprite>Entities/IceBox</Sprite>
         <Animated>false</Animated>
         <Scale>5</Scale>
         <DirectionDeg>90</DirectionDeg>
@@ -552,7 +552,7 @@
       <Item>
         <Id>1031</Id>
         <Position>4.375 45.6465149</Position>
-        <Sprite>Entities\IceBox</Sprite>
+        <Sprite>Entities/IceBox</Sprite>
         <Animated>false</Animated>
         <Scale>2.75</Scale>
         <DirectionDeg>-45</DirectionDeg>
@@ -566,7 +566,7 @@
       <Item>
         <Id>1032</Id>
         <Position>60.23723 2.08333325</Position>
-        <Sprite>Entities\IceBox</Sprite>
+        <Sprite>Entities/IceBox</Sprite>
         <Animated>false</Animated>
         <Scale>3.874998</Scale>
         <DirectionDeg>50.90585</DirectionDeg>
@@ -580,7 +580,7 @@
       <Item>
         <Id>1033</Id>
         <Position>58.5 35.5</Position>
-        <Sprite>Entities\IceBox</Sprite>
+        <Sprite>Entities/IceBox</Sprite>
         <Animated>false</Animated>
         <Scale>2.75</Scale>
         <DirectionDeg>-72.9480057</DirectionDeg>
@@ -594,7 +594,7 @@
       <Item>
         <Id>1034</Id>
         <Position>56 40.5</Position>
-        <Sprite>Entities\IceBox</Sprite>
+        <Sprite>Entities/IceBox</Sprite>
         <Animated>false</Animated>
         <Scale>3.75</Scale>
         <DirectionDeg>-159.156326</DirectionDeg>
@@ -608,7 +608,7 @@
       <Item>
         <Id>1035</Id>
         <Position>58 37.5</Position>
-        <Sprite>Entities\IceBox</Sprite>
+        <Sprite>Entities/IceBox</Sprite>
         <Animated>false</Animated>
         <Scale>1.5</Scale>
         <DirectionDeg>-87.95185</DirectionDeg>
@@ -622,7 +622,7 @@
       <Item>
         <Id>1036</Id>
         <Position>33.5 17.5</Position>
-        <Sprite>Entities\FinishTile</Sprite>
+        <Sprite>Entities/FinishTile</Sprite>
         <Animated>false</Animated>
         <Scale>1.5</Scale>
         <DirectionDeg>90</DirectionDeg>
@@ -636,7 +636,7 @@
       <Item>
         <Id>1037</Id>
         <Position>10 43</Position>
-        <Sprite>Entities\IceBox</Sprite>
+        <Sprite>Entities/IceBox</Sprite>
         <Animated>false</Animated>
         <Scale>2.29803681</Scale>
         <DirectionDeg>72.34051</DirectionDeg>
@@ -650,7 +650,7 @@
       <Item>
         <Id>1038</Id>
         <Position>61.5 0.5</Position>
-        <Sprite>Gadget\Bomb</Sprite>
+        <Sprite>Gadget/bomb</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -664,7 +664,7 @@
       <Item>
         <Id>1039</Id>
         <Position>64 0.5</Position>
-        <Sprite>Gadget\Bomb</Sprite>
+        <Sprite>Gadget/bomb</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -678,7 +678,7 @@
       <Item>
         <Id>1040</Id>
         <Position>0.5 45.5</Position>
-        <Sprite>Gadget\Bomb</Sprite>
+        <Sprite>Gadget/bomb</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -692,7 +692,7 @@
       <Item>
         <Id>1041</Id>
         <Position>0.5 47.5</Position>
-        <Sprite>Gadget\Bomb</Sprite>
+        <Sprite>Gadget/bomb</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -706,7 +706,7 @@
       <Item>
         <Id>1042</Id>
         <Position>0.5 49.5</Position>
-        <Sprite>Gadget\Bomb</Sprite>
+        <Sprite>Gadget/bomb</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -720,7 +720,7 @@
       <Item>
         <Id>1043</Id>
         <Position>33.5 20.5</Position>
-        <Sprite>Gadget\Bomb</Sprite>
+        <Sprite>Gadget/bomb</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -821,7 +821,7 @@
         </Groups>
         <RunOnMapStart>true</RunOnMapStart>
         <Position>48 7</Position>
-        <Sprite>Entities\CargoQuest</Sprite>
+        <Sprite>Entities/CargoQuest</Sprite>
         <Scale>0.9</Scale>
         <DirectionDeg>0</DirectionDeg>
         <Animated>false</Animated>
@@ -837,7 +837,7 @@
         </Groups>
         <RunOnMapStart>true</RunOnMapStart>
         <Position>43.9 7.5</Position>
-        <Sprite>Cars\SimpleBuggy\Destroyed1</Sprite>
+        <Sprite>Cars/SimpleBuggy/Destroyed1</Sprite>
         <Scale>1.2</Scale>
         <DirectionDeg>45</DirectionDeg>
         <Animated>false</Animated>
@@ -853,7 +853,7 @@
         </Groups>
         <RunOnMapStart>true</RunOnMapStart>
         <Position>47.6 2</Position>
-        <Sprite>Entities\CargoQuest</Sprite>
+        <Sprite>Entities/CargoQuest</Sprite>
         <Scale>0.9</Scale>
         <DirectionDeg>10</DirectionDeg>
         <Animated>false</Animated>
@@ -877,7 +877,7 @@
         </Groups>
         <RunOnMapStart>true</RunOnMapStart>
         <Position>27.4956188 24.666666</Position>
-        <Sprite>Cars\SimpleBuggy\Destroyed1</Sprite>
+        <Sprite>Cars/SimpleBuggy/Destroyed1</Sprite>
         <Scale>1.2</Scale>
         <DirectionDeg>157.468964</DirectionDeg>
         <Animated>false</Animated>
@@ -893,7 +893,7 @@
         </Groups>
         <RunOnMapStart>true</RunOnMapStart>
         <Position>28.270834 25.166666</Position>
-        <Sprite>Weapons\Saw</Sprite>
+        <Sprite>Weapons/Saw</Sprite>
         <Scale>0.35</Scale>
         <DirectionDeg>157.468964</DirectionDeg>
         <Animated>false</Animated>
@@ -909,7 +909,7 @@
         </Groups>
         <RunOnMapStart>true</RunOnMapStart>
         <Position>41.5 14.5</Position>
-        <Sprite>Cars\Scout\Destroyed1</Sprite>
+        <Sprite>Cars/Scout/Destroyed1</Sprite>
         <Scale>0.9</Scale>
         <DirectionDeg>45</DirectionDeg>
         <Animated>false</Animated>

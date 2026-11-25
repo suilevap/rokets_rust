@@ -3,7 +3,7 @@
   <Asset Type="GameLibrary.MapData">
     <Name>Battle Field</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Singleplayer\BattleField</Image>
+    <Image>Maps/Singleplayer/BattleField</Image>
     <Scale>48</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>true</HaveOutlandVizualization>

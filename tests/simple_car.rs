@@ -191,7 +191,7 @@ mod catalogue {
         let hammer = cars.get_simple("SimpleBuggyHammer").unwrap();
         assert_eq!(hammer.weapon.as_deref(), Some("Hammer"));
         assert_eq!(hammer.max_health, 10);
-        assert_eq!(hammer.sprites_path.as_deref(), Some("Cars\\SimpleBuggy"));
+        assert_eq!(hammer.sprites_path.as_deref(), Some("Cars/SimpleBuggy"));
         let turret = cars.get_simple("TurretStatHammer").unwrap();
         assert!(!turret.can_move && !turret.can_link && turret.shield == 4);
         assert_eq!(turret.weapon.as_deref(), Some("Hammer"));
@@ -204,7 +204,7 @@ mod catalogue {
     #[test]
     fn a_base_of_a_base_is_resolved_too() {
         let xml = r#"<XnaContent><Asset Type="GameLibrary.CarsData"><Cars/><SimpleCars>
-            <Item><Name>A</Name><SpritesPath>Cars\A</SpritesPath><MaxHealth>7</MaxHealth><Weapon>Minigun</Weapon></Item>
+            <Item><Name>A</Name><SpritesPath>Cars/A</SpritesPath><MaxHealth>7</MaxHealth><Weapon>Minigun</Weapon></Item>
             <Item><Name>B</Name><BaseCar>A</BaseCar><Weapon>Hammer</Weapon></Item>
             <Item><Name>C</Name><BaseCar>B</BaseCar></Item>
             </SimpleCars></Asset></XnaContent>"#;
@@ -213,7 +213,7 @@ mod catalogue {
         assert_eq!((b.max_health, b.weapon.as_deref()), (7, Some("Hammer")));
         // C names a base and its own (empty) weapon: it has none, as `MergeSimpleCar`.
         assert_eq!((c.max_health, c.weapon.as_deref(), c.name.as_str()), (7, None, "C"));
-        assert_eq!(c.sprites_path.as_deref(), Some("Cars\\A"));
+        assert_eq!(c.sprites_path.as_deref(), Some("Cars/A"));
     }
 
     #[test]

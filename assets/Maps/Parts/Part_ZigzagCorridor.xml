@@ -3,7 +3,7 @@
   <Asset Type="GameLibrary.MapData">
     <Name>Part_ZigzagCorridor</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Parts\Part_ZigzagCorridor</Image>
+    <Image>Maps/Parts/Part_ZigzagCorridor</Image>
     <Scale>48</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>

@@ -24,7 +24,7 @@
 //!   at the gun and sends a [`Rocket`] from the muzzle along the barrel.
 //!   `RocketlauncherDirect` sends `SmallRoket`s (blast 16), the two
 //!   `RocketlauncherChasing*` `HeavyRoket`s (blast 20, homing).
-//! - A rocket is a body 1 by 0.27 units (`Weapons\roket` at scale 0.5, a
+//! - A rocket is a body 1 by 0.27 units (`Weapons/roket` at scale 0.5, a
 //!   rectangle of density 1: a mass of 0.27) with no friction that
 //!   flies through what bullets fly through (sensors and low boxes:
 //!   `PhysicBodyCategory.WeaponCollidesWith` leaves out `LowWall` and
@@ -120,10 +120,10 @@ use crate::render::particles::{FlashBoost, Particles};
 use crate::render::sprite::{SpriteTint, UnitQuad, sprite_bundle};
 use crate::units::px;
 
-/// `Weapons\roket`'s size in C# pixels, at the entity's scale of 0.5.
+/// `Weapons/roket`'s size in C# pixels, at the entity's scale of 0.5.
 const SPRITE_SIZE: Vec2 = Vec2::new(65.0, 17.0);
 const SPRITE_SCALE: f32 = 0.5;
-pub const SPRITE: &str = "Weapons\\roket";
+pub const SPRITE: &str = "Weapons/roket";
 
 /// The rocket's rectangle, world units (`CreateRoket`: `Scale` 0.5).
 pub const SIZE: Vec2 = Vec2::new(SPRITE_SIZE.x * SPRITE_SCALE / 32.0, SPRITE_SIZE.y * SPRITE_SCALE / 32.0);
@@ -508,7 +508,7 @@ fn spawn_rocket_views(
     mut glows: ResMut<Assets<GlowMaterial>>,
     mut meshes: ResMut<Assets<Mesh>>,
 ) {
-    let (Some(sprite), Some(flash)) = (map.sprites.get(SPRITE), map.sprites.get("Particles\\flash")) else {
+    let (Some(sprite), Some(flash)) = (map.sprites.get(SPRITE), map.sprites.get("Particles/flash")) else {
         return;
     };
     let lit = SpriteTint {
@@ -587,7 +587,7 @@ fn place_rocket_views(
     mut glows: ResMut<Assets<GlowMaterial>>,
 ) {
     let k = fixed.overstep_fraction();
-    let size = map.sprites.get("Particles\\flash").map_or(Vec2::splat(64.0), |s| s.size);
+    let size = map.sprites.get("Particles/flash").map_or(Vec2::splat(64.0), |s| s.size);
     for (rocket, mut t, children) in &mut rockets {
         t.translation = rocket.previous.lerp(rocket.at, k).extend(0.0);
         t.rotation = Quat::from_rotation_z(rocket.direction);

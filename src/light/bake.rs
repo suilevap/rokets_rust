@@ -216,7 +216,7 @@ impl AdditiveLight {
 
 impl LightMap {
     /// Bakes the map's lamps; `flash` is the lamp's falloff
-    /// (`Particles\flash2`'s alpha), `objects` the outlines of fixed
+    /// (`Particles/flash2`'s alpha), `objects` the outlines of fixed
     /// objects that cast shadows, in map cells
     /// (`map::templates::static_shadow_outline`).
     pub fn bake(

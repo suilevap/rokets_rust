@@ -36,8 +36,8 @@ fn every_sprite_the_snow_draws_is_there() {
         let names = textures(effect);
         assert!(!names.is_empty());
         for name in names {
-            let path = assets::sprite_path(name).unwrap_or_else(|| panic!("{name} is not in the assets"));
-            assert!(common::assets_root().join(path).is_file(), "{path}");
+            let path = assets::sprite_path(name);
+            assert!(common::assets_root().join(&path).is_file(), "{path}");
         }
     }
     assert!(textures(LevelEffect::None).is_empty(), "a plain map has no snow");
