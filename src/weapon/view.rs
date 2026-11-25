@@ -58,6 +58,7 @@ use crate::controls::{LocalPlayer, PlayerIntent};
 use crate::explosion::Health;
 use crate::render::camera::MainCamera;
 use crate::game::{GameState, LoadedMap, MapEntity};
+use crate::render::glow::{GlowMaterial, additive, alpha_for};
 use crate::render::layers::Layer;
 use crate::render::sprite::{SpriteTint, UnitQuad, sprite_bundle};
 use crate::units::PX_PER_UNIT;
@@ -270,13 +271,13 @@ pub(super) fn beam_look(width: f32, length: f32, hit: bool, glow: bool, t: f32) 
 
 /// Colours an additive line's material: `color` boosted as the flashes are
 /// (`FlashBoost`, linear light), with its texture and transform.
-pub(super) fn paint(m: &mut StandardMaterial, image: Option<Handle<Image>>, color: Color, boost: f32, uv: Affine2) {
-    if m.base_color_texture != image {
-        m.base_color_texture = image;
+pub(super) fn paint(m: &mut GlowMaterial, image: Option<Handle<Image>>, color: Color, boost: f32, uv: Affine2) {
+    if m.base.base_color_texture != image {
+        m.base.base_color_texture = image;
     }
     let c = color.to_linear();
-    m.base_color = Color::linear_rgba(c.red * boost, c.green * boost, c.blue * boost, c.alpha);
-    m.uv_transform = uv;
+    m.base.base_color = Color::linear_rgba(c.red * boost, c.green * boost, c.blue * boost, alpha_for(c.alpha));
+    m.base.uv_transform = uv;
 }
 
 /// A gun's aim line, drawn by [`draw_aim_lines`].
@@ -295,8 +296,7 @@ fn draw_aim_lines(
     spatial: SpatialQuery,
     map: Res<LoadedMap>,
     quad: Res<UnitQuad>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-    (mut images, mut premultiplied): (ResMut<Assets<Image>>, ResMut<crate::render::premultiply::Premultiplied>),
+    mut materials: ResMut<Assets<GlowMaterial>>,
     mut guns: Query<(
         Entity,
         &Weapon,
@@ -311,7 +311,7 @@ fn draw_aim_lines(
     cameras: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     skipped: Query<(), PassedByBullets>,
     hurt: Query<(), Hurt>,
-    mut lines: Query<(&AimLine, &mut Transform, &mut Visibility, &MeshMaterial3d<StandardMaterial>)>,
+    mut lines: Query<(&AimLine, &mut Transform, &mut Visibility, &MeshMaterial3d<GlowMaterial>)>,
 ) {
     let camera = cameras.single().ok();
     let mut shown: Vec<Shown> = Vec::new();
@@ -346,15 +346,13 @@ fn draw_aim_lines(
     let have = lines.iter().count() / 2;
     for slot in have..needed {
         for glow in [false, true] {
-            let material = materials.add(StandardMaterial {
-                base_color_texture: map.sprites.get(LASER_LINE).map(|s| premultiplied.of(&s.image, &mut images)),
-                alpha_mode: AlphaMode::Add,
-                unlit: true,
-                double_sided: true,
-                cull_mode: None,
-                depth_bias: Layer::Glow.depth_bias(),
-                ..default()
-            });
+            let material = materials.add(additive(
+                StandardMaterial {
+                    base_color_texture: map.sprites.get(LASER_LINE).map(|s| s.image.clone()),
+                    ..default()
+                },
+                Layer::Glow.depth_bias(),
+            ));
             commands.spawn((
                 Name::new("Aim line"),
                 MapEntity,
@@ -402,8 +400,7 @@ fn draw_aim_lines(
             AimLook::Reload(left) => (3.0 + 23.0 * left, white(1.0 - left * 0.5)),
         };
         let (texture, width, uv) = beam_look(width, length, hit, line.glow, t);
-        // Additive, as XNA added a premultiplied texture (`render/premultiply`).
-        let image = map.sprites.get(texture).map(|s| premultiplied.of(&s.image, &mut images));
+        let image = map.sprites.get(texture).map(|s| s.image.clone());
         paint(&mut m, image, color, flash.0, uv);
         let mid = (start + end) / 2.0;
         *transform = Transform::from_translation(mid.extend(Layer::Glow.z()))

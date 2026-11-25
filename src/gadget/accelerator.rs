@@ -75,7 +75,7 @@ use crate::particles::styles::{ACCELERATION_READY, BOMB_BEEP};
 use crate::render::camera::CameraShake;
 use crate::render::layers::Layer;
 use crate::render::particles::{FlashBoost, Particles};
-use crate::render::premultiply::Premultiplied;
+use crate::render::glow::{GlowMaterial, additive};
 use crate::render::sprite::{SpriteTint, UnitQuad, sprite_bundle};
 use crate::units::px;
 use crate::weapon::{PlayerEnergy, Weapon};
@@ -337,24 +337,21 @@ fn spawn_views(
     map: Res<LoadedMap>,
     quad: Res<UnitQuad>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    (mut images, mut premultiplied): (ResMut<Assets<Image>>, ResMut<Premultiplied>),
+    mut glows: ResMut<Assets<GlowMaterial>>,
 ) {
     for (car, mut a) in &mut cars {
         if a.views.is_some() {
             continue;
         }
-        // Added as XNA added a premultiplied texture (`premultiply`).
         let glow = match map.sprites.get(FLASH) {
             Some(flash) => {
-                let material = materials.add(StandardMaterial {
-                    base_color_texture: Some(premultiplied.of(&flash.image, &mut images)),
-                    alpha_mode: AlphaMode::Add,
-                    unlit: true,
-                    double_sided: true,
-                    cull_mode: None,
-                    depth_bias: Layer::Glow.depth_bias(),
-                    ..default()
-                });
+                let material = glows.add(additive(
+                    StandardMaterial {
+                        base_color_texture: Some(flash.image.clone()),
+                        ..default()
+                    },
+                    Layer::Glow.depth_bias(),
+                ));
                 commands
                     .spawn((
                         Name::new("Accelerator glow"),
@@ -412,8 +409,8 @@ fn draw_views(
     mut rng: ResMut<ViewRng>,
     map: Res<LoadedMap>,
     cars: Query<(&Accelerator, &Transform, &CarRadius, &PlayerIntent, Has<Inactive>, Has<LocalPlayer>)>,
-    mut views: Query<(&mut Transform, &mut Visibility, Option<&MeshMaterial3d<StandardMaterial>>), Without<Accelerator>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
+    mut views: Query<(&mut Transform, &mut Visibility, Option<&MeshMaterial3d<GlowMaterial>>), Without<Accelerator>>,
+    mut glows: ResMut<Assets<GlowMaterial>>,
 ) {
     let size_of = |name: &str| map.sprites.get(name).map_or(Vec2::ZERO, |i| i.size) * px(1.0);
     for (a, car, radius, intent, inactive, local) in &cars {
@@ -430,10 +427,10 @@ fn draw_views(
                 let tremble = Vec2::new(rng.0.random::<f32>() * 2.0 - 1.0, rng.0.random::<f32>() * 2.0 - 1.0) * GLOW_TREMBLE;
                 t.translation = (at - facing * radius.0 + tremble).extend(Layer::Glow.z());
                 t.scale = (size_of(FLASH) * GLOW_SCALE).extend(1.0);
-                if let Some(mut m) = material.and_then(|m| materials.get_mut(&m.0)) {
+                if let Some(mut m) = material.and_then(|m| glows.get_mut(&m.0)) {
                     let c = Color::srgb(GLOW_COLOR[0], GLOW_COLOR[1], GLOW_COLOR[2]).to_linear();
                     let b = flash_boost.0;
-                    m.base_color = Color::linear_rgba(c.red * b, c.green * b, c.blue * b, 1.0);
+                    m.base.base_color = Color::linear_rgba(c.red * b, c.green * b, c.blue * b, 1.0);
                 }
             }
         }

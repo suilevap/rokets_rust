@@ -16,6 +16,7 @@ use bevy::prelude::*;
 use crate::game::{GameState, LoadedMap, MapEntity};
 use crate::particles::styles::CAR_BASE;
 use crate::particles::{Particle, Pool, Style};
+use crate::render::glow::{GlowMaterial, additive};
 use crate::render::layers::Layer;
 use crate::units::px;
 
@@ -159,7 +160,7 @@ fn draw(
     flash: Res<FlashBoost>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    (mut images, mut premultiplied): (ResMut<Assets<Image>>, ResMut<super::premultiply::Premultiplied>),
+    mut glows: ResMut<Assets<GlowMaterial>>,
     mut batches: Query<(&Batch, &Mesh3d, &mut Visibility)>,
 ) {
     let mut quads: HashMap<Key, Quads> = HashMap::new();
@@ -191,11 +192,10 @@ fn draw(
         // Vertex colours are linear; XNA's were sRGB numbers. Additive
         // glows sum in linear light here, darker than XNA's sums of sRGB
         // numbers: they get a boost, milder than the additive light's
-        // (stacked flashes clip to white quickly). Its additive blend
-        // weighed the colour by alpha once more (`SourceAlpha`).
-        let (alpha, boost) = if p.style.additive { (a * a, flash.0) } else { (a, 1.0) };
+        // (stacked flashes clip to white quickly).
+        let boost = if p.style.additive { flash.0 } else { 1.0 };
         let linear = Color::srgb(r * light[0], g * light[1], b * light[2]).to_linear();
-        let color = [linear.red * boost, linear.green * boost, linear.blue * boost, alpha];
+        let color = [linear.red * boost, linear.green * boost, linear.blue * boost, a];
         q.colors.extend([color; 4]);
     }
 
@@ -217,7 +217,7 @@ fn draw(
                 let Some(sprite) = map.sprites.get(key.0) else {
                     continue;
                 };
-                commands.spawn((
+                let mut batch = commands.spawn((
                     Name::new(format!("Particles {} {:?}{}", key.0, key.1, if key.2 { " additive" } else { "" })),
                     MapEntity,
                     Batch {
@@ -226,25 +226,27 @@ fn draw(
                         additive: key.2,
                     },
                     Mesh3d(meshes.add(build(q))),
-                    MeshMaterial3d(materials.add(StandardMaterial {
-                        // Additive: as XNA added a premultiplied texture.
-                        base_color_texture: Some(if key.2 {
-                            premultiplied.of(&sprite.image, &mut images)
-                        } else {
-                            sprite.image.clone()
-                        }),
-                        alpha_mode: if key.2 { AlphaMode::Add } else { AlphaMode::Blend },
-                        unlit: true,
-                        double_sided: true,
-                        cull_mode: None,
-                        depth_bias: key.1.depth_bias(),
-                        ..default()
-                    })),
                     Transform::default(),
                     Visibility::default(),
                     // Rebuilt every frame: never culled by stale bounds.
                     bevy::camera::visibility::NoFrustumCulling,
                 ));
+                let base = StandardMaterial {
+                    base_color_texture: Some(sprite.image.clone()),
+                    ..default()
+                };
+                if key.2 {
+                    batch.insert(MeshMaterial3d(glows.add(additive(base, key.1.depth_bias()))));
+                } else {
+                    batch.insert(MeshMaterial3d(materials.add(StandardMaterial {
+                        alpha_mode: AlphaMode::Blend,
+                        unlit: true,
+                        double_sided: true,
+                        cull_mode: None,
+                        depth_bias: key.1.depth_bias(),
+                        ..base
+                    })));
+                }
             }
         }
     }

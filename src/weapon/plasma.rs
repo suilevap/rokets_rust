@@ -61,6 +61,7 @@ use crate::car::control::{Team, spares};
 use crate::explosion::Hit;
 use crate::game::{GameState, LoadedMap, MapEntity};
 use crate::particles::styles::PLASMA_END;
+use crate::render::glow::{GlowMaterial, additive};
 use crate::render::layers::Layer;
 use crate::render::particles::Particles;
 use crate::render::sprite::UnitQuad;
@@ -258,7 +259,7 @@ struct BulletView;
 
 /// The streak's material, one per colour (the map's texture with it).
 #[derive(Default)]
-struct BulletMaterials(Vec<([u32; 3], AssetId<Image>, Handle<StandardMaterial>)>);
+struct BulletMaterials(Vec<([u32; 3], AssetId<Image>, Handle<GlowMaterial>)>);
 
 #[allow(clippy::too_many_arguments)]
 fn spawn_bullet_views(
@@ -266,8 +267,7 @@ fn spawn_bullet_views(
     bullets: Query<(Entity, &PlasmaBullet), Added<PlasmaBullet>>,
     map: Res<LoadedMap>,
     quad: Res<UnitQuad>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-    (mut images, mut premultiplied): (ResMut<Assets<Image>>, ResMut<crate::render::premultiply::Premultiplied>),
+    mut materials: ResMut<Assets<GlowMaterial>>,
     mut cache: Local<BulletMaterials>,
 ) {
     let Some(info) = map.sprites.get(BULLET_TEXTURE) else {
@@ -279,17 +279,14 @@ fn spawn_bullet_views(
             Some((_, _, m)) => m.clone(),
             None => {
                 let [r, g, b] = bullet.color;
-                // Added as XNA added a premultiplied texture (`premultiply`).
-                let m = materials.add(StandardMaterial {
-                    base_color: Color::srgb(r, g, b),
-                    base_color_texture: Some(premultiplied.of(&info.image, &mut images)),
-                    alpha_mode: AlphaMode::Add,
-                    unlit: true,
-                    double_sided: true,
-                    cull_mode: None,
-                    depth_bias: Layer::Glow.depth_bias(),
-                    ..default()
-                });
+                let m = materials.add(additive(
+                    StandardMaterial {
+                        base_color: Color::srgb(r, g, b),
+                        base_color_texture: Some(info.image.clone()),
+                        ..default()
+                    },
+                    Layer::Glow.depth_bias(),
+                ));
                 cache.0.push((key, info.image.id(), m.clone()));
                 m
             }

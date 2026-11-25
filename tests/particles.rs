@@ -74,10 +74,3 @@ fn a_full_pool_replaces_the_oldest_optional_particle() {
     pool.add(&FADE, Vec2::ZERO, 0.0, 0.0);
     assert_eq!(pool.iter().count(), 2);
 }
-
-#[test]
-fn additive_textures_are_premultiplied_as_xna_built_them() {
-    use tilerider::render::premultiply::premultiply;
-    // Opaque keeps its colour; half alpha halves it; clear goes black.
-    assert_eq!(premultiply(&[200, 100, 50, 255, 200, 100, 50, 128, 200, 100, 50, 0]), vec![200, 100, 50, 255, 100, 50, 25, 128, 0, 0, 0, 0]);
-}
