@@ -8,12 +8,18 @@
 //! one per lamp: cheap, and it reads as "the light that matters here".
 //! Built once with the map; asking is a lookup.
 //!
-//! As in C#, a spot is tested from its corner, the box around each lamp's
-//! circle is filled (beyond the radius the shadow has no length, see
-//! `render/shadow`), and a spot within 0.75 units of a lamp that was
-//! already claimed by another is claimed by none. (The C# check reads
-//! `l2 / size * size < 0.75²`, which is just `l2 < 0.75²`; overlapping
-//! lights were meant there, the effect is kept.)
+//! A lamp claims the spots in the box around its circle (beyond the radius
+//! the shadow has no length, see `render/shadow`), each seen from its
+//! centre. Where two lamps overlap, a spot right under the later one
+//! (within 0.75 units) that the earlier one already lit is claimed by
+//! neither: an object standing on top of a lamp would get a shadow flipping
+//! between the two.
+//!
+//! Differences from C#: C# tested each spot from its corner and truncated
+//! the box's size, so the last row and column of a lamp's box could be
+//! skipped; here spots are seen from their centres and every spot the box
+//! touches is filled. C#'s too-close check read `l2 / size * size < 0.75²`,
+//! which is just `l2 < 0.75²`; that rule is kept as plainly that.
 
 use crate::light::bake::{Lamp, LightFrame};
 use crate::map::grid::MapGrid;
@@ -54,15 +60,15 @@ impl ShadowLamps {
         for (i, lamp) in lamps.iter().enumerate().filter(|(_, l)| l.use_for_dynamic_shadow) {
             let at = [lamp.x * cell, lamp.y * cell];
             let r = lamp.radius * cell;
-            // `DataMap.GetRect`: corners clamped to the room, size truncated.
+            // The spots the lamp's box touches, clamped to the room.
             let lo = [(at[0] - r).clamp(0.0, room[0]), (at[1] - r).clamp(0.0, room[1])];
             let hi = [(at[0] + r).clamp(0.0, room[0]), (at[1] + r).clamp(0.0, room[1])];
             let (x0, y0) = ((lo[0] / step) as usize, (lo[1] / step) as usize);
-            let (w, h) = (((hi[0] - lo[0]) / step) as usize, ((hi[1] - lo[1]) / step) as usize);
-            for y in y0..(y0 + h).min(rows) {
-                for x in x0..(x0 + w).min(columns) {
+            let (x1, y1) = (((hi[0] / step).ceil() as usize).min(columns), ((hi[1] / step).ceil() as usize).min(rows));
+            for y in y0..y1 {
+                for x in x0..x1 {
                     let spot = &mut spots[y * columns + x];
-                    let p = [x as f32 * step, y as f32 * step];
+                    let p = [(x as f32 + 0.5) * step, (y as f32 + 0.5) * step];
                     let d2 = |a: [f32; 2]| (p[0] - a[0]).powi(2) + (p[1] - a[1]).powi(2);
                     match *spot {
                         Spot::Nobody => {}
