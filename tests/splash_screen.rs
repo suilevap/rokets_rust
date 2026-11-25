@@ -9,8 +9,8 @@ use tilerider::content::actions::defs::ShowSplash;
 use tilerider::content::map::MapData;
 use tilerider::content::map_list::MapList;
 use tilerider::content::splashes::SplashesData;
-use tilerider::content::xna::XColor;
-use tilerider::splash::screen::{Phase, Screen, corner_pivot_shift, draw_order, placement, straight_tint};
+use tilerider::content::xna::{Tint, XColor};
+use tilerider::splash::screen::{Phase, Screen, corner_pivot_shift, draw_order, placement};
 
 const FILE: &str = r#"<XnaContent><Asset Type="GameLibrary.SplashesData"><Splashes>
   <Item><Name>Timer</Name><DrawBackground>false</DrawBackground>
@@ -55,10 +55,10 @@ fn layers_read_their_fields_and_defaults() {
     assert_eq!(l.len(), 4);
     assert_eq!((l[0].bind_text_id, l[0].sprite_name()), (0, None), "an empty sprite is none");
     assert_eq!((l[1].bind_text_id, l[1].height, l[1].scale), (-1, 0.3, 2.0));
-    assert_eq!(l[1].color, XColor::rgba(0x90, 0x90, 0x90, 0x90));
+    assert_eq!(l[1].color, Tint::from_premultiplied(XColor::rgba(0x90, 0x90, 0x90, 0x90)));
     assert_eq!(l[2].text_key(), Some("Go"));
     assert!(l[2].is_static && l[2].on_foreground && l[3].stretch_to_screen);
-    assert_eq!((l[3].height, l[3].scale, l[3].color), (-1.0, 1.0, XColor::WHITE));
+    assert_eq!((l[3].height, l[3].scale, l[3].color), (-1.0, 1.0, Tint::WHITE));
 }
 
 #[test]
@@ -247,17 +247,33 @@ fn foreground_layers_are_drawn_last_and_height_orders_the_rest() {
 }
 
 #[test]
-fn colours_are_straightened_from_premultiplied() {
-    assert_eq!(straight_tint(XColor::WHITE, 1.0), [1.0, 1.0, 1.0, 1.0]);
+fn colours_are_straightened_from_premultiplied_when_read() {
+    assert_eq!(Tint::from_premultiplied(XColor::WHITE), Tint::WHITE);
     // `80808080` is white at half strength, not grey.
-    let [r, g, b, a] = straight_tint(XColor::rgba(128, 128, 128, 128), 1.0);
-    assert!((r - 1.0).abs() < 1e-6 && (g - 1.0).abs() < 1e-6 && (b - 1.0).abs() < 1e-6);
-    assert!((a - 128.0 / 255.0).abs() < 1e-6);
+    let t = Tint::from_premultiplied(XColor::rgba(128, 128, 128, 128));
+    assert!(t.rgb.iter().all(|c| (c - 1.0).abs() < 1e-6) && !t.additive);
+    assert!((t.alpha - 128.0 / 255.0).abs() < 1e-6);
     // The fade multiplies the alpha only.
-    assert!((straight_tint(XColor::rgba(128, 128, 128, 128), 0.5)[3] - 64.0 / 255.0).abs() < 1e-6);
-    // A channel above the alpha stays above 1: it adds light.
-    assert!(straight_tint(XColor::rgba(0, 255, 255, 128), 1.0)[2] > 1.9);
-    assert_eq!(straight_tint(XColor::rgba(255, 255, 255, 0), 1.0), [0.0; 4]);
+    assert!((t.blended(0.5)[3] - 64.0 / 255.0).abs() < 1e-6);
+    assert!((t.blended(0.5)[0] - 1.0).abs() < 1e-6);
+}
+
+#[test]
+fn a_colour_brighter_than_its_alpha_is_flagged_additive() {
+    // `770094FF`: blue at 0.47 opacity that also adds all its blue light.
+    let t = Tint::from_premultiplied(XColor::rgba(0x00, 0x94, 0xFF, 0x77));
+    assert!(t.additive);
+    assert!(t.rgb.iter().all(|c| (0.0..=1.0).contains(c)), "no channel above 1 in the data: {:?}", t.rgb);
+    assert!((t.alpha - 0x77 as f32 / 255.0).abs() < 1e-6);
+    // Drawn blended, its light (rgb) is what the picture adds at full alpha.
+    let [_, g, b, a] = t.blended(1.0);
+    assert!((b * a - 1.0).abs() < 1e-5 && (g * a - 0x94 as f32 / 255.0).abs() < 1e-5);
+    // The fade dims the alpha; the colour stays.
+    assert!((t.blended(0.5)[3] - t.alpha / 2.0).abs() < 1e-6);
+    assert!((t.blended(0.5)[2] - b).abs() < 1e-6);
+    // Opaque and clear colours are plain.
+    assert!(!Tint::from_premultiplied(XColor::rgba(255, 0, 0, 255)).additive);
+    assert_eq!(Tint::from_premultiplied(XColor::rgba(255, 255, 255, 0)).blended(1.0), [0.0; 4]);
 }
 
 #[test]

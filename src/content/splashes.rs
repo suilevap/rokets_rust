@@ -10,7 +10,7 @@
 
 use serde::Deserialize;
 
-use super::xna::{Items, XColor, XVec2, boolean};
+use super::xna::{Items, Tint, XVec2, boolean, premultiplied_tint};
 use super::{ContentError, parse_asset};
 
 fn yes() -> bool {
@@ -96,8 +96,9 @@ pub struct LayerData {
     pub offset: XVec2,
     #[serde(default, deserialize_with = "boolean")]
     pub stretch_to_screen: bool,
-    #[serde(default)]
-    pub color: XColor,
+    /// Straight; a premultiplied colour of C# is converted when read.
+    #[serde(default, deserialize_with = "premultiplied_tint")]
+    pub color: Tint,
     /// Does not sway.
     #[serde(default, deserialize_with = "boolean", rename = "Static")]
     pub is_static: bool,

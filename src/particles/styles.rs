@@ -1,6 +1,7 @@
 //! The effects, as `ParticleSystemManager` defined them, converted to our
 //! units: speeds from the C# game's pixels per second to world units
-//! (written `px / 32`), colours from bytes, turn rates negated (C# angles
+//! (written `px / 32`), colours from bytes (straight RGB and an alpha; C#'s
+//! `Color * k` is white with alpha `k`), turn rates negated (C# angles
 //! turn the other way, see `units`). Heights stay C#'s `DepthConst` values.
 //!
 //! Only the effects something spawns are here; add the others with the
@@ -87,6 +88,12 @@ const OVER_BOMB: f32 = -0.01;
 
 const fn color(r: f32, g: f32, b: f32) -> [f32; 4] {
     [r, g, b, 1.0]
+}
+
+/// White with an `alpha`. C# wrote it as `Color.White * alpha`, premultiplied
+/// (every channel `alpha`); here colours are straight.
+const fn white(alpha: f32) -> [f32; 4] {
+    [1.0, 1.0, 1.0, alpha]
 }
 
 const fn still(scale: f32, view_rotation: f32, color: [f32; 4], height: f32) -> State {
@@ -746,7 +753,7 @@ pub static WIND_SNOW: Style = Style {
         scale: Vec2::ZERO,
         view_rotation: 0.0,
         rotation: 0.0,
-        color: [0.5; 4],
+        color: white(0.5),
         height: SPEED_TRAIL_PARTICLE,
     },
     end: State {
@@ -772,7 +779,7 @@ pub static WIND_SNOW_TURNING: Style = Style {
         scale: Vec2::ZERO,
         view_rotation: -1.4,
         rotation: -1.4,
-        color: [0.5; 4],
+        color: white(0.5),
         height: SPEED_TRAIL_PARTICLE,
     },
     end: State {
@@ -801,7 +808,7 @@ pub static SCREEN_SNOW_STREAK: Style = Style {
         scale: Vec2::ZERO,
         view_rotation: -1.4,
         rotation: -1.4,
-        color: [0.5; 4],
+        color: white(0.5),
         height: SPEED_TRAIL_PARTICLE,
     },
     end: State {
@@ -827,7 +834,7 @@ pub static SCREEN_SNOW_FLAKE: Style = Style {
         scale: Vec2::ZERO,
         view_rotation: 1.4,
         rotation: 1.4,
-        color: [0.5; 4],
+        color: white(0.5),
         height: SPEED_TRAIL_PARTICLE,
     },
     end: State {
@@ -853,7 +860,7 @@ pub static SCREEN_SNOW_SPECK: Style = Style {
         scale: Vec2::splat(4.0),
         view_rotation: 0.0,
         rotation: 0.0,
-        color: [0.4; 4],
+        color: white(0.4),
         height: SPEED_TRAIL_PARTICLE,
     },
     end: State {
@@ -898,7 +905,7 @@ pub static SPEED_LINE: Style = Style {
         scale: Vec2::ZERO,
         view_rotation: 0.0,
         rotation: 0.0,
-        color: [0.5; 4],
+        color: white(0.5),
         height: SPEED_TRAIL_PARTICLE,
     },
     end: State {

@@ -51,7 +51,7 @@ fn lost_health_fades_from_red_to_dark() {
 fn gained_health_fades_from_green() {
     let cells = health_cells(W, 1.0, 12, 12, 4, 1.0, 0.5);
     assert!(cells[1].color[1] > cells[1].color[0]);
-    assert_eq!(cells[0].color, straight([0.75; 4]));
+    assert_eq!(cells[0].color, [1.0, 1.0, 1.0, 0.75]);
 }
 
 #[test]
@@ -160,10 +160,22 @@ fn fx_fade_and_end() {
 }
 
 #[test]
-fn a_blended_colour_is_clamped_and_divided_by_its_alpha() {
-    // White times 1.5 is solid white.
-    assert_eq!(straight([1.125; 4]), [1.0; 4]);
-    let c = straight([0.75, 0.0, 0.0, 0.75]);
-    assert_eq!(c, [1.0, 0.0, 0.0, 0.75]);
-    assert_eq!(straight([0.0; 4]), [0.0; 4]);
+fn fading_a_colour_scales_its_alpha_up_to_opaque() {
+    // White at 0.75 times 1.5 is solid white; the colour itself is kept.
+    assert_eq!(fade([1.0; 4], 1.5), [1.0; 4]);
+    assert_eq!(fade([1.0, 0.0, 0.0, 0.75], 1.5), [1.0, 0.0, 0.0, 1.0]);
+    assert_eq!(fade([1.0, 0.0, 0.0, 0.5], 0.5), [1.0, 0.0, 0.0, 0.25]);
+}
+
+#[test]
+fn colours_mix_by_how_opaque_they_are() {
+    let (clear_white, red) = ([1.0, 1.0, 1.0, 0.1], [1.0, 0.0, 0.0, 0.7]);
+    let near = |a: [f32; 4], b: [f32; 4]| a.iter().zip(b).all(|(x, y)| (x - y).abs() < 1e-6);
+    assert!(near(lerp(clear_white, red, 0.0), clear_white));
+    assert!(near(lerp(clear_white, red, 1.0), red));
+    // Halfway the red counts for seven parts in eight of the colour.
+    let mid = lerp(clear_white, red, 0.5);
+    assert!((mid[3] - 0.4).abs() < 1e-6);
+    assert!((mid[1] - 0.05 / 0.4).abs() < 1e-6);
+    assert_eq!(lerp([1.0, 1.0, 1.0, 0.0], [0.0; 4], 0.5), [0.0; 4]);
 }
