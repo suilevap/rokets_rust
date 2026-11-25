@@ -97,6 +97,7 @@ use crate::explosion::Hit;
 use crate::game::{GameState, LoadedMap, MapEntity};
 use crate::particles::styles::LASER_CHARGE;
 use crate::render::dirty_lens::{CROSSING_CHANCE, CROSSING_SHAKE, Flash, GlassFlash};
+use crate::render::glow::{GlowMaterial, additive};
 use crate::render::layers::Layer;
 use crate::render::particles::{FlashBoost, Particles};
 use crate::render::sprite::UnitQuad;
@@ -557,11 +558,10 @@ fn draw_lasers(
     boost: Res<FlashBoost>,
     map: Res<LoadedMap>,
     quad: Res<UnitQuad>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-    (mut images, mut premultiplied): (ResMut<Assets<Image>>, ResMut<crate::render::premultiply::Premultiplied>),
+    mut materials: ResMut<Assets<GlowMaterial>>,
     mut rng: ResMut<ViewRng>,
     guns: Query<(Entity, &Weapon, Has<LaserViews>)>,
-    mut parts: Query<(Entity, &LaserPart, &mut Transform, &mut Visibility, &MeshMaterial3d<StandardMaterial>)>,
+    mut parts: Query<(Entity, &LaserPart, &mut Transform, &mut Visibility, &MeshMaterial3d<GlowMaterial>)>,
 ) {
     let t = time.elapsed_secs();
     let rng = &mut rng.0;
@@ -632,22 +632,15 @@ fn draw_lasers(
         let Some(mut m) = materials.get_mut(&material.0) else {
             continue;
         };
-        let image = map.sprites.get(placed.texture).map(|s| premultiplied.of(&s.image, &mut images));
+        let image = map.sprites.get(placed.texture).map(|s| s.image.clone());
         paint(&mut m, image, placed.color, boost.0, placed.uv);
         *transform = placed.transform;
         visibility.set_if_neq(Visibility::Inherited);
     }
 }
 
-fn spawn_part(commands: &mut Commands, materials: &mut Assets<StandardMaterial>, quad: &UnitQuad, owner: Entity, kind: Part) {
-    let material = materials.add(StandardMaterial {
-        alpha_mode: AlphaMode::Add,
-        unlit: true,
-        double_sided: true,
-        cull_mode: None,
-        depth_bias: Layer::Glow.depth_bias(),
-        ..default()
-    });
+fn spawn_part(commands: &mut Commands, materials: &mut Assets<GlowMaterial>, quad: &UnitQuad, owner: Entity, kind: Part) {
+    let material = materials.add(additive(StandardMaterial::default(), Layer::Glow.depth_bias()));
     commands.spawn((
         Name::new("Laser"),
         MapEntity,

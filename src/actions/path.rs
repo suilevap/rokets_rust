@@ -55,7 +55,7 @@ use crate::content::actions::defs::AddPathComponent;
 use crate::game::{GameState, LoadedMap, MapEntity, MapId};
 use crate::render::layers::Layer;
 use crate::render::particles::FlashBoost;
-use crate::render::premultiply::Premultiplied;
+use crate::render::glow::{GlowMaterial, additive, alpha_for};
 use crate::render::sprite::UnitQuad;
 use crate::units::PX_PER_UNIT;
 
@@ -152,8 +152,7 @@ fn add_path(
     (ids, map): (MapIds, Res<LoadedMap>),
     (quad, flash, time): (Res<UnitQuad>, Res<FlashBoost>, Res<Time>),
     old: Query<(Entity, &DottedLeg)>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-    (mut images, mut premultiplied): (ResMut<Assets<Image>>, ResMut<Premultiplied>),
+    mut materials: ResMut<Assets<GlowMaterial>>,
     mut commands: Commands,
 ) -> bool {
     let d = &run.data;
@@ -175,24 +174,21 @@ fn add_path(
     }
     let width = info.size.x as u32;
     let points: Vec<Vec2> = d.path.iter().map(|p| map.world(p.x, p.y)).collect();
-    let image = premultiplied.of(&info.image, &mut images);
     let [r, g, b, a] = d.color.to_f32();
     let c = Color::srgba(r, g, b, a).to_linear();
-    let color = Color::linear_rgba(c.red * flash.0, c.green * flash.0, c.blue * flash.0, c.alpha);
+    let color = Color::linear_rgba(c.red * flash.0, c.green * flash.0, c.blue * flash.0, alpha_for(c.alpha));
     let now = offset(time.elapsed_secs());
     let z = Layer::Glow.z() + d.depth.max(0.0);
     for leg in legs(&points, width) {
-        let material = materials.add(StandardMaterial {
-            base_color: color,
-            base_color_texture: Some(image.clone()),
-            uv_transform: uv(&leg, width, now),
-            alpha_mode: AlphaMode::Add,
-            unlit: true,
-            double_sided: true,
-            cull_mode: None,
-            depth_bias: Layer::Glow.depth_bias(),
-            ..default()
-        });
+        let material = materials.add(additive(
+            StandardMaterial {
+                base_color: color,
+                base_color_texture: Some(info.image.clone()),
+                uv_transform: uv(&leg, width, now),
+                ..default()
+            },
+            Layer::Glow.depth_bias(),
+        ));
         let direction = Vec2::from_angle(leg.angle);
         let middle = leg.start + direction * leg.length() / 2.0;
         commands.spawn((

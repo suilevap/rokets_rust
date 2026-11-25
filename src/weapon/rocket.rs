@@ -114,6 +114,7 @@ use crate::car::control::{Team, spares};
 use crate::explosion::{Blast, Explosion, Health, Hit};
 use crate::game::{GameState, LoadedMap, MapEntity};
 use crate::particles::styles::{LAUNCH_SMOKE, ROCKET_SMOKE};
+use crate::render::glow::{GlowMaterial, additive, alpha_for};
 use crate::render::layers::Layer;
 use crate::render::particles::{FlashBoost, Particles};
 use crate::render::sprite::{SpriteTint, UnitQuad, sprite_bundle};
@@ -504,7 +505,7 @@ fn spawn_rocket_views(
     map: Res<LoadedMap>,
     quad: Res<UnitQuad>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    (mut images, mut premultiplied): (ResMut<Assets<Image>>, ResMut<crate::render::premultiply::Premultiplied>),
+    mut glows: ResMut<Assets<GlowMaterial>>,
     mut meshes: ResMut<Assets<Mesh>>,
 ) {
     let (Some(sprite), Some(flash)) = (map.sprites.get(SPRITE), map.sprites.get("Particles\\flash")) else {
@@ -516,16 +517,13 @@ fn spawn_rocket_views(
     };
     for (entity, rocket) in &rockets {
         let body = sprite_bundle(sprite, SPRITE_SCALE, Layer::AirParticles, lit, &quad, &mut materials);
-        // Added as XNA added a premultiplied texture (`premultiply`).
-        let glow = materials.add(StandardMaterial {
-            base_color_texture: Some(premultiplied.of(&flash.image, &mut images)),
-            alpha_mode: AlphaMode::Add,
-            unlit: true,
-            double_sided: true,
-            cull_mode: None,
-            depth_bias: Layer::Glow.depth_bias(),
-            ..default()
-        });
+        let glow = glows.add(additive(
+            StandardMaterial {
+                base_color_texture: Some(flash.image.clone()),
+                ..default()
+            },
+            Layer::Glow.depth_bias(),
+        ));
         commands
             .entity(entity)
             .insert(RocketView::default())
@@ -585,8 +583,8 @@ fn place_rocket_views(
     mut rng: ResMut<ViewRng>,
     map: Res<LoadedMap>,
     mut rockets: Query<(&Rocket, &mut Transform, &Children)>,
-    mut flashes: Query<(&mut Transform, &MeshMaterial3d<StandardMaterial>), (With<Flash>, Without<Rocket>)>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
+    mut flashes: Query<(&mut Transform, &MeshMaterial3d<GlowMaterial>), (With<Flash>, Without<Rocket>)>,
+    mut glows: ResMut<Assets<GlowMaterial>>,
 ) {
     let k = fixed.overstep_fraction();
     let size = map.sprites.get("Particles\\flash").map_or(Vec2::splat(64.0), |s| s.size);
@@ -604,11 +602,11 @@ fn place_rocket_views(
                 .with_rotation(Quat::from_rotation_z(-rocket.direction))
                 .with_scale((size * px(1.0) * scale).extend(1.0));
             let white = 0.5 * rng.0.random::<f32>();
-            if let Some(mut m) = materials.get_mut(&material.0) {
+            if let Some(mut m) = glows.get_mut(&material.0) {
                 // `Color.Lerp(Yellow, White, white) * 0.5`: premultiplied, so
                 // the colour and the alpha are both halved.
                 let c = Color::srgb(0.5, 0.5, 0.5 * white).to_linear();
-                m.base_color = Color::linear_rgba(c.red * flash_boost.0, c.green * flash_boost.0, c.blue * flash_boost.0, 0.5);
+                m.base.base_color = Color::linear_rgba(c.red * flash_boost.0, c.green * flash_boost.0, c.blue * flash_boost.0, alpha_for(0.5));
             }
         }
     }

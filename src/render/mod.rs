@@ -13,12 +13,12 @@ pub mod dirty_lens;
 pub mod effect_canvas;
 pub mod frozen_glass;
 pub mod layers;
+pub mod glow;
 pub mod light_layer;
 pub mod lines;
 pub mod map_mesh;
 pub mod outland;
 pub mod particles;
-pub mod premultiply;
 pub mod shadow;
 pub mod snow;
 pub mod spin;
@@ -34,7 +34,6 @@ pub struct RenderPlugin;
 
 impl Plugin for RenderPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<premultiply::Premultiplied>();
         // `Renderer.Draw` clears to the background colour; it shows past
         // the outland's rim.
         let [r, g, b] = map_mesh::BACKGROUND;
@@ -51,6 +50,7 @@ impl Plugin for RenderPlugin {
                 frozen_glass::FrozenGlassPlugin,
                 wall_ao::WallAoPlugin,
                 shadow::ShadowPlugin,
+                glow::GlowPlugin,
                 particles::ParticlesPlugin,
             ))
             .add_systems(OnEnter(GameState::Playing), spawn_map_meshes);
