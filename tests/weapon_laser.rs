@@ -474,3 +474,29 @@ fn it_looks_every_way_round() {
         assert!((l[0].1.length() - 10.0).abs() < 1e-3, "{angle}: {l:?}");
     }
 }
+
+fn leg(from: Vec2, end: Vec2) -> tilerider::weapon::beam::Leg {
+    tilerider::weapon::beam::Leg {
+        start: from,
+        cast_from: from,
+        end,
+        direction: (end - from).to_angle(),
+        hit: None,
+    }
+}
+
+#[test]
+fn the_glass_flashes_a_quarter_of_the_way_along_the_leg_shaken_by_half_a_unit() {
+    use tilerider::weapon::laser::crossing_at;
+    // Both axes at the middle of the shake: no shake.
+    let still = Vec2::splat(0.5);
+    assert_eq!(crossing_at(&leg(Vec2::new(2.0, 2.0), Vec2::new(10.0, 2.0)), still), Vec2::new(4.0, 2.0));
+    // It goes from where the ray starts, not from the muzzle that draws it.
+    let mut bounced = leg(Vec2::new(0.0, 0.0), Vec2::new(0.0, -8.0));
+    bounced.start = Vec2::new(5.0, 5.0);
+    assert_eq!(crossing_at(&bounced, still), Vec2::new(0.0, -2.0));
+    // The shake is up to half a unit on each axis either way.
+    let leg = leg(Vec2::ZERO, Vec2::new(4.0, 0.0));
+    assert_eq!(crossing_at(&leg, Vec2::ONE), Vec2::new(1.5, 0.5));
+    assert_eq!(crossing_at(&leg, Vec2::ZERO), Vec2::new(0.5, -0.5));
+}

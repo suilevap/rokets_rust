@@ -11,6 +11,9 @@
 //! On the floor it is a dark pulsing hole with streaks drawn into it,
 //! off towards where it leads.
 //!
+//! A car or box that turns up again flashes the dirty glass
+//! (`CreateExplosionEffectUI`, see `render/dirty_lens`).
+//!
 //! Not ported: the screen flashes (`CreateCameraFlash`, the streak across
 //! the screen, the burst on arrival), navigation links.
 
@@ -27,6 +30,7 @@ use crate::controls::LocalPlayer;
 use crate::game::{GameState, LoadedMap, MapEntity, MapId};
 use crate::particles::styles::{TELEPORT_STREAK, TELEPORT_SWIRL};
 use crate::render::camera::MainCamera;
+use crate::render::dirty_lens::{Flash, GlassFlash};
 use crate::render::layers::Layer;
 use crate::render::particles::Particles;
 use crate::render::sprite::{SpriteTint, UnitQuad, sprite_bundle};
@@ -178,11 +182,21 @@ fn take(
     }
 }
 
-fn arrive(mut commands: Commands, time: Res<Time>, mut arriving: Query<(Entity, &mut Arriving)>) {
-    for (e, mut a) in &mut arriving {
+fn arrive(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut arriving: Query<(Entity, &mut Arriving, &Position)>,
+    mut flashes: MessageWriter<GlassFlash>,
+) {
+    for (e, mut a, position) in &mut arriving {
         a.0 -= time.delta_secs();
         if a.0 <= 0.0 {
             commands.entity(e).remove::<Arriving>().insert(Visibility::Inherited);
+            // `TeleportActivate`: `CreateExplosionEffectUI` where it turns up.
+            flashes.write(GlassFlash {
+                at: position.0,
+                flash: Flash::Explosion,
+            });
         }
     }
 }

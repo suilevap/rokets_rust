@@ -1,5 +1,6 @@
 //! The dirty lens over the picture: which maps have it, how big and how
-//! bright each lamp's blob is, and which part of the glass the screen shows.
+//! bright each lamp's blob is, which part of the glass the screen shows, and
+//! how the explosion's and the laser's flashes of it start, shrink and fade.
 
 mod common;
 
@@ -7,7 +8,8 @@ use bevy::math::Vec2;
 use tilerider::content::map::LevelEffect;
 use tilerider::content::xna::XColor;
 use tilerider::render::dirty_lens::{
-    GLASS_ASPECT, LIGHT_SCALE, MAX_RADIUS, MIN_RADIUS, blob_color, blob_radius, gain, glass_window, shows,
+    BLOB_PX, CROSSING_CHANCE, Flash, GLASS_ASPECT, LIGHT_SCALE, MAX_FLASHES, MAX_RADIUS, MIN_RADIUS, blob_color,
+    blob_radius, explosion_radius, flash_color, flash_state, gain, glass_window, shows,
 };
 
 #[test]
@@ -85,4 +87,71 @@ fn the_glass_window_is_centred_and_never_outside_the_glass() {
         assert!((far.x - (1.0 - offset.x)).abs() < 1e-6, "centred across, at {aspect}");
         assert!((far.y - (1.0 - offset.y)).abs() < 1e-6, "centred down, at {aspect}");
     }
+}
+
+#[test]
+fn an_explosion_flash_is_a_yellow_blob_of_48_units_shrinking_to_32_in_a_second() {
+    let look = Flash::Explosion.look();
+    assert_eq!(look.color, [1.0, 1.0, 0.0]);
+    assert_eq!(look.lifetime, 1.0);
+    // `flash2` is 32 pixels, a world unit 32: the scale is the width.
+    assert_eq!(BLOB_PX, 32.0);
+    let start = flash_state(Flash::Explosion, 0.0).unwrap();
+    assert!((start.diameter - 48.0).abs() < 1e-4);
+    assert_eq!(start.fade, 1.0);
+    let middle = flash_state(Flash::Explosion, 0.5).unwrap();
+    assert!((middle.diameter - 40.0).abs() < 1e-4);
+    assert!((middle.fade - 0.5).abs() < 1e-6);
+    let late = flash_state(Flash::Explosion, 0.999).unwrap();
+    assert!((late.diameter - 32.0).abs() < 0.02);
+}
+
+#[test]
+fn a_laser_flash_is_a_red_blob_of_24_units_shrinking_to_16_in_a_quarter_second() {
+    let look = Flash::Laser.look();
+    assert_eq!(look.color, [1.0, 0.0, 0.0]);
+    assert_eq!(look.lifetime, 0.25);
+    let start = flash_state(Flash::Laser, 0.0).unwrap();
+    assert!((start.diameter - 24.0).abs() < 1e-4);
+    let half = flash_state(Flash::Laser, 0.125).unwrap();
+    assert!((half.diameter - 20.0).abs() < 1e-4);
+    assert!((half.fade - 0.5).abs() < 1e-6);
+}
+
+#[test]
+fn a_flash_is_gone_when_its_life_is_over() {
+    assert!(flash_state(Flash::Explosion, 1.0).is_none());
+    assert!(flash_state(Flash::Explosion, 7.0).is_none());
+    assert!(flash_state(Flash::Laser, 0.25).is_none());
+    assert!(flash_state(Flash::Laser, 0.2499).is_some());
+}
+
+#[test]
+fn a_flash_fades_in_its_colour_and_its_blend_both() {
+    let boost = 1.0;
+    let full = flash_color(Flash::Explosion, 1.0, boost);
+    assert!((full[0] - gain(boost)).abs() < 1e-6);
+    assert_eq!(full[2], 0.0, "yellow has no blue");
+    // Half way it has a quarter of the light.
+    let half = flash_color(Flash::Explosion, 0.5, boost);
+    assert!((half[0] - full[0] / 4.0).abs() < 1e-6);
+    // Red has red only.
+    let red = flash_color(Flash::Laser, 1.0, boost);
+    assert_eq!((red[1], red[2]), (0.0, 0.0));
+    assert!(red[0] > 0.0);
+    // Nothing is left at the end, and a lens turned off adds nothing.
+    assert_eq!(flash_color(Flash::Laser, 0.0, boost), [0.0; 3]);
+    assert_eq!(flash_color(Flash::Explosion, 1.0, 0.0), [0.0; 3]);
+}
+
+#[test]
+fn a_blast_flashes_when_it_is_within_two_ranges_of_the_view() {
+    assert_eq!(explosion_radius(5.0), 10.0);
+    assert_eq!(explosion_radius(0.0), 0.0);
+}
+
+#[test]
+fn the_flashes_are_few_and_the_laser_chance_is_one_in_four() {
+    assert_eq!(MAX_FLASHES, 64);
+    assert_eq!(CROSSING_CHANCE, 0.25);
 }

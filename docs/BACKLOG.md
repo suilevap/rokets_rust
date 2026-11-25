@@ -79,7 +79,6 @@ along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
    `ButtonType`: pressed while a laser beam touches it, `LaserCollectorButton.
    LaserCollide`; `TheGate`'s three turrets and two collectors, whose beams
    are in (`weapon/laser.rs`) but touch the collector as a wall), the
-   Laser's `CreateLaserEffect` (dirty-glass flash on the player's car), the
    gadgets that are not ported (`Bomb`, `EditorPointer`, which also need
    their `ApplyGadgetToPosition` answer, `ActiveGadget`'s default, as the
    magnet and the accelerator have in `gadget/apply.rs`; no map hands them
@@ -164,8 +163,10 @@ along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
   C# (XNA has no gamma); a fixed ×2 boost (`GLOW_BOOST`) brings the look
   close. Exact only with the glow added in sRGB (a small post-process
   pass) or the whole picture drawn in sRGB numbers as XNA did.
-- The dirty lens's dynamic glass flashes (explosions, the laser, the
-  `LaserCollectorButton` pulse; see `render/dirty_lens.rs`).
+- The dirty lens's `LaserCollectorButton` pulse (a white glass flash while
+  the button is lit; it waits for the button, see `render/dirty_lens.rs`
+  for the `GlassFlash` message it would send), and the plain screen-space
+  flash a snow map gets for an explosion (`_explosionUiStyle`).
   (Tyre marks are not here: C# has no lasting skid marks, only the
   one-second wheel streaks `car/smoke.rs` already ports. Nor are dynamic
   lights: `LightManager.AddDynamicLight` was added for a cursor-following
