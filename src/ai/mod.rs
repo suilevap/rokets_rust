@@ -70,9 +70,10 @@
 //!   the tree ends and is started over.
 //!
 //! The control writes only what the tree writes: the aim and the stick stay
-//! as they were between writes (the stick of a car that can move keeps its
-//! last direction after the target is lost, as in C#), and the trigger is
-//! pulled for the step it was ticked.
+//! as they were between writes, and the trigger is pulled for the step it was
+//! ticked. A car that can move lets the stick go when the target it chased is
+//! lost (`SimpleFollowByTarget::complete`; C# left it at its last direction,
+//! and the car drove on).
 //!
 //! # `BTLib`'s running rules on flatbt-bevy
 //!

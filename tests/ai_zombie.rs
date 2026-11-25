@@ -308,6 +308,39 @@ fn an_enemy_in_reach_is_flocked_at_full_speed_where_it_was_last_seen() {
 }
 
 #[test]
+fn an_enemy_never_seen_is_not_flocked_at_the_origin() {
+    // A room cut in two by a wall from top to bottom (the ring's own cells do
+    // not block sight).
+    let (w, h, cut) = (40, 12, 10);
+    let mut rows = String::from("\n");
+    for y in 0..h + 2 {
+        for x in 0..w + 2 {
+            rows.push(if x == 0 || y == 0 || x == w + 1 || y == h + 1 || x == cut { '*' } else { '.' });
+        }
+        rows.push('\n');
+    }
+    let xml = format!(
+        r#"<XnaContent><Asset Type="GameLibrary.MapData"><Name>T</Name><Scale>32</Scale>
+        <ImageWallTreshold>96</ImageWallTreshold>
+        <CharMapDictionary>*:#FFFF0000;.:#100000A0</CharMapDictionary><CharMap>{rows}</CharMap></Asset></XnaContent>"#
+    );
+    let mut sim = Sim::new(zombie_flocking, w, h);
+    sim.grid = MapGrid::build(&MapData::parse(&xml).unwrap(), None);
+    sim.terrain = Arc::new(Terrain::from_grid(&sim.grid, 1.0));
+    let a = sim.zombie(1, 1, at(8.0, 6.0));
+    sim.zeds[a].bb.traits[0] = 0.0;
+    // Within the scan distance but behind the wall: found, never in sight.
+    sim.enemies = vec![enemy(PLAYER, at(13.0, 6.0))];
+    sim.run(2.0);
+    let bb = &sim.zeds[a].bb;
+    assert_eq!(bb.target(), Some(id(PLAYER)), "found");
+    assert_eq!(bb.last_known_target_position, None, "never seen");
+    assert!(!sim.path(a).contains("WhileTargetAlive"), "no attack on nothing: {}", sim.path(a));
+    // Not carried off to the map's top-left corner (the origin).
+    assert!(sim.zeds[a].pos.distance(at(8.0, 6.0)) < 4.0, "{}", sim.zeds[a].pos);
+}
+
+#[test]
 fn alone_near_a_target_in_sight_with_its_wave_ready_it_stands_two_seconds_then_fires() {
     let mut sim = Sim::new(zombie_flocking, 40, 12);
     let a = sim.zombie(1, 1, at(4.0, 6.0));

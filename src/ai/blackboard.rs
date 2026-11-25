@@ -350,8 +350,10 @@ pub struct AiBlackboard {
     pub patrol_path: Option<NavPath>,
     /// `TargetPosition`: where the car is going (a point of the map, world).
     pub target_position: Vec2,
-    /// `LastKnowTargetPosition`: where the target was when it was last seen.
-    pub last_known_target_position: Vec2,
+    /// `LastKnowTargetPosition`: where the target was when it was last seen;
+    /// `None` until it has been seen (C# left the origin there, and the
+    /// cars that went to it flocked to the map's top-left corner).
+    pub last_known_target_position: Option<Vec2>,
     /// The car the car's own `Target` variable names, if it is a car
     /// alive and active (`ActionRunner.GetEntityByLocalVar`, for
     /// `GetTargetFromVariables`): set before [`gather`](Self::gather), which
@@ -466,7 +468,7 @@ impl AiBlackboard {
             path: None,
             patrol_path: None,
             target_position: Vec2::ZERO,
-            last_known_target_position: Vec2::ZERO,
+            last_known_target_position: None,
             variable_target: None,
             path_compute_time: 0.0,
             blocker: None,
@@ -869,10 +871,10 @@ impl AiBlackboard {
     }
 
     /// `MapManager.GetRandomNodePosition(pos, distance)`: the position of
-    /// one of the navigation nodes within `distance` of `pos` on both axes
-    /// (`RandomHelper.NextIntFakeRange(0, count - 1)`: never the last of
-    /// them, unless it is the only one); `pos` itself when there are none or
-    /// the map has no graph.
+    /// one of the navigation nodes within `distance` of `pos` on both axes,
+    /// each as likely as another (C#'s `RandomHelper.NextIntFakeRange(0,
+    /// count - 1)` never picked the last of them); `pos` itself when there
+    /// are none or the map has no graph.
     pub fn random_node_position(&mut self, pos: Vec2, distance: f32) -> Vec2 {
         let Some(nav) = self.nav.clone() else {
             return pos;
@@ -882,7 +884,7 @@ impl AiBlackboard {
             let nodes: Vec<Vec2> = graph.get_nodes(pos, distance).map(|n| n.pos).collect();
             match nodes.len() {
                 0 => pos,
-                count => nodes[((count - 1) as f32 * rand) as usize],
+                count => nodes[((count as f32 * rand) as usize).min(count - 1)],
             }
         })
     }
@@ -969,7 +971,7 @@ impl AiBlackboard {
             .leader()
             .is_some_and(|l| self.terrain.as_ref().is_none_or(|t| !t.line_collides(l.pos, at)));
         if visible {
-            self.last_known_target_position = at;
+            self.last_known_target_position = Some(at);
         }
     }
 
