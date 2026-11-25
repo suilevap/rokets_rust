@@ -131,7 +131,7 @@ fn check(world: &mut World, run_: Run<CheckIntVariable>) -> bool {
     let now = world.resource::<Time>().elapsed_secs();
     let (value, target) = {
         let vars = world.resource::<Variables>();
-        let builtin = (d.global && name == "ElapsedActiveTime").then(|| (now - vars.started) as i64);
+        let builtin = (d.global && name == "ElapsedActiveTime").then_some((now - vars.started) as i64);
         let own = Variables::owner(d.global, d.item_id, run_.actor).and_then(|o| vars.get(o, name));
         if builtin.is_none() && own.is_none() {
             debug!("variable {name} not set");
