@@ -12,11 +12,11 @@
 //!     b => b.Timer.TotalSeconds < t ? Running : Ok, child)
 //!
 //! SimpleAttackTarget(p) =                         simple_attack_target(p) =
-//!   bt.Selector("A",                                select((
-//!     bt.All("Fire",                                  action(all((FireToTarget(p),
-//!       FireToTarget(p),                                          SimpleFollowByTarget(p)))),
-//!       SimpleFollowByTarget(p)),                     action(FireToTarget(p)),
-//!     FireToTarget(p))                              ))
+//!   bt.Selector("A",                                action(all((FireToTarget(p),
+//!     bt.All("Fire",                                          SimpleFollowByTarget(p))))
+//!       FireToTarget(p),                              (the second branch is not here)
+//!       SimpleFollowByTarget(p)),
+//!     FireToTarget(p))
 //!
 //! SimpleAttack =                                  simple_attack() =
 //!   bt.Sequence("Attack",                           seq((
@@ -37,14 +37,12 @@
 //! Every action is written `act(..)` (not shown above): named after its own
 //! type in debug paths.
 //!
-//! `SimpleAttackTarget`'s second branch (`FireToTarget` alone) is kept so the
-//! tree is C#'s, though it can never run: the first branch starts exactly
-//! when it would (`All` starts when `FireToTarget` and `SimpleFollowByTarget`
-//! do, and the second needs a target, which `FireToTarget` needs too) and is
-//! left under the same conditions, so whenever the first is not running the
-//! second fails at its start. (With no weapon the first starts, is at once
-//! not in progress and completes `Fail` (the target lives); the second does
-//! the same.) It costs a failed start; `tests/ai_turret.rs` checks that it never runs.
+//! `SimpleAttackTarget`'s second branch (`FireToTarget` alone) is not there:
+//! it could never run. The first branch starts exactly when it would (`All`
+//! starts when `FireToTarget` and `SimpleFollowByTarget` do, and the second
+//! needs a target, which `FireToTarget` needs too) and is left under the same
+//! conditions, so whenever the first was not running the second failed at its
+//! start.
 //!
 //! The trees that drive along paths (`MoveBase`, `MoveToPoint`, `FollowBy`):
 //!
@@ -72,8 +70,8 @@
 //!     bt.All("Fire",                                  action(all((TryFireToAnyone(3),
 //!       TryFireToAnyone(3.0f),                                    MoveBase))),
 //!       MoveBase("MoveByPath")),                      action(TriggerMapAction(once)),
-//!     TriggerMapAction(true),                         action(TryFireToAnyone(3)),
-//!     TryFireToAnyone(3.0f))                        ))
+//!     TriggerMapAction(true),                       ))
+//!     TryFireToAnyone(3.0f))        (the third branch is not here)
 //! FollowPathAiSafe =                              follow_path_ai_safe() =
 //!   bt.Selector("Brain",                            select((
 //!     bt.Sequence("Danger",                           seq((leaf(find_nearest_enemy),
@@ -87,10 +85,10 @@
 //!     MoveTowardsTargetNoPath(0.6f))
 //! ```
 //!
-//! `FollowPathAi`'s third branch (`TryFireToAnyone` alone) is kept as C#'s
-//! though it never runs: `TriggerMapAction` (optional) always succeeds, and
-//! the selector stops at the first success. A car with no path therefore does
-//! nothing but run its trigger action (once), and does not even fire.
+//! `FollowPathAi`'s third branch (`TryFireToAnyone` alone) is not there: it
+//! could never run, as `TriggerMapAction` (optional) always succeeds and the
+//! selector stops at the first success. A car with no path does nothing but
+//! run its trigger action (once), and does not even fire, as in C#.
 //!
 //! The small trees of `AiControlFactory`'s other simple controls:
 //!
@@ -276,9 +274,10 @@
 //! wanders with its flock at a quarter speed. `Flocking`'s pull holds the
 //! flock together whatever it heads for.
 //!
-//! As in C#, a target found but never seen leaves `LastKnowTargetPosition`
-//! where the last one was seen, or at the origin (the map's top-left corner)
-//! if none ever was: the attack flocks there. The `Fire!` trigger is pulled
+//! `LastKnowTargetPosition` is unset until a target has been seen (C# left
+//! the origin, the map's top-left corner, and the attack flocked there; the
+//! car's trees that go to it now fail that branch instead, `has_last_known`).
+//! The `Fire!` trigger is pulled
 //! in the thinking pass that starts it (`ai::carry_out` takes it for that
 //! step), as `Control.Fire = FireType.Shoot` in C#'s `Start` was.
 //!
@@ -409,7 +408,7 @@
 //!   bt.Sequence("DropCargo",                        seq((
 //!     Condition("HasCargo", LinkedSlave != null),     check(something on the rope),
 //!     Action("FindTargetPos", TargetPosition = p),    leaf(TargetPosition = the order's point),
-//!     Selector("WorkaroundForStat",                   select((
+//!     Selector("WorkaroundForStat",                   select((   (here "SkipDriveWhenStatic")
 //!       Condition("IsStat", IsStatic),                  check(the car cannot move),
 //!       dropPos given:                                  if_else(a drop point is given,
 //!         MoveToPoint("DropPos", dropPos)                 act(MoveToPoint(the drop point)),
@@ -643,10 +642,7 @@ pub const HAMMER_WANDER_MIN_DIST: f32 = 1.0;
 /// `BTActionFactory.SimpleAttackTarget`: fires at the target while steering
 /// at it, with the gun's aim `predict_sec` ahead of it.
 pub fn simple_attack_target(predict_sec: f32) -> impl BehaviorNode<AiBlackboard, Orders> {
-    named("A", select((
-        named("Fire", act(all((FireToTarget::new(predict_sec), SimpleFollowByTarget::new(predict_sec))))),
-        act(FireToTarget::new(predict_sec)),
-    )))
+    named("Fire", act(all((FireToTarget::new(predict_sec), SimpleFollowByTarget::new(predict_sec)))))
 }
 
 /// `BTActionFactory.SimpleAttack`: find an enemy, then attack it.
@@ -668,12 +664,26 @@ pub fn turret_ai() -> impl BehaviorNode<AiBlackboard, Orders> {
     named("TurretBrain", select((simple_attack(), simple_scanning())))
 }
 
+/// Whether the target has ever been seen (`LastKnowTargetPosition` is set).
+/// Every tree that goes to where it was last seen asks first, and fails its
+/// branch when it was not.
+fn has_last_known(bb: &AiBlackboard) -> bool {
+    bb.last_known_target_position.is_some()
+}
+
+/// Where the target was last seen, for the nodes that take a point: the
+/// origin, which they refuse as "no point", when it never was (the trees
+/// check [`has_last_known`] before).
+fn last_known(bb: &AiBlackboard) -> Vec2 {
+    bb.last_known_target_position.unwrap_or_default()
+}
+
 /// `BTActionFactory.Chase`'s `MoveToLastKnownTargetPosition`: with a target
-/// (alive), go to where it was last seen.
+/// (alive) that has been seen, go to where it was last seen.
 fn move_to_last_known_target_position() -> impl BehaviorNode<AiBlackboard, Orders> {
     named("MoveToLastKnownTargetPosition", seq((
-        named("HastTarget", check(|bb: &AiBlackboard| bb.live_target().is_some())),
-        named("MoveToLastKnownPos", act(MoveToPoint::new(|bb| bb.last_known_target_position))),
+        named("HastTarget", check(|bb: &AiBlackboard| bb.live_target().is_some() && has_last_known(bb))),
+        named("MoveToLastKnownPos", act(MoveToPoint::new(|bb| last_known(bb)))),
     )))
 }
 
@@ -723,7 +733,6 @@ pub fn follow_path_ai() -> impl BehaviorNode<AiBlackboard, Orders> {
     named("Brain", select((
         named("Fire", act(all((TryFireToAnyone::new(FIRE_TO_ANYONE_PERIOD), MoveBase::default())))),
         named("Trigger", act(TriggerMapAction::new(true))),
-        act(TryFireToAnyone::new(FIRE_TO_ANYONE_PERIOD)),
     )))
 }
 
@@ -771,15 +780,18 @@ pub fn stop() -> impl BehaviorNode<AiBlackboard, Orders> {
 /// where the target was last seen, within 0.8 gun ranges of it, firing at the
 /// target meanwhile if it can be seen.
 pub fn maneur(predict_sec: f32) -> impl BehaviorNode<AiBlackboard, Orders> {
-    named("Maneur", act(all((
-        MoveToRandomVisiblePosition::new(
-            |bb| bb.last_known_target_position,
-            |bb| bb.gun.map_or(0.0, |gun| gun.range.range * MANEUR_RANGE_RATE),
-            1.0,
-            2.0,
-        ),
-        optional(FireToTarget::new(predict_sec)),
-    ))))
+    named("Maneur", seq((
+        named("HasLastKnown", check(has_last_known)),
+        act(all((
+            MoveToRandomVisiblePosition::new(
+                last_known,
+                |bb| bb.gun.map_or(0.0, |gun| gun.range.range * MANEUR_RANGE_RATE),
+                1.0,
+                2.0,
+            ),
+            optional(FireToTarget::new(predict_sec)),
+        ))),
+    )))
 }
 
 /// `BTActionFactory.ManeurOnDamage(predictionSec)`: [`maneur`], but only when
@@ -831,9 +843,10 @@ fn fire_round() -> impl BehaviorNode<AiBlackboard, Orders> {
     ))
 }
 
-/// The smart attacks' `Follow`: by a path to where the target was last seen.
+/// The smart attacks' `Follow`: by a path to where the target was last seen
+/// (fails to start when it never was: no point, [`last_known`]).
 fn follow_last_known() -> impl BehaviorNode<AiBlackboard, Orders> {
-    named("Follow", act(FollowBy::new(|bb| bb.last_known_target_position)))
+    named("Follow", act(FollowBy::new(|bb| last_known(bb))))
 }
 
 /// `DistAndVis`: the target is alive, in sight now, and within the gun's
@@ -994,9 +1007,8 @@ pub fn zombie_flocking() -> impl BehaviorNode<AiBlackboard, Orders> {
         ))),
         named("Attack", seq((
             leaf(find_nearest_enemy),
-            while_target_alive(act(Flocking::toward(1.0, 8.0, 1.0, |bb| {
-                bb.last_known_target_position
-            }))),
+            named("HasLastKnown", check(has_last_known)),
+            while_target_alive(act(Flocking::toward(1.0, 8.0, 1.0, last_known))),
         ))),
         named("FollowLeader", seq((
             leaf(find_nearest_leader),
@@ -1258,8 +1270,8 @@ pub fn drop_cargo() -> impl BehaviorNode<AiBlackboard, Orders> {
     named("DropCargo", seq((
         named("HasCargo", check(|bb: &AiBlackboard| bb.magnet.is_some_and(|m| m.towing.is_some()))),
         named("FindTargetPos", leaf(find_target_position)),
-        named("WorkaroundForStat", select((
-            named("IsStat", check(|bb: &AiBlackboard| !bb.can_move)),
+        named("SkipDriveWhenStatic", select((
+            named("IsStatic", check(|bb: &AiBlackboard| !bb.can_move)),
             if_else(
                 |bb: &AiBlackboard| drop_position(bb).is_some(),
                 named("DropPos", act(MoveToPoint::new(drop_position_or_origin))),

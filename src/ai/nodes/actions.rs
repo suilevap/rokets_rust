@@ -159,6 +159,13 @@ impl BtAction<AiBlackboard, Orders> for SimpleFollowByTarget {
         let direction = direction_to(foe, ctx.pos, self.predict);
         Orders { move_dir: Some(direction), aim_dir: Some(direction), fire: false, ..Orders::default() }
     }
+
+    /// The target is gone: the stick is let go, not left at its last
+    /// direction (C# left it, and the car drove on).
+    fn complete(&self, _: &mut (), ctx: &mut AiBlackboard, _: ()) -> bool {
+        ctx.clear_stick();
+        true
+    }
 }
 
 /// `BTBuilder.Idle`: an infinite empty action.

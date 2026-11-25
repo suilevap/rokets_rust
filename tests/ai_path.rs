@@ -326,7 +326,13 @@ fn optional_runs_whatever_its_child_does() {
     let mut car = Car::new(tree, Vec2::new(3.0, 3.0), None);
     car.run(2.0);
     assert_ne!(car.path(), "not running");
-    // Given a path it ticks the child, which goes along it.
+    // A child that did not start is started again on each tick: once a
+    // path turns up it goes along it.
+    car.bb.path = Some(NavPath::new(vec![Vec2::new(30.0, 30.0), Vec2::new(60.0, 30.0)], false));
+    car.run(1.0);
+    assert_ne!(car.stick, Vec2::ZERO);
+    // Given a path at its start the child starts and goes along it.
+    let mut car = Car::new(tree, Vec2::new(3.0, 3.0), None);
     car.bb.path = Some(NavPath::new(vec![Vec2::new(30.0, 30.0), Vec2::new(60.0, 30.0)], false));
     car.run(1.0);
     assert_ne!(car.stick, Vec2::ZERO);
@@ -340,6 +346,22 @@ fn optional_runs_whatever_its_child_does() {
 
 fn nav_of(rows: &str) -> Navigation {
     Navigation::new(NavGraph::from_grid(&grid(&scaled(rows, SCALE)), 1.0))
+}
+
+#[test]
+fn a_random_node_can_be_any_node_in_reach_the_last_one_too() {
+    let nav = nav_of(TWO_ROOMS);
+    let nodes: Vec<Vec2> = nav.read(|g| g.get_nodes(Vec2::ZERO, 1000.0).map(|n| n.pos).collect());
+    assert!(nodes.len() >= 2);
+    let mut bb = AiBlackboard::new(7);
+    bb.nav = Some(nav);
+    let mut seen = std::collections::HashSet::new();
+    for _ in 0..nodes.len() * 200 {
+        let p = bb.random_node_position(Vec2::ZERO, 1000.0);
+        assert!(nodes.contains(&p));
+        seen.insert((p.x.to_bits(), p.y.to_bits()));
+    }
+    assert_eq!(seen.len(), nodes.len(), "every node is picked, the last included");
 }
 
 #[test]

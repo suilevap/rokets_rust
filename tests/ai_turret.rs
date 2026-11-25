@@ -372,6 +372,18 @@ fn the_stick_and_aim_are_left_alone_when_the_attack_ends() {
     assert!(orders.iter().all(|o| o.move_dir.is_none() && !o.fire));
 }
 
+#[test]
+fn the_stick_is_let_go_when_the_target_is_lost() {
+    let mut setup = Setup::new(vec![foe(1, 8.0, 0.0)]);
+    let mut turret = Rig::new(turret_ai, 16);
+    setup.run(&mut turret, 0.6);
+    assert_eq!(turret.phase(), Phase::Attack);
+    assert!(!turret.bb.take_stick_cleared(), "chasing");
+    setup.cars.clear();
+    setup.run(&mut turret, 1.0);
+    assert!(turret.bb.take_stick_cleared(), "the chase ended with the stick let go");
+}
+
 // The running rules of `BTLib` on flatbt.
 
 #[test]
@@ -450,29 +462,6 @@ fn a_timer_ends_at_a_think_not_at_its_time() {
         }
         let at = at.expect("it scanned");
         assert!((IDLE_TIME..=IDLE_TIME + THINK_PERIOD + 2.0 * DT).contains(&at), "seed {seed}: scan from {at}");
-    }
-}
-
-#[test]
-fn the_second_branch_of_the_attack_never_runs() {
-    // `SimpleAttackTarget`'s `FireToTarget` alone: every path the attack takes
-    // goes through the first branch, `Fire`.
-    let mut setup = Setup::new(vec![foe(1, 10.0, 0.0)]);
-    let mut turret = Rig::new(turret_ai, 25);
-    for _ in 0..180 {
-        setup.step(&mut turret);
-        let path = turret.path();
-        // The second branch is `FireToTarget` alone; the first is `Fire`.
-        assert!(!path.ends_with("FireToTarget (action)"), "{path}");
-    }
-    // With no gun the first branch starts and is at once over, `Fail`, and so
-    // does the second.
-    setup.cars = vec![foe(1, 10.0, 0.0)];
-    setup.gun = None;
-    let mut turret = Rig::new(turret_ai, 26);
-    for _ in 0..180 {
-        setup.step(&mut turret);
-        assert_ne!(turret.phase(), Phase::Attack);
     }
 }
 

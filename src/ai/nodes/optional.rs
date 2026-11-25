@@ -11,9 +11,12 @@ use crate::ai::orders::Orders;
 /// the start is required), is always in progress, ticks the child while the
 /// child *is* in progress, and completes `Ok` without completing the child.
 ///
-/// The child is asked and ticked when its start failed too, as C# did (a
-/// child's state is only its own fields there): its state is then the
-/// default.
+/// A child that has not started (its start failed) is started again on
+/// each tick until it does, then ticked while it is in progress: a gun
+/// whose target comes into sight mid-chase opens fire. C# ticked a child
+/// whose start failed all the same, with its fields as the last run left
+/// them, which only worked because its nodes were objects that kept their
+/// own state.
 pub struct Optional<A> {
     child: A,
     start_required: bool,
@@ -33,16 +36,16 @@ pub fn optional_required<A>(child: A) -> Optional<A> {
 impl<A> BtAction<AiBlackboard, Orders> for Optional<A>
 where
     A: BtAction<AiBlackboard, Orders>,
-    A::State: Default,
 {
-    type State = A::State;
+    /// The child's state, `None` when its start failed.
+    type State = Option<A::State>;
 
     fn start(&self, bb: &mut AiBlackboard, _: ()) -> Option<Self::State> {
         let started = self.child.start(bb, ());
         if self.start_required && started.is_none() {
             return None;
         }
-        Some(started.unwrap_or_default())
+        Some(started)
     }
 
     fn is_in_progress(&self, _: &Self::State, _: &AiBlackboard, _: ()) -> bool {
@@ -50,10 +53,12 @@ where
     }
 
     fn tick(&self, state: &mut Self::State, bb: &mut AiBlackboard, _: ()) -> Orders {
-        if self.child.is_in_progress(state, bb, ()) {
-            self.child.tick(state, bb, ())
-        } else {
-            Orders::default()
+        if state.is_none() {
+            *state = self.child.start(bb, ());
+        }
+        match state {
+            Some(child) if self.child.is_in_progress(child, bb, ()) => self.child.tick(child, bb, ()),
+            _ => Orders::default(),
         }
     }
 }

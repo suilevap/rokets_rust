@@ -327,9 +327,7 @@ impl NavGraph {
                         let overlap = r1.intersection(&graph.rect(id3));
                         let node2 = graph.add_node(at(overlap.center()));
                         graph.join(node2, id1, id3);
-                        // C# set `node1`'s orientation again here, from the
-                        // second overlap; `node2` keeps none.
-                        graph.nodes[node1].orientation = orientation(overlap);
+                        graph.nodes[node2].orientation = orientation(overlap);
                         graph.link_between(node1, node2);
                     }
                 }
