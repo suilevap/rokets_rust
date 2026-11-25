@@ -4,9 +4,9 @@
 //!
 //! Positions are logical screen pixels from the top left, `k` is the
 //! screen's growth over the 800 × 480 C# screen (`UISizeMultiplier`).
-//! Colours are what `Color * float` and `Color.Lerp` made in C#:
-//! premultiplied, in 0..1, until [`straight`] turns them into what Bevy
-//! blends.
+//! Colours are straight RGB and an alpha, in 0..1, as Bevy blends them. C#
+//! wrote `Color.White * 0.75` (premultiplied: every channel 0.75), which is
+//! white with alpha 0.75 here.
 
 use bevy::math::Vec2;
 
@@ -30,15 +30,17 @@ pub const ICON_WEAPON: &str = "UI/GadgetIcons/Weapon";
 /// Every picture the HUD draws.
 pub const SPRITES: [&str; 5] = [WHITE_PIXEL, BATTERY, ICON_MAGNET, ICON_ACCELERATOR, ICON_WEAPON];
 
-/// A colour in 0..1, premultiplied as XNA's `Color` was.
-pub type Premul = [f32; 4];
+/// A straight colour: RGB and alpha, 0..1.
+pub type Rgba = [f32; 4];
 
-const HEALTH: Premul = [0.75; 4];
-const MAX_HEALTH: Premul = [0.1; 4];
-const DAMAGE: Premul = [0.75, 0.0, 0.0, 0.75];
+const HEALTH: Rgba = [1.0, 1.0, 1.0, 0.75];
+const MAX_HEALTH: Rgba = [1.0, 1.0, 1.0, 0.1];
+const DAMAGE: Rgba = [1.0, 0.0, 0.0, 0.75];
 /// `Color.Green` is (0, 128, 0).
-const HEAL: Premul = [0.0, 128.0 / 255.0, 0.0, 1.0];
-const SHIELD: Premul = [21.0 * 0.95 / 255.0, 194.0 * 0.95 / 255.0, 238.0 * 0.95 / 255.0, 0.95];
+const HEAL: Rgba = [0.0, 128.0 / 255.0, 0.0, 1.0];
+const SHIELD: Rgba = [21.0 / 255.0, 194.0 / 255.0, 238.0 / 255.0, 0.95];
+/// The gadget's and the weapon's icons: white at 0.75.
+const ICON: Rgba = [1.0, 1.0, 1.0, 0.75];
 
 /// One picture to draw.
 #[derive(Debug, Clone, PartialEq)]
@@ -49,32 +51,29 @@ pub struct Item {
     pub size: Vec2,
     /// Radians, turning clockwise on the screen (XNA's rotation).
     pub rotation: f32,
-    /// Straight sRGBA (see [`straight`]).
+    /// Straight sRGB and alpha.
     pub color: [f32; 4],
 }
 
-/// `a * f`.
-pub fn scale(a: Premul, f: f32) -> Premul {
-    a.map(|v| v * f)
+/// The colour at `f` times its opacity (`Color * f` of a premultiplied
+/// colour), at most opaque.
+pub fn fade(c: Rgba, f: f32) -> Rgba {
+    [c[0], c[1], c[2], (c[3] * f).min(1.0)]
 }
 
-/// `Color.Lerp`.
-pub fn lerp(a: Premul, b: Premul, t: f32) -> Premul {
-    std::array::from_fn(|i| a[i] + (b[i] - a[i]) * t)
-}
-
-/// What the blend needs of a premultiplied colour: a byte colour clamps to
-/// 0..1, then the colour is divided by its alpha.
-pub fn straight(p: Premul) -> [f32; 4] {
-    let p = p.map(|v| v.clamp(0.0, 1.0));
-    if p[3] <= 0.0 {
+/// `Color.Lerp`: the colours mix by how much of each there is, the more
+/// opaque one counting for more (as a lerp of premultiplied colours did).
+pub fn lerp(a: Rgba, b: Rgba, t: f32) -> Rgba {
+    let alpha = a[3] + (b[3] - a[3]) * t;
+    if alpha <= 0.0 {
         return [0.0; 4];
     }
-    [(p[0] / p[3]).min(1.0), (p[1] / p[3]).min(1.0), (p[2] / p[3]).min(1.0), p[3]]
+    let mix = |i: usize| (a[i] * a[3] * (1.0 - t) + b[i] * b[3] * t) / alpha;
+    [mix(0), mix(1), mix(2), alpha]
 }
 
-fn solid(center: Vec2, size: Vec2, color: Premul) -> Item {
-    Item { sprite: WHITE_PIXEL, center, size, rotation: 0.0, color: straight(color) }
+fn solid(center: Vec2, size: Vec2, color: Rgba) -> Item {
+    Item { sprite: WHITE_PIXEL, center, size, rotation: 0.0, color }
 }
 
 /// `maxN`: how many cells the health bar has.
@@ -175,14 +174,14 @@ pub fn health_cells(screen_width: f32, k: f32, max_health: i32, health: i32, pre
         }
         if i == cur_n {
             if last > 0.0 {
-                out.push(solid(center, size * last, scale(c, alpha)));
+                out.push(solid(center, size * last, fade(c, alpha)));
             }
             c = lerp(MAX_HEALTH, DAMAGE, remain);
         }
         if i == dam_n {
             c = MAX_HEALTH;
         }
-        out.push(solid(center, size, scale(c, alpha)));
+        out.push(solid(center, size, fade(c, alpha)));
     }
     out
 }
@@ -200,8 +199,8 @@ pub fn shield_cells(screen_width: f32, k: f32, max_health: i32, max: i32, value:
     let max_n = max / PER_CELL;
     let cur_n = points / PER_CELL;
     let c = if points == 0 {
-        // Yellow to black, times 0.8.
-        scale(lerp([1.0, 1.0, 0.0, 1.0], [0.0, 0.0, 0.0, 1.0], triangle), 0.8)
+        // Yellow to black, at 0.8.
+        fade(lerp([1.0, 1.0, 0.0, 1.0], [0.0, 0.0, 0.0, 1.0], triangle), 0.8)
     } else {
         SHIELD
     };
@@ -212,11 +211,11 @@ pub fn shield_cells(screen_width: f32, k: f32, max_health: i32, max: i32, value:
             alpha = 0.25;
         }
         // The thin cells grow from their left edge, centred in height.
-        out.push(solid(Vec2::new(x + size.x / 2.0, first.y), size, scale(c, alpha)));
+        out.push(solid(Vec2::new(x + size.x / 2.0, first.y), size, fade(c, alpha)));
         if i == cur_n {
             let part = (value % PER_CELL as f32) / PER_CELL as f32;
             alpha = 1.0;
-            out.push(solid(Vec2::new(x + size.x / 2.0, first.y), Vec2::new(size.x, size.y * part), scale(c, alpha)));
+            out.push(solid(Vec2::new(x + size.x / 2.0, first.y), Vec2::new(size.x, size.y * part), fade(c, alpha)));
         }
         x += step;
     }
@@ -254,7 +253,7 @@ pub fn icons(screen_width: f32, k: f32, max_health: i32, gear: Gear, size: impl 
         let scale = CELL.y * k / own.y;
         let drawn = own * scale;
         at.x -= icon_step(drawn.x, k);
-        out.push(Item { sprite, center: at, size: drawn, rotation, color: straight([0.75; 4]) });
+        out.push(Item { sprite, center: at, size: drawn, rotation, color: ICON });
     }
     out
 }

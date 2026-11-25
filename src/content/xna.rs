@@ -15,7 +15,9 @@ pub struct XVec2 {
     pub y: f32,
 }
 
-/// A colour with straight (non-premultiplied) 8-bit channels.
+/// A colour with straight (non-premultiplied) 8-bit channels, as a map's
+/// XML writes it. (XNA's *drawing* took colours premultiplied: a splash's
+/// layer colour is turned into a [`Tint`] where it is read.)
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct XColor {
     pub r: u8,
@@ -61,6 +63,60 @@ impl XColor {
             self.b as f32 / 255.0,
             self.a as f32 / 255.0,
         ]
+    }
+}
+
+/// A colour to draw a picture with: straight RGB (0..1, the picture's
+/// colours are multiplied by it) and an alpha. Never a channel above 1.
+///
+/// C# drew with premultiplied colours, where `80808080` is white at half
+/// strength and a channel above the alpha (`770094FF`) adds light to the
+/// screen as well as covering it. Here the data is straight; a tint that
+/// adds light says so with `additive`, and then `rgb` is the light added at
+/// full strength while `alpha` only says how much of the picture behind it
+/// covers.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Tint {
+    pub rgb: [f32; 3],
+    pub alpha: f32,
+    /// The colour adds light beyond its alpha (see above).
+    pub additive: bool,
+}
+
+impl Default for Tint {
+    fn default() -> Self {
+        Tint::WHITE
+    }
+}
+
+impl Tint {
+    pub const WHITE: Tint = Tint { rgb: [1.0; 3], alpha: 1.0, additive: false };
+
+    /// The tint of a colour written as C# drew it (premultiplied bytes).
+    /// A colour of alpha 0 draws nothing (C# would have added its light).
+    pub fn from_premultiplied(c: XColor) -> Tint {
+        if c.a == 0 {
+            return Tint { rgb: [0.0; 3], alpha: 0.0, additive: false };
+        }
+        let a = c.a as f32 / 255.0;
+        let channels = [c.r, c.g, c.b].map(|v| v as f32 / 255.0);
+        if c.r.max(c.g).max(c.b) > c.a {
+            Tint { rgb: channels, alpha: a, additive: true }
+        } else {
+            Tint { rgb: channels.map(|v| v / a), alpha: a, additive: false }
+        }
+    }
+
+    /// RGBA to multiply a picture with when `fade` of it shows, as a colour
+    /// that is blended over the screen: an additive tint's light is above 1
+    /// here (it is added in full, though its alpha is the blend's weight).
+    pub fn blended(&self, fade: f32) -> [f32; 4] {
+        let alpha = (self.alpha * fade).clamp(0.0, 1.0);
+        if self.alpha <= 0.0 {
+            return [0.0; 4];
+        }
+        let [r, g, b] = if self.additive { self.rgb.map(|v| v / self.alpha) } else { self.rgb };
+        [r, g, b, alpha]
     }
 }
 
@@ -123,6 +179,11 @@ impl<'de> Deserialize<'de> for XColor {
         let s = String::deserialize(d)?;
         XColor::parse_argb(&s).ok_or_else(|| D::Error::custom(format!("bad Color {s:?}")))
     }
+}
+
+/// A splash layer's `<Color>`: drawn premultiplied in C#, a [`Tint`] here.
+pub fn premultiplied_tint<'de, D: Deserializer<'de>>(d: D) -> Result<Tint, D::Error> {
+    XColor::deserialize(d).map(Tint::from_premultiplied)
 }
 
 impl<'de> Deserialize<'de> for XRect {

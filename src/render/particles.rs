@@ -188,15 +188,13 @@ fn draw(
         // Additive glows are light themselves, not lit (`DefaultWorldAdditive`).
         let light = if p.style.additive { [1.0; 3] } else { map.light_at(p.position) };
         let [r, g, b, a] = p.state.color;
-        // XNA blended premultiplied colours; ours are straight. Its
-        // additive blend weighed them by alpha once more (`SourceAlpha`).
         // Vertex colours are linear; XNA's were sRGB numbers. Additive
         // glows sum in linear light here, darker than XNA's sums of sRGB
         // numbers: they get a boost, milder than the additive light's
-        // (stacked flashes clip to white quickly).
-        let straight = |c: f32, l: f32| if a > 0.0 { (c / a).min(1.0) * l } else { 0.0 };
+        // (stacked flashes clip to white quickly). Its additive blend
+        // weighed the colour by alpha once more (`SourceAlpha`).
         let (alpha, boost) = if p.style.additive { (a * a, flash.0) } else { (a, 1.0) };
-        let linear = Color::srgb(straight(r, light[0]), straight(g, light[1]), straight(b, light[2])).to_linear();
+        let linear = Color::srgb(r * light[0], g * light[1], b * light[2]).to_linear();
         let color = [linear.red * boost, linear.green * boost, linear.blue * boost, alpha];
         q.colors.extend([color; 4]);
     }

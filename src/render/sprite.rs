@@ -42,7 +42,9 @@ fn key(name: &str) -> String {
 /// How a sprite is coloured each frame.
 #[derive(Component, Clone, Copy, Debug)]
 pub struct SpriteTint {
-    /// sRGB colour (alpha = opacity) multiplied with the texture.
+    /// Straight sRGB colour and alpha (the opacity), multiplied with the
+    /// texture. Never a channel above the alpha to mean "adds light": a
+    /// sprite that adds light is drawn additively instead.
     pub color: [f32; 4],
     /// Multiply by the light map at the sprite's position.
     pub lit: bool,

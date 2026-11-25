@@ -11,7 +11,6 @@
 use bevy::math::Vec2;
 
 use crate::content::splashes::{LayerData, SplashData};
-use crate::content::xna::XColor;
 
 /// The screen C# laid the splashes out for (`Settings.ViewWidth/Height`).
 pub const DESIGN: Vec2 = Vec2::new(800.0, 480.0);
@@ -244,19 +243,6 @@ pub fn draw_order(splash: &SplashData) -> Vec<usize> {
     let mut order: Vec<usize> = (0..layers.len()).collect();
     order.sort_by(|&a, &b| depth(b).total_cmp(&depth(a)));
     order
-}
-
-/// A colour as C# drew it, times `alpha` (the splash's fade), as a straight
-/// (not premultiplied) colour with an alpha. XNA's colours are premultiplied:
-/// `80808080` is white at half strength, and a channel above the alpha
-/// (`770094FF`) adds light. Bevy's blend is straight, so the colour is
-/// divided by its alpha.
-pub fn straight_tint(color: XColor, alpha: f32) -> [f32; 4] {
-    let [r, g, b, a] = color.to_f32();
-    if a <= 0.0 {
-        return [0.0; 4];
-    }
-    [r / a, g / a, b / a, (a * alpha).clamp(0.0, 1.0)]
 }
 
 /// The top left corner shift that turns a box of `size` about its own

@@ -70,6 +70,8 @@ const FADING: &str = "Gradient8WidthPixelNonSym";
 /// Textures the aim line draws with, to load with a map that has a gun.
 pub const AIM_LINE_TEXTURES: [&str; 4] = [LASER_LINE, LASER_GLOW, SOLID, FADING];
 
+/// How much of the line's colour the glow under it adds.
+const GLOW_STRENGTH: f32 = 0.5;
 /// `LaserView.MaxLength`: the strip's full length, world units.
 const STRIP_LENGTH: f32 = 32.0;
 
@@ -383,13 +385,15 @@ fn draw_aim_lines(
         let Some(mut m) = materials.get_mut(&material.0) else {
             continue;
         };
+        // Added, so the alpha is how much of the white is added.
         let white = |alpha: f32| Color::srgba(1.0, 1.0, 1.0, alpha);
         let (width, color) = match look {
             // `SetLaserNormal`: `Color.Green` (0, 128, 0) for the local
-            // player, `Color.Red` for the others.
+            // player, `Color.Red` for the others; the glow is the same colour
+            // at half strength. Straight colours, added by the material.
             AimLook::Normal => {
-                let k = if line.glow { 0.5 } else { 1.0 };
-                (3.0, if local { Color::srgba(0.0, 128.0 / 255.0 * k, 0.0, 1.0) } else { Color::srgba(k, 0.0, 0.0, 1.0) })
+                let k = if line.glow { GLOW_STRENGTH } else { 1.0 };
+                (3.0, if local { Color::srgb(0.0, 128.0 / 255.0 * k, 0.0) } else { Color::srgb(k, 0.0, 0.0) })
             }
             AimLook::Low => {
                 let tri = triangle(t);

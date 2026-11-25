@@ -30,7 +30,8 @@ pub struct State {
     pub view_rotation: f32,
     /// How fast its direction of travel turns, radians per second.
     pub rotation: f32,
-    /// Premultiplied RGBA (XNA's colours), 0..1.
+    /// Straight RGB and alpha, 0..1 (the picture's colours times this).
+    /// An `additive` style adds `color * alpha` to the screen.
     pub color: [f32; 4],
     /// Its `DepthConst` height in C#: 0 on the ground, negative above it.
     /// Only says whether it is drawn under the cars or over them.
@@ -66,8 +67,8 @@ impl Style {
         let a = (t / self.lifetime).clamp(0.0, 1.0);
         let lerp = |x: f32, y: f32| x + (y - x) * a;
         let (b, e) = (&self.begin, &self.end);
-        let color = if e.color == [0.0; 4] {
-            b.color.map(|c| c * (1.0 - a))
+        let color = if e.color[3] == 0.0 {
+            [b.color[0], b.color[1], b.color[2], b.color[3] * (1.0 - a)]
         } else {
             std::array::from_fn(|i| lerp(b.color[i], e.color[i]))
         };

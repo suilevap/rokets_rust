@@ -94,7 +94,7 @@ use crate::content::splashes::SplashesData;
 use crate::controls::ActiveScheme;
 use crate::game::{GameState, MapEntity};
 use crate::info::Texts;
-use screen::{Phase, Screen, corner_pivot_shift, draw_order, placement, straight_tint};
+use screen::{Phase, Screen, corner_pivot_shift, draw_order, placement};
 
 /// The Title font (`FontX2`, 30 pt at 96 dpi) in pixels.
 pub const TITLE_PX: f32 = 40.0;
@@ -343,7 +343,7 @@ fn draw(
     for (piece, mut node, mut transform, mut visibility, image, text, computed) in &mut pieces {
         let layer = &splash.layers.items[piece.layer];
         let place = placement(splash, layer, piece.layer, view, state.0.sway());
-        let tint = straight_tint(layer.color, alpha);
+        let tint = layer.color.blended(alpha);
         let color = Color::srgba(tint[0], tint[1], tint[2], tint[3]);
         let mut shown = state.0.layer_active(piece.layer);
 

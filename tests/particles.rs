@@ -34,8 +34,8 @@ fn a_style_moves_from_begin_to_end_and_fades_out() {
     assert_eq!(half.scale, Vec2::splat(2.0));
     assert_eq!(half.speed, 1.0);
     assert_eq!(half.height, -0.5);
-    // Fading to transparent keeps the colour and fades it (premultiplied).
-    assert_eq!(half.color, [0.25, 0.25, 0.25, 0.5]);
+    // Fading to transparent keeps the colour and fades the alpha.
+    assert_eq!(half.color, [0.5, 0.5, 0.5, 0.5]);
 }
 
 #[test]
