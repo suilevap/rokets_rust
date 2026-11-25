@@ -3,7 +3,7 @@
   <Asset Type="GameLibrary.MapData">
     <Name>Part_Cross</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Parts\Part_Cross</Image>
+    <Image>Maps/Parts/Part_Cross</Image>
     <Scale>48</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>

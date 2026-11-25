@@ -3,7 +3,7 @@
   <Asset Type="GameLibrary.MapData">
     <Name>TeseMetaMap</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Singleplayer\TeseMetaMap</Image>
+    <Image>Maps/Singleplayer/TeseMetaMap</Image>
     <Scale>48</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>

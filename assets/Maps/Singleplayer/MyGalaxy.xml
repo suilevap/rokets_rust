@@ -3,7 +3,7 @@
   <Asset Type="GameLibrary.MapData">
     <Name>MyGalaxy</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Singleplayer\MyGalaxy</Image>
+    <Image>Maps/Singleplayer/MyGalaxy</Image>
     <PreviewImage>Maps/Preview/Galaxy</PreviewImage>
     <Scale>48</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
@@ -298,7 +298,7 @@
       <Item>
         <Id>1002</Id>
         <Position>30.5 11.5</Position>
-        <Sprite>Particles\Star</Sprite>
+        <Sprite>Particles/Star</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -312,7 +312,7 @@
       <Item>
         <Id>1003</Id>
         <Position>18.0666676 8.011111</Position>
-        <Sprite>Particles\Star</Sprite>
+        <Sprite>Particles/Star</Sprite>
         <Animated>false</Animated>
         <Scale>0.7</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -326,7 +326,7 @@
       <Item>
         <Id>1004</Id>
         <Position>19.5 14.5</Position>
-        <Sprite>Particles\Star</Sprite>
+        <Sprite>Particles/Star</Sprite>
         <Animated>false</Animated>
         <Scale>0.7</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -340,7 +340,7 @@
       <Item>
         <Id>1005</Id>
         <Position>28.5 3.5</Position>
-        <Sprite>Particles\Star</Sprite>
+        <Sprite>Particles/Star</Sprite>
         <Animated>false</Animated>
         <Scale>0.8</Scale>
         <DirectionDeg>25</DirectionDeg>
@@ -354,7 +354,7 @@
       <Item>
         <Id>1006</Id>
         <Position>28.5 20.5</Position>
-        <Sprite>Particles\Star</Sprite>
+        <Sprite>Particles/Star</Sprite>
         <Animated>false</Animated>
         <Scale>0.75</Scale>
         <DirectionDeg>60</DirectionDeg>
@@ -368,7 +368,7 @@
       <Item>
         <Id>1007</Id>
         <Position>43.5 4</Position>
-        <Sprite>Entities\DamagableBox</Sprite>
+        <Sprite>Entities/DamagableBox</Sprite>
         <Animated>false</Animated>
         <Scale>0.6963202</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -382,7 +382,7 @@
       <Item>
         <Id>1008</Id>
         <Position>45.5 4</Position>
-        <Sprite>Entities\DamagableBox</Sprite>
+        <Sprite>Entities/DamagableBox</Sprite>
         <Animated>false</Animated>
         <Scale>0.6963202</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -396,7 +396,7 @@
       <Item>
         <Id>1009</Id>
         <Position>12.5 11</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -410,7 +410,7 @@
       <Item>
         <Id>1011</Id>
         <Position>12.5 14</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -425,7 +425,7 @@
       <Item>
         <Id>1017</Id>
         <Position>12.5 18.5</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -440,7 +440,7 @@
       <Item>
         <Id>1018</Id>
         <Position>11 20</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -455,7 +455,7 @@
       <Item>
         <Id>1022</Id>
         <Position>11 21.5</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -470,7 +470,7 @@
       <Item>
         <Id>1025</Id>
         <Position>12.5 9.5</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -485,7 +485,7 @@
       <Item>
         <Id>1026</Id>
         <Position>11 8</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -500,7 +500,7 @@
       <Item>
         <Id>1028</Id>
         <Position>11 6.5</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -515,7 +515,7 @@
       <Item>
         <Id>1034</Id>
         <Position>11 2</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -530,7 +530,7 @@
       <Item>
         <Id>1035</Id>
         <Position>12.5 2</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -545,7 +545,7 @@
       <Item>
         <Id>1037</Id>
         <Position>12 6.5</Position>
-        <Sprite>UI\Splash\Controls\ZonesDelimiter</Sprite>
+        <Sprite>UI/Splash/Controls/ZonesDelimiter</Sprite>
         <Animated>false</Animated>
         <Scale>1.1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -559,7 +559,7 @@
       <Item>
         <Id>1038</Id>
         <Position>12 17.5</Position>
-        <Sprite>UI\Splash\Controls\ZonesDelimiter</Sprite>
+        <Sprite>UI/Splash/Controls/ZonesDelimiter</Sprite>
         <Animated>false</Animated>
         <Scale>1.1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -573,7 +573,7 @@
       <Item>
         <Id>1039</Id>
         <Position>12.5 16.5</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -1179,7 +1179,7 @@
       <Item>
         <Id>2001</Id>
         <Position>15.2222223 12.5</Position>
-        <Sprite>Entities\BoxPlaceholder</Sprite>
+        <Sprite>Entities/BoxPlaceholder</Sprite>
         <DirectionDeg>0</DirectionDeg>
         <Animated>false</Animated>
         <Timer>30</Timer>

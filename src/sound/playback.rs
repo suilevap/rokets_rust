@@ -41,13 +41,7 @@ impl Plugin for PlaybackPlugin {
 fn load(mut commands: Commands, server: Res<AssetServer>) {
     let clips = NAMES
         .iter()
-        .filter_map(|&name| match crate::assets::resolve(&format!("Sounds/{name}"), "wav") {
-            Some(path) => Some((name, server.load(path))),
-            None => {
-                warn!("sound {name:?} not in assets/");
-                None
-            }
-        })
+        .map(|&name| (name, server.load(crate::assets::sound_path(name))))
         .collect();
     commands.insert_resource(Clips(clips));
 }
@@ -149,8 +143,8 @@ fn steer(
 /// only the songs the map in play uses), and the player of the one playing.
 #[derive(Resource, Default)]
 struct Songs {
-    /// By the song's name in lower case; `None`: not in `assets/`.
-    clips: HashMap<String, Option<Handle<AudioSource>>>,
+    /// By the song's name.
+    clips: HashMap<String, Handle<AudioSource>>,
     player: Option<Entity>,
 }
 
@@ -166,15 +160,11 @@ impl Plugin for MusicPlaybackPlugin {
 
 fn load_songs(jukebox: Res<Jukebox>, server: Res<AssetServer>, mut songs: ResMut<Songs>) {
     for name in jukebox.level_tracks() {
-        let key = name.to_ascii_lowercase();
-        if songs.clips.contains_key(&key) {
+        if songs.clips.contains_key(name) {
             continue;
         }
-        let clip = crate::assets::resolve(&format!("Sounds/Music/{name}"), "ogg").map(|path| server.load(path));
-        if clip.is_none() {
-            warn!("song {name:?} not in assets/");
-        }
-        songs.clips.insert(key, clip);
+        let clip = server.load(crate::assets::music_path(name));
+        songs.clips.insert(name.to_string(), clip);
     }
 }
 
@@ -192,7 +182,7 @@ fn play_music(
         let MusicCue::Play { track, looped } = cue else {
             continue;
         };
-        let Some(Some(clip)) = songs.clips.get(&track.to_ascii_lowercase()) else {
+        let Some(clip) = songs.clips.get(track) else {
             // A song that cannot play is a song that has ended.
             jukebox.song_ended();
             continue;

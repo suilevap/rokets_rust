@@ -34,7 +34,7 @@
 //! - A bolt is a chain of still cyan links (2 units each) from one end
 //!   towards the other, each turned up to a quarter turn off the straight
 //!   line, ending in the Railgun's flash; a strike draws one each way.
-//! - Two discs spin on the coil over the car (`Entities\TeslaGenInner`
+//! - Two discs spin on the coil over the car (`Entities/TeslaGenInner`
 //!   once a second one way, `TeslaGenOuter` once every two seconds the
 //!   other way, on the game's clock), and once the coil has been armed a
 //!   red dotted circle the size of its reach pulses under the cars (a
@@ -78,11 +78,11 @@ use crate::render::particles::Particles;
 use crate::render::sprite::{SpriteTint, UnitQuad, sprite_bundle};
 
 /// The disc that spins once a second (`_teslaGeneratorInner`).
-const INNER: &str = "Entities\\TeslaGenInner";
+const INNER: &str = "Entities/TeslaGenInner";
 /// The disc that spins the other way once in two (`_teslaGeneratorOuter`).
-const OUTER: &str = "Entities\\TeslaGenOuter";
+const OUTER: &str = "Entities/TeslaGenOuter";
 /// The reach's circle (`_dottedCircle`): its radius is half the texture.
-const CIRCLE: &str = "UI\\DottedCircle";
+const CIRCLE: &str = "UI/DottedCircle";
 
 /// What the Tesla draws on and around the car, to load with the map.
 pub const TEXTURES: [&str; 3] = [INNER, OUTER, CIRCLE];

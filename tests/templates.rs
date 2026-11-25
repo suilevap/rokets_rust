@@ -8,7 +8,7 @@ use tilerider::render::layers::Layer;
 fn entity(kind: &str, extra: &str) -> EntityData {
     let xml = format!(
         r#"<XnaContent><Asset Type="GameLibrary.MapData"><Name>T</Name><Entities>
-        <Item><Id>1</Id><Position>1 1</Position><Sprite>Entities\Thing</Sprite><Scale>2</Scale>
+        <Item><Id>1</Id><Position>1 1</Position><Sprite>Entities/Thing</Sprite><Scale>2</Scale>
         <Type>{kind}</Type>{extra}</Item></Entities></Asset></XnaContent>"#
     );
     MapData::parse(&xml).unwrap().entities.items.remove(0)
@@ -39,7 +39,7 @@ fn boxes_are_pushable_and_heavy_ones_denser() {
     // A damagable box ignores the map's sprite and scale.
     let damagable = template_for(&entity("DamagableBox", "")).unwrap();
     let sprite = &damagable.sprites[0];
-    assert_eq!((sprite.name.as_str(), sprite.scale), ("Entities\\DamagableBox", 1.0));
+    assert_eq!((sprite.name.as_str(), sprite.scale), ("Entities/DamagableBox", 1.0));
 }
 
 #[test]
@@ -61,7 +61,7 @@ fn accelerators_are_boosting_sensors_with_arrows() {
     assert_eq!((flash.start, flash.end, flash.duration), (WHITE, GRAY, 1.0));
     // Two arrows, the second three quarters ahead, lit yellow in turn.
     assert_eq!(t.sprites.len(), 2);
-    assert!(t.sprites.iter().all(|s| s.name == "Entities\\Accelerator"));
+    assert!(t.sprites.iter().all(|s| s.name == "Entities/Accelerator"));
     assert_eq!((t.sprites[0].ahead, t.sprites[1].ahead), (0.0, 0.75));
     let lit_at = |i: usize, phase: f32| {
         let (wave, track) = t.sprites[i].tint_loop.clone().unwrap();

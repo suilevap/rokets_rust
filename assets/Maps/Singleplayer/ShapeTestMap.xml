@@ -3,7 +3,7 @@
   <Asset Type="GameLibrary.MapData">
     <Name>ShapeTestMap</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Particles\Smoke</Image>
+    <Image>Particles/Smoke</Image>
     <Scale>48</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>

@@ -230,12 +230,6 @@ pub fn boolean<'de, D: Deserializer<'de>>(d: D) -> Result<bool, D::Error> {
     }
 }
 
-/// Converts an XNA content path (`Entities\CargoQuest`) to a relative asset
-/// path with forward slashes and no extension.
-pub fn content_path(path: &str) -> String {
-    path.trim().replace('\\', "/")
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -3,7 +3,7 @@
   <Asset Type="GameLibrary.MapData">
     <Name>Part_EndPoint1</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Parts\Part_EndPoint1</Image>
+    <Image>Maps/Parts/Part_EndPoint1</Image>
     <Scale>48</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>
@@ -32,7 +32,7 @@
       <Item>
         <Id>1001</Id>
         <Position>6.5 8</Position>
-        <Sprite>Entities\FinishTile</Sprite>
+        <Sprite>Entities/FinishTile</Sprite>
         <Animated>false</Animated>
         <Scale>2.5</Scale>
         <DirectionDeg>0</DirectionDeg>

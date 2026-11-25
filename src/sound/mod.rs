@@ -156,7 +156,7 @@ pub struct CarSounds {
 impl CarSounds {
     pub fn new(engine: Option<&str>, wheels_pitch: f32) -> CarSounds {
         CarSounds {
-            engine_name: engine.and_then(|e| NAMES.iter().copied().find(|n| n.eq_ignore_ascii_case(e))),
+            engine_name: engine.and_then(|e| NAMES.iter().copied().find(|n| n == &e)),
             wheels_pitch,
             squeal_level: 0.0,
             squeal_name: 0,
@@ -260,7 +260,7 @@ fn play_sound_action(
 ) -> bool {
     let d = &run.data;
     let wanted = d.sound.as_deref().unwrap_or_default().trim();
-    let Some(name) = NAMES.iter().copied().find(|n| n.eq_ignore_ascii_case(wanted)) else {
+    let Some(name) = NAMES.iter().copied().find(|n| *n == wanted) else {
         warn!("sound {wanted:?} is not one the port loads");
         return true;
     };

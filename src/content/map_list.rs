@@ -20,7 +20,7 @@ impl MapList {
     /// The map after `name` in the campaign, if any.
     pub fn next_after(&self, name: &str) -> Option<&str> {
         let maps = &self.singleplayer.items;
-        let i = maps.iter().position(|m| m.eq_ignore_ascii_case(name))?;
+        let i = maps.iter().position(|m| m == name)?;
         maps.get(i + 1).map(String::as_str)
     }
 }

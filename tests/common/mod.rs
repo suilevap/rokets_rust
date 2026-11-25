@@ -43,13 +43,13 @@ pub fn read_png(path: &Path) -> (usize, usize, Vec<u8>) {
 pub fn load_map(name: &str) -> (MapData, MapGrid) {
     let root = assets_root();
     let xml =
-        std::fs::read_to_string(root.join(assets::map_path(name).expect("map"))).expect("read map");
+        std::fs::read_to_string(root.join(assets::map_path(name))).expect("read map");
     let map = MapData::parse(&xml).expect("parse map");
     let image = map
         .image
         .as_deref()
         .filter(|s| !s.trim().is_empty())
-        .and_then(assets::sprite_path)
+        .map(assets::sprite_path)
         .map(|p| read_png(&root.join(p)));
     let grid = MapGrid::build(&map, image.as_ref().map(|(w, h, p)| (*w, *h, p.as_slice())));
     (map, grid)

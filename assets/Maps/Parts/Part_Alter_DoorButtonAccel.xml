@@ -3,7 +3,7 @@
   <Asset Type="GameLibrary.MapData">
     <Name>Part_Alter_DoorButtonAccel</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Parts\Part_Alter_DoorButtonAccel</Image>
+    <Image>Maps/Parts/Part_Alter_DoorButtonAccel</Image>
     <Scale>48</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>
@@ -50,7 +50,7 @@
       <Item>
         <Id>1001</Id>
         <Position>8 9</Position>
-        <Sprite>Gadget\Bomb</Sprite>
+        <Sprite>Gadget/bomb</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -64,7 +64,7 @@
       <Item>
         <Id>1002</Id>
         <Position>9.5 5.5</Position>
-        <Sprite>Gadget\Bomb</Sprite>
+        <Sprite>Gadget/bomb</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>

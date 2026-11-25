@@ -45,9 +45,9 @@ fn it_is_a_barrel_that_aims_and_fires_at_once_with_a_beam_for_a_line() {
     assert!(!has_aim_line(Kind::Laser));
     assert!(has_aim_line(Kind::Minigun));
     let sprite = sprite_of(Kind::Laser).unwrap();
-    assert_eq!((sprite.name, sprite.origin), ("Weapons\\Laser", Vec2::new(9.0, 5.0)));
+    assert_eq!((sprite.name, sprite.origin), ("Weapons/Laser", Vec2::new(9.0, 5.0)));
     let textures = textures_of(Kind::Laser);
-    assert!(textures.contains(&"Weapons\\Laser") && textures.contains(&"Particles\\3Pixel"));
+    assert!(textures.contains(&"Weapons/Laser") && textures.contains(&"Particles/3Pixel"));
 }
 
 #[test]

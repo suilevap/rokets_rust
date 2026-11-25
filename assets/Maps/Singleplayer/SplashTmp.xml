@@ -3,7 +3,7 @@
   <Asset Type="GameLibrary.MapData">
     <Name>NewMap</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Singleplayer\SplashTmp</Image>
+    <Image>Maps/Singleplayer/SplashTmp</Image>
     <Scale>32</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>
@@ -44,7 +44,7 @@
         <OnForeground>false</OnForeground>
         <DelaySec>0</DelaySec>
         <Height>0.8</Height>
-        <Sprite>Cars\SimpleBuggy\Base</Sprite>
+        <Sprite>Cars/SimpleBuggy/Base</Sprite>
         <Scale>1</Scale>
         <Position>7 7</Position>
         <DirectionDeg>0</DirectionDeg>
@@ -59,7 +59,7 @@
         <OnForeground>false</OnForeground>
         <DelaySec>0</DelaySec>
         <Height>1</Height>
-        <Sprite>Hints\Danger</Sprite>
+        <Sprite>Hints/Danger</Sprite>
         <Scale>1</Scale>
         <Position>11.5 1.5</Position>
         <DirectionDeg>0</DirectionDeg>
@@ -74,7 +74,7 @@
         <OnForeground>false</OnForeground>
         <DelaySec>0</DelaySec>
         <Height>0.6</Height>
-        <Sprite>Cars\SimpleBuggy\Destroyed2</Sprite>
+        <Sprite>Cars/SimpleBuggy/Destroyed2</Sprite>
         <Scale>1</Scale>
         <Position>17 6.71875</Position>
         <DirectionDeg>315</DirectionDeg>
@@ -89,7 +89,7 @@
         <OnForeground>false</OnForeground>
         <DelaySec>0</DelaySec>
         <Height>0.1</Height>
-        <Sprite>Cars\TurretStat\Base</Sprite>
+        <Sprite>Cars/TurretStat/Base</Sprite>
         <Scale>1</Scale>
         <Position>13.5 6.5</Position>
         <DirectionDeg>270</DirectionDeg>
@@ -104,7 +104,7 @@
         <OnForeground>false</OnForeground>
         <DelaySec>0</DelaySec>
         <Height>0.2</Height>
-        <Sprite>Particles\TeslaTrail</Sprite>
+        <Sprite>Particles/TeslaTrail</Sprite>
         <Scale>0.8</Scale>
         <Position>12.5 7.5</Position>
         <DirectionDeg>298.720337</DirectionDeg>
@@ -119,7 +119,7 @@
         <OnForeground>false</OnForeground>
         <DelaySec>0</DelaySec>
         <Height>0.21</Height>
-        <Sprite>Particles\TeslaTrail</Sprite>
+        <Sprite>Particles/TeslaTrail</Sprite>
         <Scale>0.8</Scale>
         <Position>12.5 7.5</Position>
         <DirectionDeg>180</DirectionDeg>
@@ -134,7 +134,7 @@
         <OnForeground>false</OnForeground>
         <DelaySec>0</DelaySec>
         <Height>0.01</Height>
-        <Sprite>UI\DottedCircle</Sprite>
+        <Sprite>UI/DottedCircle</Sprite>
         <Scale>0.8</Scale>
         <Position>21.5 7.5</Position>
         <DirectionDeg>225</DirectionDeg>
@@ -149,7 +149,7 @@
         <OnForeground>false</OnForeground>
         <DelaySec>0</DelaySec>
         <Height>0.21</Height>
-        <Sprite>Particles\TeslaTrail</Sprite>
+        <Sprite>Particles/TeslaTrail</Sprite>
         <Scale>0.8</Scale>
         <Position>13.5 9</Position>
         <DirectionDeg>234.713272</DirectionDeg>
@@ -164,7 +164,7 @@
         <OnForeground>false</OnForeground>
         <DelaySec>0</DelaySec>
         <Height>0.21</Height>
-        <Sprite>Particles\TeslaTrail</Sprite>
+        <Sprite>Particles/TeslaTrail</Sprite>
         <Scale>0.8</Scale>
         <Position>12.5 7.5</Position>
         <DirectionDeg>56.6015129</DirectionDeg>
@@ -179,7 +179,7 @@
         <OnForeground>false</OnForeground>
         <DelaySec>0</DelaySec>
         <Height>0.21</Height>
-        <Sprite>Particles\TeslaTrail</Sprite>
+        <Sprite>Particles/TeslaTrail</Sprite>
         <Scale>0.8</Scale>
         <Position>13.5 6</Position>
         <DirectionDeg>315</DirectionDeg>
@@ -194,7 +194,7 @@
         <OnForeground>false</OnForeground>
         <DelaySec>0</DelaySec>
         <Height>0.21</Height>
-        <Sprite>Particles\TeslaTrail</Sprite>
+        <Sprite>Particles/TeslaTrail</Sprite>
         <Scale>0.8</Scale>
         <Position>11.5 9</Position>
         <DirectionDeg>315</DirectionDeg>
@@ -209,7 +209,7 @@
         <OnForeground>false</OnForeground>
         <DelaySec>0</DelaySec>
         <Height>0.21</Height>
-        <Sprite>Particles\TeslaTrail</Sprite>
+        <Sprite>Particles/TeslaTrail</Sprite>
         <Scale>0.8</Scale>
         <Position>11.5 9</Position>
         <DirectionDeg>244.867035</DirectionDeg>
@@ -224,7 +224,7 @@
         <OnForeground>false</OnForeground>
         <DelaySec>0</DelaySec>
         <Height>0.21</Height>
-        <Sprite>Particles\TeslaTrail</Sprite>
+        <Sprite>Particles/TeslaTrail</Sprite>
         <Scale>0.8</Scale>
         <Position>12.5 7.5</Position>
         <DirectionDeg>148.7681</DirectionDeg>
@@ -239,7 +239,7 @@
         <OnForeground>false</OnForeground>
         <DelaySec>0</DelaySec>
         <Height>0.21</Height>
-        <Sprite>Particles\TeslaTrail</Sprite>
+        <Sprite>Particles/TeslaTrail</Sprite>
         <Scale>0.8</Scale>
         <Position>11.0625 6.59375</Position>
         <DirectionDeg>120.815704</DirectionDeg>
@@ -254,7 +254,7 @@
         <OnForeground>false</OnForeground>
         <DelaySec>0</DelaySec>
         <Height>0.62</Height>
-        <Sprite>Particles\TeslaTrail</Sprite>
+        <Sprite>Particles/TeslaTrail</Sprite>
         <Scale>0.8</Scale>
         <Position>17 7.21875</Position>
         <DirectionDeg>270</DirectionDeg>
@@ -269,7 +269,7 @@
         <OnForeground>false</OnForeground>
         <DelaySec>0</DelaySec>
         <Height>0.61</Height>
-        <Sprite>Particles\TeslaTrail</Sprite>
+        <Sprite>Particles/TeslaTrail</Sprite>
         <Scale>0.8</Scale>
         <Position>17 7.5</Position>
         <DirectionDeg>135</DirectionDeg>

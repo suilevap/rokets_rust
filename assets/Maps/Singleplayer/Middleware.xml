@@ -3,8 +3,8 @@
   <Asset Type="GameLibrary.MapData">
     <Name>Middleware</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Singleplayer\Middleware</Image>
-    <PreviewImage>Maps\Preview\Middleware</PreviewImage>
+    <Image>Maps/Singleplayer/Middleware</Image>
+    <PreviewImage>Maps/Preview/Middleware</PreviewImage>
     <Scale>128</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>
@@ -182,7 +182,7 @@
       <Item>
         <Id>1096</Id>
         <Position>90.5 9.5</Position>
-        <Sprite>Entities\FinishTile</Sprite>
+        <Sprite>Entities/FinishTile</Sprite>
         <Animated>false</Animated>
         <Scale>3.5</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -196,7 +196,7 @@
       <Item>
         <Id>1152</Id>
         <Position>9.5 8</Position>
-        <Sprite>Entities\Accelerator</Sprite>
+        <Sprite>Entities/Accelerator</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -210,7 +210,7 @@
       <Item>
         <Id>1155</Id>
         <Position>38.5 7.5</Position>
-        <Sprite>Entities\Accelerator</Sprite>
+        <Sprite>Entities/Accelerator</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>45</DirectionDeg>
@@ -224,7 +224,7 @@
       <Item>
         <Id>1156</Id>
         <Position>44 3.5</Position>
-        <Sprite>Entities\Accelerator</Sprite>
+        <Sprite>Entities/Accelerator</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>315</DirectionDeg>
@@ -238,7 +238,7 @@
       <Item>
         <Id>1158</Id>
         <Position>38.5 9.5</Position>
-        <Sprite>Entities\Accelerator</Sprite>
+        <Sprite>Entities/Accelerator</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>315</DirectionDeg>
@@ -252,7 +252,7 @@
       <Item>
         <Id>1159</Id>
         <Position>72 4.5</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -266,7 +266,7 @@
       <Item>
         <Id>1161</Id>
         <Position>32.5 9.5</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -280,7 +280,7 @@
       <Item>
         <Id>1164</Id>
         <Position>42.5 8.5</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -294,7 +294,7 @@
       <Item>
         <Id>1165</Id>
         <Position>53.5 8.5</Position>
-        <Sprite>Entities\Accelerator</Sprite>
+        <Sprite>Entities/Accelerator</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -308,7 +308,7 @@
       <Item>
         <Id>1166</Id>
         <Position>59.5 8.5</Position>
-        <Sprite>Entities\Accelerator</Sprite>
+        <Sprite>Entities/Accelerator</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>180</DirectionDeg>
@@ -322,7 +322,7 @@
       <Item>
         <Id>1167</Id>
         <Position>62.5 7.5</Position>
-        <Sprite>Entities\Accelerator</Sprite>
+        <Sprite>Entities/Accelerator</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>180</DirectionDeg>
@@ -336,7 +336,7 @@
       <Item>
         <Id>1173</Id>
         <Position>62.5 9.5</Position>
-        <Sprite>Entities\Accelerator</Sprite>
+        <Sprite>Entities/Accelerator</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>180</DirectionDeg>
@@ -350,7 +350,7 @@
       <Item>
         <Id>1174</Id>
         <Position>70.5 4.5</Position>
-        <Sprite>Entities\Accelerator</Sprite>
+        <Sprite>Entities/Accelerator</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>180</DirectionDeg>
@@ -364,7 +364,7 @@
       <Item>
         <Id>1175</Id>
         <Position>75.5 5.5</Position>
-        <Sprite>Entities\Accelerator</Sprite>
+        <Sprite>Entities/Accelerator</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>90</DirectionDeg>
@@ -378,7 +378,7 @@
       <Item>
         <Id>1176</Id>
         <Position>83.5 6</Position>
-        <Sprite>Entities\CargoQuest</Sprite>
+        <Sprite>Entities/CargoQuest</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -537,7 +537,7 @@
       <Item>
         <Id>2001</Id>
         <Position>6 8</Position>
-        <Sprite>Hints\ArrowAnimation</Sprite>
+        <Sprite>Hints/ArrowAnimation</Sprite>
         <DirectionDeg>0</DirectionDeg>
         <Animated>true</Animated>
         <Timer>0</Timer>
@@ -549,7 +549,7 @@
       <Item>
         <Id>2003</Id>
         <Position>56.5 8.5</Position>
-        <Sprite>Hints\ArrowAnimation</Sprite>
+        <Sprite>Hints/ArrowAnimation</Sprite>
         <DirectionDeg>0</DirectionDeg>
         <Animated>true</Animated>
         <Timer>0</Timer>
@@ -561,7 +561,7 @@
       <Item>
         <Id>2005</Id>
         <Position>69.5 8</Position>
-        <Sprite>Hints\ArrowAnimation</Sprite>
+        <Sprite>Hints/ArrowAnimation</Sprite>
         <DirectionDeg>0</DirectionDeg>
         <Animated>true</Animated>
         <Timer>0</Timer>
@@ -573,7 +573,7 @@
       <Item>
         <Id>2006</Id>
         <Position>67.5 4.5</Position>
-        <Sprite>Hints\ArrowAnimation</Sprite>
+        <Sprite>Hints/ArrowAnimation</Sprite>
         <DirectionDeg>315</DirectionDeg>
         <Animated>true</Animated>
         <Timer>0</Timer>
@@ -624,7 +624,7 @@
       <Item>
         <Id>2010</Id>
         <Position>80.5 7.5</Position>
-        <Sprite>Hints\LaserDanger</Sprite>
+        <Sprite>Hints/LaserDanger</Sprite>
         <DirectionDeg>0</DirectionDeg>
         <Animated>false</Animated>
         <Timer>0</Timer>

@@ -3,7 +3,7 @@
   <Asset Type="GameLibrary.MapData">
     <Name>Part_Arena</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Parts\Part_Arena</Image>
+    <Image>Maps/Parts/Part_Arena</Image>
     <Scale>48</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>
@@ -69,7 +69,7 @@
       <Item>
         <Id>1001</Id>
         <Position>29.5 28</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -82,7 +82,7 @@
       <Item>
         <Id>1002</Id>
         <Position>14 4</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>

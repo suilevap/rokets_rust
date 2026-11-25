@@ -3,7 +3,7 @@
   <Asset Type="GameLibrary.MapData">
     <Name>Danger</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Singleplayer\Danger</Image>
+    <Image>Maps/Singleplayer/Danger</Image>
     <Scale>48</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>
@@ -148,7 +148,7 @@
       <Item>
         <Id>1001</Id>
         <Position>34 31.5</Position>
-        <Sprite>Entities\DoorBox</Sprite>
+        <Sprite>Entities/DoorBox</Sprite>
         <Animated>false</Animated>
         <Scale>0.7</Scale>
         <DirectionDeg>180</DirectionDeg>
@@ -163,7 +163,7 @@
       <Item>
         <Id>1002</Id>
         <Position>43.5 46</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>

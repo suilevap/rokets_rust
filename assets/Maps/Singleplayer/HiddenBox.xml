@@ -3,7 +3,7 @@
   <Asset Type="GameLibrary.MapData">
     <Name>HiddenBox</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Singleplayer\HiddenBox</Image>
+    <Image>Maps/Singleplayer/HiddenBox</Image>
     <Scale>96</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>

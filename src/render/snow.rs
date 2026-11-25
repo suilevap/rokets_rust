@@ -18,7 +18,7 @@
 //! half turn), as snow does past a moving car. The style is a streak
 //! (`3Pixel`), a flake (`SnowEffect`) or a speck (`GlassDirt`) of eleven
 //! (two, eight, one); [`particles::styles`](crate::particles::styles) has
-//! them. Besides it draws two big slow whirls of mist (`Particles\Smoke`,
+//! them. Besides it draws two big slow whirls of mist (`Particles/Smoke`,
 //! 40 times its size, faint, turned about a point off its middle, one at
 //! each of two corners just outside the canvas, brightening and dimming in
 //! turn): [`mist`].
@@ -111,7 +111,7 @@ pub const MIST_PIVOT: f32 = 8.0;
 pub const MIST_OUT: f32 = 64.0;
 /// How faint the mist is at most.
 pub const MIST_ALPHA: f32 = 0.15;
-const MIST: &str = "Particles\\Smoke";
+const MIST: &str = "Particles/Smoke";
 
 /// The sprites a level's snow needs, to load with the map.
 pub fn textures(effect: LevelEffect) -> Vec<&'static str> {

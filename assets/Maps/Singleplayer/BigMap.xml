@@ -3,7 +3,7 @@
   <Asset Type="GameLibrary.MapData">
     <Name>NewMap</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Singleplayer\BigMap</Image>
+    <Image>Maps/Singleplayer/BigMap</Image>
     <Scale>48</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>

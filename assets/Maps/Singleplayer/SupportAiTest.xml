@@ -3,7 +3,7 @@
   <Asset Type="GameLibrary.MapData">
     <Name>SupportAiTest</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Singleplayer\SupportAiTest</Image>
+    <Image>Maps/Singleplayer/SupportAiTest</Image>
     <Scale>48</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>
@@ -80,7 +80,7 @@
       <Item>
         <Id>1001</Id>
         <Position>25.5 20.5</Position>
-        <Sprite>Entities\CargoQuest</Sprite>
+        <Sprite>Entities/CargoQuest</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>

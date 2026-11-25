@@ -2,7 +2,7 @@
 <XnaContent>
   <Asset Type="GameLibrary.MapData">
     <Name>The City</Name>
-    <Image>Maps\Singleplayer\Map1</Image>
+    <Image>Maps/Singleplayer/Map1</Image>
     <Scale>64</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <MusicAmbient>TheCitySong</MusicAmbient>
@@ -88,13 +88,13 @@
       <Item>
         <Id>1</Id>
         <Position>20 56</Position>
-        <Sprite>Entities\CargoQuest</Sprite>
+        <Sprite>Entities/CargoQuest</Sprite>
         <Scale>0.5</Scale>
       </Item>
       <Item>
         <Id>2</Id>
         <Position>26 56</Position>
-        <Sprite>Entities\CargoQuest</Sprite>
+        <Sprite>Entities/CargoQuest</Sprite>
         <Scale>0.75</Scale>
       </Item>
     </Entities>

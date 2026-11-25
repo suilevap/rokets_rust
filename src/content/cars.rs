@@ -187,10 +187,10 @@ impl CarData {
     pub fn base_sprite(&self) -> Option<String> {
         self.base_sprite_path
             .clone()
-            .or_else(|| self.sprites_path.as_ref().map(|p| format!("{p}\\Base")))
+            .or_else(|| self.sprites_path.as_ref().map(|p| format!("{p}/Base")))
     }
 
     pub fn part_sprite(&self, part: &str) -> Option<String> {
-        self.sprites_path.as_ref().map(|p| format!("{p}\\{part}"))
+        self.sprites_path.as_ref().map(|p| format!("{p}/{part}"))
     }
 }

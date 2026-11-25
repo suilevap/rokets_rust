@@ -30,8 +30,8 @@ fn only_a_plain_map_has_the_trail() {
 #[test]
 fn the_sprites_it_draws_are_there() {
     for name in textures().into_iter().chain(["Gradient4Pixel"]) {
-        let path = assets::sprite_path(name).unwrap_or_else(|| panic!("{name} is not in the assets"));
-        assert!(common::assets_root().join(path).is_file(), "{path}");
+        let path = assets::sprite_path(name);
+        assert!(common::assets_root().join(&path).is_file(), "{path}");
     }
 }
 

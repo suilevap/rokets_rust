@@ -112,23 +112,23 @@ pub const SPARK_CHANCE: f32 = 0.05;
 /// sprite, the strips and bar (shared with the aim line), the blur's
 /// gradient, the muzzle's streak and the ends' flash.
 pub const TEXTURES: [&str; 9] = [
-    "Weapons\\Laser",
-    "Special\\LaserLine",
-    "Special\\LaserLine2",
+    "Weapons/Laser",
+    "Special/LaserLine",
+    "Special/LaserLine2",
     "WhitePixel",
     "Gradient8WidthPixelNonSym",
     BLUR,
     MUZZLE,
     END,
-    "Particles\\Circle",
+    "Particles/Circle",
 ];
 
 /// `Drawer.Gradient3PixelOriginTop`: a 3 × 1 gradient, bright in the middle.
-const BLUR: &str = "Particles\\3Pixel";
+const BLUR: &str = "Particles/3Pixel";
 /// `_flashView`: the streak out of the muzzle (127 × 16 pixels).
-const MUZZLE: &str = "Particles\\minigunTrail";
+const MUZZLE: &str = "Particles/minigunTrail";
 /// `Drawer.FlashSprite` (32 × 32 pixels).
-const END: &str = "Particles\\flash2";
+const END: &str = "Particles/flash2";
 const MUZZLE_SIZE: Vec2 = Vec2::new(127.0, 16.0);
 const END_SIZE: f32 = 32.0;
 /// `_flashView.Origin.X`: the streak turns about a point 95% along it.

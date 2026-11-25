@@ -3,7 +3,7 @@
   <Asset Type="GameLibrary.MapData">
     <Name>TheEnd</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Singleplayer\FinalCredits</Image>
+    <Image>Maps/Singleplayer/FinalCredits</Image>
     <Scale>48</Scale>
     <ImageWallTreshold>254</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>
@@ -190,7 +190,7 @@
       <Item>
         <Id>1001</Id>
         <Position>33.9791679 13.354166</Position>
-        <Sprite>Entities\HeavyBox</Sprite>
+        <Sprite>Entities/HeavyBox</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>262.875031</DirectionDeg>
@@ -205,7 +205,7 @@
       <Item>
         <Id>1002</Id>
         <Position>44.5 13.5</Position>
-        <Sprite>UI\Splash\Controls\ZonesDelimiter</Sprite>
+        <Sprite>UI/Splash/Controls/ZonesDelimiter</Sprite>
         <Animated>false</Animated>
         <Scale>1.4</Scale>
         <DirectionDeg>90</DirectionDeg>
@@ -219,7 +219,7 @@
       <Item>
         <Id>1003</Id>
         <Position>33.8333321 11.854166</Position>
-        <Sprite>Entities\HeavyBox</Sprite>
+        <Sprite>Entities/HeavyBox</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -233,7 +233,7 @@
       <Item>
         <Id>1004</Id>
         <Position>49.5 38</Position>
-        <Sprite>Entities\HeavyBox</Sprite>
+        <Sprite>Entities/HeavyBox</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>262.875031</DirectionDeg>
@@ -248,7 +248,7 @@
       <Item>
         <Id>1005</Id>
         <Position>51.5 37.5</Position>
-        <Sprite>Entities\HeavyBox</Sprite>
+        <Sprite>Entities/HeavyBox</Sprite>
         <Animated>false</Animated>
         <Scale>0.812397</Scale>
         <DirectionDeg>341.2223</DirectionDeg>
@@ -477,7 +477,7 @@
         </Groups>
         <RunOnMapStart>false</RunOnMapStart>
         <Position>33.9791679 13.354166</Position>
-        <Sprite>UI\IconLikeCircle</Sprite>
+        <Sprite>UI/IconLikeCircle</Sprite>
         <Scale>0.6</Scale>
         <DirectionDeg>0</DirectionDeg>
         <Animated>false</Animated>
@@ -520,7 +520,7 @@
         </Groups>
         <RunOnMapStart>false</RunOnMapStart>
         <Position>51.5 37.5</Position>
-        <Sprite>UI\IconLikeCircle</Sprite>
+        <Sprite>UI/IconLikeCircle</Sprite>
         <Scale>0.5</Scale>
         <DirectionDeg>225</DirectionDeg>
         <Animated>false</Animated>
@@ -536,7 +536,7 @@
         </Groups>
         <RunOnMapStart>false</RunOnMapStart>
         <Position>49.5 38</Position>
-        <Sprite>UI\IconLikeCircle</Sprite>
+        <Sprite>UI/IconLikeCircle</Sprite>
         <Scale>0.6</Scale>
         <DirectionDeg>30.5559139</DirectionDeg>
         <Animated>false</Animated>
@@ -674,7 +674,7 @@
       <Item>
         <Id>2009</Id>
         <Position>13 10.5</Position>
-        <Sprite>Hints\ArrowAnimation</Sprite>
+        <Sprite>Hints/ArrowAnimation</Sprite>
         <DirectionDeg>2.862403</DirectionDeg>
         <Animated>true</Animated>
         <Timer>0</Timer>
@@ -686,7 +686,7 @@
       <Item>
         <Id>2010</Id>
         <Position>23.5 10</Position>
-        <Sprite>Hints\ArrowAnimation</Sprite>
+        <Sprite>Hints/ArrowAnimation</Sprite>
         <DirectionDeg>184.008255</DirectionDeg>
         <Animated>true</Animated>
         <Timer>0</Timer>

@@ -3,7 +3,7 @@
   <Asset Type="GameLibrary.MapData">
     <Name>AiPathTest</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Singleplayer\AiPathTest</Image>
+    <Image>Maps/Singleplayer/AiPathTest</Image>
     <Scale>64</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>
@@ -87,7 +87,7 @@
       <Item>
         <Id>1001</Id>
         <Position>21.5 9.5</Position>
-        <Sprite>Entities\DoorBoxNonLinkable</Sprite>
+        <Sprite>Entities/DoorBoxNonLinkable</Sprite>
         <Animated>false</Animated>
         <Scale>0.95</Scale>
         <DirectionDeg>270</DirectionDeg>
@@ -101,7 +101,7 @@
       <Item>
         <Id>1002</Id>
         <Position>32 9.5</Position>
-        <Sprite>Entities\DoorBoxNonLinkable</Sprite>
+        <Sprite>Entities/DoorBoxNonLinkable</Sprite>
         <Animated>false</Animated>
         <Scale>0.95</Scale>
         <DirectionDeg>360</DirectionDeg>
@@ -115,7 +115,7 @@
       <Item>
         <Id>1003</Id>
         <Position>16.5 17</Position>
-        <Sprite>Entities\CargoQuest</Sprite>
+        <Sprite>Entities/CargoQuest</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>

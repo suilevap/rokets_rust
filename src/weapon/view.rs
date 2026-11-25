@@ -10,7 +10,7 @@
 //! head-on blow). Normally it is a thin line (3 C#
 //! pixels), green on the player's gun and red on an enemy's (`SetLaserNormal`:
 //! `Color.Green` for `LocalDevice`, `Color.Red` otherwise), cut from a
-//! noise strip (`Special\LaserLine`) whose rows scroll once
+//! noise strip (`Special/LaserLine`) whose rows scroll once
 //! a second, so it shimmers, with a wider faint glow (`LaserLine2`, the
 //! `ImprovedLaserView` the desktop had). While the gun cannot fire (out
 //! of energy, or between pulls), it is white, pulsing once a second and
@@ -63,8 +63,8 @@ use crate::render::layers::Layer;
 use crate::render::sprite::{SpriteTint, UnitQuad, sprite_bundle};
 use crate::units::PX_PER_UNIT;
 
-const LASER_LINE: &str = "Special\\LaserLine";
-const LASER_GLOW: &str = "Special\\LaserLine2";
+const LASER_LINE: &str = "Special/LaserLine";
+const LASER_GLOW: &str = "Special/LaserLine2";
 const SOLID: &str = "WhitePixel";
 const FADING: &str = "Gradient8WidthPixelNonSym";
 

@@ -18,7 +18,7 @@ const FILE: &str = r#"<XnaContent><Asset Type="GameLibrary.SplashesData"><Splash
     <ParallaxAmount>2</ParallaxAmount><ScaleUpOnlyOffsetWhenNeeded>true</ScaleUpOnlyOffsetWhenNeeded>
     <Layers>
       <Item><Sprite></Sprite><BindTextId>0</BindTextId><Offset>600 32</Offset></Item>
-      <Item><Sprite>UI\ArrowStatic</Sprite><Offset>100 200</Offset><Color>90909090</Color>
+      <Item><Sprite>UI/ArrowStatic</Sprite><Offset>100 200</Offset><Color>90909090</Color>
         <Height>0.3</Height><Scale>2</Scale><DirectionRad>0.5</DirectionRad></Item>
       <Item><Text>Go</Text><DelaySec>1</DelaySec><Static>true</Static><OnForeground>true</OnForeground></Item>
       <Item><Sprite>WhitePixel</Sprite><StretchToScreen>true</StretchToScreen></Item>
@@ -319,7 +319,7 @@ fn every_splash_the_campaign_shows_is_in_the_file_with_its_sprites() {
             for layer in splash.layers.iter() {
                 if let Some(sprite) = layer.sprite_name() {
                     assert!(
-                        tilerider::assets::sprite_path(sprite).is_some(),
+                        assets().join(tilerider::assets::sprite_path(sprite)).is_file(),
                         "{} needs the sprite {sprite}: run tools/import_content.py",
                         splash.name
                     );

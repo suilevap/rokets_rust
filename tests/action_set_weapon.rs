@@ -250,13 +250,13 @@ fn the_maps_load_the_textures_of_the_guns_they_hand_out() {
     let registry = app.world().resource::<ActionRegistry>();
     let actions = app.world().resource::<CurrentActions>().0.0.clone();
     let tesla = registry.sprites_of(&actions[0]);
-    assert!(tesla.iter().any(|s| s == "UI\\BigCircleGun"), "the ring of the effect");
+    assert!(tesla.iter().any(|s| s == "UI/BigCircleGun"), "the ring of the effect");
     assert!(tesla.iter().any(|s| s.contains("Tesla")), "the Tesla's discs");
     let quiet = registry.sprites_of(&actions[1]);
     assert!(!quiet.iter().any(|s| s.starts_with("UI")), "no ring for a silent one");
-    assert!(quiet.iter().any(|s| s == "Weapons\\Railgun"));
+    assert!(quiet.iter().any(|s| s == "Weapons/Railgun"));
     // The template, as an `ActionOnCreate` or a sequence's step.
-    assert!(registry.sprites_of_text("SetWeapon(Hammer)").iter().any(|s| s == "Weapons\\Saw"));
+    assert!(registry.sprites_of_text("SetWeapon(Hammer)").iter().any(|s| s == "Weapons/Saw"));
     assert!(registry.sprites_of_text("NextMap()").is_empty());
 }
 
@@ -268,5 +268,5 @@ fn the_maps_load_the_textures_of_the_accelerator_they_hand_out() {
     let registry = app.world().resource::<ActionRegistry>();
     let actions = app.world().resource::<CurrentActions>().0.0.clone();
     let sprites = registry.sprites_of(&actions[0]);
-    assert!(sprites.iter().any(|s| s == "Particles\\flash") && sprites.iter().any(|s| s == "UI\\GadgetUsage"), "{sprites:?}");
+    assert!(sprites.iter().any(|s| s == "Particles/flash") && sprites.iter().any(|s| s == "UI/GadgetUsage"), "{sprites:?}");
 }

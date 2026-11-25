@@ -128,7 +128,7 @@ pub const LINE_CHANCE: f32 = 0.25;
 /// (`CreateSpeedTrails`' `l`).
 pub const LINE_LEAD: f32 = 512.0;
 /// The texture the lines are.
-pub const LINE_TEXTURE: &str = "Particles\\3Pixel";
+pub const LINE_TEXTURE: &str = "Particles/3Pixel";
 
 /// Whether a level's cars have the speed trail: `EntitiesManager.CreateCar`
 /// asks for `LevelEffect` `None`.

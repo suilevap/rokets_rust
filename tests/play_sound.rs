@@ -16,7 +16,7 @@ fn play_sound_cues_a_named_sound_where_it_comes_from() {
     app.world_mut().spawn((MapId(1001), Transform::from_xyz(3.0, 4.0, 0.0)));
     let map = tilerider::content::map::MapData::parse(
         r#"<XnaContent><Asset Type="GameLibrary.MapData"><Name>T</Name><Actions>
-             <Item Type="GameLibrary.PlaySound"><Name>Boing</Name><Sound>pongbounce</Sound>
+             <Item Type="GameLibrary.PlaySound"><Name>Boing</Name><Sound>PongBounce</Sound>
                <EmmiterEntityId>1001</EmmiterEntityId><Volume>0.5</Volume><Pitch>0.25</Pitch></Item>
              <Item Type="GameLibrary.PlaySound"><Name>Nowhere</Name><Sound>Stamp</Sound>
                <EmmiterEntityId>9999</EmmiterEntityId></Item>
@@ -32,6 +32,6 @@ fn play_sound_cues_a_named_sound_where_it_comes_from() {
     assert_eq!(
         got,
         [("PongBounce", Some(Vec2::new(3.0, 4.0)), 0.25, 0.5), ("ScaryMoment", None, 0.0, 1.0)],
-        "names in any case; nothing from an emitter that is not there; the template at the listener"
+        "nothing from an emitter that is not there; the template at the listener"
     );
 }

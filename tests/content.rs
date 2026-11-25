@@ -44,7 +44,7 @@ fn every_campaign_map_exists() {
 fn car_catalogue_resolves_base_cars() {
     let cars = CarCatalog::parse(&fs::read_to_string(assets().join("Cars/Cars.xml")).unwrap()).unwrap();
     let car = cars.get("SandBuggyEditorPointer").expect("car");
-    assert_eq!(car.sprites_path.as_deref(), Some("Cars\\SandBuggy"));
+    assert_eq!(car.sprites_path.as_deref(), Some("Cars/SandBuggy"));
     assert_eq!(car.gadget.as_deref(), Some("EditorPointer"));
     assert!((car.mass - 2.97).abs() < 1e-6);
 }

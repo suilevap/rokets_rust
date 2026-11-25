@@ -63,13 +63,13 @@ const DRAG: f32 = 8.0 * 2.56;
 const NEAR: f32 = 0.25;
 /// The head's length (`ChainActive` is 24 px): the rope ends at its back.
 const HEAD_LENGTH: f32 = 24.0 / 32.0;
-const ACTIVE_SPRITE: &str = "Gadget\\ChainActive";
+const ACTIVE_SPRITE: &str = "Gadget/ChainActive";
 /// The rope's pieces (`SpritePath`): plain, and fading for its ends.
 const PIXEL: &str = "WhitePixel";
 const GRADIENT: &str = "Gradient2Pixel";
 /// The rope's shadow on the floor (`Color.Black * 0.5`).
 const SHADOW_ALPHA: f32 = 0.5;
-const INACTIVE_SPRITE: &str = "Gadget\\ChainInactive";
+const INACTIVE_SPRITE: &str = "Gadget/ChainInactive";
 
 /// Every texture the magnet draws with, to load with a map that gives a
 /// car one.

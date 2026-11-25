@@ -3,7 +3,7 @@
   <Asset Type="GameLibrary.MapData">
     <Name>Swarm</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Singleplayer\Swarm</Image>
+    <Image>Maps/Singleplayer/Swarm</Image>
     <Scale>128</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>
@@ -456,7 +456,7 @@
       <Item>
         <Id>1001</Id>
         <Position>36.0416679 20.25</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -470,7 +470,7 @@
       <Item>
         <Id>1002</Id>
         <Position>8.5 13.5</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -484,7 +484,7 @@
       <Item>
         <Id>1003</Id>
         <Position>8 44.5</Position>
-        <Sprite>Entities\ButtonBorder</Sprite>
+        <Sprite>Entities/ButtonBorder</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -498,7 +498,7 @@
       <Item>
         <Id>1004</Id>
         <Position>37.5 36.5</Position>
-        <Sprite>Entities\ButtonBorder</Sprite>
+        <Sprite>Entities/ButtonBorder</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -512,7 +512,7 @@
       <Item>
         <Id>1005</Id>
         <Position>3.5 28</Position>
-        <Sprite>Entities\DoorBox</Sprite>
+        <Sprite>Entities/DoorBox</Sprite>
         <Animated>false</Animated>
         <Scale>1.5</Scale>
         <DirectionDeg>270</DirectionDeg>
@@ -526,7 +526,7 @@
       <Item>
         <Id>1007</Id>
         <Position>26.5 6</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -540,7 +540,7 @@
       <Item>
         <Id>1008</Id>
         <Position>22.5 42.5</Position>
-        <Sprite>Entities\HeavyBox</Sprite>
+        <Sprite>Entities/HeavyBox</Sprite>
         <Animated>false</Animated>
         <Scale>1.75</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -1258,7 +1258,7 @@
       <Item>
         <Id>2001</Id>
         <Position>22 32</Position>
-        <Sprite>Hints\ArrowAnimation</Sprite>
+        <Sprite>Hints/ArrowAnimation</Sprite>
         <DirectionDeg>270</DirectionDeg>
         <Animated>true</Animated>
         <Timer>0</Timer>

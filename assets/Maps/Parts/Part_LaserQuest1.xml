@@ -3,7 +3,7 @@
   <Asset Type="GameLibrary.MapData">
     <Name>Part_LaserQuest1</Name>
     <GameMode>SinglePlayer</GameMode>
-    <Image>Maps\Parts\Part_LaserQuest1</Image>
+    <Image>Maps/Parts/Part_LaserQuest1</Image>
     <Scale>48</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <HaveOutlandVizualization>false</HaveOutlandVizualization>
@@ -70,7 +70,7 @@
       <Item>
         <Id>1001</Id>
         <Position>12 20.5</Position>
-        <Sprite>Entities\DoorBoxNoArrow</Sprite>
+        <Sprite>Entities/DoorBoxNoArrow</Sprite>
         <Animated>false</Animated>
         <Scale>0.75</Scale>
         <DirectionDeg>135</DirectionDeg>
@@ -84,7 +84,7 @@
       <Item>
         <Id>1002</Id>
         <Position>20 11.5</Position>
-        <Sprite>Entities\DoorBoxNonLinkable</Sprite>
+        <Sprite>Entities/DoorBoxNonLinkable</Sprite>
         <Animated>false</Animated>
         <Scale>0.74</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -98,7 +98,7 @@
       <Item>
         <Id>1003</Id>
         <Position>12 4</Position>
-        <Sprite>Entities\DoorBoxNoArrow</Sprite>
+        <Sprite>Entities/DoorBoxNoArrow</Sprite>
         <Animated>false</Animated>
         <Scale>0.75</Scale>
         <DirectionDeg>45</DirectionDeg>
@@ -112,7 +112,7 @@
       <Item>
         <Id>1005</Id>
         <Position>19.5 16.5</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>
@@ -126,7 +126,7 @@
       <Item>
         <Id>1006</Id>
         <Position>17.5 4</Position>
-        <Sprite>Entities\GearStar</Sprite>
+        <Sprite>Entities/GearStar</Sprite>
         <Animated>false</Animated>
         <Scale>1</Scale>
         <DirectionDeg>0</DirectionDeg>

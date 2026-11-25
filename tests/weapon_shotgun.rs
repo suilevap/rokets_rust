@@ -45,8 +45,8 @@ fn it_is_a_barrel_that_aims_and_hits_at_once_with_a_sprite_and_an_aim_line() {
     assert!(!Kind::Shotgun.auto_fire());
     assert!(has_aim_line(Kind::Shotgun));
     let sprite = sprite_of(Kind::Shotgun).unwrap();
-    assert_eq!((sprite.name, sprite.size, sprite.origin), ("Weapons\\Shotgun", Vec2::new(40.0, 11.0), Vec2::new(9.0, 5.0)));
-    assert_eq!(textures_of(Kind::Shotgun), vec!["Weapons\\Shotgun"]);
+    assert_eq!((sprite.name, sprite.size, sprite.origin), ("Weapons/Shotgun", Vec2::new(40.0, 11.0), Vec2::new(9.0, 5.0)));
+    assert_eq!(textures_of(Kind::Shotgun), vec!["Weapons/Shotgun"]);
 }
 
 #[test]

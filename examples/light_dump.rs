@@ -44,7 +44,7 @@ fn read_png(path: &Path) -> (usize, usize, Vec<u8>) {
 }
 
 fn sprite_size(root: &Path, name: &str) -> Option<[f32; 2]> {
-    let path = root.join(assets::sprite_path(name)?);
+    let path = root.join(assets::sprite_path(name));
     let decoder = png::Decoder::new(std::io::BufReader::new(File::open(path).ok()?));
     let info = decoder.read_info().ok()?.info().clone();
     Some([info.width as f32, info.height as f32])
@@ -89,14 +89,14 @@ fn main() {
         }
     };
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("assets");
-    let map_path = assets::map_path(name).unwrap_or_else(|| panic!("no map {name:?}"));
+    let map_path = assets::map_path(name);
     let xml = std::fs::read_to_string(root.join(map_path)).expect("read map");
     let map = MapData::parse(&xml).expect("parse map");
     let image = map
         .image
         .as_deref()
         .filter(|s| !s.trim().is_empty())
-        .and_then(assets::sprite_path)
+        .map(assets::sprite_path)
         .map(|p| read_png(&root.join(p)));
     let grid = MapGrid::build(&map, image.as_ref().map(|(w, h, p)| (*w, *h, p.as_slice())));
     let (fw, fh, fdata) = read_png(&root.join("Sprites/Particles/flash2.png"));

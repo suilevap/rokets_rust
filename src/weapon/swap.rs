@@ -35,9 +35,9 @@
 //!   (C# only announced the magnet). `None` takes either away.
 //! - **Not silently** (`ChangeSilently` false), and only for a car held for
 //!   the player's devices: a new gun (not `None`) plays `WeaponReload` and
-//!   shows a ring of `UI\BigCircleGun` in the middle of the screen
+//!   shows a ring of `UI/BigCircleGun` in the middle of the screen
 //!   ([`WeaponCollected`], drawn by [`super::collected`]); the magnet plays
-//!   `ChainBrake` with a ring of `UI\BigCircleGadget`.
+//!   `ChainBrake` with a ring of `UI/BigCircleGadget`.
 //!
 //! Not ported:
 //! - The other gadgets (`Bomb`, `EditorPointer`): the car keeps the gadget

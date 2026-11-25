@@ -37,8 +37,8 @@ use crate::render::sprite::{SpriteTint, UnitQuad, sprite_bundle};
 use avian2d::prelude::*;
 use bevy::prelude::*;
 
-/// `Entities\DoorBoxPlaceholder`: where a door opens to.
-const HINT: &str = "Entities\\DoorBoxPlaceholder";
+/// `Entities/DoorBoxPlaceholder`: where a door opens to.
+const HINT: &str = "Entities/DoorBoxPlaceholder";
 
 #[derive(Component, Debug)]
 pub struct Door {

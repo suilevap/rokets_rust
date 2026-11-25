@@ -40,7 +40,7 @@ fn it_neither_aims_nor_flies_nor_works_by_itself() {
     assert!(Kind::Tesla.is_immediate());
     assert!(tilerider::weapon::sprite_of(Kind::Tesla).is_none());
     assert_eq!(tilerider::weapon::textures_of(Kind::Tesla).len(), 3);
-    assert_eq!(tilerider::weapon::textures_of(Kind::Minigun), vec!["Weapons\\Minigun"]);
+    assert_eq!(tilerider::weapon::textures_of(Kind::Minigun), vec!["Weapons/Minigun"]);
 }
 
 #[test]

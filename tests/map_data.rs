@@ -7,7 +7,7 @@ const SAMPLE: &str = r#"<?xml version="1.0" encoding="utf-8"?>
 <XnaContent>
   <Asset Type="GameLibrary.MapData">
     <Name>Sample</Name>
-    <Image>Maps\Singleplayer\Sample</Image>
+    <Image>Maps/Singleplayer/Sample</Image>
     <Scale>64</Scale>
     <ImageWallTreshold>96</ImageWallTreshold>
     <AmbientLight>0C0C0C0C</AmbientLight>
@@ -21,7 +21,7 @@ const SAMPLE: &str = r#"<?xml version="1.0" encoding="utf-8"?>
         <DirectionDeg>90</DirectionDeg><Control>Local</Control><CarName>SandBuggy</CarName></Item>
     </Players>
     <Entities>
-      <Item><Id>1001</Id><Position>5.5 3.5</Position><Sprite>Entities\Coin</Sprite>
+      <Item><Id>1001</Id><Position>5.5 3.5</Position><Sprite>Entities/Coin</Sprite>
         <Animated>false</Animated><Scale>1</Scale><Type>Coin</Type>
         <ActionOnCreate Null="true" /></Item>
     </Entities>
