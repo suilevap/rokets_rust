@@ -35,6 +35,13 @@
 //!   the last frame drew (`CollideFixtures` of the last `Render`), so the
 //!   step the beam appears is free: [`Laser::update`]. A spark flies off
 //!   an end one time in twenty a step ([`LaserSpark`], the view's matter).
+//! - A leg that ends on a car held for the player's devices
+//!   ([`LocalDevice`]) flashes the dirty glass red, one frame in four
+//!   (`LaserRenderer.Render`: `CreateLaserEffect`, only on a map with the
+//!   lens): a quarter of the way along the leg, shaken by half a unit
+//!   ([`laser_crossings`], a [`GlassFlash`]; the flash is `render/dirty_lens`'s).
+//!   The aim line of a gun that has not fired yet (the charging red line)
+//!   flashes the same, as C# drew it with the same renderer.
 //! - Not firing, the beam is gone; the gun shows no line at all (`NoShoot`
 //!   clears `EnableWeaponLineDraw`), except while a delayed gun charges: a
 //!   thin red line, as bright as the charge is far (0.1 to 1), and a red
@@ -53,9 +60,11 @@
 //!   button (`CreateButton` of `ButtonType` `LaserCollector`, `TheGate`);
 //!   the button is not ported (see `button`), so the beam touches it as it
 //!   does any wall.
-//! - `CreateLaserEffect`: a red dirty-glass flash a quarter of the frames
-//!   on the player's own car when a beam crosses it (it needs
-//!   `IsDirtyGlassViewsValid`, a screen-space texture the port has not).
+//! - `LaserRenderer.Render`'s `CreateLaserEffect` for the other guns: in
+//!   C# every weapon's aim line makes the flash where it ends on the
+//!   player's car (the Railgun's bounces too, even the player's own after
+//!   it has bounced); only this gun's beam does here, the others draw no
+//!   line (see `render/dirty_lens` for the flash itself).
 //! - `Camera.IsInView`: the beam, flashes and sparks are made wherever
 //!   they are (as the Tesla's).
 //! - The gun's `Entity.Visible` that hides its flash; the beam, a dead
@@ -83,9 +92,11 @@ use super::model::{Kind, due};
 use super::view::{beam_look, paint};
 use super::{Hurt, PassedByBullets, ViewRng, Weapon, WeaponSystems, collision_sparks, fire_weapons};
 use crate::actions::Inactive;
+use crate::car::control::LocalDevice;
 use crate::explosion::Hit;
 use crate::game::{GameState, LoadedMap, MapEntity};
 use crate::particles::styles::LASER_CHARGE;
+use crate::render::dirty_lens::{CROSSING_CHANCE, CROSSING_SHAKE, Flash, GlassFlash};
 use crate::render::layers::Layer;
 use crate::render::particles::{FlashBoost, Particles};
 use crate::render::sprite::UnitQuad;
@@ -355,7 +366,7 @@ impl Plugin for LaserPlugin {
             )
             .add_systems(
                 Update,
-                (forget_laser_views, laser_effects, draw_lasers)
+                (forget_laser_views, laser_effects, laser_crossings, draw_lasers)
                     .chain()
                     .after(WeaponSystems)
                     .run_if(in_state(GameState::Playing)),
@@ -449,6 +460,46 @@ fn laser_effects(
     }
     for charge in charges.read() {
         particles.try_add(&LASER_CHARGE, charge.at, 0.0, 0.0);
+    }
+}
+
+/// Where along a leg a crossing flash is made, from where its ray starts
+/// (`startPos + (endPos - startPos) * 1f / 4f`).
+pub const CROSSING_ALONG: f32 = 0.25;
+
+/// Where the glass flashes for a leg of a beam that ends on the player's
+/// car, for `shake` of 0..1 on each axis (`CreateLaserEffect`:
+/// `NextVector2Fake() * 0.5f` from `p`).
+pub fn crossing_at(leg: &Leg, shake: Vec2) -> Vec2 {
+    leg.cast_from + (leg.end - leg.cast_from) * CROSSING_ALONG + (shake * 2.0 - Vec2::ONE) * CROSSING_SHAKE
+}
+
+/// `LaserRenderer.Render`'s `CreateLaserEffect`: a frame a visible beam's
+/// leg ends on a car held for the player's devices, a chance in four of a
+/// red flash of the glass, with the view's random numbers.
+fn laser_crossings(
+    guns: Query<&Weapon>,
+    locals: Query<(), With<LocalDevice>>,
+    mut rng: ResMut<ViewRng>,
+    mut flashes: MessageWriter<GlassFlash>,
+) {
+    for gun in &guns {
+        if gun.kind != Kind::Laser || !gun.laser.visible {
+            continue;
+        }
+        for leg in &gun.laser.legs {
+            let Some((target, _)) = leg.hit else {
+                continue;
+            };
+            if !locals.contains(target) || rng.0.random::<f32>() >= CROSSING_CHANCE {
+                continue;
+            }
+            let shake = Vec2::new(rng.0.random::<f32>(), rng.0.random::<f32>());
+            flashes.write(GlassFlash {
+                at: crossing_at(leg, shake),
+                flash: Flash::Laser,
+            });
+        }
     }
 }
 
