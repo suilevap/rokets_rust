@@ -121,7 +121,9 @@ fn tint_sprites(
         } else {
             [1.0; 3]
         };
-        let color = Color::srgba(r * l[0], g * l[1], b * l[2], a);
+        // The light is a multiplier of linear light; the tint is sRGB.
+        let base = Color::srgba(r, g, b, a).to_linear();
+        let color = Color::linear_rgba(base.red * l[0], base.green * l[1], base.blue * l[2], a);
         // Only touch materials whose colour changes: a write re-uploads it.
         if materials.get(&material.0).is_some_and(|m| m.base_color != color)
             && let Some(mut mat) = materials.get_mut(&material.0)

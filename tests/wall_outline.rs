@@ -187,13 +187,13 @@ fn map_boundary_is_outlined_on_all_four_sides() {
 #[test]
 fn map_boundary_lines_have_wall_faces_behind_them() {
     use tilerider::game::LoadedMap;
-    use tilerider::light::{bake::LightMap, raster::Canvas};
+    use tilerider::light::{bake::LightMap, raster::Mask};
     use tilerider::render::map_mesh::build_map_meshes;
     use tilerider::units::CellSize;
 
     let data = map("#");
     let grid = MapGrid::build(&data, None);
-    let light = LightMap::bake(&data, &grid, &Canvas::from_rgba8(1, 1, &[255; 4]), &[]);
+    let light = LightMap::bake(&data, &grid, &Mask::from_alpha(1, 1, &[255; 4]), &[]);
     let loaded = LoadedMap {
         data,
         grid,

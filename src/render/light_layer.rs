@@ -17,15 +17,14 @@ use bevy::render::render_resource::{Extent3d, TextureDimension, TextureFormat};
 use crate::game::LoadedMap;
 use crate::render::layers::{LIGHT_DEPTH_BIAS, LIGHT_Z};
 
-/// A light image as a texture: sRGB like the C# light (multiplying or
-/// adding linear values does to the sRGB ones what C# did, or near it),
-/// sampled linearly.
+/// A light image as a texture: linear light in half floats (`Rgba16Float`,
+/// which WebGL2 samples with linear filtering too), sampled linearly.
 pub fn light_texture((w, h, texels): (usize, usize, Vec<[f32; 3]>)) -> Image {
     let data = texels
         .iter()
         .flat_map(|t| {
-            let [r, g, b] = t.map(|c| (c.clamp(0.0, 1.0) * 255.0).round() as u8);
-            [r, g, b, 255]
+            let [r, g, b] = t.map(half::f16::from_f32);
+            [r, g, b, half::f16::ONE].map(half::f16::to_le_bytes).concat()
         })
         .collect();
     let mut image = Image::new(
@@ -36,7 +35,7 @@ pub fn light_texture((w, h, texels): (usize, usize, Vec<[f32; 3]>)) -> Image {
         },
         TextureDimension::D2,
         data,
-        TextureFormat::Rgba8UnormSrgb,
+        TextureFormat::Rgba16Float,
         RenderAssetUsages::RENDER_WORLD,
     );
     image.sampler = ImageSampler::linear();

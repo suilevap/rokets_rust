@@ -43,6 +43,8 @@ thiserror = "2"
 flatbt = { git = "https://github.com/suilevap/flatbt", rev = "baccc06" }
 flatbt-bevy = { git = "https://github.com/suilevap/flatbt", rev = "baccc06" }
 rand = { version = "0.9", default-features = false, features = ["small_rng"] }
+# The light textures are half floats (`render/light_layer`).
+half = "2"
 
 # The browser build: JS glue, and the JS crypto API for any OS entropy.
 [target.'cfg(target_arch = "wasm32")'.dependencies]
