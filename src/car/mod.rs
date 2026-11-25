@@ -3,7 +3,7 @@
 //!
 //! Every car (`ControlableEntity`, 2010–2016) has a body on an Avian
 //! rigid body (a box the size of the car's `Base` sprite, mass from
-//! `Cars.xml`, friction 0.8, bounce 0.5, linear damping `0.95 × map
+//! `Cars.xml`, friction 0 (`CAR_FRICTION`), bounce 0.5, linear damping `0.95 × map
 //! friction`), that sprite, [`Health`] (and a [`shield::Shield`]), a
 //! [`control::Team`], a [`PlayerIntent`] (the one surface the player's
 //! devices and, later, the AI write), a shadow, the weapon of its
@@ -116,6 +116,11 @@ use crate::render::shadow::CastsShadow;
 use crate::render::sprite::{SpriteTint, UnitQuad, sprite_bundle};
 use crate::units::{map_degrees_to_world, px};
 use drive::{Body, DriveParams, DriveState, drive_step};
+
+/// A car's fixture friction in C#: `ControlableEntity.LinearDragCoefficient = 0`
+/// sets it to 0 after `Entity`'s `Friction = 0.8` went nowhere (no fixture
+/// yet), so a car slides along walls and boxes.
+pub const CAR_FRICTION: f32 = 0.0;
 
 /// `Entity.MaxAngularVelocityDefault`.
 const MAX_ANGULAR_VELOCITY: f32 = 50.0;
@@ -490,7 +495,7 @@ pub fn spawn_car(
         impact::LastVelocity::default(),
         LinearDamping(0.95 * friction),
         AngularDamping(if full { 9.0 } else { 3.0 }),
-        Friction::new(0.8).with_combine_rule(CoefficientCombine::GeometricMean),
+        Friction::new(CAR_FRICTION).with_combine_rule(CoefficientCombine::GeometricMean),
         Restitution::new(0.5).with_combine_rule(CoefficientCombine::Max),
     ));
     if !static_body {

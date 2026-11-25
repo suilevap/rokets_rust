@@ -103,11 +103,7 @@ along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
    the first, red, green, … for the others), the repair (`RepairUpdate`:
    a point a second, damaged smoke under half health), and a static body
    for the player's car that cannot move (2WeeksAgo's turret).
-4. Check C#'s friction on cars: `ControlableEntity` sets
-   `PhysicBody.Friction = 0` (`LinearDragCoefficientDefault`) after the
-   fixture exists, so cars may have no friction in C#, not 0.8 as boxes
-   and cars have here. Compare a car sliding along a wall.
-5. Compare the turrets with the C# game over many runs: first shots come
+4. Compare the turrets with the C# game over many runs: first shots come
    after a random part of the weapon's reload (`PeriodicUpdate.Sparse`), so
    one run each says little. On `JunkYard` the Railgun turret in front of
    the player's start fired at 4.5 s in C# against 1.1 s here, on `Targets`
@@ -146,16 +142,14 @@ along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
 
 ## Physics
 
-- Pushing a box while turning (`tools/compare.py AiTest --start 3.5,14.5
-  --ids 4001,1007 --drive "1,0:1;1,1:1;0,1:0.5"`): in C# the box slides
-  off the bumper and turns (−111° at t=1.5) and the car, free, turns to
-  −32° and speeds up to 12.9; here the box stays in front (−96°) and the
-  car stays near 0° at 8.2, 1.7 units apart by t=2. Straight driving,
-  turning and the magnet tow match within 0.2–1.3 units. Sizes, masses,
-  inertia, friction (0.8, geometric mean), restitution (0.5, max) and
-  damping are the same, so it is the contact solver (Farseer 3.3.1, 8
-  velocity / 3 position iterations, against Avian's substeps); try
-  Avian's contact settings (softness, substeps, speculative margin).
+- Contact friction is now C#'s (cars 0, boxes 0.2, walls 0.01, geometric
+  mean); the AiTest box push (`tools/compare.py AiTest --start 3.5,14.5
+  --ids 4001,1007 --drive "1,0:1;1,1:1;0,1:0.5"`) now ends within 0.75
+  units (car) and 0.14 (box), from 4.4 and 1.6. What is left is solver
+  noise: the box's angle drifts by up to 5 degrees at t=1.5-2 and the
+  car's top speed is 0.8 higher, which Avian's substeps against Farseer's
+  8 velocity / 3 position iterations would explain (not tried: the
+  friction was the whole of the box's sticking).
 
 ## Rendering and camera
 
