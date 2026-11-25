@@ -33,9 +33,14 @@ fn walls_darken_half_and_floor_beside_them_a_quarter() {
     let g = grid(ROOM);
     let ao = wall_ao(&g);
     let at = |x: usize, y: usize| ao[y * g.width + x];
-    // The outer two rows and columns stay clear, as in C#.
-    assert_eq!(at(0, 3), 0.0);
-    assert_eq!(at(1, 3), 0.0);
+    // Only the outer ring stays clear, on every side (C# left two columns
+    // and rows clear on the left and top, one on the right and bottom).
+    for (x, y) in [(0, 3), (7, 3), (3, 0), (3, 6)] {
+        assert_eq!(at(x, y), 0.0, "outer cell {x},{y}");
+    }
+    for (x, y) in [(1, 3), (6, 3), (3, 1), (3, 5)] {
+        assert_eq!(at(x, y), 0.25, "floor beside the border wall {x},{y}");
+    }
     // Inside: floor one cell from a wall is a quarter dark, further on clear.
     assert_eq!(at(2, 2), 0.0, "two cells from walls");
     let g = grid("\n########\n#......#\n#......#\n#..#...#\n#......#\n#......#\n########\n");

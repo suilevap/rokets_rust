@@ -4,11 +4,18 @@
 //! Occlusion Light emulation… distance field"). One texel per map cell
 //! from `MapManager.DistanceField`: black at half strength on walls, at a
 //! quarter on floor cells closer than two cells to one, clear elsewhere
-//! and on the map's outer cells. Stretched over the map with linear
+//! and on the map's outer ring of cells. Stretched over the map with linear
 //! filtering, it fades over about a cell and a half from each wall's foot.
 //! Drawn on the ground, so walls hide it and floor tiles and the gaps
 //! between them darken. Maps with cells of 96 pixels or more (3 world
 //! units) have none: their cells are big enough without.
+//!
+//! Differs from C#: it left the first *two* columns and rows clear but only
+//! the last one (`x > 1 && x < w - 1`), so the foot of the map's left and
+//! top border walls had no darkening while the right and bottom ones had
+//! it. That was an off-by-one, not a design: the outer ring is clear on
+//! all four sides, and the floor beside a border wall darkens like the
+//! floor beside any other wall.
 
 use bevy::asset::RenderAssetUsages;
 use bevy::image::ImageSampler;
@@ -31,15 +38,14 @@ impl Plugin for WallAoPlugin {
 }
 
 /// How dark each cell is, 0..1, row-major: half on walls, a quarter on
-/// floor within two cells of a wall, none on the outer cells.
+/// floor within two cells of a wall, none on the outer ring.
 pub fn wall_ao(grid: &MapGrid) -> Vec<f32> {
     let (w, h) = (grid.width, grid.height);
     let distance = grid.chamfer_distance();
     (0..h)
         .flat_map(|y| (0..w).map(move |x| (x, y)))
         .map(|(x, y)| {
-            // `x > 1` as C# had it: the first two columns and rows stay clear.
-            let inside = x > 1 && x + 1 < w && y > 1 && y + 1 < h;
+            let inside = x > 0 && x + 1 < w && y > 0 && y + 1 < h;
             let d = distance[y * w + x];
             if !inside {
                 0.0
