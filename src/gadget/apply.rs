@@ -43,13 +43,9 @@
 //!
 //! The magnet:
 //!
-//! 1. The rope is laid on the line from the car to the place, whether or
-//!    not it can reach (`SetElementsPositionByLine`). C#'s integer
-//!    division leaves all its points on the car and only the last on the
-//!    place ([`super::rope::Rope::lay_by_c_sharp_line`]), so when the rope
-//!    takes something its first step yanks it towards the car, about 2.6
-//!    units of rope times 256 on the very first step: a box 4 units off
-//!    ends against the truck's back, as in C#.
+//! 1. The rope is laid evenly on the line from the car to the place,
+//!    whether or not it can reach (`SetElementsPositionByLine`; see
+//!    "Differences from C#" for how it differs).
 //! 2. A place `REACH` (8, `ActiveDistance`) or more from the car's middle
 //!    does nothing more (the base class's `dSq < _length²`).
 //! 3. `ChainStart` sounds on the car (`OnStartActivity`).
@@ -67,6 +63,18 @@
 //!    (`CanBeLinked`, `LinkedMaster == null`). Anything else, or nothing:
 //!    the same as 4's end, `ChainStart` once more (`Cancel`, then the
 //!    sound).
+//!
+//! Differences from C#:
+//! - **The rope is laid as C# meant to.** C#'s `SetElementsPositionByLine`
+//!   divided integers (`i / (count - 1)`), so all the rope's points sat on
+//!   the car and only the last on the place; the rope's first step then
+//!   yanked the cargo hard towards the car (about 2.6 units of rope times
+//!   256), which is how a box hitched 4 units off ended snug against the
+//!   truck's back. Here the points are spread evenly
+//!   ([`super::rope::Rope::lay`]), a deliberate clean-up of that bug: the
+//!   cargo stays where the map put it, on a rope that holds it there
+//!   (Derby's turret about 4 units from the truck's middle, not C#'s 3.2;
+//!   once the truck drives off, the tow is the same).
 //!
 //! Not ported:
 //! - `MoveCargo`'s one drag at the cargo's rope point towards the place
@@ -169,7 +177,7 @@ pub fn apply_to_magnets(
         let mut sound = |name: &'static str| {
             play.write(PlaySound { name, at: Some(at), pitch: 0.0, volume: 1.0 });
         };
-        m.rope.lay_by_c_sharp_line(at, apply.at);
+        m.rope.lay(at, apply.at);
         let delta = apply.at - at;
         if delta.length_squared() >= REACH * REACH {
             continue;

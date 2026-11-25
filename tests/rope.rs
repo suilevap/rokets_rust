@@ -42,19 +42,16 @@ fn the_far_end_reaches_no_further_than_the_rope_stretches() {
 }
 
 #[test]
-fn laid_as_c_sharp_did_only_the_last_point_is_on_the_line_s_far_end() {
-    // `SetElementsPositionByLine`'s `i / (count - 1)` is an integer
-    // division: the first step then yanks the cargo hard towards the car.
+fn laid_on_a_line_the_points_are_spread_evenly_and_the_first_step_is_gentle() {
     let (from, to) = (Vec2::ZERO, Vec2::new(4.0, 0.0));
     let mut rope = Rope::new(Vec2::ZERO);
-    rope.lay_by_c_sharp_line(from, to);
+    rope.lay(from, to);
     let points = rope.points();
-    assert!(points[..POINTS - 1].iter().all(|&p| p == from));
-    assert_eq!(points[POINTS - 1], to);
-    let yank = rope.step(from, to);
-    let mut line = Rope::new(Vec2::ZERO);
-    line.lay(from, to);
-    let relaxed = line.step(from, to);
-    assert!(yank.x < -500.0, "{yank}");
-    assert!(yank.x < relaxed.x * 2.0, "{yank} against {relaxed}");
+    assert_eq!((points[0], points[POINTS - 1]), (from, to));
+    let gap = (points[1] - points[0]).length();
+    for w in points.windows(2) {
+        assert!(((w[1] - w[0]).length() - gap).abs() < 1e-5, "{points:?}");
+    }
+    let force = rope.step(from, to);
+    assert!(force.x > -500.0 && force.x <= 0.0, "no yank: {force}");
 }

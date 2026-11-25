@@ -165,6 +165,16 @@ fn the_magnet_takes_what_is_in_the_way_of_the_place() {
 }
 
 #[test]
+fn a_cargo_stays_where_the_map_put_it() {
+    let mut app = world();
+    let truck = car(&mut app, Vec2::ZERO);
+    let far = crate_at(&mut app, Vec2::new(0.0, 5.0));
+    apply(&mut app, truck, Vec2::new(0.0, 5.0));
+    assert_eq!(towing(&app, truck), Some(far));
+    assert_eq!(app.world().get::<Position>(far).unwrap().0, Vec2::new(0.0, 5.0));
+}
+
+#[test]
 fn the_ray_is_the_magnets_reach_long_not_as_far_as_the_place() {
     // The place is 2 units off, the crate 6 along the same way: found.
     let mut app = world();
