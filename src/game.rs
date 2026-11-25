@@ -15,7 +15,7 @@ use crate::content::cars::CarCatalog;
 use crate::content::map::MapData;
 use crate::content::map_list::MapList;
 use crate::light::bake::LightMap;
-use crate::light::raster::Canvas;
+use crate::light::raster::Mask;
 use crate::map::grid::MapGrid;
 use crate::render::sprite::{SpriteInfo, SpriteSet};
 use crate::units::CellSize;
@@ -303,7 +303,7 @@ fn poll_loading(
         }
         return;
     };
-    let Some(flash) = rgba8(flash).map(|(w, h, data)| Canvas::from_rgba8(w, h, &data)) else {
+    let Some(flash) = rgba8(flash).map(|(w, h, data)| Mask::from_alpha(w, h, &data)) else {
         fail(&mut commands, &mut next, "the lamp sprite is not 8-bit RGBA".to_string());
         commands.remove_resource::<Pending>();
         return;

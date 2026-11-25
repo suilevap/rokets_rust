@@ -4,7 +4,7 @@
 mod common;
 
 use tilerider::content::map::MapData;
-use tilerider::light::bake::LightMap;
+use tilerider::light::bake::{LightMap, tone};
 use tilerider::map::grid::MapGrid;
 
 fn map(rows: &str) -> MapData {
@@ -36,7 +36,9 @@ fn lamp_lights_and_walls_shadow() {
     let far = light.sample_layer(6.5, 2.5)[0];
     let behind_wall = light.sample_layer(8.5, 4.5)[0];
     assert!(near > 0.8, "near {near}");
-    assert!(far < near && far > 0.05, "far {far}");
+    // The layer holds linear multipliers: lit well away from the lamp is
+    // still a few percent, not a tenth.
+    assert!(far < near && far > 0.02, "far {far}");
     assert!(behind_wall < far / 2.0, "shadow {behind_wall}, far {far}");
 }
 
@@ -97,4 +99,38 @@ fn only_additive_lamps_make_additive_light() {
     let brightest = texels.iter().map(|c| c[0]).fold(0.0f32, f32::max);
     let darkest = texels.iter().map(|c| c[0]).fold(1.0f32, f32::min);
     assert!(brightest > 0.3 && darkest == 0.0, "{brightest} {darkest}");
+}
+
+#[test]
+fn the_tone_curve_is_clamped_monotone_and_darkens_the_middle() {
+    assert_eq!(tone(0.0), 0.0);
+    assert_eq!(tone(1.0), 1.0);
+    assert_eq!(tone(3.0), 1.0, "overbright light is full light, no more");
+    assert_eq!(tone(-1.0), 0.0);
+    assert!(tone(0.5) < 0.5, "a sum of 0.5 lets less than half through");
+    let steps: Vec<f32> = (0..=20).map(|i| tone(i as f32 / 20.0)).collect();
+    assert!(steps.windows(2).all(|w| w[0] < w[1]), "{steps:?}");
+}
+
+#[test]
+fn lamps_add_and_only_the_sum_is_clamped() {
+    // The same lamp twice gives more light than once where one is not
+    // yet full, and no more than full where it is.
+    let rows = "\n**********\n*........*\n*........*\n*........*\n**********\n";
+    let one = map(rows);
+    let two = MapData::parse(&format!(
+        r#"<XnaContent><Asset Type="GameLibrary.MapData"><Name>T</Name><Scale>64</Scale>
+        <AmbientLight>FF000000</AmbientLight>
+        <Lights><Item><Position>2.5 2.5</Position><Color>FFFFFFFF</Color><R>6</R></Item>
+        <Item><Position>2.5 2.5</Position><Color>FFFFFFFF</Color><R>6</R></Item></Lights>
+        <CharMapDictionary>*:#FFFF0000;.:#100000A0;_:#00000000</CharMapDictionary>
+        <CharMap>{rows}</CharMap></Asset></XnaContent>"#
+    ))
+    .unwrap();
+    let grid = MapGrid::build(&one, None);
+    let a = LightMap::bake(&one, &grid, &common::flash(), &[]);
+    let b = LightMap::bake(&two, &grid, &common::flash(), &[]);
+    let (mid_a, mid_b) = (a.sample_layer(5.5, 2.5)[0], b.sample_layer(5.5, 2.5)[0]);
+    assert!(mid_b > mid_a * 1.5, "{mid_a} -> {mid_b}");
+    assert!(b.sample_layer(2.5, 2.5)[0] <= 1.0);
 }

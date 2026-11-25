@@ -220,13 +220,13 @@ fn missing_or_despawned_targets_leave_a_finite_camera() {
 
 fn insert_map(world: &mut World) {
     use crate::content::map::MapData;
-    use crate::light::{bake::LightMap, raster::Canvas};
+    use crate::light::{bake::LightMap, raster::Mask};
     use crate::map::grid::MapGrid;
     use crate::units::CellSize;
     let data = MapData::parse(r#"<XnaContent><Asset Type="GameLibrary.MapData"><Name>T</Name><Scale>64</Scale>
         <CharMapDictionary>.:#100000A0</CharMapDictionary><CharMap>.</CharMap></Asset></XnaContent>"#).unwrap();
     let grid = MapGrid::build(&data, None);
-    let light = LightMap::bake(&data, &grid, &Canvas::from_rgba8(1, 1, &[255; 4]), &[]);
+    let light = LightMap::bake(&data, &grid, &Mask::from_alpha(1, 1, &[255; 4]), &[]);
     world.insert_resource(LoadedMap {
         data,
         grid,

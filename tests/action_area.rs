@@ -44,7 +44,7 @@ fn app(actions: &str) -> App {
     );
     let data = MapData::parse(&xml).unwrap();
     let grid = MapGrid::build(&data, None);
-    let light = tilerider::light::bake::LightMap::bake(&data, &grid, &tilerider::light::raster::Canvas::from_rgba8(1, 1, &[255; 4]), &[]);
+    let light = tilerider::light::bake::LightMap::bake(&data, &grid, &tilerider::light::raster::Mask::from_alpha(1, 1, &[255; 4]), &[]);
     let actions = data.actions.clone();
     let map = LoadedMap { data, grid, light, cell: CellSize(CELL), cars: default(), list: default(), sprites: default() };
     let mut app = App::new();

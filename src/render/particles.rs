@@ -194,8 +194,13 @@ fn draw(
         // numbers: they get a boost, milder than the additive light's
         // (stacked flashes clip to white quickly).
         let boost = if p.style.additive { flash.0 } else { 1.0 };
-        let linear = Color::srgb(r * light[0], g * light[1], b * light[2]).to_linear();
-        let color = [linear.red * boost, linear.green * boost, linear.blue * boost, a];
+        let linear = Color::srgb(r, g, b).to_linear();
+        let color = [
+            linear.red * light[0] * boost,
+            linear.green * light[1] * boost,
+            linear.blue * light[2] * boost,
+            a,
+        ];
         q.colors.extend([color; 4]);
     }
 

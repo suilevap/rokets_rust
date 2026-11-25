@@ -5646,6 +5646,7 @@ dependencies = [
  "flatbt-bevy",
  "getrandom 0.3.4",
  "getrandom 0.4.3",
+ "half",
  "png",
  "quick-xml 0.42.0",
  "rand 0.9.5",

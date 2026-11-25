@@ -4,7 +4,7 @@ use bevy::mesh::VertexAttributeValues;
 use bevy::prelude::*;
 use tilerider::content::map::MapData;
 use tilerider::game::LoadedMap;
-use tilerider::light::{bake::LightMap, raster::Canvas};
+use tilerider::light::{bake::LightMap, raster::Mask};
 use tilerider::map::grid::MapGrid;
 use tilerider::render::map_mesh::build_map_meshes;
 use tilerider::units::CellSize;
@@ -27,7 +27,7 @@ fn walls(rows: &str, ambient: &str) -> Vec<Quad> {
     ))
     .unwrap();
     let grid = MapGrid::build(&data, None);
-    let light = LightMap::bake(&data, &grid, &Canvas::from_rgba8(1, 1, &[255; 4]), &[]);
+    let light = LightMap::bake(&data, &grid, &Mask::from_alpha(1, 1, &[255; 4]), &[]);
     let map = LoadedMap {
         data,
         grid,
@@ -129,8 +129,9 @@ fn a_step_keeps_the_tall_faces_fade_anchored_at_the_floor() {
 
 #[test]
 fn bright_wall_and_wedge_light_saturates_before_the_side_fade() {
-    // White in white light produces 1.5 before XNA's Color clamps it.
-    // Side feet should be 0.5, not 0.75, and tops should remain white.
+    // White in white light lifts above 1 before the tone is clamped.
+    // Side feet should be the fade's start (0.5 in XNA's numbers), not
+    // brighter, and tops should remain white.
     let walls = walls("####\n#...\n#...\n#...", "FFFFFFFF");
     assert!(
         walls.iter().any(|q| q.positions[2] == q.positions[3]),

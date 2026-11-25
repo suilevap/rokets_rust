@@ -11,10 +11,11 @@ use std::fs::File;
 use std::io::BufWriter;
 use std::path::Path;
 
+use bevy::color::Color;
 use tilerider::assets;
 use tilerider::content::map::MapData;
 use tilerider::light::bake::LightMap;
-use tilerider::light::raster::Canvas;
+use tilerider::light::raster::Mask;
 use tilerider::map::grid::MapGrid;
 use tilerider::map::templates::static_shadows;
 
@@ -49,14 +50,27 @@ fn sprite_size(root: &Path, name: &str) -> Option<[f32; 2]> {
     Some([info.width as f32, info.height as f32])
 }
 
-fn write_png(path: &Path, (w, h, texels): (usize, usize, Vec<[f32; 3]>)) {
+/// Linear light as the bytes a picture of it holds (sRGB), to look at and
+/// to compare with the C# game's targets, which held sRGB numbers.
+fn encode(c: [f32; 3]) -> [f32; 3] {
+    let s = Color::linear_rgb(c[0].clamp(0.0, 1.0), c[1].clamp(0.0, 1.0), c[2].clamp(0.0, 1.0))
+        .to_srgba();
+    [s.red, s.green, s.blue]
+}
+
+/// `shown`: the texels are linear light, written as sRGB; otherwise they
+/// are written as they are.
+fn write_png(path: &Path, (w, h, texels): (usize, usize, Vec<[f32; 3]>), shown: bool) {
     let file = BufWriter::new(File::create(path).expect("create png"));
     let mut encoder = png::Encoder::new(file, w as u32, h as u32);
     encoder.set_color(png::ColorType::Rgb);
     encoder.set_depth(png::BitDepth::Eight);
     let data: Vec<u8> = texels
         .iter()
-        .flat_map(|c| c.map(|v| (v.clamp(0.0, 1.0) * 255.0).round() as u8))
+        .flat_map(|&c| {
+            let c = if shown { encode(c) } else { c };
+            c.map(|v| (v.clamp(0.0, 1.0) * 255.0).round() as u8)
+        })
         .collect();
     encoder
         .write_header()
@@ -86,7 +100,7 @@ fn main() {
         .map(|p| read_png(&root.join(p)));
     let grid = MapGrid::build(&map, image.as_ref().map(|(w, h, p)| (*w, *h, p.as_slice())));
     let (fw, fh, fdata) = read_png(&root.join("Sprites/Particles/flash2.png"));
-    let flash = Canvas::from_rgba8(fw, fh, &fdata);
+    let flash = Mask::from_alpha(fw, fh, &fdata);
     let start = std::time::Instant::now();
     let light = LightMap::bake(
         &map,
@@ -100,10 +114,10 @@ fn main() {
         light.frame
     );
     std::fs::create_dir_all(out).expect("create out dir");
-    write_png(&out.join("final.png"), light.layer_image());
-    write_png(&out.join("walls.png"), light.walls_image());
+    write_png(&out.join("final.png"), light.layer_image(), true);
+    write_png(&out.join("walls.png"), light.walls_image(), true);
     if let Some(additive) = &light.additive {
-        write_png(&out.join("add.png"), additive.image());
-        write_png(&out.join("add_info.png"), additive.reach_image());
+        write_png(&out.join("add.png"), additive.image(), true);
+        write_png(&out.join("add_info.png"), additive.reach_image(), false);
     }
 }

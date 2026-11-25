@@ -612,7 +612,7 @@ fn app(items: &str) -> (App, Entity, Entity, Entity) {
     );
     let data = MapData::parse(&xml).unwrap();
     let grid = MapGrid::build(&data, None);
-    let light = tilerider::light::bake::LightMap::bake(&data, &grid, &tilerider::light::raster::Canvas::from_rgba8(1, 1, &[255; 4]), &[]);
+    let light = tilerider::light::bake::LightMap::bake(&data, &grid, &tilerider::light::raster::Mask::from_alpha(1, 1, &[255; 4]), &[]);
     let actions = data.actions.clone();
     let map = LoadedMap { data, grid, light, cell: CellSize::from_map_scale(64.0), cars: default(), list: default(), sprites: default() };
     let mut app = App::new();

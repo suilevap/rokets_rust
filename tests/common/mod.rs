@@ -7,7 +7,7 @@ use std::path::{Path, PathBuf};
 
 use tilerider::assets;
 use tilerider::content::map::MapData;
-use tilerider::light::raster::Canvas;
+use tilerider::light::raster::Mask;
 use tilerider::map::grid::MapGrid;
 
 pub fn assets_root() -> PathBuf {
@@ -56,8 +56,8 @@ pub fn load_map(name: &str) -> (MapData, MapGrid) {
 }
 
 /// The lamp sprite the light is baked with.
-pub fn flash() -> Canvas {
+pub fn flash() -> Mask {
     let (w, h, data) = read_png(&assets_root().join("Sprites/Particles/flash2.png"));
-    Canvas::from_rgba8(w, h, &data)
+    Mask::from_alpha(w, h, &data)
 }
 

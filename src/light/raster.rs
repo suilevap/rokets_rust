@@ -1,15 +1,16 @@
-//! A small software stand-in for the render-target drawing the C# light
-//! code was built from: sprites drawn with a linear sampler, triangles
-//! with vertex colours, alpha and additive blending into an 8-bit target.
+//! Float images and the few operations the light bake needs: a lamp's
+//! falloff stretched, turned and added in a colour, shadows multiplied in,
+//! a separable blur, a box downscale.
 //!
-//! C# origin: `LightManager.DrawOnLightMap` and the XNA states it used.
-//! The light map was made by drawing on the GPU and read back; doing the
-//! same few operations on the CPU gives the same picture without a GPU
-//! round trip, works the same on the web, and keeps the light testable.
+//! C# origin: `LightManager.DrawOnLightMap`, `BlurSurface` and the XNA
+//! render-target states they drew with. The C# light was drawn on 8-bit
+//! targets in sRGB numbers, premultiplied, saturating at 1 on every blend,
+//! and blurred by stretching three downscaled copies back over the target.
+//! Here the light is plain float arithmetic: lamps add, shadows multiply,
+//! nothing saturates until the bake maps the sum to a multiplier once at
+//! the end (`light/bake`), and the blur is a Gaussian, separable.
 //!
-//! Colours are premultiplied RGBA in 0..1, as XNA's were: a texture from
-//! the content pipeline is premultiplied, and a tint multiplies every
-//! channel. Like an 8-bit target, every blend saturates at 1.
+//! No Bevy: everything here is unit-testable and runs at load, on the CPU.
 
 /// The x range where a horizontal line at `y` crosses a triangle, if it does.
 fn row_span(p: [[f32; 2]; 3], y: f32) -> Option<(f32, f32)> {
@@ -31,21 +32,6 @@ fn row_span(p: [[f32; 2]; 3], y: f32) -> Option<(f32, f32)> {
         hi = hi.max(x);
     }
     (lo <= hi).then_some((lo, hi))
-}
-
-/// Premultiplied RGBA, 0..1.
-pub type Rgba = [f32; 4];
-
-pub const BLACK: Rgba = [0.0, 0.0, 0.0, 1.0];
-pub const WHITE: Rgba = [1.0, 1.0, 1.0, 1.0];
-
-/// How a drawn colour meets the target.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Blend {
-    /// `BlendState.AlphaBlend`: `src + dst × (1 − src.a)`.
-    Alpha,
-    /// `BlendState.Additive`: `src × src.a + dst`.
-    Additive,
 }
 
 /// An axis-aligned rectangle in texels.
@@ -85,42 +71,75 @@ impl Placement {
     }
 }
 
-/// A target or a texture.
+/// An image of `N` float channels per texel: one for a falloff, a shadow
+/// or a reach ([`Mask`]), three for light ([`Rgb`]). Values are plain
+/// numbers, unclamped: what they mean is up to the bake.
 #[derive(Clone, Debug, PartialEq)]
-pub struct Canvas {
+pub struct Plane<const N: usize> {
     pub width: usize,
     pub height: usize,
-    pub texels: Vec<Rgba>,
+    pub texels: Vec<[f32; N]>,
 }
 
-impl Canvas {
-    pub fn new(width: usize, height: usize, fill: Rgba) -> Canvas {
-        Canvas {
+/// One value per texel.
+pub type Mask = Plane<1>;
+/// Light: a red, green and blue amount per texel.
+pub type Rgb = Plane<3>;
+
+impl Mask {
+    /// The alpha of straight RGBA bytes, 0..1: what a white sprite like
+    /// the lamp's `flash2` is.
+    pub fn from_alpha(width: usize, height: usize, rgba: &[u8]) -> Mask {
+        Plane {
             width,
             height,
-            texels: vec![fill; width * height],
+            texels: rgba.chunks_exact(4).map(|p| [p[3] as f32 / 255.0]).collect(),
         }
     }
 
-    /// A texture from straight-alpha RGBA bytes, premultiplied as the
-    /// content pipeline did.
-    pub fn from_rgba8(width: usize, height: usize, bytes: &[u8]) -> Canvas {
-        let texels = bytes
-            .chunks_exact(4)
-            .map(|p| {
-                let a = p[3] as f32 / 255.0;
-                [
-                    p[0] as f32 / 255.0 * a,
-                    p[1] as f32 / 255.0 * a,
-                    p[2] as f32 / 255.0 * a,
-                    a,
-                ]
-            })
-            .collect();
-        Canvas {
+    /// Multiplies by `1 − alpha` over a triangle, `alpha` interpolated from
+    /// its corners: a shadow of that opacity. Texels whose centres lie
+    /// inside it change, either winding.
+    pub fn shade(&mut self, p: [[f32; 2]; 3], alpha: [f32; 3]) {
+        let Some((x0, y0, x1, y1)) = self.bounds(&p) else {
+            return;
+        };
+        let area =
+            (p[1][0] - p[0][0]) * (p[2][1] - p[0][1]) - (p[2][0] - p[0][0]) * (p[1][1] - p[0][1]);
+        if area.abs() < 1e-12 {
+            return;
+        }
+        for y in y0..y1 {
+            let py = y as f32 + 0.5;
+            // Where this row's centre line crosses the triangle, give or
+            // take a texel; only that span is tested.
+            let Some((sx0, sx1)) = row_span(p, py) else {
+                continue;
+            };
+            let sx0 = ((sx0 - 1.0).floor().max(x0 as f32)) as usize;
+            let sx1 = ((sx1 + 1.0).ceil().min(x1 as f32)) as usize;
+            for x in sx0..sx1 {
+                let px = x as f32 + 0.5;
+                let w = |a: [f32; 2], b: [f32; 2]| {
+                    ((b[0] - a[0]) * (py - a[1]) - (px - a[0]) * (b[1] - a[1])) / area
+                };
+                let (w0, w1, w2) = (w(p[1], p[2]), w(p[2], p[0]), w(p[0], p[1]));
+                if w0 < 0.0 || w1 < 0.0 || w2 < 0.0 {
+                    continue;
+                }
+                let a = alpha[0] * w0 + alpha[1] * w1 + alpha[2] * w2;
+                self.texels[y * self.width + x][0] *= 1.0 - a;
+            }
+        }
+    }
+}
+
+impl<const N: usize> Plane<N> {
+    pub fn new(width: usize, height: usize, fill: [f32; N]) -> Plane<N> {
+        Plane {
             width,
             height,
-            texels,
+            texels: vec![fill; width * height],
         }
     }
 
@@ -128,17 +147,20 @@ impl Canvas {
         Rect::new(0.0, 0.0, self.width as f32, self.height as f32)
     }
 
-    pub fn get(&self, x: usize, y: usize) -> Rgba {
+    pub fn get(&self, x: usize, y: usize) -> [f32; N] {
         self.texels[y * self.width + x]
     }
 
-    pub fn fill(&mut self, color: Rgba) {
-        self.texels.fill(color);
+    /// Every channel of every texel through `f`.
+    pub fn map(&mut self, f: impl Fn(f32) -> f32) {
+        for t in &mut self.texels {
+            *t = t.map(&f);
+        }
     }
 
     /// Bilinear sample at a point in texels (texel centres at +0.5),
-    /// clamped to the edges (`SamplerState.LinearClamp`).
-    pub fn sample(&self, u: f32, v: f32) -> Rgba {
+    /// clamped to the edges.
+    pub fn sample(&self, u: f32, v: f32) -> [f32; N] {
         let (fx, fy) = (u - 0.5, v - 0.5);
         let (x0, y0) = (fx.floor(), fy.floor());
         let (tx, ty) = (fx - x0, fy - y0);
@@ -174,35 +196,10 @@ impl Canvas {
         })
     }
 
-    fn blend(&mut self, x: usize, y: usize, src: Rgba, blend: Blend) {
-        let dst = &mut self.texels[y * self.width + x];
-        // Skip what changes nothing: clear over anything, and black added
-        // where the target is already opaque.
-        let clear_rgb = src[0] == 0.0 && src[1] == 0.0 && src[2] == 0.0;
-        match blend {
-            Blend::Alpha if clear_rgb && src[3] == 0.0 => return,
-            Blend::Additive if clear_rgb && (src[3] == 0.0 || dst[3] >= 1.0) => return,
-            _ => {}
-        }
-        for i in 0..4 {
-            let v = match blend {
-                Blend::Alpha => src[i] + dst[i] * (1.0 - src[3]),
-                Blend::Additive => src[i] * src[3] + dst[i],
-            };
-            dst[i] = v.clamp(0.0, 1.0);
-        }
-    }
-
-    /// Draws `src_rect` of `src` placed by `place`, tinted, blended. Only
-    /// texels whose centres fall inside the placed rectangle change.
-    pub fn draw(
-        &mut self,
-        src: &Canvas,
-        src_rect: Rect,
-        place: Placement,
-        tint: Rgba,
-        blend: Blend,
-    ) {
+    /// Adds `src_rect` of `src` placed by `place`, times `weight` per
+    /// channel. Only texels whose centres fall inside the placed rectangle
+    /// change; the source is sampled bilinearly.
+    pub fn add_placed(&mut self, src: &Mask, src_rect: Rect, place: Placement, weight: [f32; N]) {
         let (sin, cos) = place.rotation.sin_cos();
         let to_dest = |sx: f32, sy: f32| {
             let lx = (sx - place.origin[0]) * place.scale[0];
@@ -233,49 +230,16 @@ impl Canvas {
                 if lx < 0.0 || ly < 0.0 || lx >= src_rect.w || ly >= src_rect.h {
                     continue;
                 }
-                let s = src.sample(src_rect.x + lx, src_rect.y + ly);
-                let c = std::array::from_fn(|i| s[i] * tint[i]);
-                self.blend(x, y, c, blend);
-            }
-        }
-    }
-
-    /// A triangle with vertex colours; texels whose centres lie inside it
-    /// (either winding) get the interpolated colour.
-    pub fn triangle(&mut self, p: [[f32; 2]; 3], c: [Rgba; 3], blend: Blend) {
-        let Some((x0, y0, x1, y1)) = self.bounds(&p) else {
-            return;
-        };
-        let area =
-            (p[1][0] - p[0][0]) * (p[2][1] - p[0][1]) - (p[2][0] - p[0][0]) * (p[1][1] - p[0][1]);
-        if area.abs() < 1e-12 {
-            return;
-        }
-        for y in y0..y1 {
-            let py = y as f32 + 0.5;
-            // Where this row's centre line crosses the triangle, give or
-            // take a texel; only that span is tested.
-            let Some((sx0, sx1)) = row_span(p, py) else {
-                continue;
-            };
-            let sx0 = ((sx0 - 1.0).floor().max(x0 as f32)) as usize;
-            let sx1 = ((sx1 + 1.0).ceil().min(x1 as f32)) as usize;
-            for x in sx0..sx1 {
-                let px = x as f32 + 0.5;
-                let w = |a: [f32; 2], b: [f32; 2]| {
-                    ((b[0] - a[0]) * (py - a[1]) - (px - a[0]) * (b[1] - a[1])) / area
-                };
-                let (w0, w1, w2) = (w(p[1], p[2]), w(p[2], p[0]), w(p[0], p[1]));
-                if w0 < 0.0 || w1 < 0.0 || w2 < 0.0 {
-                    continue;
+                let s = src.sample(src_rect.x + lx, src_rect.y + ly)[0];
+                let dst = &mut self.texels[y * self.width + x];
+                for i in 0..N {
+                    dst[i] += s * weight[i];
                 }
-                let color = std::array::from_fn(|i| c[0][i] * w0 + c[1][i] * w1 + c[2][i] * w2);
-                self.blend(x, y, color, blend);
             }
         }
     }
 
-    /// Texel range covering the points, clipped to the canvas.
+    /// Texel range covering the points, clipped to the image.
     fn bounds(&self, points: &[[f32; 2]]) -> Option<(usize, usize, usize, usize)> {
         let min_x = points.iter().map(|p| p[0]).fold(f32::INFINITY, f32::min);
         let max_x = points
@@ -297,43 +261,105 @@ impl Canvas {
         (x0 < x1 && y0 < y1).then_some((x0, y0, x1, y1))
     }
 
-    /// `LightManager.BlurSurface`: the target drawn at a half, a quarter
-    /// and an eighth of its size side by side, then the three stretched
-    /// back over it, a third each. `clear` fills the unused helper area,
-    /// which the linear sampler reaches at the copies' edges.
-    pub fn blur(&mut self, clear: Rgba) {
-        self.blur_surface(clear, false);
+    /// A Gaussian blur of standard deviation `sigma` texels, one pass along
+    /// each axis, the edge texels extended outwards. A flat image stays
+    /// flat and the total stays (up to the edges' extension).
+    pub fn blur(&mut self, sigma: f32) {
+        self.blur_padded(sigma, None);
     }
 
-    /// `BlurSurface` with `useOriginal`: as [`Canvas::blur`] with a copy at
-    /// full size too, four copies a quarter each (softer at the top level).
-    pub fn blur_with_original(&mut self, clear: Rgba) {
-        self.blur_surface(clear, true);
-    }
-
-    fn blur_surface(&mut self, clear: Rgba, use_original: bool) {
-        let copies_count = if use_original { 4 } else { 3 };
-        let (w, h) = (self.width, self.height);
-        let (hw, hh) = if use_original { (w * 2, h) } else { (w, h / 2) };
-        let mut helper = Canvas::new(hw, hh, clear);
-        let mut rect = if use_original { (0usize, 0usize, w, h) } else { (0, 0, w / 2, h / 2) };
-        let mut copies = Vec::with_capacity(copies_count);
-        for _ in 0..copies_count {
-            let r = Rect::new(rect.0 as f32, rect.1 as f32, rect.2 as f32, rect.3 as f32);
-            copies.push(r);
-            helper.draw(self, self.rect(), Placement::onto(self.rect(), r), WHITE, Blend::Alpha);
-            rect.0 += rect.2;
-            rect.2 /= 2;
-            rect.3 /= 2;
+    /// As [`Plane::blur`], with `outside` as what lies beyond the edges
+    /// instead of the edge texels extended.
+    pub fn blur_padded(&mut self, sigma: f32, outside: Option<[f32; N]>) {
+        if sigma <= 0.0 {
+            return;
         }
-        self.fill(BLACK);
-        // `Color.White` with alpha 255 / n, drawn additively.
-        let share = [1.0, 1.0, 1.0, (255 / copies_count) as f32 / 255.0];
-        let full = self.rect();
-        for r in copies.iter().rev() {
-            if r.w >= 1.0 && r.h >= 1.0 {
-                self.draw(&helper, *r, Placement::onto(*r, full), share, Blend::Additive);
+        let radius = (sigma * 3.0).ceil() as i64;
+        let mut kernel: Vec<f32> = (-radius..=radius)
+            .map(|i| (-((i * i) as f32) / (2.0 * sigma * sigma)).exp())
+            .collect();
+        let sum: f32 = kernel.iter().sum();
+        kernel.iter_mut().for_each(|k| *k /= sum);
+
+        let (w, h) = (self.width, self.height);
+        let mut tmp = vec![[0.0; N]; w * h];
+        // Along x, then along y; `at` clamps to the edge.
+        for y in 0..h {
+            for x in 0..w {
+                tmp[y * w + x] = Self::weigh(&kernel, radius, |i| {
+                    let xi = x as i64 + i;
+                    match outside {
+                        Some(o) if xi < 0 || xi >= w as i64 => o,
+                        _ => self.texels[y * w + xi.clamp(0, w as i64 - 1) as usize],
+                    }
+                });
             }
         }
+        for y in 0..h {
+            for x in 0..w {
+                self.texels[y * w + x] = Self::weigh(&kernel, radius, |i| {
+                    let yi = y as i64 + i;
+                    match outside {
+                        Some(o) if yi < 0 || yi >= h as i64 => o,
+                        _ => tmp[yi.clamp(0, h as i64 - 1) as usize * w + x],
+                    }
+                });
+            }
+        }
+    }
+
+    fn weigh(kernel: &[f32], radius: i64, at: impl Fn(i64) -> [f32; N]) -> [f32; N] {
+        let mut sum = [0.0; N];
+        for (k, i) in kernel.iter().zip(-radius..=radius) {
+            let t = at(i);
+            for c in 0..N {
+                sum[c] += t[c] * k;
+            }
+        }
+        sum
+    }
+
+    /// The mean of each `factor`×`factor` block, for an image `1/factor`
+    /// the size (a remainder at the right and bottom is dropped).
+    pub fn downscale(&self, factor: usize) -> Plane<N> {
+        let (w, h) = (self.width / factor, self.height / factor);
+        let mut out = Plane::new(w, h, [0.0; N]);
+        let share = 1.0 / (factor * factor) as f32;
+        for y in 0..h * factor {
+            for x in 0..w * factor {
+                let t = self.get(x, y);
+                let dst = &mut out.texels[(y / factor) * w + x / factor];
+                for c in 0..N {
+                    dst[c] += t[c] * share;
+                }
+            }
+        }
+        out
+    }
+
+    /// `src_rect` of this image as one of `width`×`height` texels, each the
+    /// mean of the area it covers (sampled in a grid finer than the source).
+    pub fn resample(&self, src_rect: Rect, width: usize, height: usize) -> Plane<N> {
+        let mut out = Plane::new(width, height, [0.0; N]);
+        let (sw, sh) = (src_rect.w / width as f32, src_rect.h / height as f32);
+        // At least one sample per source texel across each new texel.
+        let (nx, ny) = (sw.ceil().max(1.0) as usize, sh.ceil().max(1.0) as usize);
+        let share = 1.0 / (nx * ny) as f32;
+        for y in 0..height {
+            for x in 0..width {
+                let dst = &mut out.texels[y * width + x];
+                for j in 0..ny {
+                    for i in 0..nx {
+                        let u = src_rect.x + (x as f32 + (i as f32 + 0.5) / nx as f32) * sw;
+                        let v = src_rect.y + (y as f32 + (j as f32 + 0.5) / ny as f32) * sh;
+                        let s = self.sample(u, v);
+                        for c in 0..N {
+                            dst[c] += s[c] * share;
+                        }
+                    }
+                }
+            }
+        }
+        out
     }
 }
