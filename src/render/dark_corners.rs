@@ -4,10 +4,15 @@
 //! sprite was redrawn in `version for Lesha prepared`). It adds one
 //! `DefaultUI` item, drawn under the interface of every map: the `DarkCorners`
 //! sprite (80 x 48, alpha only, 0 in the middle, up to 0.64 in the corners)
-//! without its outer pixel row, stretched over the whole view and tinted
-//! black, so each pixel is multiplied by one minus the sprite's alpha.
+//! without its outer pixel row (`new Rectangle(1, 1, width - 2, height - 2)`,
+//! a half-pixel workaround for XNA's texel edges), stretched over the whole
+//! view and tinted black, so each pixel is multiplied by one minus the
+//! sprite's alpha.
 //!
-//! Here it is a full-screen interface image under the HUD. XNA multiplied
+//! Here it is a full-screen interface image under the HUD, made from the
+//! whole sprite: the outer pixel row is real vignette (its alpha is the
+//! strongest of the picture), so the crop is not carried over, and the
+//! sprite's edge pixels reach the screen's edges. XNA multiplied
 //! sRGB numbers; blending in Bevy multiplies linear light, which darkens
 //! much less, so the alpha is raised to what makes the sRGB number come out
 //! as `number × (1 − alpha)` ([`vignette_pixels`]).
@@ -16,9 +21,8 @@
 //! - `Settings.DarkCornersEnabled` (a constant, true) and the
 //!   `Settings.DrawEnvironment` check of the screenshot without environment
 //!   (`#if WINDOWS`, a debug switch).
-//! - The sprite's `LinearClamp` and the source rectangle's half-pixel
-//!   handling: the image is cropped by one pixel on the CPU and sampled
-//!   linearly.
+//! - The source rectangle's one-pixel crop and its half-pixel handling: the
+//!   whole image is sampled linearly, clamped at its edges.
 
 use bevy::asset::RenderAssetUsages;
 use bevy::image::{ImageLoaderSettings, ImageSampler};
@@ -33,23 +37,20 @@ const Z: i32 = -10;
 const GAMMA: f32 = 2.2;
 
 /// The vignette's black-and-alpha pixels from the `DarkCorners` sprite's
-/// RGBA bytes: the outer pixel row dropped (`new Rectangle(1, 1, width - 2,
-/// height - 2)`), the colour black (`Color.Black` tint) and the alpha `a`
+/// RGBA bytes: all of it (C# cut off the outer pixel row), the colour black
+/// (`Color.Black` tint) and the alpha `a`
 /// replaced by `1 − (1 − a)^2.2`, so that multiplying linear light by
 /// `1 − a'` multiplies the sRGB numbers by `1 − a`. Returns `(width,
 /// height, RGBA bytes)`.
 pub fn vignette_pixels(rgba: &[u8], width: usize, height: usize) -> (usize, usize, Vec<u8>) {
     assert_eq!(rgba.len(), width * height * 4, "RGBA bytes of a {width} x {height} image");
-    let (w, h) = (width.saturating_sub(2), height.saturating_sub(2));
-    let mut out = Vec::with_capacity(w * h * 4);
-    for y in 1..1 + h {
-        for x in 1..1 + w {
-            let a = rgba[(y * width + x) * 4 + 3] as f32 / 255.0;
-            let linear = 1.0 - (1.0 - a).powf(GAMMA);
-            out.extend_from_slice(&[0, 0, 0, (linear * 255.0).round() as u8]);
-        }
+    let mut out = Vec::with_capacity(width * height * 4);
+    for pixel in rgba.chunks_exact(4) {
+        let a = pixel[3] as f32 / 255.0;
+        let linear = 1.0 - (1.0 - a).powf(GAMMA);
+        out.extend_from_slice(&[0, 0, 0, (linear * 255.0).round() as u8]);
     }
-    (w, h, out)
+    (width, height, out)
 }
 
 /// The vignette node.
@@ -118,7 +119,7 @@ fn spawn_vignette(
             TextureFormat::Rgba8UnormSrgb,
             RenderAssetUsages::RENDER_WORLD,
         );
-        image.sampler = ImageSampler::linear();
+        image.sampler = ImageSampler::linear(); // clamps at the edges
         sprite.made = Some(images.add(image));
     }
     let Some(image) = sprite.made.clone() else {

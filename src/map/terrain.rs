@@ -13,6 +13,10 @@
 //! where the floor is open, negative in a wall. C# kept its points with y
 //! down; here they are world points, y up, and only the sign of y differs
 //! where a rule is not symmetric (a sign is flipped once, in [`Terrain::at`]).
+//! A point's cell is the floor of its coordinates, as C# cut them towards
+//! zero (`(int)`), which made the cell just outside the map's top and left
+//! the same as cell 0; no answer changes, as cell 0 counts as outside, but a
+//! point outside is now in a cell outside (`src/map/terrain_tests.rs`).
 //!
 //! Every pick takes its random numbers from a `rand` function (0 up to 1)
 //! the caller gives, so each car draws from its own stream, and the picks
@@ -101,10 +105,12 @@ impl Terrain {
         self.distance[y as usize * self.width + x as usize]
     }
 
-    /// The cell of a world point, as C# cut it (`(int)(x / CellSize)`, map
-    /// rows down; a cut towards zero).
+    /// The cell of a world point (map rows down): the cell it lies in, so a
+    /// point left of or above the map is in a cell with a negative index,
+    /// not in cell 0. C# cut towards zero (`(int)(x / CellSize)`), which put
+    /// everything up to a cell outside the map in cell 0.
     fn at(&self, p: Vec2) -> (i32, i32) {
-        ((p.x / self.cell) as i32, (-p.y / self.cell) as i32)
+        ((p.x / self.cell).floor() as i32, (-p.y / self.cell).floor() as i32)
     }
 
     /// `IsPointFree`: room enough for a car.
@@ -244,3 +250,7 @@ fn random_vector(min: f32, max: f32, rand: &mut dyn FnMut() -> f32) -> Vec2 {
     let direction = Vec2::new(rand() * 2.0 - 1.0, rand() * 2.0 - 1.0).normalize_or_zero();
     direction * (min + (max - min) * rand())
 }
+
+#[cfg(test)]
+#[path = "terrain_tests.rs"]
+mod tests;
