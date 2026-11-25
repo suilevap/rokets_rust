@@ -129,7 +129,7 @@ fn clear(mut text: ResMut<SplashBindText>) {
 
 fn set_bind_variable(
     In(run): In<Run<SplashSetBindVariable>>,
-    mut vars: ResMut<Variables>,
+    vars: Res<Variables>,
     mut text: ResMut<SplashBindText>,
 ) -> bool {
     let d = &run.data;

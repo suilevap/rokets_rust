@@ -3,9 +3,10 @@
 //! `SetGlobalVar`, `SetVarEx`, `if`, `IfEx`).
 //!
 //! Each map item (by map id) has its own variables and there is one
-//! global set; all start empty with the map. An item's set, once used,
-//! holds `Id`, the item's id (maps check it to tell who set a trigger
-//! off). An action's variables are its item's when it is not global:
+//! global set; all start empty with the map. `Id` is built in: an item's
+//! reads as its id until set (maps check it to tell who set a trigger
+//! off, Race and 2WeeksAgo), the global set's as -1. Reading never
+//! changes anything. An action's variables are its item's when it is not global:
 //! `ItemId`, or the one that set it off when that is 0.
 //!
 //! `CheckIntVariable` compares a variable with `Value` (a number, or a
@@ -49,17 +50,19 @@ pub struct Variables {
 }
 
 impl Variables {
+    /// A variable's value, or the built-in `Id` when it was not set.
     pub fn get(&self, owner: Owner, name: &str) -> Option<i64> {
-        self.sets.get(&owner)?.get(name).copied()
+        let stored = self.sets.get(&owner).and_then(|set| set.get(name).copied());
+        stored.or_else(|| (name == "Id").then(|| owner.id()))
     }
 
     pub fn set(&mut self, owner: Owner, name: &str, value: i64) {
         self.values(owner).insert(name.to_string(), value);
     }
 
-    /// An owner's set, made with its `Id` the first time.
+    /// An owner's set, to write to.
     fn values(&mut self, owner: Owner) -> &mut HashMap<String, i64> {
-        self.sets.entry(owner).or_insert_with(|| HashMap::from([("Id".to_string(), owner.id())]))
+        self.sets.entry(owner).or_default()
     }
 
     /// `GetValues`: the set an action works on.
@@ -71,14 +74,14 @@ impl Variables {
         }
     }
 
-    /// `GetInt`: a number, or a variable's value (global, else the actor's;
-    /// looking makes the actor's set, with its `Id`, as C# did).
-    pub(super) fn int(&mut self, actor: Option<i64>, text: &str) -> i64 {
+    /// `GetInt`: a number, or a variable's value (global, else the actor's).
+    pub(super) fn int(&self, actor: Option<i64>, text: &str) -> i64 {
         if let Ok(n) = text.trim().parse() {
             return n;
         }
-        let global = self.values(Owner::Global).get(text).copied();
-        global.or_else(|| actor.and_then(|a| self.values(Owner::Item(a)).get(text).copied())).unwrap_or(0)
+        self.get(Owner::Global, text)
+            .or_else(|| actor.and_then(|a| self.get(Owner::Item(a), text)))
+            .unwrap_or(0)
     }
 }
 
@@ -106,7 +109,7 @@ fn change(In(run): In<Run<ChangeIntVariable>>, mut vars: ResMut<Variables>) -> b
         return true;
     };
     let values = vars.values(owner);
-    let old = values.get(name).copied().unwrap_or(0);
+    let old = values.get(name).copied().or_else(|| (name == "Id").then(|| owner.id())).unwrap_or(0);
     let new = match d.operation {
         Op::Set => d.value,
         Op::Increase => old.wrapping_add(d.value),
@@ -127,10 +130,9 @@ fn check(world: &mut World, run_: Run<CheckIntVariable>) -> bool {
     let name = d.variable_name.as_deref().unwrap_or_default();
     let now = world.resource::<Time>().elapsed_secs();
     let (value, target) = {
-        let mut vars = world.resource_mut::<Variables>();
+        let vars = world.resource::<Variables>();
         let builtin = (d.global && name == "ElapsedActiveTime").then(|| (now - vars.started) as i64);
-        // Looking makes the set, with its `Id`, as C# did.
-        let own = Variables::owner(d.global, d.item_id, run_.actor).and_then(|o| vars.values(o).get(name).copied());
+        let own = Variables::owner(d.global, d.item_id, run_.actor).and_then(|o| vars.get(o, name));
         if builtin.is_none() && own.is_none() {
             debug!("variable {name} not set");
         }

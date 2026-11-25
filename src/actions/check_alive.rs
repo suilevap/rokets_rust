@@ -26,9 +26,9 @@
 //! succeeded does not matter (WinnersRoom's `NextAction` runs when the
 //! coin is gone too).
 //!
-//! Not ported: an action with no `ItemId` (Escort's unused one has
-//! `Null`): C# looked a null name up in a dictionary and threw; here it
-//! logs and fails, running neither branch.
+//! An action with no `ItemId` (Escort's unused one has `Null`) checks the
+//! actor, as an `ItemId` of 0 does; C# looked the null name up in a
+//! dictionary and threw.
 
 use bevy::prelude::*;
 
@@ -45,11 +45,7 @@ impl Plugin for CheckAlivePlugin {
 
 fn check_alive(world: &mut World, run_: Run<CheckEntityAlive>) -> bool {
     let d = &run_.data;
-    let Some(item) = d.item_id.as_deref() else {
-        warn!("CheckEntityAlive has no ItemId");
-        return false;
-    };
-    let id = world.resource_mut::<super::Variables>().int(run_.actor, item);
+    let id = world.resource::<super::Variables>().int(run_.actor, d.item_id.as_deref().unwrap_or("0"));
     let alive = world
         .run_system_cached_with(alive, run_.target(id))
         .unwrap_or(false);

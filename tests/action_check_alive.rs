@@ -129,12 +129,10 @@ fn a_missing_or_empty_branch_runs_nothing_and_still_succeeds() {
 }
 
 #[test]
-fn an_action_without_an_item_id_fails_and_runs_no_branch() {
-    let mut app = app(
-        r#"<Item Type="GameLibrary.CheckEntityAlive"><Name>C</Name><NextAction>After</NextAction><ItemId Null="true" />
-        <ActionOnAlive>Note(alive)</ActionOnAlive><ActionOnNotAlive>Note(gone)</ActionOnNotAlive></Item>
-        <Item Type="GameLibrary.Note"><Name>After</Name><Text>after</Text></Item>"#,
-    );
-    assert!(!run(app.world_mut(), "C", Some(1), 0));
-    assert!(notes(&mut app).is_empty());
+fn an_action_without_an_item_id_checks_the_actor() {
+    let mut app = app(&CHECK.replace("<ItemId>ID</ItemId>", r#"<ItemId Null="true" />"#));
+    assert!(run(app.world_mut(), "Check", Some(7), 0));
+    assert_eq!(notes(&mut app)[0], n("alive", 7));
+    run(app.world_mut(), "Check", Some(5), 0);
+    assert_eq!(notes(&mut app)[0], n("gone", 5));
 }
