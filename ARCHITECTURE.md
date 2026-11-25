@@ -160,3 +160,12 @@ Everything outside MVP 0.1: menus, localisation, saves; the pause menu's music p
 the `Bomb` and `EditorPointer` gadgets; the `LaserCollector` button; the other behaviour trees (the `SimpleCars` and the AI's `Players` cars are there; turrets, chasers, path followers, attackers, zombies, hammer cars and order executors (flatbt trees), `AlwaysShoot` and `ShootPattern` act, the other controls stand idle); fake walls; the other action types (the AI's attack order, the splash's taps, menu fades and layer sounds, …); most particle effects (the pool and the car's smoke are in);
 slow motion; the agent/command server; editor hot reload. Rendering gaps:
 the dirty lens's `LaserCollectorButton` pulse. (The C# game has no per-map camera zoom: the zoom depends only on the targets and the speed, see `render/camera`.)
+
+## Linear colour, not XNA's sRGB numbers
+
+XNA blended in sRGB numbers (it had no gamma); Bevy blends in linear
+light, which is the correct and modern way. The port keeps linear
+blending everywhere and does not imitate XNA's sums with an sRGB pass.
+Where the look must match C#, it is matched by a multiplier or an alpha
+conversion at the effect (`GLOW_BOOST`, `DEFAULT_LENS_BOOST`,
+`blend_alpha`, the shadows' and vignette's alpha), or by the asset.
