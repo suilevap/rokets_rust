@@ -133,6 +133,20 @@ fn a_crossing_between_areas_is_crossed_straight() {
     assert!(pairs >= 1, "{:?}", path.points());
 }
 
+/// Two rooms with a wide corridor between them (three rows): the corridor
+/// touches both rooms and each of its two crossings has an axis.
+const WIDE_CORRIDOR: &str = "\n*************\n*.....*.....*\n*.....*.....*\n*...........*\n*...........*\n*...........*\n*.....*.....*\n*.....*.....*\n*************\n";
+
+#[test]
+fn both_crossings_of_a_corridor_between_two_rooms_have_their_own_axis() {
+    let g = grid(WIDE_CORRIDOR);
+    let nav = NavGraph::from_grid(&g, 1.0);
+    let unoriented = nav.nodes().iter().filter(|n| n.orientation == Orientation::None).count();
+    assert_eq!(unoriented, 0, "{:?}", nav.nodes().iter().map(|n| (n.pos, n.orientation)).collect::<Vec<_>>());
+    // The crossings are the vertical walls' gaps: crossed along x.
+    assert!(nav.nodes().iter().all(|n| n.orientation == Orientation::Horizontal || n.orientation == Orientation::Vertical));
+}
+
 /// A pillar in an open room: two ways round it.
 const PILLAR: &str = "\n*********\n*.......*\n*.......*\n*...*...*\n*.......*\n*.......*\n*********\n";
 
@@ -271,6 +285,43 @@ fn the_carrot_runs_along_the_path_and_stops_at_its_end() {
     // Backwards frees it.
     assert!(p.update_position(-2.0));
     assert!(!p.is_end());
+}
+
+#[test]
+fn stepping_back_over_a_corner_keeps_the_carrot_on_the_path_where_the_distance_says() {
+    let mut p = square(false);
+    p.update_position(15.0);
+    assert!((p.current_position() - Vec2::new(10.0, 5.0)).length() < 1e-5);
+    // Back into the first side: 8 on from the start, not on its end.
+    p.update_position(-8.0);
+    assert!((p.current_position() - Vec2::new(7.0, 0.0)).length() < 1e-5, "{:?}", p.current_position());
+    assert!((p.distance() - 7.0).abs() < 1e-5);
+    // Forward again goes on from there.
+    p.update_position(5.0);
+    assert!((p.current_position() - Vec2::new(10.0, 2.0)).length() < 1e-5, "{:?}", p.current_position());
+    // Back past the start stops at it.
+    p.update_position(-50.0);
+    assert!(p.is_start());
+    assert_eq!(p.current_position(), Vec2::ZERO);
+    p.update_position(3.0);
+    assert!((p.current_position() - Vec2::new(3.0, 0.0)).length() < 1e-5);
+    // The same over each corner of a closed one.
+    let mut c = square(true);
+    c.update_position(25.0);
+    c.update_position(-15.0);
+    assert!((c.current_position() - Vec2::new(10.0, 0.0)).length() < 1e-5, "{:?}", c.current_position());
+}
+
+#[test]
+fn a_carrot_that_goes_on_too_far_is_pulled_back_in_the_same_update() {
+    let mut p = NavPath::new(vec![Vec2::ZERO, Vec2::new(100.0, 0.0)], false);
+    p.update_position(3.9);
+    // The car is 3.9 behind, within the 4: the carrot goes on by 1, which is
+    // too far ahead, so it comes back at once.
+    p.update(Vec2::ZERO, 1.0, 2.0, 4.0);
+    let gap = p.current_position().distance(Vec2::ZERO);
+    assert!(gap <= 4.0, "{gap}");
+    assert!(gap > 3.0, "and not much further: {gap}");
 }
 
 #[test]

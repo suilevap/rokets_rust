@@ -10,10 +10,16 @@
 //!
 //! Positions are world units (y up, like the graph's).
 //!
-//! Kept as C# had it, though odd: stepping back past the second point puts
-//! the carrot on that point and the position index at the first (the `else`
-//! of the backward loop uses the point it was leaving), and `update` goes on
-//! with the distance it measured before the carrot moved.
+//! Differences from C#:
+//! - Stepping back from the second segment into the first puts the carrot
+//!   where the distance says, on the first segment. C# put it on the second
+//!   point and reset the distance to 0 (its backward loop's `else` took the
+//!   point it was leaving), so the carrot jumped forward and the distance
+//!   no longer matched it.
+//! - [`NavPath::update`] measures the car's distance to the carrot again
+//!   after the carrot has moved on, before it decides whether the car has
+//!   fallen too far behind. C# used the distance it had measured before the
+//!   move, so a step forward was never pulled back.
 //!
 //! Not ported: `Draw` (debug drawing: see `ai::navigation`).
 
@@ -161,16 +167,20 @@ impl NavPath {
         }
         if d < max_distance && !self.end_path {
             self.update_position(dist);
+            d = self.current_position.distance(position);
         }
-        let mut delta = 1.0;
-        while d > max_distance && delta > 0.0 && !self.is_start() {
+        // Too far ahead of the car: back, a step at a time while that brings
+        // it nearer (a step that takes it further off is undone).
+        while d > max_distance && !self.is_start() {
             self.update_position(-min_distance / 4.0);
-            let d2 = self.current_position.distance(position);
-            delta = d - d2;
-            d = d2;
-        }
-        if delta < 0.0 {
-            self.update_position(min_distance / 4.0);
+            let nearer = self.current_position.distance(position);
+            if nearer >= d {
+                if nearer > d {
+                    self.update_position(min_distance / 4.0);
+                }
+                break;
+            }
+            d = nearer;
         }
         !self.end_path
     }
@@ -193,22 +203,18 @@ impl NavPath {
         self.distance += delta;
         self.partial_distance += delta;
         let at = |i: i32| self.path[i.rem_euclid(count) as usize];
-        let mut curr = at(self.current_index);
-        let mut next = at(self.current_index + 1);
+        // Back over the segments the carrot has left, to the start at most.
         while self.partial_distance < 0.0 {
-            self.current_index -= 1;
-            if self.current_index > 0 {
-                next = curr;
-                curr = self.path[self.current_index as usize];
-                self.partial_distance += curr.distance(next);
-            } else {
-                self.current_index = 0;
+            if self.current_index == 0 {
                 self.partial_distance = 0.0;
                 self.distance = 0.0;
-                self.current_position = curr;
                 break;
             }
+            self.current_index -= 1;
+            self.partial_distance += at(self.current_index).distance(at(self.current_index + 1));
         }
+        let mut curr = at(self.current_index);
+        let mut next = at(self.current_index + 1);
         let mut d = curr.distance(next);
         while self.partial_distance >= d {
             self.partial_distance -= d;
