@@ -25,6 +25,10 @@ use crate::render::sprite::{SpriteTint, UnitQuad, sprite_bundle};
 use crate::units::{map_degrees_to_world, px};
 
 const LINEAR_DAMPING: f32 = 0.95;
+/// A box's fixture friction in C#: Farseer's default (`Fixture`, 0.2).
+/// `Entity` sets `PhysicBody.Friction = 0.8` before `PhysicEntity` has
+/// attached a fixture, so that line changes nothing.
+pub const BOX_FRICTION: f32 = 0.2;
 const ANGULAR_DAMPING: f32 = 0.95;
 
 pub struct MapEntitiesPlugin;
@@ -149,7 +153,7 @@ fn insert_body(entity: &mut EntityCommands, body: BodySpec, size: Vec2, friction
         }
     }
     entity.insert((
-        Friction::new(0.8).with_combine_rule(CoefficientCombine::GeometricMean),
+        Friction::new(BOX_FRICTION).with_combine_rule(CoefficientCombine::GeometricMean),
         Restitution::new(0.5).with_combine_rule(CoefficientCombine::Max),
     ));
 }
