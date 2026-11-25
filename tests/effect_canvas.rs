@@ -12,10 +12,10 @@ fn only_a_snow_map_has_the_screen_effects() {
 }
 
 #[test]
-fn a_plain_map_has_a_canvas_for_the_speed_lines_only() {
+fn every_map_has_a_canvas_for_the_speed_lines() {
     assert!(needed(LevelEffect::None));
     assert!(needed(LevelEffect::Snow));
-    assert!(!needed(LevelEffect::SnowWind));
+    assert!(needed(LevelEffect::SnowWind));
 }
 
 #[test]

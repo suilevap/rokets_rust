@@ -15,8 +15,7 @@
 //! [`blend_alpha`] gives the alpha that comes out as XNA's over a middling
 //! picture.
 //!
-//! A plain map has the canvas too, for the cars' speed lines
-//! ([`needed`]).
+//! Every map has the canvas too, for the speed lines ([`needed`]).
 //!
 //! Not ported: the effects' render targets and `Drawer.ViewWidth`
 //! changing at run time (`Drawer.Init` ran once; the canvas follows the
@@ -43,10 +42,11 @@ pub fn shows(effect: LevelEffect) -> bool {
     effect == LevelEffect::Snow
 }
 
-/// Whether a level has a canvas at all: the snow's screen effects, or a
-/// plain map's speed lines (`car::speed_trail`).
-pub fn needed(effect: LevelEffect) -> bool {
-    shows(effect) || crate::car::speed_trail::shows(effect)
+/// Whether a level has a canvas at all: every one does, for the camera's
+/// speed lines (`car::speed_trail`), which C# made on every map; the snow's
+/// screen effects are [`shows`].
+pub fn needed(_effect: LevelEffect) -> bool {
+    true
 }
 
 /// The canvas for a window of `window` logical pixels: the landscape shape

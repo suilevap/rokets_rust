@@ -6,7 +6,7 @@ mod common;
 use bevy::math::Vec2;
 use tilerider::assets;
 use tilerider::car::speed_trail::{
-    LINE_CHANCE, LINE_LEAD, TOP_SPEED_AMOUNT, at_top_speed, line_spawns, line_start, shows, textures, trail_shape,
+    CAMERA_LAG_MIN, CAMERA_LAG_PER_LINE, LINE_CHANCE, LINE_LEAD, camera_line_spawns, TOP_SPEED_AMOUNT, at_top_speed, line_spawns, line_start, shows, textures, trail_shape,
 };
 use tilerider::content::map::LevelEffect;
 
@@ -24,12 +24,12 @@ fn only_a_plain_map_has_the_trail() {
     assert!(shows(LevelEffect::None));
     assert!(!shows(LevelEffect::Snow));
     assert!(!shows(LevelEffect::SnowWind));
-    assert!(textures(LevelEffect::Snow).is_empty());
+    
 }
 
 #[test]
 fn the_sprites_it_draws_are_there() {
-    for name in textures(LevelEffect::None).into_iter().chain(["Gradient4Pixel"]) {
+    for name in textures().into_iter().chain(["Gradient4Pixel"]) {
         let path = assets::sprite_path(name).unwrap_or_else(|| panic!("{name} is not in the assets"));
         assert!(common::assets_root().join(path).is_file(), "{path}");
     }
@@ -134,4 +134,50 @@ fn a_line_starts_ahead_of_the_car_and_flies_back() {
     // A car going up sends it flying down.
     let (_, down) = line_start(Vec2::new(0.0, MAX), MAX, Vec2::ZERO, canvas);
     assert!((Vec2::from_angle(down) - Vec2::NEG_Y).length() < 1e-5, "{down}");
+}
+
+#[test]
+fn a_camera_close_behind_its_focus_makes_no_lines() {
+    for lag in [0.0, 5.0, CAMERA_LAG_MIN] {
+        assert_eq!(camera_line_spawns(lag, 1.0 / 60.0, 0.99), 0, "lag {lag}");
+    }
+    // Over 16 but under 32 units: `(int)(l / 32)` is still none.
+    assert_eq!(camera_line_spawns(30.0, 1.0 / 60.0, 0.99), 0);
+    assert_eq!(camera_line_spawns(f32::NAN, 1.0 / 60.0, 0.99), 0);
+}
+
+#[test]
+fn a_camera_far_behind_makes_a_line_for_each_32_units_at_each_update() {
+    let tick = 1.0 / 60.0;
+    assert_eq!(camera_line_spawns(CAMERA_LAG_PER_LINE, tick, 0.0), 1);
+    assert_eq!(camera_line_spawns(63.0, tick, 0.0), 1);
+    assert_eq!(camera_line_spawns(64.0, tick, 0.0), 2);
+    assert_eq!(camera_line_spawns(200.0, tick, 0.0), 6);
+    // A frame of three updates makes three times as many.
+    assert_eq!(camera_line_spawns(64.0, 3.0 * tick, 0.0), 6);
+}
+
+#[test]
+fn driving_does_not_make_the_camera_lines_a_jump_does() {
+    // The camera eases at 1.9 a second, so it trails a car by speed / 1.9:
+    // at 20 units a second about 10.5, far under what is needed.
+    assert_eq!(camera_line_spawns(MAX / 1.9, 1.0 / 60.0, 0.99), 0);
+    assert!(camera_line_spawns(80.0, 1.0 / 60.0, 0.0) > 0);
+}
+
+#[test]
+fn a_slow_frame_rolls_the_rest_of_an_update_to_chance() {
+    // Half an update of one line: made when the roll is over a half.
+    let half = 0.5 / 60.0;
+    assert_eq!(camera_line_spawns(40.0, half, 0.4), 0);
+    assert_eq!(camera_line_spawns(40.0, half, 0.6), 1);
+}
+
+#[test]
+fn the_camera_lines_fly_against_the_gap_from_the_same_start_as_a_cars() {
+    // The camera's focus behind a point to the right: the lines start to
+    // the right of the middle and fly left, as a car going right.
+    let (at, dir) = line_start(Vec2::X, 1.0, Vec2::ZERO, Vec2::new(800.0, 480.0));
+    assert_eq!(at, Vec2::new(LINE_LEAD, 0.0));
+    assert!((Vec2::from_angle(dir) - Vec2::NEG_X).length() < 1e-5);
 }

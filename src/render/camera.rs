@@ -109,6 +109,10 @@ pub struct MainCamera {
     pub focus: Vec2,
     /// Zoom: height is `CAMERA_HEIGHT / scale`.
     pub scale: f32,
+    /// Where `focus` is easing to (`_elasticFocus.Destination`): the
+    /// camera's framing as of the last frame. How far `focus` is behind it
+    /// makes the camera's speed lines (`car::speed_trail`).
+    pub destination: Vec2,
 }
 
 impl Default for MainCamera {
@@ -117,6 +121,7 @@ impl Default for MainCamera {
             ground: Vec2::ZERO,
             focus: Vec2::ZERO,
             scale: 1.0,
+            destination: Vec2::ZERO,
         }
     }
 }
@@ -289,6 +294,7 @@ fn snap_to_target(
             });
         cam.ground = frame.focus;
         cam.focus = frame.focus;
+        cam.destination = frame.focus;
         cam.scale = frame.scale;
         *transform = cam.transform(view.up());
     }
@@ -388,9 +394,14 @@ fn follow_target(
             Some((focus, scale)) => Framing { focus, scale },
             None => match framing(targets.iter().map(target_snapshot), &view, projection) {
                 Some(frame) => frame,
-                None => continue,
+                None => {
+                    // Nothing to ease to: no lag left to make speed lines of.
+                    cam.destination = cam.focus;
+                    continue;
+                }
             },
         };
+        cam.destination = frame.focus;
         cam.focus = cam.focus.lerp(frame.focus, ease(FOCUS_RATE, dt));
         cam.ground = cam.ground.lerp(cam.focus, ease(FOLLOW_RATE, dt));
         cam.scale += (frame.scale - cam.scale) * ease(SCALE_RATE, dt);
