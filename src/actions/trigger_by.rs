@@ -62,7 +62,7 @@ impl Plugin for TriggerByPlugin {
 
 /// `GetInt` of one entry of `ItemIds`, read when its turn comes.
 fn id(world: &mut World, text: &str, actor: Option<i64>) -> i64 {
-    world.resource_mut::<Variables>().int(actor, text)
+    world.resource::<Variables>().int(actor, text)
 }
 
 fn trigger_by(world: &mut World, run_: Run<TriggerActionBy>) -> bool {

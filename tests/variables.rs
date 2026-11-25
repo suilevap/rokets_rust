@@ -102,3 +102,14 @@ fn variables_start_before_the_other_map_start_actions() {
     // `Door` runs on map start by its type's default.
     assert_eq!(tilerider::actions::start_order(&map.actions), [2, 0, 3]);
 }
+
+#[test]
+fn id_is_built_in_and_reading_changes_nothing() {
+    let vars = Variables::default();
+    assert_eq!(vars.get(Owner::Item(1005), "Id"), Some(1005));
+    assert_eq!(vars.get(Owner::Global, "Id"), Some(-1));
+    assert_eq!(vars.get(Owner::Item(1005), "doors"), None);
+    let mut app = app("");
+    run(app.world_mut(), "SetVarEx(1005,Id,+,1)", None, 0);
+    assert_eq!(app.world().resource::<Variables>().get(Owner::Item(1005), "Id"), Some(1006), "Id can be changed");
+}
