@@ -15,8 +15,8 @@ use tilerider::weapon::model::{
     Kind, ROCKET_CHASING, ROCKET_CHASING_360, ROCKET_DIRECT, Railgun, for_type,
 };
 use tilerider::weapon::rocket::{
-    BLAST_FORCE, BLAST_RANGE, Candidate, Flight, LAUNCH_IMPULSE, MASS, MAX_SPEED, MAX_TRANSLATION,
-    Rocket, RocketLaunched, SIZE, rockets_hit, STEP_FORCE, fly, fly_rockets, integrate, launch_impulse, limit_speed, nearest_goal, steer,
+    BLAST_FORCE, BLAST_RANGE, Candidate, Flight, MASS, MAX_SPEED, OWNER_SPEED_SHARE,
+    Rocket, RocketLaunched, SIZE, rockets_hit, STEP_FORCE, fly, fly_rockets, integrate, launch_velocity, limit_speed, nearest_goal, steer,
 };
 
 const DT: f32 = 1.0 / 60.0;
@@ -64,28 +64,33 @@ fn a_launcher_fires_once_a_reload_on_accurate_pulses_like_the_railgun() {
 }
 
 #[test]
-fn a_rocket_is_born_with_the_impulse_of_a_launch_and_a_tenth_of_the_shooters_speed() {
+fn a_rocket_is_born_at_its_top_speed_along_the_barrel_with_a_tenth_of_the_shooters_speed() {
+    // Standing: the top speed along the barrel.
+    let still = launch_velocity(0.5, Vec2::ZERO);
+    assert!((still - Vec2::from_angle(0.5) * MAX_SPEED).length() < 1e-4, "{still}");
+    // Moving sideways: the owner's share tilts it, and the top speed caps it.
     let shooter = Vec2::new(0.0, 10.0);
-    let impulse = launch_impulse(0.0, shooter);
-    assert_eq!(impulse, Vec2::new(LAUNCH_IMPULSE, 1.0));
+    let v = launch_velocity(0.0, shooter);
+    assert!(v.y > 0.0 && (v.y - shooter.y * OWNER_SPEED_SHARE * MAX_SPEED / v.length()).abs() < 0.05, "{v}");
+    assert!((v.length() - MAX_SPEED).abs() < 1e-4, "{v}");
     let rocket = Rocket::new(Vec2::ZERO, 0.0, Entity::PLACEHOLDER, None, shooter, 16, false);
-    // It points where the impulse does, and moves at the impulse over its mass.
-    assert!((rocket.direction - impulse.to_angle()).abs() < 1e-6);
-    assert!((rocket.velocity - impulse / MASS).length() < 1e-3);
-    assert!((rocket.force_direction - impulse.normalize()).length() < 1e-6);
+    // It points where it moves.
+    assert_eq!(rocket.velocity, v);
+    assert!((rocket.direction - v.to_angle()).abs() < 1e-6);
+    assert!((rocket.force_direction - v.normalize()).length() < 1e-6);
     // 1 by 0.27 units: a rectangle of density 1.
     assert!((SIZE.x - 1.015625).abs() < 1e-6 && (SIZE.y - 0.265625).abs() < 1e-6);
     assert!((MASS - 0.2698).abs() < 1e-3, "{MASS}");
 }
 
 #[test]
-fn farseer_moves_a_body_two_units_a_step_at_most_and_the_rocket_is_cut_to_47() {
-    let born = launch_impulse(0.0, Vec2::ZERO) / MASS;
-    let v = integrate(born, Vec2::ZERO, DT);
-    assert!((v.length() * DT - MAX_TRANSLATION).abs() < 1e-4, "{v}");
-    assert!((limit_speed(v).length() - MAX_SPEED).abs() < 1e-4);
-    // Slower than the top speed it keeps it.
+fn the_rocket_is_cut_to_47_and_a_step_has_no_cap_on_how_far_it_goes() {
+    // A speed over the top is cut; a slower one is kept.
+    assert!((limit_speed(Vec2::new(300.0, 0.0)).length() - MAX_SPEED).abs() < 1e-4);
     assert_eq!(limit_speed(Vec2::new(10.0, 0.0)), Vec2::new(10.0, 0.0));
+    // `integrate` moves nothing but the speed: no clamp on the step.
+    let v = integrate(Vec2::new(300.0, 0.0), Vec2::ZERO, DT);
+    assert!((v.x - 300.0 * (1.0 - DT * 0.95)).abs() < 1e-3, "{v}");
 }
 
 #[test]
@@ -264,10 +269,11 @@ fn in_the_open_a_straight_rocket_goes_47_units_a_second_and_blows_up_after_two_s
     settle(&mut app);
     let rocket = fire(&mut app, Vec2::ZERO, 0.0, owner, 16, false);
     app.update();
-    // The first step is the launch impulse cut to two units.
+    // The first step is a step at the launch speed.
     let first = app.world().get::<Rocket>(rocket).unwrap().clone();
-    assert!((first.at.x - 2.0).abs() < 1e-3, "{:?}", first.at);
-    assert!((first.velocity.length() - MAX_SPEED).abs() < 1e-3);
+    assert!((first.at.x - MAX_SPEED * (1.0 - DT * 0.95) * DT).abs() < 1e-3, "{:?}", first.at);
+    // The damping took its share of the 47.
+    assert!((first.velocity.length() - MAX_SPEED * (1.0 - DT * 0.95)).abs() < 1e-3);
     assert!(!first.active);
     // Active after 0.1 s (seven steps: six are not past it).
     steps(&mut app, 5);

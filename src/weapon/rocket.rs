@@ -29,11 +29,12 @@
 //!   flies through what bullets fly through (sensors and low boxes:
 //!   `PhysicBodyCategory.WeaponCollidesWith` leaves out `LowWall` and
 //!   `Bomb`) and its own shooter (`Fix.IgnoreCollisionWith`). It is born
-//!   with an impulse of 64 along the barrel plus a tenth of the shooter's
-//!   velocity (`InitImpulse`; it points where that points), which is
-//!   far more than it can use: Farseer moves a body at most 2 units a
-//!   step ([`MAX_TRANSLATION`]), and `NormalizeSpeed` cuts what is left to 47
-//!   units a second ([`MAX_SPEED`]) at the end of its first update.
+//!   at the speed it really flew at in C#: the top speed ([`MAX_SPEED`], 47
+//!   units a second) along the barrel plus a tenth of the shooter's velocity
+//!   (`InitImpulse`), cut to the top speed ([`launch_velocity`]); it points
+//!   where that points. C# gave it an impulse of 64 (237 units a second on
+//!   its mass), which Farseer's `MaxTranslation` cut to 2 units a step and
+//!   `NormalizeSpeed` to 47 at the end of its first update.
 //! - For its first 0.1 s it only coasts ([`ACTIVATION`]). Then it is
 //!   active: every step a force of 32 along its force direction
 //!   ([`STEP_FORCE`], 118 units a second² on its mass, against a damping of
@@ -61,6 +62,14 @@
 //!   fading lines of its flight, yellow (64 points) and red (16), shaking
 //!   a little; the lines shrink back into the point where it blew up. A
 //!   `HeavyRoket` puffs a white smoke every update ([`ROCKET_SMOKE`]).
+//!
+//! Differences from C#:
+//! - The launch is the speed the rocket really flew at (see above), and
+//!   [`integrate`] has no cap on a step's translation (Farseer's
+//!   `MaxTranslation`, 2 units): the rocket never goes faster than
+//!   [`MAX_SPEED`], so the cap only ever cut the launch. The rocket is
+//!   about 1.2 units (a fiftieth of a second of flight) behind where C#'s
+//!   first step put it, and flies the same line at the same speed after.
 //!
 //! Not ported:
 //! - Its body is not a physics body: the sweep ([`fly`]) finds what it
@@ -121,11 +130,9 @@ pub const SIZE: Vec2 = Vec2::new(SPRITE_SIZE.x * SPRITE_SCALE / 32.0, SPRITE_SIZ
 pub const MASS: f32 = SIZE.x * SIZE.y;
 /// `PhysicBody.LinearDamping = 0.95 * PhysicsManager.Friction`.
 pub const DAMPING: f32 = 0.95;
-/// Farseer's `Settings.MaxTranslation`: the most a body moves in a step.
-pub const MAX_TRANSLATION: f32 = 2.0;
 
-/// `CreateRoket`: `InitImpulse = push * 64 + 0.1f * ent.Speed`.
-pub const LAUNCH_IMPULSE: f32 = 64.0;
+/// `CreateRoket`: `InitImpulse = push * 64 + 0.1f * ent.Speed`: the share of
+/// the shooter's velocity a rocket is born with.
 pub const OWNER_SPEED_SHARE: f32 = 0.1;
 /// `ActivationTime`: it only coasts this long (100 ms).
 pub const ACTIVATION: f32 = 0.1;
@@ -202,16 +209,15 @@ pub struct Rocket {
 impl Rocket {
     /// A rocket fired from `at` along world angle `direction` by `owner`
     /// moving at `owner_velocity` (`CreateRoket`, `BaseRoket`'s
-    /// constructor): born with the impulse of a launch, moving where it
-    /// points.
+    /// constructor): born at its launch velocity, moving where it points.
     pub fn new(at: Vec2, direction: f32, owner: Entity, team: Option<Team>, owner_velocity: Vec2, damage: i32, homing: bool) -> Rocket {
-        let impulse = launch_impulse(direction, owner_velocity);
+        let velocity = launch_velocity(direction, owner_velocity);
         Rocket {
             at,
             previous: at,
-            velocity: impulse / MASS,
-            direction: impulse.to_angle(),
-            force_direction: impulse.normalize_or_zero(),
+            velocity,
+            direction: velocity.to_angle(),
+            force_direction: velocity.normalize_or_zero(),
             force: Vec2::ZERO,
             owner,
             team,
@@ -226,19 +232,16 @@ impl Rocket {
     }
 }
 
-/// `InitImpulse`: the launch along `direction`, and a tenth of the
-/// shooter's velocity.
-pub fn launch_impulse(direction: f32, owner_velocity: Vec2) -> Vec2 {
-    Vec2::from_angle(direction) * LAUNCH_IMPULSE + owner_velocity * OWNER_SPEED_SHARE
+/// `InitImpulse` as the rocket used it: the top speed along `direction` and
+/// a tenth of the shooter's velocity, cut to the top speed.
+pub fn launch_velocity(direction: f32, owner_velocity: Vec2) -> Vec2 {
+    limit_speed(Vec2::from_angle(direction) * MAX_SPEED + owner_velocity * OWNER_SPEED_SHARE)
 }
 
 /// What a physics step does to a rocket's velocity (Farseer's
-/// `Island.Solve`): the force's push, the damping, and a cap on how far a
-/// step may take it.
+/// `Island.Solve`): the force's push and the damping.
 pub fn integrate(velocity: Vec2, force: Vec2, dt: f32) -> Vec2 {
-    let v = (velocity + force / MASS * dt) * (1.0 - dt * DAMPING).clamp(0.0, 1.0);
-    let step = v.length() * dt;
-    if step > MAX_TRANSLATION { v * (MAX_TRANSLATION / step) } else { v }
+    (velocity + force / MASS * dt) * (1.0 - dt * DAMPING).clamp(0.0, 1.0)
 }
 
 /// `NormalizeSpeed`: no faster than [`MAX_SPEED`].
