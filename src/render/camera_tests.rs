@@ -102,6 +102,7 @@ fn group_framing_fits_driving_margins_in_landscape_and_portrait() {
             ground: frame.focus,
             focus: frame.focus,
             scale: frame.scale,
+            destination: frame.focus,
         }
         .transform(view.up());
         let clip = bevy::math::proj::perspective_infinite_reverse(projection.fov, aspect, 1.0)
@@ -246,11 +247,13 @@ fn map_entry_resets_previous_focus_and_zoom_and_handles_fixed_targets() {
         ground: Vec2::splat(100.0),
         focus: Vec2::splat(200.0),
         scale: MIN_SCALE,
+        destination: Vec2::splat(300.0),
     };
     world.run_system_once(snap_to_target).unwrap();
     let cam = world.get::<MainCamera>(camera).unwrap();
     assert_eq!(cam.ground, Vec2::new(4.0, 5.0));
     assert_eq!(cam.focus, cam.ground);
+    assert_eq!(cam.destination, cam.focus, "no lag at the start of a map");
     assert_eq!(cam.scale, 1.0);
     assert_eq!(
         world.get::<Transform>(camera).unwrap().translation.z,

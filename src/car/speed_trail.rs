@@ -34,20 +34,48 @@
 //!   to 196 × 16 times the three-pixel sprite as it fades. The pool is the
 //!   snow's: 64 slots in the effect canvas (`render::effect_canvas`).
 //!
+//! - **The camera's lines** (`Camera2DOperator.SpeedTrail`, 2013-11-05
+//!   `Speed Trails for distant Camera move`, behind `Settings.
+//!   EnableSpeedTrailForCamera`, a constant, `true`): each update, on every
+//!   map, snow and wind maps too (the interface's pool is the camera's, and
+//!   the car's `SpeedTrail` is only the cars' of a plain map), the camera's
+//!   eased focus (`_elasticFocus.CurrentValue`, easing at 1.9 a second) is
+//!   looked at against the point it eases to (`Destination`, the framing).
+//!   While it is more than 16 units behind it, `CreateSpeedTrails` is called
+//!   with the direction of the gap and `gap / 32` lines (whole): none under
+//!   32 units, one up to 64, and so on. It is not the camera's speed but its
+//!   distance behind: a car driving at 20 units a second leaves the camera
+//!   about 10 behind, so driving never makes them; a jump of the target (a
+//!   respawn across the map, the end of a camera path's far flight, an
+//!   `InstantMove` away from the car, a cut between players) does, until the
+//!   camera has caught up. They fly *against* the gap, as the car's fly
+//!   against its way, from the same pool, so both can be in the air at once
+//!   (`line_start` is shared). See [`camera_line_spawns`].
+//!
 //! `SpeedTrailParticleStart` and `…End` (`DepthConst`, -4) are the height of
 //! the interface's particles, the snow's too (`CreateSnowUI`), not of
 //! anything here: they say the particles are drawn over everything else.
-//! The camera's own speed lines (`Camera2DOperator.SpeedTrail`, the camera
-//! lagging behind its focus) use the same `CreateSpeedTrails` but are the
-//! camera's, on every map; the port does not have them. The car's smoke and
-//! tyre marks (`smoke`) are other effects; they draw under (the wheel
+//! The car's smoke and tyre marks (`smoke`) are other effects; they draw under (the wheel
 //! streaks) or over (the exhaust) this one and do not read its numbers.
 //!
 //! Not ported:
-//! - `World.Pause` (the flicker stopped and the width lost its end-on
-//!   compensation while paused): the port has no pause. `World.TimeScale`
-//!   does not apply either: the streak is made of the car's speed, which
-//!   slow motion has already scaled.
+//! - `World.Pause` for the streak (the flicker stopped and the width lost
+//!   its end-on compensation while paused): the port has no pause. The
+//!   camera's lines do keep it: they make none while the physics is paused
+//!   (a camera path that pauses the world). `World.TimeScale` does not
+//!   apply either: the streak is made of the car's speed, which slow motion
+//!   has already scaled.
+//! - The camera's lines have their own 64 slots here, where C# put them in
+//!   the snow's pool, so on a snow map they cannot crowd the flakes out
+//!   (nor the flakes them).
+//! - The camera's lines are made at the port's camera's gap, the eased
+//!   focus to the framing it eased to as of the last frame (the camera
+//!   follows in `PostUpdate`), and make none when the camera has nothing to
+//!   frame (C# went on easing to the old destination, and made lines until
+//!   it was there).
+//! - The camera's per-update `(int)(l / 32)` is made per frame: as many as
+//!   the updates it spans would ([`camera_line_spawns`]), whole lines with
+//!   the rest left to chance, so the rate is the same at any frame rate.
 //! - `RandomHelper`'s *fake* random numbers (a table drawn in turn):
 //!   `ViewRng` is a plain generator, the same distribution.
 //! - The update tick: C# rolled the lines' chance in 1/60 s steps; a frame
@@ -77,6 +105,7 @@ use crate::controls::PlayerIntent;
 use crate::game::{GameState, LoadedMap, MapEntity};
 use crate::particles::styles::SPEED_LINE;
 use crate::particles::Pool;
+use crate::render::camera::MainCamera;
 use crate::render::effect_canvas::{Canvas, CanvasMade, MIDDLING_PICTURE, blend_alpha};
 use crate::render::layers::Layer;
 use crate::render::snow::{SCREEN_POOL, TICKS_PER_SECOND, show_pool};
@@ -107,9 +136,10 @@ pub fn shows(effect: LevelEffect) -> bool {
     effect == LevelEffect::None
 }
 
-/// The sprites the lines need, to load with the map.
-pub fn textures(effect: LevelEffect) -> Vec<&'static str> {
-    if shows(effect) { vec![LINE_TEXTURE] } else { Vec::new() }
+/// The sprites the lines need, to load with the map: the camera's lines
+/// are on every map.
+pub fn textures() -> Vec<&'static str> {
+    vec![LINE_TEXTURE]
 }
 
 /// A car with the speed trail; `size` is its sprite (length, width) in
@@ -169,6 +199,24 @@ pub fn line_spawns(dt: f32, roll: f32) -> usize {
     ((LINE_CHANCE * dt * TICKS_PER_SECOND) + roll).floor().max(0.0) as usize
 }
 
+/// The camera is this far (world units) behind where it eases to before it
+/// makes lines (`Camera2DOperator.SpeedTrail`'s `l > 16`).
+pub const CAMERA_LAG_MIN: f32 = 16.0;
+/// A line for each this much of the camera's lag (`(int)(l / 32)`).
+pub const CAMERA_LAG_PER_LINE: f32 = 32.0;
+
+/// How many lines the camera makes in a frame of `dt` seconds, `lag` units
+/// behind where it eases to: whole `lag / 32` at each update it spans, and
+/// none while the lag is not over 16. `roll` (0 to 1, random) settles the
+/// fraction of an update a frame leaves.
+pub fn camera_line_spawns(lag: f32, dt: f32, roll: f32) -> usize {
+    if lag.is_nan() || lag <= CAMERA_LAG_MIN {
+        return 0;
+    }
+    let per_update = (lag / CAMERA_LAG_PER_LINE).floor();
+    (per_update * dt * TICKS_PER_SECOND + roll).floor().max(0.0) as usize
+}
+
 /// Where a line starts and which way it flies (`CreateSpeedTrails`), in the
 /// pool's axes as the snow's ([`crate::render::snow::screen_start`]): the
 /// car's `velocity` over its `max_speed` is the point ahead of it, `spread`
@@ -216,9 +264,9 @@ impl Plugin for SpeedTrailPlugin {
     }
 }
 
-fn start_lines(mut commands: Commands, canvas: Option<Res<Canvas>>, map: Res<LoadedMap>) {
+fn start_lines(mut commands: Commands, canvas: Option<Res<Canvas>>) {
     commands.remove_resource::<SpeedLines>();
-    let Some(canvas) = canvas.filter(|_| shows(map.data.level_effect)) else {
+    let Some(canvas) = canvas else {
         return;
     };
     commands.insert_resource(SpeedLines { pool: Pool::new(SCREEN_POOL) });
@@ -302,11 +350,25 @@ fn spawn_lines(
     mut lines: ResMut<SpeedLines>,
     mut rng: ResMut<ViewRng>,
     canvas: Res<Canvas>,
+    physics: Res<Time<Physics>>,
     cars: Query<(&Car, &PlayerIntent, &LinearVelocity, Has<LocalDevice>), With<SpeedTrail>>,
+    cameras: Query<&MainCamera>,
 ) {
     let dt = time.delta_secs();
     lines.pool.step(dt);
     let rng = &mut rng.0;
+    // `Camera2DOperator.SpeedTrail`: the camera behind where it eases to;
+    // the way of the gap goes where a car's speed over its maximum does.
+    if !physics.is_paused() {
+        for camera in &cameras {
+            let gap = camera.destination - camera.focus;
+            for _ in 0..camera_line_spawns(gap.length(), dt, rng.random()).min(SCREEN_POOL) {
+                let spread = Vec2::new(rng.random::<f32>() * 2.0 - 1.0, rng.random::<f32>() * 2.0 - 1.0);
+                let (at, direction) = line_start(gap.normalize_or_zero(), 1.0, spread, canvas.size);
+                lines.pool.try_add(&SPEED_LINE, at, direction, direction);
+            }
+        }
+    }
     for (car, intent, velocity, local) in &cars {
         if !at_top_speed(local, intent.move_dir, velocity.0, car.params.max_speed) {
             continue;
