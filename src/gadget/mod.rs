@@ -25,6 +25,9 @@
 //! holds for them too (C#'s AI skipped it: its flags went straight to
 //! `ProcessActivity`).
 //!
+//! The Smart scheme's assist (`assist::magnet`) drives the same intent for
+//! the player's car, with the same button rules ([`handling`]).
+//!
 //! A map can also hitch a car's magnet to something: [`apply`]
 //! (`ApplyGadgetToPosition`).
 //!
@@ -34,6 +37,7 @@
 
 pub mod accelerator;
 pub mod apply;
+pub mod handling;
 pub mod rope;
 pub mod static_cargo;
 

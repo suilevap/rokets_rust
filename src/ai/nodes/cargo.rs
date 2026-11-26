@@ -11,6 +11,9 @@
 //! `ai::carry_out` writes them into the car's intent, where the magnet
 //! (`gadget::use_magnets`) reads them as it reads the player's.
 //!
+//! The button rules (how long to hold, when to let go) are shared with the
+//! Smart scheme's assist: `gadget::handling`.
+//!
 //! Both read what they work on off the blackboard: the order being carried
 //! out ([`AiBlackboard::executing`]: the cargo to grab, the point and radius
 //! to drop it at), the car's [`MagnetState`] (what is on the rope, what it
@@ -56,22 +59,11 @@ use crate::ai::blackboard::AiBlackboard;
 use crate::ai::order_queue::OrderKind;
 use crate::ai::orders::{GadgetButton, Orders};
 use crate::gadget::REACH;
-
-/// `ChainGadget.ActiveDistance - 1`: how near the cargo or the drop point
-/// must be.
-pub const NEAR: f32 = REACH - 1.0;
-/// `_durationMin`: the button is held this long at least, s.
-pub const HOLD_MIN: f32 = 1.0;
-/// `_durationMax`: the longest it is held, s.
-pub const HOLD_MAX: f32 = 5.0;
+use crate::gadget::handling::{closer_than, drop_holds, grab_holds};
+pub use crate::gadget::handling::{HOLD_MAX, HOLD_MIN, NEAR};
 /// `BaseControl.Length` (`ToSimUnits(256)`): how far the control's aim
 /// reaches.
 const CONTROL_LENGTH: f32 = 8.0;
-
-/// `VectorExtension.CloserThan`.
-fn closer_than(a: Vec2, b: Vec2, distance: f32) -> bool {
-    a.distance_squared(b) < distance * distance
-}
 
 /// The cargo of the order being carried out (`MoveCargoOrder`'s,
 /// `GrabCargoOrder`'s).
@@ -124,7 +116,7 @@ impl BtAction<AiBlackboard, Orders> for GrabByChainGadget {
             return Orders::default();
         };
         let held = (bb.now() - grab.since) as f32;
-        let button = if magnet.candidate.is_none() || held < HOLD_MIN { GadgetButton::Hold } else { GadgetButton::Release };
+        let button = if grab_holds(magnet.candidate.is_some(), held) { GadgetButton::Hold } else { GadgetButton::Release };
         // `ToGoWorld(cargo.Position, ScanDistance)`, `SafeNormalize`d.
         let aim = (cargo.pos - bb.pos).normalize_or_zero();
         Orders { gadget: Some(button), gadget_dir: Some(aim), aim_dir: Some(aim), ..Orders::default() }
@@ -173,7 +165,7 @@ impl BtAction<AiBlackboard, Orders> for DropByChainGadget {
             return Orders::default();
         };
         let held = (bb.now() - drop.since) as f32;
-        let button = if (!closer_than(at, cargo.pos, cargo.radius + radius) || held < HOLD_MIN) && held < HOLD_MAX {
+        let button = if drop_holds(closer_than(at, cargo.pos, cargo.radius + radius), held) {
             GadgetButton::Hold
         } else {
             GadgetButton::Release

@@ -17,7 +17,8 @@
 //! `--controls classic|smart` picks the touch scheme for the run
 //! (`settings.rs`; not saved); with Smart, `--lock-nearest` locks the
 //! nearest enemy a second into the play, as a tap on it would (for
-//! screenshots; see `assist`).
+//! screenshots; see `assist`); `--grab-nearest` does the same for the
+//! nearest box the magnet can take (`Grab`).
 //! `--size WxH` sets the window size (default 1280x720; e.g. 720x1280 to
 //! try portrait). `--glow X` sets how strongly the additive (HDR) light is
 //! added (default 3; `[` and `]` turn it while playing). `--flash X` sets
@@ -74,6 +75,7 @@ struct Args {
     no_music: bool,
     controls: Option<tilerider::settings::ControlScheme>,
     lock_nearest: bool,
+    grab_nearest: bool,
 }
 
 /// The command line, or the page's URL parameters in the browser.
@@ -98,7 +100,7 @@ mod web {
     }
 
     /// Options the browser build accepts, as URL parameters.
-    const WEB_OPTIONS: &[&str] = &["map", "menu", "tab", "start", "car", "drive", "glow", "flash", "lang", "nav", "no-music", "controls", "lock-nearest"];
+    const WEB_OPTIONS: &[&str] = &["map", "menu", "tab", "start", "car", "drive", "glow", "flash", "lang", "nav", "no-music", "controls", "lock-nearest", "grab-nearest"];
 
     /// `?map=Middleware&start=84,9.5` → `["--map", "Middleware", "--start", "84,9.5"]`.
     pub fn url_args() -> Vec<String> {
@@ -160,6 +162,7 @@ fn parse_args() -> Args {
     let mut no_music = false;
     let mut controls = None;
     let mut lock_nearest = false;
+    let mut grab_nearest = false;
     let mut shot: Option<ScreenshotRequest> = None;
     let mut frames = 90;
     let mut args = raw_args().into_iter();
@@ -229,6 +232,7 @@ fn parse_args() -> Args {
                 })
             }
             "--lock-nearest" => lock_nearest = true,
+            "--grab-nearest" => grab_nearest = true,
             "--frames" => frames = args.next().and_then(|v| v.parse().ok()).unwrap_or(frames),
             _ => {}
         }
@@ -263,6 +267,7 @@ fn parse_args() -> Args {
         no_music,
         controls,
         lock_nearest,
+        grab_nearest,
     }
 }
 
@@ -294,6 +299,31 @@ fn lock_nearest_enemy(
     }
 }
 
+/// `--grab-nearest`: a second into the play, what a tap on the nearest thing
+/// the magnet can take does (a testing aid for screenshots).
+#[allow(clippy::type_complexity)]
+fn grab_nearest_thing(
+    time: Res<Time>,
+    mut done: Local<bool>,
+    mut commands: MessageWriter<tilerider::assist::Commanded>,
+    players: Query<(Entity, &avian2d::prelude::Position), (With<tilerider::controls::LocalPlayer>, With<tilerider::assist::Assist>, With<tilerider::gadget::Magnet>)>,
+    things: Query<(Entity, &avian2d::prelude::Position), (With<tilerider::gadget::Linkable>, Without<tilerider::car::control::Team>)>,
+) {
+    if *done || time.elapsed_secs() < 1.0 {
+        return;
+    }
+    for (car, at) in &players {
+        let nearest = things
+            .iter()
+            .filter(|(e, _)| *e != car)
+            .min_by(|a, b| a.1.0.distance_squared(at.0).total_cmp(&b.1.0.distance_squared(at.0)));
+        if let Some((thing, _)) = nearest {
+            commands.write(tilerider::assist::Commanded { car, command: tilerider::assist::PlayerCommand::Grab(thing) });
+            *done = true;
+        }
+    }
+}
+
 fn main() {
     let Args {
         map,
@@ -313,6 +343,7 @@ fn main() {
         no_music,
         controls,
         lock_nearest,
+        grab_nearest,
     } = parse_args();
     let mut app = App::new();
     app.add_plugins(
@@ -365,6 +396,9 @@ fn main() {
             Update,
             lock_nearest_enemy.run_if(in_state(GameState::Playing)),
         );
+    }
+    if grab_nearest {
+        app.add_systems(Update, grab_nearest_thing.run_if(in_state(GameState::Playing)));
     }
     if nav {
         app.init_resource::<tilerider::ai::navigation::NavDebug>();
