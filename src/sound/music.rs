@@ -160,11 +160,6 @@ impl Jukebox {
         self.levels[slot(kind)?].as_deref()
     }
 
-    /// The three songs the maps have named, to load.
-    pub fn level_tracks(&self) -> impl Iterator<Item = &str> {
-        self.levels.iter().flatten().map(String::as_str)
-    }
-
     /// The song that is playing, with whether it repeats, even while it
     /// fades out.
     pub fn playing(&self) -> Option<(&str, bool)> {
