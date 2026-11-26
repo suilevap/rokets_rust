@@ -70,10 +70,12 @@
 //! player's, would make (an AI car here, held for the devices but not
 //! driven by them; C# gave it the devices and the player's gun preset; no
 //! map has one); the death of a `NoneLocal` AI car the way of the
-//! player's (C#'s `GameModeSinglePlayer` asked `LocalDevice`, so it
-//! restarted the level or spent a life and came back; here it is wrecked
-//! as an AI car is: `CoverMap`, `EditorTest` and `Revenge` have one, none
-//! of them gets killed in play); the player's car, `Local` or not, stays
+//! player's while it is still `NoneLocal` (C#'s `GameModeSinglePlayer`
+//! asked `LocalDevice`, so it restarted the level or spent a life and came
+//! back; here it is wrecked as an AI car is: `CoverMap`, `EditorTest` and
+//! `Revenge` have one, none of them gets killed in play; once
+//! `SetControl(id,Local)` hands it the devices ([`crate::actions`]'s
+//! `control`) it dies the player's way); the player's car, `Local` or not, stays
 //! dynamic when its car cannot move (2WeeksAgo's `TurretLoaderStat`, as
 //! before); the repair of a `Car` (`Car.RepairUpdate`: a point a second
 //! and the damaged smoke under half health; not the player's either);
@@ -377,6 +379,32 @@ pub fn spawn_local_car(
     let (position, heading) = at.unwrap_or((map.world(player.position.x, player.position.y), None));
     let angle = heading.unwrap_or_else(|| map_degrees_to_world(player.direction_deg));
     spawn_player(commands, map, quad, materials, player, player.id, position, angle, Role::Player)
+}
+
+/// The player's car coming back at `at` (world point and heading): the one
+/// that died, whichever of the map's cars it was (`Car.Respawn` brings the
+/// same car back; `SetControl(id,Local)` may have made it the player's),
+/// else the map's own ([`spawn_local_car`]). A `Players` car that was not
+/// the map's own player comes back as the player's `Car` with the `Local`
+/// control.
+pub fn respawn_car(
+    commands: &mut Commands,
+    map: &LoadedMap,
+    quad: &UnitQuad,
+    materials: &mut Assets<StandardMaterial>,
+    id: Option<i64>,
+    at: (Vec2, f32),
+) -> Option<Entity> {
+    let own = local_simple_car(&map.data).map(|c| c.id).or_else(|| local_player(&map.data).map(|p| p.id));
+    let handed = id
+        .filter(|id| Some(*id) != own)
+        .and_then(|id| map.data.players.items.iter().find(|p| p.id == id && !p.is_prototype));
+    let Some(data) = handed else {
+        return spawn_local_car(commands, map, quad, materials, Some((at.0, Some(at.1))));
+    };
+    let car = map.cars.get(&data.car_name)?;
+    let spec = CarSpec { id: data.id, car, position: at.0, angle: at.1, control: "Local", weapon: None, role: Role::Player };
+    spawn_car(commands, map, quad, materials, spec)
 }
 
 /// Whose car it is: what it gets beyond the body, the sprite, the health,

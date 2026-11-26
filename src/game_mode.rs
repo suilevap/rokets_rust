@@ -45,7 +45,8 @@ use rand::rngs::SmallRng;
 
 use crate::actions::{AddMapAction, MapIds, Respawned, Run, RunAction};
 use crate::car::smoke::SmokePoints;
-use crate::car::spawn_local_car;
+use crate::car::control::LocalDevice;
+use crate::car::respawn_car;
 use crate::content::actions::defs::{SaveAction, SetRespawnPoint};
 use crate::controls::{LocalPlayer, NoInput, PlayerIntent};
 use crate::explosion::{Destroyed, ExplosionSystems};
@@ -123,6 +124,13 @@ pub struct Wreck {
     kept: Kept,
 }
 
+/// A wreck of a car the player's devices were taken from before it came
+/// back (`SetControl(id,Local)` on another car, [`crate::actions`]'s
+/// hand-over): it neither restarts the level nor comes back, the new local
+/// car's death is the player's now.
+#[derive(Component, Debug, Clone, Copy, Default)]
+pub struct Abandoned;
+
 /// The gun and gadget a car died with (C#'s `Car.Respawn` brings back the
 /// same car, so what a `SetWeapon` gave it stays).
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
@@ -172,7 +180,7 @@ fn wreck_cars(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut particles: ResMut<Particles>,
     mut rng: ResMut<WreckRng>,
-    cars: Query<(&Wreckable, &Transform, Option<&Children>, Option<&MapId>), (With<LocalPlayer>, Without<Wreck>)>,
+    cars: Query<(&Wreckable, &Transform, Option<&Children>, Option<&MapId>), (With<LocalPlayer>, With<LocalDevice>, Without<Wreck>)>,
     carried: Query<(Option<&crate::weapon::Weapon>, Has<crate::gadget::Magnet>, Has<crate::gadget::accelerator::Accelerator>)>,
 ) {
     let rng = &mut rng.0;
@@ -291,7 +299,7 @@ fn save(
 fn restart_after_wreck(
     mut commands: Commands,
     time: Res<Time>,
-    mut wrecks: Query<(Entity, &mut Wreck, &Transform, Has<NoInput>, Option<&crate::car::Mounts>)>,
+    mut wrecks: Query<(Entity, &mut Wreck, &Transform, Has<NoInput>, Option<&crate::car::Mounts>), Without<Abandoned>>,
     mut respawn: ResMut<Respawn>,
     (map, quad): (Res<LoadedMap>, Res<UnitQuad>),
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -318,7 +326,7 @@ fn restart_after_wreck(
                 for t in targets.iter().filter(|&t| t != e) {
                     commands.entity(t).try_insert(Unfocused);
                 }
-                if let Some(car) = spawn_local_car(&mut commands, &map, &quad, &mut materials, Some((at, Some(heading)))) {
+                if let Some(car) = respawn_car(&mut commands, &map, &quad, &mut materials, wreck.id, (at, heading)) {
                     // It comes back driven as it was (C# kept its control).
                     commands.entity(car).insert(Respawned);
                     if !no_input {

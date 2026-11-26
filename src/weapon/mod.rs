@@ -324,6 +324,18 @@ impl Weapon {
         }
     }
 
+    /// `SetLocalControlPreferences` / `UnSetLocalControlPreferences`: the
+    /// aim of a gun on a car the player's devices drive turns faster (9, not
+    /// 4) and all the way round, a fresh ease as C# made (`new
+    /// HardasticAngle(0, k)`). The gun's options are not touched: they were
+    /// chosen when it was made.
+    pub fn set_local_preferences(&mut self, local: bool) {
+        if self.aim.local != local {
+            self.aim.local = local;
+            self.aim.angle = model::Ease::new(0.0, if local { 9.0 } else { 4.0 });
+        }
+    }
+
     /// How the aim line looks now (`UpdateLaser`); asking the energy sets
     /// its last-asked mark, as in C#.
     pub fn aim_look(&self, energy: Option<&mut Energy>) -> AimLook {
