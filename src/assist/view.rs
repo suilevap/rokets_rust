@@ -7,7 +7,8 @@
 //! the gun is going to point. One marker entity does for the player's car; it
 //! lives with the map. The magnet's job has its own green ring, on the thing
 //! to grab or at the point to drop it (fainter while it waits for the car to
-//! come in reach).
+//! come in reach); the same ring closes on the player's own car while a
+//! boost holds the accelerator's button.
 
 use bevy::prelude::*;
 use avian2d::prelude::{Collider, Position};
@@ -114,7 +115,16 @@ fn show_marker(
 
 /// Where the magnet's job is shown: the middle and diameter of the ring, and
 /// its opacity.
-fn cargo_ring(assist: &Assist, things: &Query<(&Position, Option<&Collider>, Option<&CarRadius>)>) -> Option<(Vec2, f32, f32)> {
+fn cargo_ring(
+    car: Entity,
+    assist: &Assist,
+    things: &Query<(&Position, Option<&Collider>, Option<&CarRadius>)>,
+) -> Option<(Vec2, f32, f32)> {
+    // A boost in hand: the ring on the player's own car.
+    if assist.boost.is_some() {
+        let (at, _, radius) = things.get(car).ok()?;
+        return Some((at.0, radius.map_or(DEFAULT_CARGO, |r| r.0) * 2.0 * CARGO_SIZE, CARGO_ALPHA));
+    }
     let handling = assist.cargo?;
     let alpha = if handling.phase == Phase::Waiting { CARGO_WAITING_ALPHA } else { CARGO_ALPHA };
     match handling.job {
@@ -134,11 +144,11 @@ fn show_cargo_marker(
     map: Res<LoadedMap>,
     quad: Res<UnitQuad>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    players: Query<&Assist, With<LocalPlayer>>,
+    players: Query<(Entity, &Assist), With<LocalPlayer>>,
     things: Query<(&Position, Option<&Collider>, Option<&CarRadius>)>,
     mut markers: Query<(&mut Transform, &mut Visibility, &mut SpriteTint), With<CargoMarker>>,
 ) {
-    let ring = players.iter().find_map(|a| cargo_ring(a, &things));
+    let ring = players.iter().find_map(|(car, a)| cargo_ring(car, a, &things));
     let Some((mut transform, mut visibility, mut tint)) = markers.iter_mut().next() else {
         if ring.is_some()
             && let Some(info) = map.sprites.get(RING)

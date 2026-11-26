@@ -18,7 +18,8 @@
 //! (`settings.rs`; not saved); with Smart, `--lock-nearest` locks the
 //! nearest enemy a second into the play, as a tap on it would (for
 //! screenshots; see `assist`); `--grab-nearest` does the same for the
-//! nearest box the magnet can take (`Grab`).
+//! nearest box the magnet can take (`Grab`), `--boost-now` uses the
+//! accelerator (`Boost`).
 //! `--size WxH` sets the window size (default 1280x720; e.g. 720x1280 to
 //! try portrait). `--glow X` sets how strongly the additive (HDR) light is
 //! added (default 3; `[` and `]` turn it while playing). `--flash X` sets
@@ -76,6 +77,7 @@ struct Args {
     controls: Option<tilerider::settings::ControlScheme>,
     lock_nearest: bool,
     grab_nearest: bool,
+    boost_now: bool,
 }
 
 /// The command line, or the page's URL parameters in the browser.
@@ -100,7 +102,7 @@ mod web {
     }
 
     /// Options the browser build accepts, as URL parameters.
-    const WEB_OPTIONS: &[&str] = &["map", "menu", "tab", "start", "car", "drive", "glow", "flash", "lang", "nav", "no-music", "controls", "lock-nearest", "grab-nearest"];
+    const WEB_OPTIONS: &[&str] = &["map", "menu", "tab", "start", "car", "drive", "glow", "flash", "lang", "nav", "no-music", "controls", "lock-nearest", "grab-nearest", "boost-now"];
 
     /// `?map=Middleware&start=84,9.5` → `["--map", "Middleware", "--start", "84,9.5"]`.
     pub fn url_args() -> Vec<String> {
@@ -163,6 +165,7 @@ fn parse_args() -> Args {
     let mut controls = None;
     let mut lock_nearest = false;
     let mut grab_nearest = false;
+    let mut boost_now = false;
     let mut shot: Option<ScreenshotRequest> = None;
     let mut frames = 90;
     let mut args = raw_args().into_iter();
@@ -233,6 +236,7 @@ fn parse_args() -> Args {
             }
             "--lock-nearest" => lock_nearest = true,
             "--grab-nearest" => grab_nearest = true,
+            "--boost-now" => boost_now = true,
             "--frames" => frames = args.next().and_then(|v| v.parse().ok()).unwrap_or(frames),
             _ => {}
         }
@@ -268,6 +272,7 @@ fn parse_args() -> Args {
         controls,
         lock_nearest,
         grab_nearest,
+        boost_now,
     }
 }
 
@@ -324,6 +329,23 @@ fn grab_nearest_thing(
     }
 }
 
+/// `--boost-now`: a second into the play, what a tap on the player's own car
+/// does (a testing aid for screenshots and headless runs).
+fn boost_once(
+    time: Res<Time>,
+    mut done: Local<bool>,
+    mut commands: MessageWriter<tilerider::assist::Commanded>,
+    players: Query<Entity, (With<tilerider::controls::LocalPlayer>, With<tilerider::assist::Assist>)>,
+) {
+    if *done || time.elapsed_secs() < 1.0 {
+        return;
+    }
+    for car in &players {
+        commands.write(tilerider::assist::Commanded { car, command: tilerider::assist::PlayerCommand::Boost });
+        *done = true;
+    }
+}
+
 fn main() {
     let Args {
         map,
@@ -344,6 +366,7 @@ fn main() {
         controls,
         lock_nearest,
         grab_nearest,
+        boost_now,
     } = parse_args();
     let mut app = App::new();
     app.add_plugins(
@@ -399,6 +422,9 @@ fn main() {
     }
     if grab_nearest {
         app.add_systems(Update, grab_nearest_thing.run_if(in_state(GameState::Playing)));
+    }
+    if boost_now {
+        app.add_systems(Update, boost_once.run_if(in_state(GameState::Playing)));
     }
     if nav {
         app.init_resource::<tilerider::ai::navigation::NavDebug>();
