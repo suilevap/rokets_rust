@@ -150,6 +150,8 @@ fn sprites_for(map: &MapData, cars: &CarCatalog, registry: &crate::actions::Acti
             names.extend(registry.sprites_of_text(text));
         }
     }
+    // The hints' pictures and the speck of the burst they leave.
+    names.extend(crate::hint::sprites_of(&map.hints.items));
     // Shadows of cars and loose objects (`render/shadow`).
     names.extend(["Gradient4Pixel", "Gradient4PixelUniform"].map(String::from));
     names.extend(crate::particles::styles::TEXTURES.map(String::from));

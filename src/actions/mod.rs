@@ -68,7 +68,7 @@ pub use conserve_speed::ConserveMaxReachedSpeed;
 pub use clone::{CloneOf, along, source_id};
 pub use path::{Leg, legs, offset, uv};
 pub use camera_path::stop_camera_path;
-pub use entity::Inactive;
+pub use entity::{Activation, Inactive, OwnActivation};
 pub use highlight::ControlHighlight;
 pub use lifecycle::{OnDestroy, Respawned, destroy_action};
 pub use map_effect::MapEffectAmount;
