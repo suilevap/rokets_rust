@@ -139,8 +139,8 @@ fn steer(
     }
 }
 
-/// The level's songs, loaded when a map names them (the web build fetches
-/// only the songs the map in play uses), and the player of the one playing.
+/// The songs asked for so far, loaded the first time one is played (the web
+/// build fetches only the songs that play), and the player of the one playing.
 #[derive(Resource, Default)]
 struct Songs {
     /// By the song's name.
@@ -154,22 +154,13 @@ pub struct MusicPlaybackPlugin;
 impl Plugin for MusicPlaybackPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Songs>()
-            .add_systems(Update, (load_songs, play_music).chain().after(send_cues));
-    }
-}
-
-fn load_songs(jukebox: Res<Jukebox>, server: Res<AssetServer>, mut songs: ResMut<Songs>) {
-    for name in jukebox.level_tracks() {
-        if songs.clips.contains_key(name) {
-            continue;
-        }
-        let clip = server.load(crate::assets::music_path(name));
-        songs.clips.insert(name.to_string(), clip);
+            .add_systems(Update, play_music.after(send_cues));
     }
 }
 
 fn play_music(
     mut commands: Commands,
+    server: Res<AssetServer>,
     mut cues: MessageReader<MusicCue>,
     mut songs: ResMut<Songs>,
     mut jukebox: ResMut<Jukebox>,
@@ -182,15 +173,18 @@ fn play_music(
         let MusicCue::Play { track, looped } = cue else {
             continue;
         };
-        let Some(clip) = songs.clips.get(track) else {
-            // A song that cannot play is a song that has ended.
-            jukebox.song_ended();
-            continue;
-        };
+        // A song is fetched when it is asked for, not when a map names it:
+        // the browser then downloads only the songs that play (about a
+        // megabyte each), and the player waits for the file to arrive.
+        let clip = songs
+            .clips
+            .entry(track.clone())
+            .or_insert_with(|| server.load(crate::assets::music_path(track)))
+            .clone();
         let player = commands
             .spawn((
                 Name::new(format!("Music {track}")),
-                AudioPlayer::new(clip.clone()),
+                AudioPlayer::new(clip),
                 PlaybackSettings {
                     mode: if *looped { PlaybackMode::Loop } else { PlaybackMode::Once },
                     volume: Volume::Linear(jukebox.volume()),
