@@ -56,11 +56,18 @@
 //! controls behave as before. [`sync_assist`] adds it to, or takes it from,
 //! the player's car as the settings say.
 //!
+//! - **Magnet** ([`magnet`]): [`PlayerCommand::Grab`] and
+//!   [`PlayerCommand::DropAt`] become a job that drives the gadget's button
+//!   and aim over several frames, with the enemies' own timings
+//!   ([`crate::gadget::handling`]); out of reach it waits, shown by its
+//!   marker, for the player to drive in range.
+//!
 //! # Not built yet
 //!
-//! `Grab`, `DropAt`, `Boost`, `GoTo` and the taps for them: see
+//! `Boost`, `GoTo` and the taps for them: see
 //! `docs/plans/SMART_CONTROLS.md`.
 
+pub mod magnet;
 pub mod tap;
 pub mod view;
 
@@ -71,6 +78,7 @@ use crate::car::CarRadius;
 use crate::car::control::{AutoAimVisible, Team};
 use crate::controls::{DeviceSystems, LocalPlayer, NoInput, PlayerIntent, reach};
 use crate::explosion::Health;
+use crate::gadget::{Linkable, Magnet};
 use crate::render::camera::MainCamera;
 use crate::settings::{ControlScheme, Settings};
 use crate::weapon::aim_help::in_view;
@@ -92,6 +100,17 @@ pub enum PlayerCommand {
     LockTarget(Entity),
     /// Let the lock go.
     ClearTarget,
+    /// Take this thing (a box, a car, a moving gear: whatever is
+    /// [`Linkable`]) on the magnet's rope: drive the gadget's button until
+    /// it is linked. Pending while the thing is out of reach. Ignored
+    /// without a magnet, while something else is on the rope, or for a thing
+    /// the magnet cannot take.
+    Grab(Entity),
+    /// Let the cargo on the rope go over this point (world). Pending while
+    /// the point is out of reach. Ignored with nothing on the rope.
+    DropAt(Vec2),
+    /// Give up the grab or drop in hand (what is on the rope stays).
+    CancelCargo,
 }
 
 /// A [`PlayerCommand`] for a car (the one with an [`Assist`]).
@@ -120,13 +139,18 @@ pub struct Assist {
     pub auto_aim: bool,
     /// Fire at the target (`Settings::auto_fire`).
     pub auto_fire: bool,
+    /// The grab or drop with the magnet in hand ([`magnet`]).
+    pub cargo: Option<magnet::Handling>,
+    /// The gadget is to be cancelled by the next [`magnet::assist_cargo`]
+    /// (a job was replaced or given up while the button was in its hand).
+    cancel_gadget: bool,
     /// Seconds to the next accurate-shot pulse.
     pulse: f32,
 }
 
 impl Default for Assist {
     fn default() -> Self {
-        Assist { lock: None, soft: None, auto_aim: true, auto_fire: true, pulse: 0.0 }
+        Assist { lock: None, soft: None, auto_aim: true, auto_fire: true, cargo: None, cancel_gadget: false, pulse: 0.0 }
     }
 }
 
@@ -148,7 +172,7 @@ impl Plugin for AssistPlugin {
     fn build(&self, app: &mut App) {
         app.add_message::<Tapped>().add_message::<Commanded>().add_systems(
             PreUpdate,
-            (sync_assist, resolve_taps, apply_commands, assist_drive)
+            (sync_assist, resolve_taps, apply_commands, assist_drive, magnet::assist_cargo)
                 .chain()
                 .in_set(AssistSystems)
                 .after(DeviceSystems)
@@ -212,41 +236,81 @@ fn assist_from(settings: Option<&Settings>) -> Assist {
     settings.map_or_else(Assist::default, |s| Assist { auto_aim: s.auto_aim, auto_fire: s.auto_fire, ..Assist::default() })
 }
 
-/// Layer 1: a tap on the ground is a command by what stands there. An
-/// enemy within [`tap::TAP_PICK_RADIUS`] of it is locked (the nearest one);
-/// empty ground lets the lock go. (Later steps give a box a grab and the
-/// ground a drop when something is towed; see the plan.)
+/// Layer 1: a tap on the ground is a command by what stands there. The
+/// nearest of what is within [`tap::TAP_PICK_RADIUS`] of it wins
+/// ([`tap::tap_pick`]; an enemy before a thing of the same distance):
+///
+/// - an enemy (alive, of another team, visible): `LockTarget`. A live enemy
+///   car is never grabbed by a tap, even where the magnet could take it:
+///   the finger on a car in a fight means the gun;
+/// - with a magnet, a [`Linkable`] thing that is no enemy (a box, an ally, a
+///   wreck): `Grab`, unless something is on the rope already (that is a
+///   drop, below);
+/// - otherwise empty ground: with something on the rope `DropAt` the tap;
+///   with none the lock is cleared (`ClearTarget`), and a grab still
+///   pending is given up (`CancelCargo`). A tap on a box or the cargo itself
+///   while towing is a drop at the tap too.
 #[allow(clippy::type_complexity)]
 pub fn resolve_taps(
     mut taps: MessageReader<Tapped>,
     mut commands: MessageWriter<Commanded>,
-    players: Query<(Entity, &Team), (With<LocalPlayer>, With<Assist>)>,
+    players: Query<(Entity, &Team, &Assist, Option<&Magnet>), With<LocalPlayer>>,
     cars: Cars,
+    linkable: Query<(Entity, &Position, Option<&Team>, Option<&Health>), With<Linkable>>,
 ) {
     for tap in taps.read() {
-        for (car, team) in &players {
+        for (car, team, assist, magnet) in &players {
+            let towing = magnet.is_some_and(|m| m.towing().is_some());
             let enemies = cars
                 .iter()
                 .filter(|(_, other, _, visible, _, health, _)| is_enemy(team, other, health) && visible.0)
                 .map(|(entity, _, at, ..)| (entity, at.0));
-            let command = match tap::tap_target(enemies, tap.ground, tap::TAP_PICK_RADIUS) {
-                Some(enemy) => PlayerCommand::LockTarget(enemy),
-                None => PlayerCommand::ClearTarget,
+            // What the magnet could take, leaving out the player's own car
+            // and every live car of another team.
+            let things = linkable
+                .iter()
+                .filter(|(entity, _, other, health)| {
+                    magnet.is_some() && *entity != car && !other.zip(*health).is_some_and(|(o, h)| is_enemy(team, o, h))
+                })
+                .map(|(entity, at, ..)| (entity, at.0));
+            let pick = tap::tap_pick(enemies, things, tap.ground, tap::TAP_PICK_RADIUS);
+            let mut write = |command| {
+                commands.write(Commanded { car, command });
             };
-            commands.write(Commanded { car, command });
+            match pick {
+                tap::Pick::Enemy(enemy) => write(PlayerCommand::LockTarget(enemy)),
+                _ if towing => write(PlayerCommand::DropAt(tap.ground)),
+                tap::Pick::Thing(thing) => write(PlayerCommand::Grab(thing)),
+                tap::Pick::None => {
+                    write(PlayerCommand::ClearTarget);
+                    if assist.cargo.is_some() {
+                        write(PlayerCommand::CancelCargo);
+                    }
+                }
+            }
         }
     }
 }
 
 /// Carries out the commands on the cars' assists.
+#[allow(clippy::type_complexity)]
 pub fn apply_commands(
     mut commands: MessageReader<Commanded>,
-    mut assists: Query<(&mut Assist, &Team)>,
+    mut assists: Query<(&mut Assist, &Team, Option<&Magnet>)>,
     cars: Query<(&Team, &Health)>,
+    linkable: Query<(), With<Linkable>>,
 ) {
     for Commanded { car, command } in commands.read() {
-        let Ok((mut assist, team)) = assists.get_mut(*car) else {
+        let Ok((mut assist, team, magnet)) = assists.get_mut(*car) else {
             continue;
+        };
+        // A new job takes the place of the old; a button in the assist's
+        // hand is cancelled first.
+        let set_job = |assist: &mut Assist, job: Option<magnet::Job>| {
+            if assist.cargo.is_some_and(|h| h.engaged()) {
+                assist.cancel_gadget = true;
+            }
+            assist.cargo = job.map(magnet::Handling::new);
         };
         match *command {
             PlayerCommand::LockTarget(enemy) => {
@@ -256,6 +320,23 @@ pub fn apply_commands(
                 }
             }
             PlayerCommand::ClearTarget => assist.lock = None,
+            PlayerCommand::Grab(thing) => {
+                if let Some(m) = magnet
+                    && m.towing().is_none()
+                    && thing != *car
+                    && linkable.contains(thing)
+                {
+                    debug!("assist: grab {thing:?}");
+                    set_job(&mut assist, Some(magnet::Job::Grab(thing)));
+                }
+            }
+            PlayerCommand::DropAt(at) => {
+                if magnet.is_some_and(|m| m.towing().is_some()) {
+                    debug!("assist: drop at {at:?}");
+                    set_job(&mut assist, Some(magnet::Job::Drop(at)));
+                }
+            }
+            PlayerCommand::CancelCargo => set_job(&mut assist, None),
         }
     }
 }

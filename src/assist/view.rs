@@ -5,12 +5,15 @@
 //! world. A locked target gets a bright one; the soft target, picked for
 //! the player while nothing is locked, a faint one, so it can be seen where
 //! the gun is going to point. One marker entity does for the player's car; it
-//! lives with the map.
+//! lives with the map. The magnet's job has its own green ring, on the thing
+//! to grab or at the point to drop it (fainter while it waits for the car to
+//! come in reach).
 
 use bevy::prelude::*;
-use avian2d::prelude::Position;
+use avian2d::prelude::{Collider, Position};
 
 use super::Assist;
+use super::magnet::{Job, Phase};
 use crate::car::CarRadius;
 use crate::controls::LocalPlayer;
 use crate::game::{GameState, LoadedMap, MapEntity};
@@ -32,14 +35,32 @@ pub fn textures() -> [&'static str; 1] {
     [RING]
 }
 
+/// The magnet job's ring colour (green, against the lock's red) and its
+/// opacity waiting for the car to come in reach and when the button is in
+/// the assist's hand.
+const CARGO_COLOR: [f32; 4] = [0.2, 1.0, 0.3, 0.0];
+const CARGO_WAITING_ALPHA: f32 = 0.45;
+const CARGO_ALPHA: f32 = 0.9;
+/// The ring at a drop point, in units across.
+const DROP_DIAMETER: f32 = 1.4;
+/// The ring on a grab target, in the target's sizes, and its size when the
+/// target has none.
+const CARGO_SIZE: f32 = 1.5;
+const DEFAULT_CARGO: f32 = 0.5;
+
 #[derive(Component)]
 struct LockMarker;
+
+/// The ring of the magnet's job: on what is to be grabbed, or at the point
+/// the cargo is to be dropped.
+#[derive(Component)]
+struct CargoMarker;
 
 pub struct AssistViewPlugin;
 
 impl Plugin for AssistViewPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, show_marker.run_if(in_state(GameState::Playing)));
+        app.add_systems(Update, (show_marker, show_cargo_marker).run_if(in_state(GameState::Playing)));
     }
 }
 
@@ -81,6 +102,63 @@ fn show_marker(
             let diameter = radius * 2.0 * SIZE;
             transform.translation = at.extend(Layer::Hint.z());
             transform.rotation = Quat::from_rotation_z(-time.elapsed_secs() * TURNS * std::f32::consts::TAU);
+            transform.scale = Vec3::new(diameter, diameter, 1.0);
+            tint.color[3] = alpha;
+            visibility.set_if_neq(Visibility::Inherited);
+        }
+        None => {
+            visibility.set_if_neq(Visibility::Hidden);
+        }
+    }
+}
+
+/// Where the magnet's job is shown: the middle and diameter of the ring, and
+/// its opacity.
+fn cargo_ring(assist: &Assist, things: &Query<(&Position, Option<&Collider>, Option<&CarRadius>)>) -> Option<(Vec2, f32, f32)> {
+    let handling = assist.cargo?;
+    let alpha = if handling.phase == Phase::Waiting { CARGO_WAITING_ALPHA } else { CARGO_ALPHA };
+    match handling.job {
+        Job::Drop(at) => Some((at, DROP_DIAMETER, alpha)),
+        Job::Grab(thing) => {
+            let (at, collider, car) = things.get(thing).ok()?;
+            let radius = car.map(|c| c.0).or_else(|| collider.map(|c| c.shape_scaled().compute_local_aabb().half_extents().max_element())).unwrap_or(DEFAULT_CARGO);
+            Some((at.0, radius * 2.0 * CARGO_SIZE, alpha))
+        }
+    }
+}
+
+#[allow(clippy::type_complexity, clippy::too_many_arguments)]
+fn show_cargo_marker(
+    mut commands: Commands,
+    time: Res<Time>,
+    map: Res<LoadedMap>,
+    quad: Res<UnitQuad>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+    players: Query<&Assist, With<LocalPlayer>>,
+    things: Query<(&Position, Option<&Collider>, Option<&CarRadius>)>,
+    mut markers: Query<(&mut Transform, &mut Visibility, &mut SpriteTint), With<CargoMarker>>,
+) {
+    let ring = players.iter().find_map(|a| cargo_ring(a, &things));
+    let Some((mut transform, mut visibility, mut tint)) = markers.iter_mut().next() else {
+        if ring.is_some()
+            && let Some(info) = map.sprites.get(RING)
+        {
+            debug!("assist: cargo marker made");
+            let tint = SpriteTint { color: CARGO_COLOR, lit: false };
+            commands.spawn((
+                Name::new("Cargo marker"),
+                MapEntity,
+                CargoMarker,
+                Visibility::Hidden,
+                sprite_bundle(info, 1.0, Layer::Hint, tint, &quad, &mut materials),
+            ));
+        }
+        return;
+    };
+    match ring {
+        Some((at, diameter, alpha)) => {
+            transform.translation = at.extend(Layer::Hint.z());
+            transform.rotation = Quat::from_rotation_z(time.elapsed_secs() * TURNS * std::f32::consts::TAU);
             transform.scale = Vec3::new(diameter, diameter, 1.0);
             tint.color[3] = alpha;
             visibility.set_if_neq(Visibility::Inherited);

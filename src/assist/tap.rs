@@ -65,6 +65,44 @@ pub fn tap_target(enemies: impl IntoIterator<Item = (Entity, Vec2)>, at: Vec2, r
     best.map(|b| b.1)
 }
 
+/// What a tap on the ground points at.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Pick {
+    /// An enemy: lock it.
+    Enemy(Entity),
+    /// A thing the magnet could take.
+    Thing(Entity),
+    None,
+}
+
+/// What a tap at `at` points at: the nearest of the `enemies` and the
+/// `things` (entity and middle each; the caller has left out what does not
+/// count) within `radius`. Where an enemy and a thing are equally near, the
+/// enemy: the gun first.
+pub fn tap_pick(
+    enemies: impl IntoIterator<Item = (Entity, Vec2)>,
+    things: impl IntoIterator<Item = (Entity, Vec2)>,
+    at: Vec2,
+    radius: f32,
+) -> Pick {
+    let nearest = |items: &mut dyn Iterator<Item = (Entity, Vec2)>| {
+        let mut best: Option<(f32, Entity)> = None;
+        for (entity, middle) in items {
+            let d = middle.distance_squared(at);
+            if d <= radius * radius && best.is_none_or(|b| d < b.0) {
+                best = Some((d, entity));
+            }
+        }
+        best
+    };
+    match (nearest(&mut enemies.into_iter()), nearest(&mut things.into_iter())) {
+        (Some(e), Some(t)) if t.0 < e.0 => Pick::Thing(t.1),
+        (Some(e), _) => Pick::Enemy(e.1),
+        (None, Some(t)) => Pick::Thing(t.1),
+        (None, None) => Pick::None,
+    }
+}
+
 /// A press being watched: where and when it went down.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Press {
