@@ -40,7 +40,9 @@ use bevy::math::Vec2;
 use flatbt::BtAction;
 
 use crate::ai::blackboard::AiBlackboard;
+use crate::ai::navigation::Navigation;
 use crate::ai::orders::Orders;
+use crate::map::nav::{Blocker, NavPath};
 
 /// What a position function reads off the blackboard, and may pick at
 /// random from (`positionFunc`: `GetRandomNodePosition`,
@@ -79,13 +81,18 @@ impl Default for MoveParams {
     }
 }
 
+/// `MoveBase.PathComplete` over plain values (shared with the player's
+/// `GoTo`, `assist::goto`): the carrot is at the end of the open `path` and
+/// the car at `pos` is within its `radius` of it, or the car is within its
+/// radius plus `min_dist` of the `target` it goes to.
+pub fn arrived(path: Option<&NavPath>, pos: Vec2, target: Vec2, radius: f32, min_dist: f32) -> bool {
+    let at_the_end = path.is_some_and(|p| p.is_end() && closer_than(pos, p.current_position(), radius));
+    at_the_end || closer_than(pos, target, radius + min_dist)
+}
+
 /// `MoveBase.PathComplete`.
 fn path_complete(bb: &AiBlackboard, params: MoveParams) -> bool {
-    let at_the_end = bb
-        .path
-        .as_ref()
-        .is_some_and(|p| p.is_end() && closer_than(bb.pos, p.current_position(), bb.radius));
-    at_the_end || closer_than(bb.pos, bb.target_position, bb.radius + params.min_dist)
+    arrived(bb.path.as_ref(), bb.pos, bb.target_position, bb.radius, params.min_dist)
 }
 
 /// `MoveBase.IsInProgress`.
@@ -105,20 +112,27 @@ fn in_progress(bb: &AiBlackboard, params: MoveParams) -> bool {
     available && !path_complete(bb, params) && bb.can_move
 }
 
-/// `MoveBase.Tick`.
-fn tick(bb: &mut AiBlackboard, params: MoveParams) -> Orders {
-    let speed = bb.velocity.length();
+/// `MoveBase.Tick`'s steering over plain values (shared with the player's
+/// `GoTo`): the carrot of `path` runs on ahead of a car at `pos` moving at
+/// `velocity` (`step` seconds a frame), and the stick points at it, times
+/// `speed_rate`.
+pub fn follow_stick(path: &mut NavPath, pos: Vec2, velocity: Vec2, step: f32, speed_rate: f32) -> Vec2 {
+    let speed = velocity.length();
     // `speed * ElapsedGameTime.Milliseconds / 1000`: whole milliseconds.
-    let reach = speed * (bb.step * 1000.0).trunc() / 1000.0;
+    let reach = speed * (step * 1000.0).trunc() / 1000.0;
     let d = speed * 1.5;
     let (min_d, max_d) = (1.0 + d / 4.0, 2.0 + d);
-    let pos = bb.pos;
+    path.update(pos, reach, min_d, max_d);
+    to_go_world(pos, path.current_position(), min_d) * speed_rate
+}
+
+/// `MoveBase.Tick`.
+fn tick(bb: &mut AiBlackboard, params: MoveParams) -> Orders {
+    let (pos, velocity, step) = (bb.pos, bb.velocity, bb.step);
     let Some(path) = bb.path.as_mut() else {
         return Orders::default();
     };
-    path.update(pos, reach, min_d, max_d);
-    let stick = to_go_world(pos, path.current_position(), min_d) * params.speed_rate;
-    Orders { move_dir: Some(stick), ..Orders::default() }
+    Orders { move_dir: Some(follow_stick(path, pos, velocity, step, params.speed_rate)), ..Orders::default() }
 }
 
 /// `MoveBase.Complete`: the stick is let go, the path dropped; `Ok` if the car
@@ -138,21 +152,29 @@ pub fn go_to_position(bb: &mut AiBlackboard, pos: Vec2) -> bool {
     if pos == Vec2::ZERO {
         return false;
     }
-    match bb.nav.as_ref().and_then(|nav| nav.get_path(bb.pos, pos)) {
-        Some(path) if path.blockers().is_empty() => {
+    match plan_path(bb.nav.as_ref(), bb.pos, pos) {
+        Ok(path) => {
             bb.path = Some(path);
             bb.target_position = pos;
             bb.path_compute_time = bb.now();
             true
         }
-        Some(path) => {
-            bb.blocker = path.blockers().first().copied().flatten();
+        Err(blocker) => {
+            bb.blocker = blocker;
             false
         }
-        None => {
-            bb.blocker = None;
-            false
-        }
+    }
+}
+
+/// The part of `GoToPosition` that asks the navigation (shared with the
+/// player's `GoTo`): a path from `from` to `to` that nothing blocks, or the
+/// first thing that blocks it (`Err(Some)`, a closed door), or `Err(None)`
+/// for no way at all (or no navigation graph).
+pub fn plan_path(nav: Option<&Navigation>, from: Vec2, to: Vec2) -> Result<NavPath, Option<Blocker>> {
+    match nav.and_then(|nav| nav.get_path(from, to)) {
+        Some(path) if path.blockers().is_empty() => Ok(path),
+        Some(path) => Err(path.blockers().first().copied().flatten()),
+        None => Err(None),
     }
 }
 

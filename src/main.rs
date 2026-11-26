@@ -19,7 +19,7 @@
 //! nearest enemy a second into the play, as a tap on it would (for
 //! screenshots; see `assist`); `--grab-nearest` does the same for the
 //! nearest box the magnet can take (`Grab`), `--boost-now` uses the
-//! accelerator (`Boost`).
+//! accelerator (`Boost`), `--goto X,Y` drives to that map cell (`GoTo`).
 //! `--size WxH` sets the window size (default 1280x720; e.g. 720x1280 to
 //! try portrait). `--glow X` sets how strongly the additive (HDR) light is
 //! added (default 3; `[` and `]` turn it while playing). `--flash X` sets
@@ -78,6 +78,8 @@ struct Args {
     lock_nearest: bool,
     grab_nearest: bool,
     boost_now: bool,
+    /// `--goto`: a map cell, a second into the play.
+    goto: Option<Vec2>,
 }
 
 /// The command line, or the page's URL parameters in the browser.
@@ -102,7 +104,7 @@ mod web {
     }
 
     /// Options the browser build accepts, as URL parameters.
-    const WEB_OPTIONS: &[&str] = &["map", "menu", "tab", "start", "car", "drive", "glow", "flash", "lang", "nav", "no-music", "controls", "lock-nearest", "grab-nearest", "boost-now"];
+    const WEB_OPTIONS: &[&str] = &["map", "menu", "tab", "start", "car", "drive", "glow", "flash", "lang", "nav", "no-music", "controls", "lock-nearest", "grab-nearest", "boost-now", "goto"];
 
     /// `?map=Middleware&start=84,9.5` → `["--map", "Middleware", "--start", "84,9.5"]`.
     pub fn url_args() -> Vec<String> {
@@ -166,6 +168,7 @@ fn parse_args() -> Args {
     let mut lock_nearest = false;
     let mut grab_nearest = false;
     let mut boost_now = false;
+    let mut goto = None;
     let mut shot: Option<ScreenshotRequest> = None;
     let mut frames = 90;
     let mut args = raw_args().into_iter();
@@ -237,6 +240,12 @@ fn parse_args() -> Args {
             "--lock-nearest" => lock_nearest = true,
             "--grab-nearest" => grab_nearest = true,
             "--boost-now" => boost_now = true,
+            "--goto" => {
+                goto = args.next().and_then(|v| {
+                    let (x, y) = v.split_once(',')?;
+                    Some(Vec2::new(x.trim().parse().ok()?, y.trim().parse().ok()?))
+                })
+            }
             "--frames" => frames = args.next().and_then(|v| v.parse().ok()).unwrap_or(frames),
             _ => {}
         }
@@ -273,6 +282,7 @@ fn parse_args() -> Args {
         lock_nearest,
         grab_nearest,
         boost_now,
+        goto,
     }
 }
 
@@ -346,6 +356,29 @@ fn boost_once(
     }
 }
 
+/// `--goto X,Y`: a second into the play, what a double tap on that map cell
+/// does (a testing aid for screenshots and headless runs).
+fn goto_once(
+    time: Res<Time>,
+    map: Res<tilerider::game::LoadedMap>,
+    cell: Res<GotoCell>,
+    mut done: Local<bool>,
+    mut commands: MessageWriter<tilerider::assist::Commanded>,
+    players: Query<Entity, (With<tilerider::controls::LocalPlayer>, With<tilerider::assist::Assist>)>,
+) {
+    if *done || time.elapsed_secs() < 1.0 {
+        return;
+    }
+    for car in &players {
+        let at = map.world(cell.0.x, cell.0.y);
+        commands.write(tilerider::assist::Commanded { car, command: tilerider::assist::PlayerCommand::GoTo(at) });
+        *done = true;
+    }
+}
+
+#[derive(Resource)]
+struct GotoCell(Vec2);
+
 fn main() {
     let Args {
         map,
@@ -367,6 +400,7 @@ fn main() {
         lock_nearest,
         grab_nearest,
         boost_now,
+        goto,
     } = parse_args();
     let mut app = App::new();
     app.add_plugins(
@@ -425,6 +459,10 @@ fn main() {
     }
     if boost_now {
         app.add_systems(Update, boost_once.run_if(in_state(GameState::Playing)));
+    }
+    if let Some(cell) = goto {
+        app.insert_resource(GotoCell(cell));
+        app.add_systems(Update, goto_once.run_if(in_state(GameState::Playing)));
     }
     if nav {
         app.init_resource::<tilerider::ai::navigation::NavDebug>();

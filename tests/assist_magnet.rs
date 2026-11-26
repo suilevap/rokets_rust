@@ -654,3 +654,16 @@ fn the_classic_scheme_has_no_assist_so_taps_and_magnets_are_untouched() {
     assert!(!intent(&app, car).gadget);
     assert!(app.world().get::<Assist>(car).is_none());
 }
+
+#[test]
+fn a_double_tap_while_towing_is_a_drop_twice_and_never_a_drive() {
+    let mut app = smart_app();
+    let car = player(&mut app, true);
+    let cargo = crate_at(&mut app, Vec2::new(3.0, 0.0));
+    tow(&mut app, car, Vec2::new(3.0, 0.0));
+    assert_eq!(app.world().get::<Magnet>(car).unwrap().towing(), Some(cargo));
+    let point = Vec2::new(0.0, 5.0);
+    assert_eq!(tap(&mut app, point), [PlayerCommand::DropAt(point)]);
+    assert_eq!(tap(&mut app, point), [PlayerCommand::DropAt(point)], "the second tap, a frame later: no GoTo");
+    assert!(app.world().get::<Assist>(car).unwrap().goto.is_none());
+}
