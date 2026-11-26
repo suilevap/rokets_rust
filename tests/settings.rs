@@ -58,8 +58,24 @@ fn the_defaults_are_classic_controls_with_the_smart_options_and_music_on() {
 }
 
 #[test]
-fn smart_controls_still_play_as_classic() {
-    assert_eq!(ControlScheme::Smart.in_effect(), ControlScheme::Classic);
+fn the_scheme_in_effect_is_the_one_chosen() {
+    assert_eq!(ControlScheme::Smart.in_effect(), ControlScheme::Smart);
+    assert_eq!(ControlScheme::Classic.in_effect(), ControlScheme::Classic);
+}
+
+#[test]
+fn the_controls_option_wins_for_the_run_and_is_not_saved() {
+    let store = Memory::default();
+    let overrides = Overrides { controls: Some(ControlScheme::Smart), ..Overrides::default() };
+    let mut app = app_with(&store, overrides);
+    assert_eq!(app.world().resource::<Settings>().control_scheme, ControlScheme::Smart);
+    app.world_mut().resource_mut::<Settings>().auto_aim = false;
+    app.update();
+    assert_eq!(stored(&store).control_scheme, ControlScheme::Classic, "the run's choice is not kept");
+    // The player picks one in the menu: that is saved.
+    app.world_mut().resource_mut::<Settings>().set_control_scheme(ControlScheme::Smart);
+    app.update();
+    assert_eq!(stored(&store).control_scheme, ControlScheme::Smart);
 }
 
 #[test]
@@ -171,7 +187,7 @@ fn a_store_that_fails_to_write_does_not_stop_the_game() {
 fn the_command_line_wins_for_the_run_and_is_not_saved() {
     let store = Memory::default();
     *store.text.lock().unwrap() = Some(r#"{"music":true,"language":"ru"}"#.into());
-    let overrides = Overrides { music: Some(false), language: Some(None) };
+    let overrides = Overrides { music: Some(false), language: Some(None), controls: None };
     let mut app = app_with(&store, overrides);
     let s = app.world().resource::<Settings>().clone();
     assert!(!s.music && s.language.is_none());

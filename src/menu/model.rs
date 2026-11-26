@@ -72,10 +72,10 @@ impl OptionRow {
     /// The small line under the name.
     pub fn hint(self) -> &'static str {
         match self {
-            OptionRow::Controls => "Smart: one finger (not built yet, plays as Classic)",
+            OptionRow::Controls => "Smart: one finger; tap an enemy to lock it, the car aims and fires",
             OptionRow::AutoFire => "Smart: fire while a target is locked",
             OptionRow::AutoAim => "Smart: turn the gun on the locked target",
-            OptionRow::TapToGo => "Smart: double-tap the ground to drive there",
+            OptionRow::TapToGo => "Smart: double-tap the ground to drive there (not built yet)",
             OptionRow::Music => "The level music (M while playing)",
             OptionRow::Language => "The maps' texts; shown from the next start",
         }
@@ -109,7 +109,7 @@ impl OptionRow {
             OptionRow::Controls => {
                 let all = ControlScheme::BOTH;
                 let at = all.iter().position(|c| *c == settings.control_scheme).unwrap_or(0) as i32;
-                settings.control_scheme = all[(at + dir).rem_euclid(all.len() as i32) as usize];
+                settings.set_control_scheme(all[(at + dir).rem_euclid(all.len() as i32) as usize]);
             }
             OptionRow::AutoFire => settings.auto_fire = !settings.auto_fire,
             OptionRow::AutoAim => settings.auto_aim = !settings.auto_aim,

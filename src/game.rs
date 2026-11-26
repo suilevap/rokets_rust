@@ -167,6 +167,7 @@ fn sprites_for(map: &MapData, cars: &CarCatalog, registry: &crate::actions::Acti
     names.extend(crate::particles::styles::TEXTURES.map(String::from));
     // The snow maps' falling snow, mist and frozen glass, every map's speed lines.
     names.extend(crate::render::snow::textures(map.level_effect).into_iter().map(String::from));
+    names.extend(crate::assist::view::textures().map(String::from));
     names.extend(crate::car::speed_trail::textures().into_iter().map(String::from));
     names.extend(crate::render::frozen_glass::textures(map.level_effect).into_iter().map(String::from));
     let mut skipped: std::collections::BTreeMap<_, usize> = Default::default();

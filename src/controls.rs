@@ -10,6 +10,14 @@
 //! touch (a floating stick that starts where the finger lands; with no
 //! weapons yet, the whole screen is for driving).
 //!
+//! In the **Smart** scheme ([`crate::settings::ControlScheme`],
+//! [`crate::assist`]) the touch screen has no zones: a drag from where the
+//! finger landed is the stick, and a tap (a press lifted within a quarter
+//! of a second without moving, [`crate::assist::tap`]) is reported as a
+//! [`Tapped`] ground point for the assist to turn into a command. The mouse
+//! does the same for testing on a desktop: a short left click is a tap, and
+//! the mouse neither fires nor aims.
+//!
 //! Every scheme reads directions on the screen; they are turned into the
 //! world by the camera's [`ViewRotation`], so up is up on a portrait phone
 //! too, where the view is turned a quarter turn.
@@ -18,7 +26,10 @@ use bevy::input::gamepad::{Gamepad, GamepadAxis, GamepadButton};
 use bevy::input::touch::Touches;
 use bevy::prelude::*;
 
+use crate::assist::Tapped;
+use crate::assist::tap::{self, Gesture, Press};
 use crate::render::camera::ViewRotation;
+use crate::settings::{ControlScheme, Settings};
 
 /// What the player wants the car to do, in world space.
 #[derive(Component, Debug, Default, Clone, Copy, PartialEq)]
@@ -77,6 +88,16 @@ pub fn is_players(control: &str) -> bool {
     matches!(control, "Local" | "LocalHotSeat1" | "LocalHotSeat2")
 }
 
+/// What reads the devices into intents (`PreUpdate`): the assist runs after
+/// it.
+#[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
+pub struct DeviceSystems;
+
+/// Whether the Smart scheme is on (without [`Settings`]: Classic).
+pub fn smart_on(settings: &Option<Res<Settings>>) -> bool {
+    settings.as_ref().is_some_and(|s| s.control_scheme.in_effect() == ControlScheme::Smart)
+}
+
 #[derive(Resource, Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub enum ActiveScheme {
     #[default]
@@ -91,6 +112,14 @@ pub struct TouchStick {
     pub finger: Option<u64>,
     pub origin: Vec2,
     pub current: Vec2,
+}
+
+/// Smart scheme: the press that is not yet known to be a tap or a drag
+/// (the finger's id), and the same for the mouse's left button.
+#[derive(Resource, Debug, Default)]
+pub struct SmartPress {
+    finger: Option<(u64, Press)>,
+    mouse: Option<Press>,
 }
 
 /// The finger on the gadget's touch zone (`_gadgetTouchIndex`): the top
@@ -150,10 +179,22 @@ impl Plugin for ControlsPlugin {
             .init_resource::<GadgetTouch>()
             .init_resource::<FireTouch>()
             .init_resource::<SchemeReadings>()
+            .init_resource::<SmartPress>()
+            .add_message::<Tapped>()
             .add_systems(
                 PreUpdate,
-                (read_keyboard, read_gamepad, read_touch, apply_active_scheme, read_gadget, read_weapon)
+                (
+                    read_keyboard,
+                    read_gamepad,
+                    read_touch,
+                    read_smart_touch,
+                    read_smart_mouse,
+                    apply_active_scheme,
+                    read_gadget,
+                    read_weapon,
+                )
                     .chain()
+                    .in_set(DeviceSystems)
                     .after(bevy::input::InputSystems),
             );
     }
@@ -241,7 +282,12 @@ fn read_touch(
     with_gun: Query<&crate::weapon::Weapon, With<LocalPlayer>>,
     mut readings: ResMut<SchemeReadings>,
     mut active: ResMut<ActiveScheme>,
+    settings: Option<Res<Settings>>,
 ) {
+    // The Smart scheme has no zones: `read_smart_touch`.
+    if smart_on(&settings) {
+        return;
+    }
     if let Some(id) = fire.finger {
         match touches.get_pressed(id) {
             Some(t) => fire.current = t.position(),
@@ -281,17 +327,127 @@ fn read_touch(
             stick.origin = t.position();
         }
     }
-    readings.touch = stick
-        .finger
-        .and_then(|id| touches.get_pressed(id))
-        .map(|t| {
-            stick.current = t.position();
-            // Screen y points down; the world's points up.
-            let d = (t.position() - stick.origin) / TOUCH_STICK_RADIUS;
-            Vec2::new(d.x, -d.y).clamp_length_max(1.0)
-        });
-    if readings.touch.is_none() && *active == ActiveScheme::Touch {
-        readings.touch = Some(Vec2::ZERO);
+    readings.touch = stick_reading(&touches, &mut stick, *active);
+}
+
+/// The stick's reading from its finger: the drag from where it landed as a
+/// direction on the screen (y up); zero while the touch scheme is the active
+/// one and no finger is down; `None` when it is not.
+fn stick_reading(touches: &Touches, stick: &mut TouchStick, active: ActiveScheme) -> Option<Vec2> {
+    let reading = stick.finger.and_then(|id| touches.get_pressed(id)).map(|t| {
+        stick.current = t.position();
+        // Screen y points down; the world's points up.
+        let d = (t.position() - stick.origin) / TOUCH_STICK_RADIUS;
+        Vec2::new(d.x, -d.y).clamp_length_max(1.0)
+    });
+    reading.or((active == ActiveScheme::Touch).then_some(Vec2::ZERO))
+}
+
+/// Smart scheme, touch: one finger. A press waits to be told apart
+/// ([`tap::classify`]): lifted at once without having moved it is a tap
+/// (the car is not driven), moved or held it becomes the stick, relative to
+/// where it landed, as in Classic.
+#[allow(clippy::too_many_arguments)]
+fn read_smart_touch(
+    touches: Res<Touches>,
+    time: Res<Time<Real>>,
+    windows: Query<&Window>,
+    cameras: Query<(&Camera, &GlobalTransform), With<crate::render::camera::MainCamera>>,
+    settings: Option<Res<Settings>>,
+    mut stick: ResMut<TouchStick>,
+    mut press: ResMut<SmartPress>,
+    mut taps: MessageWriter<Tapped>,
+    mut readings: ResMut<SchemeReadings>,
+    mut active: ResMut<ActiveScheme>,
+) {
+    if !smart_on(&settings) {
+        return;
+    }
+    let now = time.elapsed_secs();
+    let screen = windows.iter().next().map_or(Vec2::ONE, |w| Vec2::new(w.width(), w.height()));
+    if let Some(id) = stick.finger
+        && touches.get_pressed(id).is_none()
+    {
+        stick.finger = None;
+    }
+    for t in touches.iter_just_pressed() {
+        *active = ActiveScheme::Touch;
+        // A second finger may tap while the first one drives.
+        if press.finger.is_none() {
+            press.finger = Some((t.id(), Press::new(t.position(), now)));
+        }
+    }
+    if let Some((id, mut p)) = press.finger {
+        let at = touches.get_pressed(id).map(|t| t.position());
+        match p.gesture(at, now, tap::slop(screen)) {
+            Gesture::Pending => press.finger = Some((id, p)),
+            Gesture::Tap => {
+                press.finger = None;
+                tap_at(p.last, &cameras, &mut taps);
+            }
+            Gesture::Drag => {
+                press.finger = None;
+                if at.is_some() && stick.finger.is_none() {
+                    stick.finger = Some(id);
+                    stick.origin = p.origin;
+                }
+            }
+        }
+    }
+    readings.touch = stick_reading(&touches, &mut stick, *active);
+}
+
+/// Smart scheme, mouse (for trying it on a desktop): a short left click
+/// that does not move is a tap. Not while the touch screen is the active
+/// scheme (browsers turn taps into clicks) or with Shift held (the gadget).
+#[allow(clippy::too_many_arguments)]
+fn read_smart_mouse(
+    mouse: Res<ButtonInput<MouseButton>>,
+    keys: Res<ButtonInput<KeyCode>>,
+    time: Res<Time<Real>>,
+    windows: Query<&Window>,
+    cameras: Query<(&Camera, &GlobalTransform), With<crate::render::camera::MainCamera>>,
+    settings: Option<Res<Settings>>,
+    scheme: Res<ActiveScheme>,
+    mut press: ResMut<SmartPress>,
+    mut taps: MessageWriter<Tapped>,
+) {
+    if !smart_on(&settings) || *scheme == ActiveScheme::Touch {
+        press.mouse = None;
+        return;
+    }
+    let now = time.elapsed_secs();
+    let screen = windows.iter().next().map_or(Vec2::ONE, |w| Vec2::new(w.width(), w.height()));
+    let cursor = windows.iter().find_map(|w| w.cursor_position());
+    if mouse.just_pressed(MouseButton::Left)
+        && !keys.pressed(KeyCode::ShiftLeft)
+        && let Some(at) = cursor
+    {
+        press.mouse = Some(Press::new(at, now));
+    }
+    if let Some(mut p) = press.mouse {
+        let at = mouse.pressed(MouseButton::Left).then_some(cursor).flatten();
+        match p.gesture(at, now, tap::slop(screen)) {
+            Gesture::Pending => press.mouse = Some(p),
+            Gesture::Tap => {
+                press.mouse = None;
+                tap_at(p.last, &cameras, &mut taps);
+            }
+            Gesture::Drag => press.mouse = None,
+        }
+    }
+}
+
+/// A tap at a screen point is a tap on the ground under it.
+fn tap_at(
+    at: Vec2,
+    cameras: &Query<(&Camera, &GlobalTransform), With<crate::render::camera::MainCamera>>,
+    taps: &mut MessageWriter<Tapped>,
+) {
+    if let Some((camera, transform)) = cameras.iter().next()
+        && let Some(ground) = screen_to_ground(camera, transform, at)
+    {
+        taps.write(Tapped { ground });
     }
 }
 
@@ -339,9 +495,7 @@ fn read_gadget(
         .then(|| {
             let at = windows.iter().find_map(|w| w.cursor_position())?;
             let (camera, transform) = cameras.iter().next()?;
-            let ray = camera.viewport_to_world(transform, at).ok()?;
-            let t = ray.intersect_plane(Vec3::ZERO, InfinitePlane3d::new(Vec3::Z))?;
-            Some(ray.get_point(t).truncate())
+            screen_to_ground(camera, transform, at)
         })
         .flatten();
     // A touch drag from where the finger landed aims it (`ToGoRelative`):
@@ -395,6 +549,7 @@ fn read_weapon(
     windows: Query<&Window>,
     cameras: Query<(&Camera, &GlobalTransform), With<crate::render::camera::MainCamera>>,
     scheme: Res<ActiveScheme>,
+    settings: Option<Res<Settings>>,
     mut touch: ResMut<FireTouch>,
     view: Res<ViewRotation>,
     mut keyboard_only: Local<bool>,
@@ -437,7 +592,8 @@ fn read_weapon(
         fire = keys.pressed(KeyCode::ControlRight);
         accurate |= keys.just_pressed(KeyCode::ControlRight);
         // Browsers turn taps into clicks: on touch the mouse is ignored.
-        if controllable && *scheme != ActiveScheme::Touch {
+        // Smart: the mouse taps ([`read_smart_mouse`]); it neither fires nor aims.
+        if controllable && *scheme != ActiveScheme::Touch && !smart_on(&settings) {
             let shift = keys.pressed(KeyCode::ShiftLeft) || keys.pressed(KeyCode::ShiftRight);
             let gadget_by_mouse = mouse.pressed(MouseButton::Right) || (mouse.pressed(MouseButton::Left) && shift);
             if !(has_gadget && gadget_by_mouse) {
@@ -496,7 +652,7 @@ fn read_weapon(
 const REACH: f32 = 256.0 / 32.0;
 
 /// `BaseControl.Aim`: a world offset as a stick, full at [`REACH`].
-fn reach(v: Vec2) -> Vec2 {
+pub(crate) fn reach(v: Vec2) -> Vec2 {
     if v.length() < REACH { v / REACH } else { v.normalize_or_zero() }
 }
 
@@ -507,6 +663,11 @@ fn cursor_on_ground(
 ) -> Option<Vec2> {
     let at = windows.iter().find_map(|w| w.cursor_position())?;
     let (camera, transform) = cameras.iter().next()?;
+    screen_to_ground(camera, transform, at)
+}
+
+/// The point of the ground plane a screen point (logical pixels) shows.
+pub fn screen_to_ground(camera: &Camera, transform: &GlobalTransform, at: Vec2) -> Option<Vec2> {
     let ray = camera.viewport_to_world(transform, at).ok()?;
     let t = ray.intersect_plane(Vec3::ZERO, InfinitePlane3d::new(Vec3::Z))?;
     Some(ray.get_point(t).truncate())

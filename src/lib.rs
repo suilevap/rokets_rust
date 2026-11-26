@@ -4,6 +4,7 @@ pub mod actions;
 pub mod ai;
 pub mod animation;
 pub mod assets;
+pub mod assist;
 pub mod boost;
 pub mod button;
 pub mod car;
@@ -63,7 +64,7 @@ impl Plugin for TileRiderPlugin {
                 controls::ControlsPlugin,
                 car::CarPlugin,
                 pickups::PickupsPlugin,
-                (boost::BoostPlugin, explosion::ExplosionPlugin, game_mode::GameModePlugin, feedback::FeedbackPlugin, sound::SoundPlugin),
+                (assist::AssistPlugin, assist::view::AssistViewPlugin, boost::BoostPlugin, explosion::ExplosionPlugin, game_mode::GameModePlugin, feedback::FeedbackPlugin, sound::SoundPlugin),
                 map::spawn::MapEntitiesPlugin,
                 render::spin::SpinPlugin,
                 render::animate::AnimatePlugin,

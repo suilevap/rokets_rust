@@ -229,6 +229,7 @@ fn text_font(font: &GameFont, size: f32) -> TextFont {
 }
 
 /// Puts the menu on screen once its lists are known.
+#[allow(clippy::too_many_arguments)]
 fn spawn_menu(
     mut commands: Commands,
     ui: Option<Res<MenuUi>>,
