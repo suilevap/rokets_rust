@@ -23,7 +23,12 @@
 //! runs (`Destroy`, `OnEntityDestroy`); nobody drives it, its gun, magnet,
 //! sounds and health bar are gone, the camera lets it go.
 //!
-//! The player's car has its own (`game_mode`: restart, lives, respawn).
+//! The player's car has its own (`game_mode`: restart, lives, respawn), as
+//! long as the devices drive it or it is held for them (`LocalDevice`). A
+//! car that was the player's and has a control of another kind (Revenge's
+//! `RemovePlayerControl`: `NoneFriend`) dies as an AI's `Car` does
+//! (`GameModeSinglePlayer` asked `LocalDevice`): its `ActionOnDestroy`
+//! runs, which is how Revenge hands the player another car.
 //!
 //! Not ported: the red border that flashes round a dead enemy
 //! (`HighlightDeadEnemy`) and the flying car parts a damaged or destroyed
@@ -55,7 +60,7 @@ use crate::game_mode::{Wreck, Wreckable, burst};
 use crate::particles::styles::DAMAGED_SMOKE;
 use crate::render::particles::Particles;
 use crate::render::sprite::{SpriteTint, UnitQuad, sprite_bundle};
-use crate::weapon::Weapon;
+use crate::weapon::{PlayerEnergy, Weapon};
 
 /// `Settings.SimpleCarCorpseTime`: seconds from the wreck to its removal.
 pub const CORPSE_TIME: f32 = 2.0;
@@ -98,7 +103,7 @@ fn kill_cars(
     mut rng: ResMut<DeathRng>,
     cars: Query<
         (&Wreckable, &Transform, Option<&Children>, &RigidBody, Has<Car>, Option<&OnDestroy>, Option<&MapId>),
-        (With<Team>, Without<LocalPlayer>, Without<Corpse>, Without<Wreck>),
+        (With<Team>, Or<(Without<LocalPlayer>, Without<LocalDevice>)>, Without<Corpse>, Without<Wreck>),
     >,
     mut run: MessageWriter<RunAction>,
 ) {
@@ -110,7 +115,7 @@ fn kill_cars(
         let mut car = commands.entity(*entity);
         // Nobody drives it, shoots, soaks or shows a bar any more; a blow
         // is no blow to it (no health).
-        car.remove::<(Weapon, PlayerIntent, SimpleDrive, HealthBar, Health, Shield)>();
+        car.remove::<(Weapon, PlayerIntent, SimpleDrive, HealthBar, Health, Shield, LocalPlayer, PlayerEnergy)>();
         if ai_car {
             // The car is gone, its wreck a plain box that stays.
             crate::ai::set_control(&mut car, "", 0);

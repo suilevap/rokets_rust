@@ -93,12 +93,7 @@ along paths (`MoveBase`, `MoveToPoint`, `FollowBy`, `TryFireToAnyone`,
    bubble (full while `Immortal`) and its burst, `HighlightEnemy` /
    `HighlightDeadEnemy`.
 3. Who drives which `Players` car: an AI control on the player's own car
-   (`SetControl(player, AiChaser)`), and `SetControl(id, Local)` handing
-   the devices (and the camera, the gun's preset, the energy store) to
-   another car, as Revenge does when its Scout dies
-   (`SetControl(4001,Local)`); with it, a `NoneLocal` car other than the
-   player's dying the player's way (`GameModeSinglePlayer` asks
-   `LocalDevice`: restart or a life). Also of every `Car`: the player's
+   (`SetControl(player, AiChaser)`). Also of every `Car`: the player's
    colour on its `ColorMask` sprite (`PlayersManager._colorList`: blue for
    the first, red, green, … for the others), the repair (`RepairUpdate`:
    a point a second, damaged smoke under half health), and a static body
