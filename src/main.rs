@@ -1,12 +1,14 @@
 //! `tilerider [-m MAP] [--screenshot PATH [--frames N]] [--drive SCRIPT]`
 //!
+//! `--tab campaign|all|options` picks the menu's first tab.
 //! `-m` picks the map (a name from `assets/Maps/Singleplayer`, default
 //! `EditorTest`). `--screenshot` saves the frame after N frames of play
 //! (default 90) and exits, for comparing with the C# game. `--drive`
 //! drives the car by a script and logs its path (see `script.rs`);
 //! `--trace a,b` also logs those entities (map ids), for `tools/compare.py`.
 //! `--nav` draws the AI's navigation graph. `--no-music` starts with the
-//! level music off (`M` switches it).
+//! level music off (`M` switches it). `--no-music` and `--lang` win over the
+//! saved settings (`settings.rs`, the menu's Options tab) for that run.
 //! `--record DIR` saves every frame of play as `DIR/frame_NNNNN.png`, with
 //! time stepped exactly 1/30 s per frame (whatever the rendering speed),
 //! for `--frames N` frames, then exits: turn them into a video with ffmpeg.
@@ -51,6 +53,8 @@ struct Args {
     map: String,
     /// Whether the game opens in the map menu (`menu::starts_in_menu`).
     menu: bool,
+    /// `--tab`: the menu's first tab.
+    tab: Option<tilerider::menu::model::Tab>,
     shot: Option<ScreenshotRequest>,
     drive: Option<DriveScript>,
     record: Option<RecordRequest>,
@@ -59,7 +63,8 @@ struct Args {
     size: (u32, u32),
     glow: Option<f32>,
     flash: Option<f32>,
-    lang: Option<String>,
+    /// `--lang`: `Some(None)` is English.
+    lang: Option<Option<String>>,
     trace: Vec<i64>,
     nav: bool,
     no_music: bool,
@@ -87,7 +92,7 @@ mod web {
     }
 
     /// Options the browser build accepts, as URL parameters.
-    const WEB_OPTIONS: &[&str] = &["map", "menu", "start", "car", "drive", "glow", "flash", "lang", "nav", "no-music"];
+    const WEB_OPTIONS: &[&str] = &["map", "menu", "tab", "start", "car", "drive", "glow", "flash", "lang", "nav", "no-music"];
 
     /// `?map=Middleware&start=84,9.5` → `["--map", "Middleware", "--start", "84,9.5"]`.
     pub fn url_args() -> Vec<String> {
@@ -134,6 +139,7 @@ fn parse_args() -> Args {
     let mut map = "EditorTest".to_string();
     let mut map_given = false;
     let mut menu_flag = false;
+    let mut tab = None;
     let mut drive = None;
     let mut record_dir = None;
     let mut start = None;
@@ -156,6 +162,7 @@ fn parse_args() -> Args {
                 map = args.next().unwrap_or(map)
             }
             "--menu" => menu_flag = true,
+            "--tab" => tab = args.next().and_then(|t| tilerider::menu::model::Tab::parse(&t)),
             "--screenshot" => {
                 shot = args.next().map(|path| ScreenshotRequest {
                     path,
@@ -193,7 +200,7 @@ fn parse_args() -> Args {
             }
             "--glow" => glow = args.next().and_then(|v| v.parse().ok()),
             "--flash" => flash = args.next().and_then(|v| v.parse().ok()),
-            "--lang" => lang = args.next().filter(|l| !l.is_empty() && l != "en"),
+            "--lang" => lang = args.next().filter(|l| !l.is_empty()).map(|l| Some(l).filter(|l| l != "en")),
             "--trace" => {
                 trace = args
                     .next()
@@ -222,6 +229,7 @@ fn parse_args() -> Args {
     Args {
         map,
         menu: tilerider::menu::starts_in_menu(menu_flag, map_given, scripted),
+        tab,
         shot,
         drive,
         record,
@@ -241,6 +249,7 @@ fn main() {
     let Args {
         map,
         menu,
+        tab,
         shot,
         drive,
         record,
@@ -275,9 +284,17 @@ fn main() {
                 ..default()
             }),
     )
+    // Before the game: it reads the language the settings give.
+    .add_plugins(tilerider::settings::SettingsPlugin::new(tilerider::settings::Overrides {
+        music: no_music.then_some(false),
+        language: lang,
+    }))
     .add_plugins(TileRiderPlugin { map });
     if menu {
         app.insert_resource(tilerider::game::StartInMenu);
+    }
+    if let Some(tab) = tab {
+        app.insert_resource(tilerider::menu::StartTab(tab));
     }
     if let Some(start) = start {
         app.insert_resource(tilerider::car::StartOverride(start));
@@ -285,15 +302,11 @@ fn main() {
     if let Some(car) = car {
         app.insert_resource(tilerider::car::CarOverride(car));
     }
-    app.insert_resource(tilerider::info::Language(lang));
     if let Some(glow) = glow {
         app.insert_resource(tilerider::render::additive_light::GlowBoost(glow));
     }
     if let Some(flash) = flash {
         app.insert_resource(tilerider::render::particles::FlashBoost(flash));
-    }
-    if no_music {
-        app.insert_resource(tilerider::sound::music::Jukebox::new(false));
     }
     if nav {
         app.init_resource::<tilerider::ai::navigation::NavDebug>();

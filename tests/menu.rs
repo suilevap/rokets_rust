@@ -14,7 +14,8 @@ use bevy::state::app::StatesPlugin;
 use tilerider::content::map_list::MapList;
 use tilerider::game::{CurrentMapName, GameState};
 use tilerider::info::GameFont;
-use tilerider::menu::model::{Gesture, MenuModel, TAP_SLOP, Tab, parse_index};
+use tilerider::menu::model::{Gesture, MenuModel, OptionRow, TAP_SLOP, Tab, parse_index};
+use tilerider::settings::{ControlScheme, Settings};
 use tilerider::menu::{MenuPlugin, starts_in_menu};
 
 fn assets() -> &'static Path {
@@ -81,7 +82,7 @@ fn the_choice_moves_within_the_shown_list_and_stops_at_its_ends() {
     m.switch_tab(1);
     assert_eq!(m.tab(), Tab::All);
     assert_eq!(m.chosen(), Some(all_maps()[0].as_str()));
-    m.switch_tab(1);
+    m.switch_tab(-1);
     assert_eq!(m.chosen(), campaign().last().map(String::as_str));
 }
 
@@ -191,4 +192,110 @@ fn escape_does_nothing_when_there_is_no_map_to_go_back_to() {
     app.update();
     assert_eq!(state(&app), GameState::Menu);
     assert_eq!(app.world().resource::<CurrentMapName>().0, "EditorTest");
+}
+
+fn to_options(app: &mut App) {
+    press(app, KeyCode::Tab);
+    press(app, KeyCode::Tab);
+    assert_eq!(app.world().resource::<MenuModel>().tab(), Tab::Options);
+}
+
+fn settings(app: &App) -> Settings {
+    app.world().resource::<Settings>().clone()
+}
+
+#[test]
+fn tab_goes_round_the_three_tabs() {
+    let mut app = app_in_menu();
+    let tab = |app: &App| app.world().resource::<MenuModel>().tab();
+    let seen: Vec<Tab> = (0..3)
+        .map(|_| {
+            press(&mut app, KeyCode::Tab);
+            tab(&app)
+        })
+        .collect();
+    assert_eq!(seen, [Tab::All, Tab::Options, Tab::Campaign]);
+}
+
+#[test]
+fn the_options_tab_has_a_row_for_each_option() {
+    let m = model();
+    assert_eq!(m.len(Tab::Options), OptionRow::ALL.len());
+    assert!(m.entries(Tab::Options).is_empty());
+    assert_eq!(m.chosen(), Some("Middleware"), "the options are no map");
+}
+
+#[test]
+fn enter_changes_the_chosen_option_and_asks_for_no_map() {
+    let mut app = app_in_menu();
+    to_options(&mut app);
+    // Controls: Classic -> Smart -> Classic.
+    press(&mut app, KeyCode::Enter);
+    assert_eq!(settings(&app).control_scheme, ControlScheme::Smart);
+    press(&mut app, KeyCode::Enter);
+    assert_eq!(settings(&app).control_scheme, ControlScheme::Classic);
+    assert_eq!(state(&app), GameState::Menu);
+}
+
+#[test]
+fn left_and_right_change_the_value_and_the_arrows_choose_the_row() {
+    let mut app = app_in_menu();
+    to_options(&mut app);
+    press(&mut app, KeyCode::ArrowRight);
+    assert_eq!(settings(&app).control_scheme, ControlScheme::Smart);
+    press(&mut app, KeyCode::ArrowLeft);
+    assert_eq!(settings(&app).control_scheme, ControlScheme::Classic);
+    assert_eq!(app.world().resource::<MenuModel>().tab(), Tab::Options, "left and right stay on the tab");
+
+    press(&mut app, KeyCode::ArrowDown);
+    press(&mut app, KeyCode::ArrowRight);
+    assert!(!settings(&app).auto_fire);
+    press(&mut app, KeyCode::ArrowDown);
+    press(&mut app, KeyCode::Enter);
+    assert!(!settings(&app).auto_aim);
+    press(&mut app, KeyCode::ArrowDown);
+    press(&mut app, KeyCode::Enter);
+    assert!(!settings(&app).tap_to_go);
+    press(&mut app, KeyCode::ArrowDown);
+    press(&mut app, KeyCode::Enter);
+    assert!(!settings(&app).music);
+    press(&mut app, KeyCode::ArrowDown);
+    press(&mut app, KeyCode::ArrowRight);
+    assert_eq!(settings(&app).language.as_deref(), Some("ru"));
+    press(&mut app, KeyCode::ArrowLeft);
+    assert_eq!(settings(&app).language, None);
+    press(&mut app, KeyCode::ArrowDown);
+    press(&mut app, KeyCode::ArrowRight);
+    assert_eq!(app.world().resource::<MenuModel>().chosen_option(), OptionRow::Language, "the last row stays");
+}
+
+#[test]
+fn the_smart_rows_are_dimmed_until_the_scheme_is_smart() {
+    let mut s = Settings::default();
+    for row in [OptionRow::AutoFire, OptionRow::AutoAim, OptionRow::TapToGo] {
+        assert!(row.dimmed(&s));
+    }
+    for row in [OptionRow::Controls, OptionRow::Music, OptionRow::Language] {
+        assert!(!row.dimmed(&s));
+    }
+    s.control_scheme = ControlScheme::Smart;
+    assert!(!OptionRow::AutoFire.dimmed(&s));
+}
+
+#[test]
+fn the_options_rows_say_their_values() {
+    let mut s = Settings::default();
+    assert_eq!(OptionRow::Music.value(&s), "On");
+    OptionRow::Music.adjust(&mut s, 1);
+    assert_eq!(OptionRow::Music.value(&s), "Off");
+    assert_eq!(OptionRow::Language.value(&s), "English");
+}
+
+#[test]
+fn the_other_tabs_still_use_left_and_right_for_the_tabs() {
+    let mut app = app_in_menu();
+    press(&mut app, KeyCode::ArrowRight);
+    assert_eq!(app.world().resource::<MenuModel>().tab(), Tab::All);
+    press(&mut app, KeyCode::ArrowLeft);
+    assert_eq!(app.world().resource::<MenuModel>().tab(), Tab::Campaign);
 }
