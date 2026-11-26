@@ -14,6 +14,10 @@
 //! for `--frames N` frames, then exits: turn them into a video with ffmpeg.
 //! `--start x,y` puts the car at that map cell instead of the map's start.
 //! `--car NAME` gives the player that car of `Cars.xml`, on every map.
+//! `--controls classic|smart` picks the touch scheme for the run
+//! (`settings.rs`; not saved); with Smart, `--lock-nearest` locks the
+//! nearest enemy a second into the play, as a tap on it would (for
+//! screenshots; see `assist`).
 //! `--size WxH` sets the window size (default 1280x720; e.g. 720x1280 to
 //! try portrait). `--glow X` sets how strongly the additive (HDR) light is
 //! added (default 3; `[` and `]` turn it while playing). `--flash X` sets
@@ -68,6 +72,8 @@ struct Args {
     trace: Vec<i64>,
     nav: bool,
     no_music: bool,
+    controls: Option<tilerider::settings::ControlScheme>,
+    lock_nearest: bool,
 }
 
 /// The command line, or the page's URL parameters in the browser.
@@ -92,7 +98,7 @@ mod web {
     }
 
     /// Options the browser build accepts, as URL parameters.
-    const WEB_OPTIONS: &[&str] = &["map", "menu", "tab", "start", "car", "drive", "glow", "flash", "lang", "nav", "no-music"];
+    const WEB_OPTIONS: &[&str] = &["map", "menu", "tab", "start", "car", "drive", "glow", "flash", "lang", "nav", "no-music", "controls", "lock-nearest"];
 
     /// `?map=Middleware&start=84,9.5` → `["--map", "Middleware", "--start", "84,9.5"]`.
     pub fn url_args() -> Vec<String> {
@@ -152,6 +158,8 @@ fn parse_args() -> Args {
     let mut run = Vec::new();
     let mut nav = false;
     let mut no_music = false;
+    let mut controls = None;
+    let mut lock_nearest = false;
     let mut shot: Option<ScreenshotRequest> = None;
     let mut frames = 90;
     let mut args = raw_args().into_iter();
@@ -210,6 +218,17 @@ fn parse_args() -> Args {
             "--run" => run.extend(args.next()),
             "--nav" => nav = true,
             "--no-music" => no_music = true,
+            "--controls" => {
+                controls = args.next().and_then(|v| match v.to_ascii_lowercase().as_str() {
+                    "classic" => Some(tilerider::settings::ControlScheme::Classic),
+                    "smart" => Some(tilerider::settings::ControlScheme::Smart),
+                    _ => {
+                        eprintln!("bad --controls {v:?}; expected classic or smart");
+                        None
+                    }
+                })
+            }
+            "--lock-nearest" => lock_nearest = true,
             "--frames" => frames = args.next().and_then(|v| v.parse().ok()).unwrap_or(frames),
             _ => {}
         }
@@ -242,6 +261,36 @@ fn parse_args() -> Args {
         trace,
         nav,
         no_music,
+        controls,
+        lock_nearest,
+    }
+}
+
+/// `--lock-nearest`: a second into the play, what a tap on the nearest enemy
+/// does (a testing aid for screenshots, as no finger is there).
+#[allow(clippy::type_complexity)]
+fn lock_nearest_enemy(
+    time: Res<Time>,
+    mut done: Local<bool>,
+    mut commands: MessageWriter<tilerider::assist::Commanded>,
+    players: Query<(Entity, &avian2d::prelude::Position), (With<tilerider::controls::LocalPlayer>, With<tilerider::assist::Assist>)>,
+    cars: Query<(Entity, &avian2d::prelude::Position, &tilerider::car::control::Team, &tilerider::explosion::Health)>,
+) {
+    if *done || time.elapsed_secs() < 1.0 {
+        return;
+    }
+    for (car, at) in &players {
+        let nearest = cars
+            .iter()
+            .filter(|(e, _, team, health)| *e != car && team.0 != 0 && health.hp > 0)
+            .min_by(|a, b| a.1.0.distance_squared(at.0).total_cmp(&b.1.0.distance_squared(at.0)));
+        if let Some((enemy, ..)) = nearest {
+            commands.write(tilerider::assist::Commanded {
+                car,
+                command: tilerider::assist::PlayerCommand::LockTarget(enemy),
+            });
+            *done = true;
+        }
     }
 }
 
@@ -262,6 +311,8 @@ fn main() {
         trace,
         nav,
         no_music,
+        controls,
+        lock_nearest,
     } = parse_args();
     let mut app = App::new();
     app.add_plugins(
@@ -288,6 +339,7 @@ fn main() {
     .add_plugins(tilerider::settings::SettingsPlugin::new(tilerider::settings::Overrides {
         music: no_music.then_some(false),
         language: lang,
+        controls,
     }))
     .add_plugins(TileRiderPlugin { map });
     if menu {
@@ -307,6 +359,12 @@ fn main() {
     }
     if let Some(flash) = flash {
         app.insert_resource(tilerider::render::particles::FlashBoost(flash));
+    }
+    if lock_nearest {
+        app.add_systems(
+            Update,
+            lock_nearest_enemy.run_if(in_state(GameState::Playing)),
+        );
     }
     if nav {
         app.init_resource::<tilerider::ai::navigation::NavDebug>();

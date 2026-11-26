@@ -38,10 +38,12 @@ pub enum ControlScheme {
     /// fire zone.
     #[default]
     Classic,
-    /// One finger: tap an enemy to lock it, a box to grab it, the ground to
-    /// drop what is towed, double-tap the ground to go there. **Not
-    /// implemented yet:** it is saved and shown in the menu, but
-    /// [`ControlScheme::in_effect`] still answers `Classic`.
+    /// One finger ([`crate::assist`]): a drag drives, a tap on an enemy
+    /// locks it (the car then aims and fires by itself, as the
+    /// `auto_fire` and `auto_aim` options say), a tap on the ground lets
+    /// the lock go. Tapping a box to grab it, the ground to drop what is
+    /// towed, and double-tapping the ground to go there come later
+    /// (`docs/plans/SMART_CONTROLS.md`).
     Smart,
 }
 
@@ -51,16 +53,16 @@ impl ControlScheme {
     pub fn label(self) -> &'static str {
         match self {
             ControlScheme::Classic => "Classic",
-            ControlScheme::Smart => "Smart (soon)",
+            ControlScheme::Smart => "Smart",
         }
     }
 
-    /// The scheme the controls code is to use. This is the hook: when the
-    /// smart controls exist, this returns `self` and `controls.rs` reads it
-    /// (with the smart options of [`Settings`]); until then a saved `Smart`
-    /// drives exactly as `Classic`.
+    /// The scheme the controls code is to use. The one place to answer
+    /// "is Smart on?": `controls.rs` and `assist` read it (with the smart
+    /// options of [`Settings`]). It is `self` now; it stays a function so a
+    /// platform that cannot do a scheme can still turn it down here.
     pub fn in_effect(self) -> ControlScheme {
-        ControlScheme::Classic
+        self
     }
 }
 
@@ -81,6 +83,7 @@ pub const LANGUAGES: [(Option<&str>, &str); 6] = [
 struct Overridden {
     music: bool,
     language: bool,
+    controls: bool,
 }
 
 /// What the player chose.
@@ -151,6 +154,11 @@ impl Settings {
     }
 
     /// The language is chosen by the player: no longer a command line's.
+    pub fn set_control_scheme(&mut self, scheme: ControlScheme) {
+        self.control_scheme = scheme;
+        self.overridden.controls = false;
+    }
+
     pub fn set_language(&mut self, language: Option<String>) {
         self.language = language;
         self.overridden.language = false;
@@ -180,6 +188,9 @@ impl Settings {
         if self.overridden.language {
             out.language = stored.language.clone();
         }
+        if self.overridden.controls {
+            out.control_scheme = stored.control_scheme;
+        }
         out.overridden = Overridden::default();
         out
     }
@@ -193,6 +204,8 @@ pub struct Overrides {
     pub music: Option<bool>,
     /// `--lang`: `Some(None)` is English.
     pub language: Option<Option<String>>,
+    /// `--controls classic|smart`.
+    pub controls: Option<ControlScheme>,
 }
 
 impl Overrides {
@@ -204,6 +217,10 @@ impl Overrides {
         if let Some(language) = &self.language {
             settings.language = language.clone();
             settings.overridden.language = true;
+        }
+        if let Some(scheme) = self.controls {
+            settings.control_scheme = scheme;
+            settings.overridden.controls = true;
         }
     }
 }

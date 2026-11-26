@@ -35,6 +35,7 @@ cargo run --release -- -m LetItSnowDay
 | `--run ACTION` | With `--drive`: run that map action on the script's first step (repeat it for several), as the C# game's debug server does with `/run?cmd=ACTION`, e.g. an AI's `MoveCargoOrder` |
 | `--trace a,b` | With `--drive`: also log these entities (map ids) every 0.1 s, as `trace t id x y angle speed` in the C# game's axes, for `tools/compare.py`, and their health as `health t id hp` |
 | `--nav` | Draw the navigation graph over the map (links in green, crossings in orange; red links are dear ones), as `NavGraph.Draw` did in the C# game's AI debug build |
+| `--controls classic\|smart` | The touch scheme for this run (not saved; `?controls=smart` in the browser); with Smart, `--lock-nearest` locks the nearest enemy a second into the play (for screenshots) |
 | `--no-music` | Start with the level music off (`M` switches it while playing). Wins over the saved setting for this run. The maps' `PlayLevelMusic` actions play the songs of `assets/Sounds/Music` |
 
 **The map menu** has three tabs: *Campaign* (the 36 maps of `MapList.xml`, in
@@ -57,11 +58,23 @@ Windows, `~/Library/Application Support/tilerider/` on macOS,
 per browser and site, so the main page and every pull request preview, which share one address, share it too). They are
 written when one changes; a missing or corrupt file means the defaults. The
 rows: *Controls* (Classic, the zones described below, or Smart, one-finger
-controls that are **not built yet**: choosing it plays as Classic), the smart
-options *Auto-fire*, *Auto-aim* and *Tap to go* (dimmed while Classic; they do
-nothing yet), *Music* (the same as `M`) and *Language* (the maps' texts; read
+controls, see below), the smart options *Auto-fire* and *Auto-aim* (dimmed
+while Classic) and *Tap to go* (not built yet), *Music* (the same as `M`) and *Language* (the maps' texts; read
 at start, so it shows from the next run). `--no-music`, `--lang` (`no-music`,
 `lang` in the browser) win for the run they are given in and are not saved.
+
+**Smart controls** (the *Controls* row, or `--controls smart` /
+`?controls=smart` for one run) play with one finger and no zones: drag
+anywhere to drive (the stick is where the finger landed), tap an enemy to
+lock it (a red ring shows), tap empty ground to let it go. The car turns its
+gun on the locked enemy (*Auto-aim*) and fires while the gun points at it, in
+range and in sight (*Auto-fire*); with nothing locked it takes the nearest
+enemy in sight (a faint ring). Taps to grab boxes, drop them, boost or drive
+to a point come later (`docs/plans/SMART_CONTROLS.md`), so magnet maps are not
+playable in Smart yet. To try it on a desktop: a short left click is a tap
+(the mouse neither aims nor fires in Smart); `--lock-nearest` locks the
+nearest enemy a second into the play, for screenshots. Maps with enemies:
+`cargo run --release -- -m TheLastStand --controls smart`.
 
 Portrait screens (a phone held upright) show the landscape view turned a
 quarter turn: up on the screen is right on the map, and the controls follow
