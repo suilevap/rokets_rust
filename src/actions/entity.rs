@@ -14,11 +14,26 @@ use rand::{Rng, SeedableRng};
 #[derive(Component, Debug)]
 pub struct Inactive;
 
+/// An entity that does its own switching on and off (a hint fades in and
+/// out): `ActivateEntity` / `DeactivateEntity` send it an [`Activation`]
+/// and leave it as it is.
+#[derive(Component, Debug)]
+pub struct OwnActivation;
+
+/// `Entity.Activate()` (`deactivate` false) or `Deactivate()` asked of an
+/// entity with [`OwnActivation`].
+#[derive(Message, Debug, Clone, Copy)]
+pub struct Activation {
+    pub entity: Entity,
+    pub deactivate: bool,
+}
+
 pub struct EntityActionsPlugin;
 
 impl Plugin for EntityActionsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_map_action::<ActivateEntity, _>(set_active)
+        app.add_message::<Activation>()
+            .add_map_action::<ActivateEntity, _>(set_active)
             .add_map_action::<DestroyEntity, _>(destroy)
             .add_map_action::<ApplyImpulse, _>(impulse)
             .add_map_action::<DamageEntity, _>(damage);
@@ -26,10 +41,20 @@ impl Plugin for EntityActionsPlugin {
 }
 
 /// `ActivateEntityActionData`, `ActivateEntity(id)`, `DeactivateEntity(id)`.
-fn set_active(In(run): In<Run<ActivateEntity>>, ids: MapIds, mut commands: Commands) -> bool {
+fn set_active(
+    In(run): In<Run<ActivateEntity>>,
+    ids: MapIds,
+    own: Query<(), With<OwnActivation>>,
+    mut activations: MessageWriter<Activation>,
+    mut commands: Commands,
+) -> bool {
     let Some(e) = ids.entity(run.target(run.data.item_id)) else {
         return false;
     };
+    if own.contains(e) {
+        activations.write(Activation { entity: e, deactivate: run.data.deactivate });
+        return true;
+    }
     if run.data.deactivate {
         commands.entity(e).insert((
             Inactive,

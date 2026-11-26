@@ -8,7 +8,7 @@
 
 use serde::Deserialize;
 
-use super::xna::{Items, XColor, XRect, XVec2, boolean, int_list};
+use super::xna::{Items, XColor, XRect, XVec2, boolean, int_list, opt_int_list};
 use super::actions::MapActions;
 use super::{ContentError, parse_asset};
 
@@ -67,6 +67,10 @@ pub struct MapData {
     pub entities: Items<EntityData>,
     #[serde(default)]
     pub triggers: Items<TriggerData>,
+    /// The map's `<Hints>`: arrows, warnings, timers and texts the
+    /// player's position or an action switches on (`hint`).
+    #[serde(default)]
+    pub hints: Items<HintData>,
     /// The map's `<Actions>`, each kept with its XML (read apart, see
     /// [`MapActions`]).
     #[serde(skip)]
@@ -262,6 +266,64 @@ pub enum EntityType {
     /// A type this version does not know.
     #[serde(other)]
     Unknown,
+}
+
+/// `GameLibrary.MapDataInternal.HintData`: one hint of the map's `Hints`.
+///
+/// Every hint carries all of these in the campaign (`Text` and
+/// `PulseAmount` aside); the defaults are C#'s `HintData` constructor.
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct HintData {
+    /// The id actions name it by (`ActivateEntity(2001)`).
+    pub id: i64,
+    /// Where it stands, in map cells.
+    pub position: XVec2,
+    /// Content path under `Sprites/`; `Hints/ArrowAnimation` when absent.
+    #[serde(default = "default_hint_sprite")]
+    pub sprite: String,
+    /// Degrees, as the entities'.
+    #[serde(default)]
+    pub direction_deg: f32,
+    /// The sprite is a row of square frames, shown in turn.
+    #[serde(default, deserialize_with = "boolean")]
+    pub animated: bool,
+    /// The frames to show, in order (indices into the row); all of them
+    /// in order when absent.
+    #[serde(default, deserialize_with = "opt_int_list")]
+    pub animation_sequence: Option<Vec<i64>>,
+    /// Seconds a countdown runs from; the hint then shows it in place of
+    /// the sprite. 0: none.
+    #[serde(default)]
+    pub timer: f32,
+    #[serde(default = "one")]
+    pub scale: f32,
+    /// Cells where the player switches it on. An area with no width or
+    /// height never does: only actions do.
+    #[serde(default)]
+    pub area: XRect,
+    /// Drawn at its place on the screen at a fixed size, not in the world.
+    #[serde(default, rename = "DrawOnUI", deserialize_with = "boolean")]
+    pub draw_on_ui: bool,
+    /// A key in the game's texts; the hint then shows that text, not its
+    /// sprite (empty or blank: none).
+    #[serde(default)]
+    pub text: Option<String>,
+    /// How much it pulses; 1 is standard.
+    #[serde(default = "one")]
+    pub pulse_amount: f32,
+}
+
+fn default_hint_sprite() -> String {
+    "Hints/ArrowAnimation".into()
+}
+
+impl HintData {
+    /// The text's key, if the hint shows one
+    /// (`!string.IsNullOrWhiteSpace(textKey)`).
+    pub fn text_key(&self) -> Option<&str> {
+        self.text.as_deref().filter(|t| !t.trim().is_empty())
+    }
 }
 
 #[derive(Clone, Debug, Deserialize)]

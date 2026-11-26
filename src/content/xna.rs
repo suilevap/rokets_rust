@@ -220,6 +220,11 @@ pub fn int_list<'de, D: Deserializer<'de>>(d: D) -> Result<Vec<i64>, D::Error> {
         .collect()
 }
 
+/// [`int_list`] for an element that may be missing.
+pub fn opt_int_list<'de, D: Deserializer<'de>>(d: D) -> Result<Option<Vec<i64>>, D::Error> {
+    int_list(d).map(Some)
+}
+
 /// Booleans in either case (`true`, `True`).
 pub fn boolean<'de, D: Deserializer<'de>>(d: D) -> Result<bool, D::Error> {
     let s = String::deserialize(d)?;

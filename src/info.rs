@@ -33,7 +33,7 @@ struct TextsFile(Handle<XmlText>, Option<Handle<XmlText>>);
 
 /// The game's font, for texts over the game.
 #[derive(Resource)]
-struct GameFont(Handle<Font>);
+pub struct GameFont(pub Handle<Font>);
 
 /// The text on screen now: seconds left, and whether it paused the game.
 #[derive(Resource, Debug, Default)]

@@ -101,6 +101,11 @@ pub struct CameraOverride(pub Option<(Vec2, f32)>);
 #[derive(Component, Debug, Clone, Copy)]
 pub struct Unfocused;
 
+/// The system that moves the camera each frame, for what must read where
+/// it ends up (a hint's text placed over the world).
+#[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
+pub struct CameraFollow;
+
 #[derive(Component)]
 pub struct MainCamera {
     /// Position above the ground, following the eased focus.
@@ -250,6 +255,7 @@ impl Plugin for CameraPlugin {
             .add_systems(
                 PostUpdate,
                 follow_target
+                    .in_set(CameraFollow)
                     .before(TransformSystems::Propagate)
                     .run_if(in_state(GameState::Playing)),
             );

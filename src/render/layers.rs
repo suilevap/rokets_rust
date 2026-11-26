@@ -50,7 +50,7 @@ pub const LIGHT_DEPTH_BIAS: f32 = -BIAS_PER_RANK;
 pub const ADDITIVE_DEPTH_BIAS: f32 = 100.0 * BIAS_PER_RANK;
 
 /// Height between consecutive layers: tiny, only for the depth test.
-const Z_STEP: f32 = 0.0015;
+const Z_STEP: f32 = 0.0013;
 
 /// `depth_bias` between consecutive ranks, in sort-distance units (world
 /// units); larger than any camera-tilt difference across the screen.
@@ -99,10 +99,13 @@ pub enum Layer {
     /// `Fore`, drawn in the foreground pass, unlit, over the world); its
     /// fill lies a hair above its back.
     HealthBar,
+    /// Hints (`DepthConst.Hint`, drawn in the foreground pass, unlit, last
+    /// of the world).
+    Hint,
 }
 
 impl Layer {
-    pub const ALL: [Layer; 15] = [
+    pub const ALL: [Layer; 16] = [
         Layer::GroundDecor,
         Layer::Trail,
         Layer::Accelerator,
@@ -118,6 +121,7 @@ impl Layer {
         Layer::AirParticles,
         Layer::Glow,
         Layer::HealthBar,
+        Layer::Hint,
     ];
 
     /// Height above the ground plane, world units: all near zero (see the
