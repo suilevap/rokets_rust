@@ -682,20 +682,18 @@ fn spawn_car_sprites(
     if let Some(info) = sprite(car.base_sprite()) {
         parent.spawn(sprite_bundle(&info, car.scale, Layer::CarBase, lit, quad, materials));
     }
-    if car.load_wheel_body_color_views {
-        if let (Some(info), Some(left)) = (sprite(car.part_sprite("Wheel")), car.left_wheel_position) {
-            // Sprite pixels, y down → world, y up.
-            let at = Vec2::new(left.x, -left.y) * px(1.0) * car.scale;
-            for side in [at, Vec2::new(at.x, -at.y)] {
-                parent.spawn((
-                    sprite_bundle(&info, car.scale, Layer::CarWheel, lit, quad, materials),
-                    FrontWheel { offset: side, angle: 0.0 },
-                ));
-            }
+    if let (Some(info), Some(left)) = (sprite(car.view_part_sprite("Wheel")), car.left_wheel_position) {
+        // Sprite pixels, y down → world, y up.
+        let at = Vec2::new(left.x, -left.y) * px(1.0) * car.scale;
+        for side in [at, Vec2::new(at.x, -at.y)] {
+            parent.spawn((
+                sprite_bundle(&info, car.scale, Layer::CarWheel, lit, quad, materials),
+                FrontWheel { offset: side, angle: 0.0 },
+            ));
         }
-        if let Some(info) = sprite(car.part_sprite("Body")) {
-            parent.spawn((sprite_bundle(&info, car.scale, Layer::CarBody, lit, quad, materials), cabin::Cabin));
-        }
+    }
+    if let Some(info) = sprite(car.view_part_sprite("Body")) {
+        parent.spawn((sprite_bundle(&info, car.scale, Layer::CarBody, lit, quad, materials), cabin::Cabin));
     }
 }
 
