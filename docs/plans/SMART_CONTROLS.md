@@ -24,7 +24,8 @@ commands a finger does (`src/assist/mod.rs` has the design):
    several frames through the magnet's intent (`gadget`, `gadget_at` /
    `gadget_dir`, `gadget_cancel`), with the button rules shared with the AI
    (`gadget/handling.rs`). Magnet maps are playable in Smart.
-4. **Tap your own car = accelerator** (`Boost`): the pad's gadget by tap.
+4. **Tap your own car = accelerator** (`Boost`, done): the pad's gadget by
+   tap; see "Choices made in step 4".
 5. **Double-tap the ground = go there** (`GoTo(Vec2)`, `Settings::tap_to_go`):
    a path from `ai::navigation` followed as `ai/nodes/path.rs` does, writing
    `move_dir`; any drag cancels it.
@@ -76,3 +77,33 @@ commands a finger does (`src/assist/mod.rs` has the design):
   without a magnet is dropped.
 - **Testing aid**: `--grab-nearest` (`?grab-nearest`) grabs the nearest box a
   second into the play, as `--lock-nearest` does for the lock.
+
+## Choices made in step 4
+
+- **Gadgets ported: the Magnet and the Accelerator** (`gadget::WithGadget`;
+  the `Bomb` and `EditorPointer` are not ported). Both are reachable in
+  Smart: the magnet by `Grab` / `DropAt`, the accelerator by `Boost`. A car
+  has one gadget.
+- **What a tap on the own car means** (`assist::resolve_taps`): a tap within
+  `tap::own_car_reach` of the car's middle (its radius plus 0.5, at least
+  1.2 units) that is *strictly* nearer than the nearest enemy or thing
+  (`tap_pick`; an enemy or box as near still wins, so a fight beside the car
+  keeps the gun) is: `Boost` with an accelerator; with a magnet and a grab
+  or drop pending `CancelCargo` (the tap on the own car is the way to give a
+  job up while something is towed, where any ground tap is a drop; what is on
+  the rope stays, there is no drop "at the car"); otherwise nothing (the lock
+  stays, no clear).
+- **The job** (`assist/boost.rs`, `Assist::boost`): hold the gadget button
+  until `Accelerator::active()` says it has worked (its own `CHARGE`, 0.25 s,
+  read off the gadget, not copied), then let go; at most `CHARGE + 0.5` s,
+  then let go and cancel. A pure `step` over a `Scene`, as the magnet's.
+- **Not ready is refused**: a press without the whole energy bar only
+  fizzles (a quarter of the boost, no blast, a ping), which a tap would
+  never mean, so `apply_commands` ignores `Boost` unless
+  `Accelerator::ready()` (nothing is shown). A device holding the gadget
+  button wins (the job ends, nothing is repeated). The car must be alive and
+  driven.
+- **Feedback**: the green job ring closes on the own car while the button
+  is held (`assist/view.rs`). The gadget's own glow and ring show the rest.
+- **Testing aid**: `--boost-now` (`?boost-now`) boosts a second into the
+  play (Race2, Revenge, WinnersRoom have accelerator cars).

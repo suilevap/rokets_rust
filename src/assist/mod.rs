@@ -62,11 +62,15 @@
 //!   ([`crate::gadget::handling`]); out of reach it waits, shown by its
 //!   marker, for the player to drive in range.
 //!
+//! - **Accelerator** ([`boost`]): [`PlayerCommand::Boost`] holds the
+//!   gadget's button until the gadget has worked (its own charge time),
+//!   then lets go. Refused unless the energy is whole.
+//!
 //! # Not built yet
 //!
-//! `Boost`, `GoTo` and the taps for them: see
-//! `docs/plans/SMART_CONTROLS.md`.
+//! `GoTo` and its tap: see `docs/plans/SMART_CONTROLS.md`.
 
+pub mod boost;
 pub mod magnet;
 pub mod tap;
 pub mod view;
@@ -78,6 +82,7 @@ use crate::car::CarRadius;
 use crate::car::control::{AutoAimVisible, Team};
 use crate::controls::{DeviceSystems, LocalPlayer, NoInput, PlayerIntent, reach};
 use crate::explosion::Health;
+use crate::gadget::accelerator::Accelerator;
 use crate::gadget::{Linkable, Magnet};
 use crate::render::camera::MainCamera;
 use crate::settings::{ControlScheme, Settings};
@@ -111,6 +116,10 @@ pub enum PlayerCommand {
     DropAt(Vec2),
     /// Give up the grab or drop in hand (what is on the rope stays).
     CancelCargo,
+    /// Use the accelerator: hold its button until it works, then let go.
+    /// Ignored without an accelerator, or while its energy is not whole
+    /// (a press then only fizzles).
+    Boost,
 }
 
 /// A [`PlayerCommand`] for a car (the one with an [`Assist`]).
@@ -144,13 +153,15 @@ pub struct Assist {
     /// The gadget is to be cancelled by the next [`magnet::assist_cargo`]
     /// (a job was replaced or given up while the button was in its hand).
     cancel_gadget: bool,
+    /// The accelerator's button is in the assist's hand ([`boost`]).
+    pub boost: Option<boost::Boosting>,
     /// Seconds to the next accurate-shot pulse.
     pulse: f32,
 }
 
 impl Default for Assist {
     fn default() -> Self {
-        Assist { lock: None, soft: None, auto_aim: true, auto_fire: true, cargo: None, cancel_gadget: false, pulse: 0.0 }
+        Assist { lock: None, soft: None, auto_aim: true, auto_fire: true, cargo: None, cancel_gadget: false, boost: None, pulse: 0.0 }
     }
 }
 
@@ -172,7 +183,7 @@ impl Plugin for AssistPlugin {
     fn build(&self, app: &mut App) {
         app.add_message::<Tapped>().add_message::<Commanded>().add_systems(
             PreUpdate,
-            (sync_assist, resolve_taps, apply_commands, assist_drive, magnet::assist_cargo)
+            (sync_assist, resolve_taps, apply_commands, assist_drive, magnet::assist_cargo, boost::assist_boost)
                 .chain()
                 .in_set(AssistSystems)
                 .after(DeviceSystems)
@@ -246,6 +257,11 @@ fn assist_from(settings: Option<&Settings>) -> Assist {
 /// - with a magnet, a [`Linkable`] thing that is no enemy (a box, an ally, a
 ///   wreck): `Grab`, unless something is on the rope already (that is a
 ///   drop, below);
+/// - the player's own car, when it is the nearest thing within
+///   [`tap::own_car_reach`] of the tap: `Boost` with an accelerator; with a
+///   magnet and a grab or drop pending, `CancelCargo` (what is on the rope
+///   stays; there is no way to drop it at the car); otherwise nothing
+///   (the lock stays);
 /// - otherwise empty ground: with something on the rope `DropAt` the tap;
 ///   with none the lock is cleared (`ClearTarget`), and a grab still
 ///   pending is given up (`CancelCargo`). A tap on a box or the cargo itself
@@ -254,12 +270,12 @@ fn assist_from(settings: Option<&Settings>) -> Assist {
 pub fn resolve_taps(
     mut taps: MessageReader<Tapped>,
     mut commands: MessageWriter<Commanded>,
-    players: Query<(Entity, &Team, &Assist, Option<&Magnet>), With<LocalPlayer>>,
+    players: Query<(Entity, &Team, &Assist, Option<&Magnet>, Has<Accelerator>, Option<&Position>, Option<&CarRadius>), With<LocalPlayer>>,
     cars: Cars,
     linkable: Query<(Entity, &Position, Option<&Team>, Option<&Health>), With<Linkable>>,
 ) {
     for tap in taps.read() {
-        for (car, team, assist, magnet) in &players {
+        for (car, team, assist, magnet, accelerator, own, radius) in &players {
             let towing = magnet.is_some_and(|m| m.towing().is_some());
             let enemies = cars
                 .iter()
@@ -277,6 +293,24 @@ pub fn resolve_taps(
             let mut write = |command| {
                 commands.write(Commanded { car, command });
             };
+            // The player's own car, when it is the nearest thing under the
+            // finger (strictly: an enemy or a box as near still wins).
+            let pick_at = match pick {
+                tap::Pick::Enemy(e) => cars.get(e).ok().map(|c| c.2.0),
+                tap::Pick::Thing(t) => linkable.get(t).ok().map(|c| c.1.0),
+                tap::Pick::None => None,
+            };
+            if let Some(own) = own
+                && own.0.distance(tap.ground) <= tap::own_car_reach(radius.map_or(0.0, |r| r.0))
+                && pick_at.is_none_or(|at| own.0.distance_squared(tap.ground) < at.distance_squared(tap.ground))
+            {
+                if accelerator {
+                    write(PlayerCommand::Boost);
+                } else if magnet.is_some() && assist.cargo.is_some() {
+                    write(PlayerCommand::CancelCargo);
+                }
+                continue;
+            }
             match pick {
                 tap::Pick::Enemy(enemy) => write(PlayerCommand::LockTarget(enemy)),
                 _ if towing => write(PlayerCommand::DropAt(tap.ground)),
@@ -296,12 +330,12 @@ pub fn resolve_taps(
 #[allow(clippy::type_complexity)]
 pub fn apply_commands(
     mut commands: MessageReader<Commanded>,
-    mut assists: Query<(&mut Assist, &Team, Option<&Magnet>)>,
+    mut assists: Query<(&mut Assist, &Team, Option<&Magnet>, Option<&Accelerator>, &Health)>,
     cars: Query<(&Team, &Health)>,
     linkable: Query<(), With<Linkable>>,
 ) {
     for Commanded { car, command } in commands.read() {
-        let Ok((mut assist, team, magnet)) = assists.get_mut(*car) else {
+        let Ok((mut assist, team, magnet, accelerator, own_health)) = assists.get_mut(*car) else {
             continue;
         };
         // A new job takes the place of the old; a button in the assist's
@@ -337,6 +371,12 @@ pub fn apply_commands(
                 }
             }
             PlayerCommand::CancelCargo => set_job(&mut assist, None),
+            PlayerCommand::Boost => {
+                if accelerator.is_some_and(Accelerator::ready) && assist.boost.is_none() && own_health.hp > 0 {
+                    debug!("assist: boost");
+                    assist.boost = Some(boost::Boosting::default());
+                }
+            }
         }
     }
 }

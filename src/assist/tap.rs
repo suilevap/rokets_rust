@@ -18,6 +18,17 @@ const REFERENCE_HEIGHT: f32 = 480.0;
 /// units (a tile is one unit): 1.5 tiles, so a thumb need not hit the car.
 pub const TAP_PICK_RADIUS: f32 = 1.5;
 
+/// A tap on the player's own car counts within this of its middle at least,
+/// world units, whatever the car's size.
+pub const OWN_CAR_MIN: f32 = 1.2;
+/// ... or within the car's radius plus this.
+pub const OWN_CAR_MARGIN: f32 = 0.5;
+
+/// How near the middle of a car of `radius` a tap is on that car.
+pub fn own_car_reach(radius: f32) -> f32 {
+    (radius + OWN_CAR_MARGIN).max(OWN_CAR_MIN)
+}
+
 /// What a press is, so far.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Gesture {
