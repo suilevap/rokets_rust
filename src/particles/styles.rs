@@ -923,6 +923,48 @@ pub static SPEED_LINE: Style = Style {
     origin: CENTRE,
 };
 
+/// `DepthConst.SuccessUI` (= `DeathUI`).
+const SUCCESS_UI: f32 = -4.5;
+
+/// One half of the success stamp (`_success*UIStyle`, `_success*UIStyle2`):
+/// the picture at its own size (128 pixels times the window's
+/// `UISizeMultiplier`), white and fading out; `grow` is the second half,
+/// which swells to 1.5 times in half a second, the first holds its size for
+/// three. Screen space: it is drawn by `stamp`, not by the particle pool.
+const fn success(texture: &'static str, grow: bool) -> Style {
+    let end = if grow { 1.5 } else { 1.0 };
+    Style {
+        begin: State {
+            speed: 0.0,
+            scale: Vec2::splat(1.0),
+            view_rotation: 0.0,
+            rotation: 0.0,
+            color: [1.0; 4],
+            height: SUCCESS_UI,
+        },
+        end: State {
+            speed: 0.0,
+            scale: Vec2::splat(end),
+            view_rotation: 0.0,
+            rotation: 0.0,
+            color: TRANSPARENT,
+            height: SUCCESS_UI,
+        },
+        lifetime: if grow { 0.5 } else { 3.0 },
+        texture,
+        additive: false,
+        random_frame: false,
+        origin: CENTRE,
+    }
+}
+
+/// `CreateSuccessUI`, `CreateSuccessDoorUI`, `CreateAntiSuccessUI`: each
+/// stamp is two particles, the long one then the swelling one. Their scale
+/// here is 1 for the picture's own size (C#'s 32, the display unit ratio).
+pub static SUCCESS_STAMP: [Style; 2] = [success("Particles/Success", false), success("Particles/Success", true)];
+pub static SUCCESS_DOOR_STAMP: [Style; 2] = [success("Particles/SuccessDoor", false), success("Particles/SuccessDoor", true)];
+pub static ANTI_SUCCESS_STAMP: [Style; 2] = [success("Particles/SuccessAnti", false), success("Particles/SuccessAnti", true)];
+
 /// Every texture a style here draws with, to load with the map.
 pub const TEXTURES: [&str; 21] = [
     WHEEL_TRAIL.texture,
