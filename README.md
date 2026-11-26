@@ -20,7 +20,8 @@ cargo run --release -- -m LetItSnowDay
 
 | Option | Meaning |
 |---|---|
-| `-m MAP` | Map name from `assets/Maps/Singleplayer` (default `EditorTest`) |
+| `-m MAP` | Map name from `assets/Maps/Singleplayer`; the game starts in it. Without `-m` (and without `--screenshot`, `--record`, `--drive` or `--start`, which run the default map `EditorTest`) the game opens in the map menu |
+| `--menu` | Open in the map menu even with a map named; with `--screenshot` the menu is what is saved |
 | `--screenshot PATH` | Save a PNG after `--frames N` frames of play (default 90), then exit |
 | `--record DIR` | Save every frame (time stepped 1/30 s per frame) for `--frames N` frames, then exit; make a video with `ffmpeg -framerate 30 -i DIR/frame_%05d.png out.mp4` |
 | `--size WxH` | Window size (default 1280x720; `720x1280` for portrait) |
@@ -35,6 +36,17 @@ cargo run --release -- -m LetItSnowDay
 | `--nav` | Draw the navigation graph over the map (links in green, crossings in orange; red links are dear ones), as `NavGraph.Draw` did in the C# game's AI debug build |
 | `--no-music` | Start with the level music off (`M` switches it while playing). The maps' `PlayLevelMusic` actions play the songs of `assets/Sounds/Music` |
 
+**The map menu** has two tabs: *Campaign* (the 36 maps of `MapList.xml`, in
+order) and *All maps* (every file of `assets/Maps/Singleplayer`, by name,
+listed in `assets/Maps/AllMaps.txt`, which `tools/import_content.py` writes
+because the browser cannot list a folder). Click or tap a map to play it; on
+the keyboard use the arrows (and page up / down, home / end) to choose,
+left / right or `Tab` to change the tab, `Enter` to play and `Esc` to go back;
+on a gamepad the d-pad, the shoulder buttons (tabs), A and B. The lists
+scroll with the wheel or by dragging. Opened from a map, `Esc` / "Back"
+starts that map again from its beginning. In the browser, `?menu=1` is the
+menu and `?map=NAME` skips it.
+
 Portrait screens (a phone held upright) show the landscape view turned a
 quarter turn: up on the screen is right on the map, and the controls follow
 the screen. The short side of the screen always shows as much of the map as
@@ -45,7 +57,7 @@ then returns closer when it slows down. Multiple camera targets share the frame.
 
 Keys: WASD (and the arrows, on a car without a gun) drive (point where
 you want to go), `R` restarts,
-`N` skips to the next map. A gamepad's left stick or d-pad and touch (a
+`N` skips to the next map, `Esc` (or the gamepad's Start, or the "Menu" button at the top left of a touch screen) opens the map menu. A gamepad's left stick or d-pad and touch (a
 floating stick where your finger lands) work too; the last one used wins.
 Cars with a magnet: hold the right mouse button (or Shift + left) to shoot
 it at the cursor and let go over a box to tow it; hold it again to drag

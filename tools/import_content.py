@@ -146,6 +146,17 @@ def normalise_names() -> None:
         print(f"  not found: {where} <{element}> {name!r}", file=sys.stderr)
 
 
+def write_map_index() -> int:
+    """`assets/Maps/AllMaps.txt`: the single-player maps, one name per line.
+
+    The map menu's "All maps" tab reads it: the browser cannot list a folder.
+    Sorted by name ignoring case, as `menu::model::parse_index` sorts.
+    """
+    names = sorted((p.stem for p in (DEST / "Maps" / "Singleplayer").glob("*.xml")), key=lambda n: (n.lower(), n))
+    (DEST / "Maps" / "AllMaps.txt").write_text("".join(n + "\n" for n in names), encoding="utf-8")
+    return len(names)
+
+
 def main() -> int:
     if not CONTENT.is_dir():
         print(f"content folder not found: {CONTENT}", file=sys.stderr)
@@ -223,6 +234,7 @@ def main() -> int:
         shutil.copy2(path, target)
         copied += 1
     normalise_names()
+    write_map_index()
     # The names are exact now; a manifest of the files is not needed.
     (DEST / "manifest.txt").unlink(missing_ok=True)
     print(f"copied {copied} files from {CONTENT} to {DEST}")

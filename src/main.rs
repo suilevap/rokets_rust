@@ -23,6 +23,7 @@
 //! `?map=Middleware&start=84,9.5&drive=1,0:3&glow=4&lang=ru`. Only `map`,
 //! `start`, `car`, `drive`, `glow`, `flash`, `lang`, `nav` and `no-music` apply there; the file-writing options are native only.
 
+use bevy::ecs::schedule::SystemCondition;
 use bevy::prelude::*;
 use bevy::render::view::screenshot::{Screenshot, save_to_disk};
 use bevy::window::WindowResolution;
@@ -48,6 +49,8 @@ struct ScreenshotRequest {
 
 struct Args {
     map: String,
+    /// Whether the game opens in the map menu (`menu::starts_in_menu`).
+    menu: bool,
     shot: Option<ScreenshotRequest>,
     drive: Option<DriveScript>,
     record: Option<RecordRequest>,
@@ -84,7 +87,7 @@ mod web {
     }
 
     /// Options the browser build accepts, as URL parameters.
-    const WEB_OPTIONS: &[&str] = &["map", "start", "car", "drive", "glow", "flash", "lang", "nav", "no-music"];
+    const WEB_OPTIONS: &[&str] = &["map", "menu", "start", "car", "drive", "glow", "flash", "lang", "nav", "no-music"];
 
     /// `?map=Middleware&start=84,9.5` → `["--map", "Middleware", "--start", "84,9.5"]`.
     pub fn url_args() -> Vec<String> {
@@ -129,6 +132,8 @@ mod web {
 
 fn parse_args() -> Args {
     let mut map = "EditorTest".to_string();
+    let mut map_given = false;
+    let mut menu_flag = false;
     let mut drive = None;
     let mut record_dir = None;
     let mut start = None;
@@ -146,7 +151,11 @@ fn parse_args() -> Args {
     let mut args = raw_args().into_iter();
     while let Some(a) = args.next() {
         match a.as_str() {
-            "-m" | "--map" => map = args.next().unwrap_or(map),
+            "-m" | "--map" => {
+                map_given |= args.len() > 0;
+                map = args.next().unwrap_or(map)
+            }
+            "--menu" => menu_flag = true,
             "--screenshot" => {
                 shot = args.next().map(|path| ScreenshotRequest {
                     path,
@@ -209,8 +218,10 @@ fn parse_args() -> Args {
         frames,
         counted: 0,
     });
+    let scripted = shot.is_some() || record.is_some() || drive.is_some() || start.is_some();
     Args {
         map,
+        menu: tilerider::menu::starts_in_menu(menu_flag, map_given, scripted),
         shot,
         drive,
         record,
@@ -229,6 +240,7 @@ fn parse_args() -> Args {
 fn main() {
     let Args {
         map,
+        menu,
         shot,
         drive,
         record,
@@ -264,6 +276,9 @@ fn main() {
             }),
     )
     .add_plugins(TileRiderPlugin { map });
+    if menu {
+        app.insert_resource(tilerider::game::StartInMenu);
+    }
     if let Some(start) = start {
         app.insert_resource(tilerider::car::StartOverride(start));
     }
@@ -297,7 +312,10 @@ fn main() {
     }
     if let Some(shot) = shot {
         app.insert_resource(shot)
-            .add_systems(Update, take_screenshot.run_if(in_state(GameState::Playing)));
+            .add_systems(
+                Update,
+                take_screenshot.run_if(in_state(GameState::Playing).or_else(in_state(GameState::Menu))),
+            );
     }
     app.run();
 }

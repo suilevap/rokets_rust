@@ -32,7 +32,7 @@ pub fn map_path(name: &str) -> String {
     format!("Maps/Singleplayer/{name}.xml")
 }
 
-/// Raw text of an XML file.
+/// Raw text of an XML file (or a `.txt` list such as `Maps/AllMaps.txt`).
 #[derive(Asset, TypePath, Debug, Clone)]
 pub struct XmlText(pub String);
 
@@ -58,7 +58,7 @@ impl AssetLoader for XmlTextLoader {
     }
 
     fn extensions(&self) -> &[&str] {
-        &["xml", "resx"]
+        &["xml", "resx", "txt"]
     }
 }
 
