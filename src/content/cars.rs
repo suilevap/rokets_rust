@@ -190,6 +190,14 @@ impl CarData {
             .or_else(|| self.sprites_path.as_ref().map(|p| format!("{p}/Base")))
     }
 
+    /// The sprite of the `Wheel` or `Body` part drawn over the chassis, or
+    /// `None` when the car has no such parts: `LoadWheelBodyColorViews` is
+    /// false (`Car.LoadWheelBodyColorViews` skips loading them, as the
+    /// turrets, which have only `Base`, `Border` and the wrecks).
+    pub fn view_part_sprite(&self, part: &str) -> Option<String> {
+        self.load_wheel_body_color_views.then(|| self.part_sprite(part)).flatten()
+    }
+
     pub fn part_sprite(&self, part: &str) -> Option<String> {
         self.sprites_path.as_ref().map(|p| format!("{p}/{part}"))
     }

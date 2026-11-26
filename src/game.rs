@@ -105,7 +105,10 @@ fn sprites_for(map: &MapData, cars: &CarCatalog, registry: &crate::actions::Acti
     for player in map.players.iter() {
         if let Some(car) = cars.get(&player.car_name) {
             names.extend(car.base_sprite());
-            for part in ["Body", "Wheel", "Destroyed1", "Destroyed2"] {
+            for part in ["Body", "Wheel"] {
+                names.extend(car.view_part_sprite(part));
+            }
+            for part in ["Destroyed1", "Destroyed2"] {
                 names.extend(car.part_sprite(part));
             }
             if let Some((kind, _)) = car.weapon.as_deref().and_then(|w| crate::weapon::model::for_type(w, true)) {
