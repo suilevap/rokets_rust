@@ -8,7 +8,9 @@
 //! lives with the map. The magnet's job has its own green ring, on the thing
 //! to grab or at the point to drop it (fainter while it waits for the car to
 //! come in reach); the same ring closes on the player's own car while a
-//! boost holds the accelerator's button.
+//! boost holds the accelerator's button. A drive to a point (`goto`) has a
+//! blue ring at its destination; a point that was refused (no way there) gets
+//! a red one for a moment.
 
 use bevy::prelude::*;
 use avian2d::prelude::{Collider, Position};
@@ -57,11 +59,22 @@ struct LockMarker;
 #[derive(Component)]
 struct CargoMarker;
 
+/// The ring at the end of a `GoTo`, or on a refused point.
+#[derive(Component)]
+struct GoToMarker;
+
+/// The `GoTo` ring's colour (blue), the refused point's (red), the ring's
+/// diameter in units and its opacity.
+const GOTO_COLOR: [f32; 3] = [0.3, 0.7, 1.0];
+const REFUSED_COLOR: [f32; 3] = [1.0, 0.1, 0.1];
+const GOTO_DIAMETER: f32 = 1.6;
+const GOTO_ALPHA: f32 = 0.8;
+
 pub struct AssistViewPlugin;
 
 impl Plugin for AssistViewPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (show_marker, show_cargo_marker).run_if(in_state(GameState::Playing)));
+        app.add_systems(Update, (show_marker, show_cargo_marker, show_goto_marker).run_if(in_state(GameState::Playing)));
     }
 }
 
@@ -171,6 +184,57 @@ fn show_cargo_marker(
             transform.rotation = Quat::from_rotation_z(time.elapsed_secs() * TURNS * std::f32::consts::TAU);
             transform.scale = Vec3::new(diameter, diameter, 1.0);
             tint.color[3] = alpha;
+            visibility.set_if_neq(Visibility::Inherited);
+        }
+        None => {
+            visibility.set_if_neq(Visibility::Hidden);
+        }
+    }
+}
+
+/// Where a drive is shown: the point, the colour and the opacity (a refused
+/// point fades out over its time).
+fn goto_ring(assist: &Assist) -> Option<(Vec2, [f32; 3], f32)> {
+    if let Some(going) = &assist.goto {
+        return Some((going.target, GOTO_COLOR, GOTO_ALPHA));
+    }
+    let (at, left) = assist.refused?;
+    Some((at, REFUSED_COLOR, GOTO_ALPHA * (left / super::goto::REFUSED_SECS).clamp(0.0, 1.0)))
+}
+
+#[allow(clippy::type_complexity, clippy::too_many_arguments)]
+fn show_goto_marker(
+    mut commands: Commands,
+    time: Res<Time>,
+    map: Res<LoadedMap>,
+    quad: Res<UnitQuad>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+    players: Query<&Assist, With<LocalPlayer>>,
+    mut markers: Query<(&mut Transform, &mut Visibility, &mut SpriteTint), With<GoToMarker>>,
+) {
+    let ring = players.iter().find_map(goto_ring);
+    let Some((mut transform, mut visibility, mut tint)) = markers.iter_mut().next() else {
+        if ring.is_some()
+            && let Some(info) = map.sprites.get(RING)
+        {
+            debug!("assist: go-to marker made");
+            let tint = SpriteTint { color: [GOTO_COLOR[0], GOTO_COLOR[1], GOTO_COLOR[2], 0.0], lit: false };
+            commands.spawn((
+                Name::new("Go-to marker"),
+                MapEntity,
+                GoToMarker,
+                Visibility::Hidden,
+                sprite_bundle(info, 1.0, Layer::Hint, tint, &quad, &mut materials),
+            ));
+        }
+        return;
+    };
+    match ring {
+        Some((at, color, alpha)) => {
+            transform.translation = at.extend(Layer::Hint.z());
+            transform.rotation = Quat::from_rotation_z(-time.elapsed_secs() * TURNS * std::f32::consts::TAU);
+            transform.scale = Vec3::new(GOTO_DIAMETER, GOTO_DIAMETER, 1.0);
+            tint.color = [color[0], color[1], color[2], alpha];
             visibility.set_if_neq(Visibility::Inherited);
         }
         None => {

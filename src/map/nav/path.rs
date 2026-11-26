@@ -28,7 +28,7 @@ use bevy::math::Vec2;
 use super::graph::Blocker;
 
 /// `NavPath`.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct NavPath {
     current_index: i32,
     path: Vec<Vec2>,

@@ -35,7 +35,7 @@ cargo run --release -- -m LetItSnowDay
 | `--run ACTION` | With `--drive`: run that map action on the script's first step (repeat it for several), as the C# game's debug server does with `/run?cmd=ACTION`, e.g. an AI's `MoveCargoOrder` |
 | `--trace a,b` | With `--drive`: also log these entities (map ids) every 0.1 s, as `trace t id x y angle speed` in the C# game's axes, for `tools/compare.py`, and their health as `health t id hp` |
 | `--nav` | Draw the navigation graph over the map (links in green, crossings in orange; red links are dear ones), as `NavGraph.Draw` did in the C# game's AI debug build |
-| `--controls classic\|smart` | The touch scheme for this run (not saved; `?controls=smart` in the browser); with Smart, `--lock-nearest` locks the nearest enemy a second into the play and `--grab-nearest` grabs the nearest box with the magnet, `--boost-now` uses the accelerator (for screenshots; `?grab-nearest`, `?boost-now` in the browser) |
+| `--controls classic\|smart` | The touch scheme for this run (not saved; `?controls=smart` in the browser); with Smart, `--lock-nearest` locks the nearest enemy a second into the play and `--grab-nearest` grabs the nearest box with the magnet, `--boost-now` uses the accelerator, `--goto X,Y` drives to that map cell (for screenshots; `?grab-nearest`, `?boost-now`, `?goto=X,Y` in the browser) |
 | `--no-music` | Start with the level music off (`M` switches it while playing). Wins over the saved setting for this run. The maps' `PlayLevelMusic` actions play the songs of `assets/Sounds/Music` |
 
 **The map menu** has three tabs: *Campaign* (the 36 maps of `MapList.xml`, in
@@ -75,11 +75,13 @@ enemy cars' magnets do, and a green ring shows the target (fainter while it
 waits for you to drive within about 7 units in sight; it gives up after 10 s).
 While a box is on the rope, tap the ground to drop it there (a green ring marks
 the point). A tap on an enemy always locks, even on a car the magnet could
-take; the stick keeps driving all the while. Taps to boost or drive to a point
-come later (`docs/plans/SMART_CONTROLS.md`). To try it on a desktop: a short left click is a tap
+take; the stick keeps driving all the while. A double tap on bare ground (nothing on the rope) drives the car there along
+the navigation path (a blue ring marks the point; any drive input of yours
+cancels it; a point with no way is refused with a red ring; the Options tab's
+"Tap to go" turns it off; `docs/plans/SMART_CONTROLS.md`). To try it on a desktop: a short left click is a tap
 (the mouse neither aims nor fires in Smart); `--lock-nearest` locks the
 nearest enemy a second into the play, `--grab-nearest` grabs the nearest box, `--boost-now`
-boosts (for screenshots). Maps with enemies:
+boosts, `--goto X,Y` drives to a map cell (for screenshots). Maps with enemies:
 `cargo run --release -- -m TheLastStand --controls smart`.
 
 Portrait screens (a phone held upright) show the landscape view turned a

@@ -58,6 +58,7 @@ pub use condition::{Condition, ThinkTimer, TimerState, WhileTargetAlive, has_liv
 pub use optional::{Optional, optional, optional_required};
 pub use parallel::{All, all};
 pub use path::{
-    FollowBy, MoveBase, MoveParams, MoveToPoint, MoveToRandomVisiblePosition, PositionFn, go_to_position, to_go_world,
+    FollowBy, MoveBase, MoveParams, MoveToPoint, MoveToRandomVisiblePosition, PositionFn, arrived, follow_stick, go_to_position, plan_path,
+    to_go_world,
 };
 pub use act::act;

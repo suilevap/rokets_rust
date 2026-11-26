@@ -66,11 +66,20 @@
 //!   gadget's button until the gadget has worked (its own charge time),
 //!   then lets go. Refused unless the energy is whole.
 //!
+//! - **Go to** ([`goto`]): [`PlayerCommand::GoTo`] plans a path with the
+//!   navigation and drives the car along it as the AI does, writing the
+//!   intent's `move_dir`; any manual drive input ends it. The Smart scheme's
+//!   *double tap* on bare ground (nothing on the rope) is `ClearTarget`, as
+//!   the first tap already was, and `GoTo` ([`tap::is_double_tap`]; gated by
+//!   `Settings::tap_to_go`, which only the finger's reading of the taps
+//!   looks at: an AI player sends `GoTo` as it likes).
+//!
 //! # Not built yet
 //!
-//! `GoTo` and its tap: see `docs/plans/SMART_CONTROLS.md`.
+//! The AI player: see `docs/plans/SMART_CONTROLS.md`.
 
 pub mod boost;
+pub mod goto;
 pub mod magnet;
 pub mod tap;
 pub mod view;
@@ -120,6 +129,12 @@ pub enum PlayerCommand {
     /// Ignored without an accelerator, or while its energy is not whole
     /// (a press then only fizzles).
     Boost,
+    /// Drive to this point (world) along a path from the navigation, until
+    /// there, or until a manual drive input, a refusal (no way) or a
+    /// time-out ([`goto`]). Replaces a drive in hand; ignored for a dead car.
+    GoTo(Vec2),
+    /// Give up the drive in hand.
+    CancelGoTo,
 }
 
 /// A [`PlayerCommand`] for a car (the one with an [`Assist`]).
@@ -155,13 +170,18 @@ pub struct Assist {
     cancel_gadget: bool,
     /// The accelerator's button is in the assist's hand ([`boost`]).
     pub boost: Option<boost::Boosting>,
+    /// The drive to a point in hand ([`goto`]).
+    pub goto: Option<goto::Going>,
+    /// A `GoTo` that was refused (no way there): the point and the seconds
+    /// its red marker has left.
+    pub refused: Option<(Vec2, f32)>,
     /// Seconds to the next accurate-shot pulse.
     pulse: f32,
 }
 
 impl Default for Assist {
     fn default() -> Self {
-        Assist { lock: None, soft: None, auto_aim: true, auto_fire: true, cargo: None, cancel_gadget: false, boost: None, pulse: 0.0 }
+        Assist { lock: None, soft: None, auto_aim: true, auto_fire: true, cargo: None, cancel_gadget: false, boost: None, goto: None, refused: None, pulse: 0.0 }
     }
 }
 
@@ -183,7 +203,7 @@ impl Plugin for AssistPlugin {
     fn build(&self, app: &mut App) {
         app.add_message::<Tapped>().add_message::<Commanded>().add_systems(
             PreUpdate,
-            (sync_assist, resolve_taps, apply_commands, assist_drive, magnet::assist_cargo, boost::assist_boost)
+            (sync_assist, resolve_taps, apply_commands, assist_drive, magnet::assist_cargo, boost::assist_boost, goto::assist_goto)
                 .chain()
                 .in_set(AssistSystems)
                 .after(DeviceSystems)
@@ -266,15 +286,36 @@ fn assist_from(settings: Option<&Settings>) -> Assist {
 ///   with none the lock is cleared (`ClearTarget`), and a grab still
 ///   pending is given up (`CancelCargo`). A tap on a box or the cargo itself
 ///   while towing is a drop at the tap too.
-#[allow(clippy::type_complexity)]
+///
+/// **Double tap** ([`tap::is_double_tap`]: within 0.4 s and 1 unit of the
+/// last): the first tap has already acted (cheap and responsive: it cleared
+/// the lock), so the second adds only a `GoTo` the tap, and only where the
+/// first was *plain ground* too: nothing under the finger, not the own car,
+/// nothing on the rope. A double tap on an enemy, a box or the own car means
+/// that tap twice (harmless: the lock, the grab and the cargo job are
+/// replaced by the same, a second boost is refused as the energy is spent),
+/// and with something towed it is a drop twice, never a drive (a `GoTo` with
+/// cargo on the rope, a drop's job pending, would fight the magnet). A third
+/// tap starts afresh. Off with `Settings::tap_to_go`. A tap on the own car
+/// that would do nothing else (no accelerator, no job pending) gives up a
+/// drive in hand (`CancelGoTo`).
+#[allow(clippy::type_complexity, clippy::too_many_arguments)]
 pub fn resolve_taps(
     mut taps: MessageReader<Tapped>,
     mut commands: MessageWriter<Commanded>,
+    time: Res<Time<Real>>,
+    settings: Option<Res<Settings>>,
+    mut last_tap: Local<Option<tap::LastTap>>,
     players: Query<(Entity, &Team, &Assist, Option<&Magnet>, Has<Accelerator>, Option<&Position>, Option<&CarRadius>), With<LocalPlayer>>,
     cars: Cars,
     linkable: Query<(Entity, &Position, Option<&Team>, Option<&Health>), With<Linkable>>,
 ) {
+    let go_enabled = settings.as_ref().is_none_or(|s| s.tap_to_go);
     for tap in taps.read() {
+        let now = time.elapsed_secs();
+        let double = go_enabled && tap::is_double_tap(*last_tap, tap.ground, now);
+        // Whether this tap was plain ground, to be the first of a double.
+        let mut plain = false;
         for (car, team, assist, magnet, accelerator, own, radius) in &players {
             let towing = magnet.is_some_and(|m| m.towing().is_some());
             let enemies = cars
@@ -308,6 +349,8 @@ pub fn resolve_taps(
                     write(PlayerCommand::Boost);
                 } else if magnet.is_some() && assist.cargo.is_some() {
                     write(PlayerCommand::CancelCargo);
+                } else if assist.goto.is_some() {
+                    write(PlayerCommand::CancelGoTo);
                 }
                 continue;
             }
@@ -320,9 +363,15 @@ pub fn resolve_taps(
                     if assist.cargo.is_some() {
                         write(PlayerCommand::CancelCargo);
                     }
+                    if double {
+                        write(PlayerCommand::GoTo(tap.ground));
+                    }
+                    plain = true;
                 }
             }
         }
+        // A double tap is used up; a plain tap may begin one.
+        *last_tap = (plain && !double && go_enabled).then_some(tap::LastTap { ground: tap.ground, at: now });
     }
 }
 
@@ -371,6 +420,14 @@ pub fn apply_commands(
                 }
             }
             PlayerCommand::CancelCargo => set_job(&mut assist, None),
+            PlayerCommand::GoTo(at) => {
+                if own_health.hp > 0 {
+                    debug!("assist: go to {at:?}");
+                    assist.goto = Some(goto::Going::new(at));
+                    assist.refused = None;
+                }
+            }
+            PlayerCommand::CancelGoTo => assist.goto = None,
             PlayerCommand::Boost => {
                 if accelerator.is_some_and(Accelerator::ready) && assist.boost.is_none() && own_health.hp > 0 {
                     debug!("assist: boost");

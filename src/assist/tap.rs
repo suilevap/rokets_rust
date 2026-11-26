@@ -24,6 +24,31 @@ pub const OWN_CAR_MIN: f32 = 1.2;
 /// ... or within the car's radius plus this.
 pub const OWN_CAR_MARGIN: f32 = 0.5;
 
+/// A second tap counts as the other half of a double tap when it comes within
+/// this many seconds of the first. Taps are reported when the finger lifts,
+/// and a tap itself may last [`TAP_MAX_SECS`], so this is release to release:
+/// 0.35 s would leave a slow thumb hardly any gap between the two.
+pub const DOUBLE_TAP_SECS: f32 = 0.4;
+/// ... and within this of it on the ground, world units.
+pub const DOUBLE_TAP_RADIUS: f32 = 1.0;
+
+/// A tap on bare ground that a second one may follow.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct LastTap {
+    pub ground: Vec2,
+    /// When it was made, s.
+    pub at: f32,
+}
+
+/// Whether a tap at `ground` at time `now` is the second of a double tap
+/// that began with `previous`.
+pub fn is_double_tap(previous: Option<LastTap>, ground: Vec2, now: f32) -> bool {
+    previous.is_some_and(|p| {
+        let gap = now - p.at;
+        (0.0..=DOUBLE_TAP_SECS).contains(&gap) && p.ground.distance(ground) <= DOUBLE_TAP_RADIUS
+    })
+}
+
 /// How near the middle of a car of `radius` a tap is on that car.
 pub fn own_car_reach(radius: f32) -> f32 {
     (radius + OWN_CAR_MARGIN).max(OWN_CAR_MIN)
