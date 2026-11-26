@@ -26,6 +26,11 @@ impl Strings {
         base
     }
 
+    /// The text of a key, if the texts have it.
+    pub fn find(&self, key: &str) -> Option<&str> {
+        self.0.get(key).map(String::as_str)
+    }
+
     /// The text of a key, or the key marked as missing (`StringsByStringKeys`
     /// wrote its warning prefix).
     pub fn get(&self, key: &str) -> String {

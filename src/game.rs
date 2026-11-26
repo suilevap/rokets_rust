@@ -25,6 +25,8 @@ pub enum GameState {
     #[default]
     Loading,
     Playing,
+    /// The map menu (`menu`): the maps to choose from; no map is loaded.
+    Menu,
     /// Loading failed; the message is logged and shown.
     Failed,
 }
@@ -32,6 +34,11 @@ pub enum GameState {
 /// Which map to play; changed to go to another map.
 #[derive(Resource, Debug, Clone)]
 pub struct CurrentMapName(pub String);
+
+/// Present at the start when the game opens in the map menu instead of a
+/// map (`menu::starts_in_menu`); taken away on the way in.
+#[derive(Resource, Debug, Clone, Copy)]
+pub struct StartInMenu;
 
 /// Everything the world is spawned from.
 #[derive(Resource)]
@@ -201,7 +208,14 @@ fn start_loading(
     mut commands: Commands,
     server: Res<AssetServer>,
     name: Res<CurrentMapName>,
+    start_in_menu: Option<Res<StartInMenu>>,
+    mut next: ResMut<NextState<GameState>>,
 ) {
+    if start_in_menu.is_some() {
+        commands.remove_resource::<StartInMenu>();
+        next.set(GameState::Menu);
+        return;
+    }
     let map_path = assets::map_path(&name.0);
     info!("loading map {}", map_path);
     commands.insert_resource(Pending {
