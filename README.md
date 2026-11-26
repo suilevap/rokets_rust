@@ -22,6 +22,7 @@ cargo run --release -- -m LetItSnowDay
 |---|---|
 | `-m MAP` | Map name from `assets/Maps/Singleplayer`; the game starts in it. Without `-m` (and without `--screenshot`, `--record`, `--drive` or `--start`, which run the default map `EditorTest`) the game opens in the map menu |
 | `--menu` | Open in the map menu even with a map named; with `--screenshot` the menu is what is saved |
+| `--tab TAB` | The menu's first tab: `campaign`, `all` or `options` (`?menu=1&tab=options` in the browser) |
 | `--screenshot PATH` | Save a PNG after `--frames N` frames of play (default 90), then exit |
 | `--record DIR` | Save every frame (time stepped 1/30 s per frame) for `--frames N` frames, then exit; make a video with `ffmpeg -framerate 30 -i DIR/frame_%05d.png out.mp4` |
 | `--size WxH` | Window size (default 1280x720; `720x1280` for portrait) |
@@ -29,23 +30,38 @@ cargo run --release -- -m LetItSnowDay
 | `--car NAME` | Give the player that car of `Cars.xml` (on every map), e.g. `Truck` to try the rocket launcher no map gives the player |
 | `--glow X` | How strongly the additive (HDR) light of lamps with an `AdditiveRate` is added (default 3; `[` and `]` turn it by 0.25 while playing, shown as `glow` in the top line) |
 | `--flash X` | How much brighter additive effects (flashes, sparks, bullet trails, the aim line) are drawn (default 1.5; `;` and `'` turn it by 0.25 while playing, shown as `flash` in the top line) |
-| `--lang LANG` | The maps' texts in another language: `ru`, `de`, `es`, `it`, `be` (default English) |
+| `--lang LANG` | The maps' texts in another language: `ru`, `de`, `es`, `it`, `be` (default English; `en` forces English over a saved language). Wins over the saved setting for this run |
 | `--drive SCRIPT` | Drive by script, `x,y:seconds;...` (stick in world directions, y up; `x,y,g:seconds` also holds the gadget, aimed ahead, `x,y,f:seconds` the trigger, the gun firing where it points), logging the car's path every 0.1 s |
 | `--run ACTION` | With `--drive`: run that map action on the script's first step (repeat it for several), as the C# game's debug server does with `/run?cmd=ACTION`, e.g. an AI's `MoveCargoOrder` |
 | `--trace a,b` | With `--drive`: also log these entities (map ids) every 0.1 s, as `trace t id x y angle speed` in the C# game's axes, for `tools/compare.py`, and their health as `health t id hp` |
 | `--nav` | Draw the navigation graph over the map (links in green, crossings in orange; red links are dear ones), as `NavGraph.Draw` did in the C# game's AI debug build |
-| `--no-music` | Start with the level music off (`M` switches it while playing). The maps' `PlayLevelMusic` actions play the songs of `assets/Sounds/Music` |
+| `--no-music` | Start with the level music off (`M` switches it while playing). Wins over the saved setting for this run. The maps' `PlayLevelMusic` actions play the songs of `assets/Sounds/Music` |
 
-**The map menu** has two tabs: *Campaign* (the 36 maps of `MapList.xml`, in
+**The map menu** has three tabs: *Campaign* (the 36 maps of `MapList.xml`, in
 order) and *All maps* (every file of `assets/Maps/Singleplayer`, by name,
 listed in `assets/Maps/AllMaps.txt`, which `tools/import_content.py` writes
 because the browser cannot list a folder). Click or tap a map to play it; on
 the keyboard use the arrows (and page up / down, home / end) to choose,
 left / right or `Tab` to change the tab, `Enter` to play and `Esc` to go back;
 on a gamepad the d-pad, the shoulder buttons (tabs), A and B. The lists
-scroll with the wheel or by dragging. Opened from a map, `Esc` / "Back"
+scroll with the wheel or by dragging. The third tab, *Options*, holds the
+settings (below); there Enter, a click or a tap, or left / right on the
+keyboard and the d-pad, change the chosen row. Opened from a map, `Esc` / "Back"
 starts that map again from its beginning. In the browser, `?menu=1` is the
 menu and `?map=NAME` skips it.
+
+**Settings** (the *Options* tab) are kept between runs: native in
+`$XDG_CONFIG_HOME/tilerider/settings.json` (else `%APPDATA%\tilerider\` on
+Windows, `~/Library/Application Support/tilerider/` on macOS,
+`~/.config/tilerider/`), in the browser in `localStorage` (`tilerider.settings`,
+per browser and site, so the main page and every pull request preview, which share one address, share it too). They are
+written when one changes; a missing or corrupt file means the defaults. The
+rows: *Controls* (Classic, the zones described below, or Smart, one-finger
+controls that are **not built yet**: choosing it plays as Classic), the smart
+options *Auto-fire*, *Auto-aim* and *Tap to go* (dimmed while Classic; they do
+nothing yet), *Music* (the same as `M`) and *Language* (the maps' texts; read
+at start, so it shows from the next run). `--no-music`, `--lang` (`no-music`,
+`lang` in the browser) win for the run they are given in and are not saved.
 
 Portrait screens (a phone held upright) show the landscape view turned a
 quarter turn: up on the screen is right on the map, and the controls follow

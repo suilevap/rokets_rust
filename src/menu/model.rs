@@ -1,32 +1,122 @@
 //! What the map menu holds, as plain data (no Bevy app code, so it is
 //! unit-tested in `tests/menu.rs`): the two lists, which tab and entry are
 //! chosen, the index file of all maps, and how a pointer's press, drag and
-//! release are told apart (a tap picks, a drag scrolls).
+//! release are told apart (a tap picks, a drag scrolls), and the rows of
+//! the options tab.
 
 use bevy::ecs::resource::Resource;
 use bevy::math::Vec2;
 
-/// The two lists of the menu.
+use crate::settings::{ControlScheme, Settings};
+
+/// The tabs of the menu.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Tab {
     /// The maps of `MapList.xml`, in the campaign's order.
     Campaign,
     /// Every single-player map there is, by name.
     All,
+    /// The settings ([`OptionRow`]s), not maps.
+    Options,
 }
 
 impl Tab {
+    /// The tabs that list maps.
     pub const BOTH: [Tab; 2] = [Tab::Campaign, Tab::All];
+    pub const ALL: [Tab; 3] = [Tab::Campaign, Tab::All, Tab::Options];
 
     pub fn title(self) -> &'static str {
         match self {
             Tab::Campaign => "Campaign",
             Tab::All => "All maps",
+            Tab::Options => "Options",
         }
+    }
+
+    /// A tab by its name (`campaign`, `all`, `options`; any case).
+    pub fn parse(name: &str) -> Option<Tab> {
+        Tab::ALL.into_iter().find(|t| t.title().eq_ignore_ascii_case(name) || format!("{t:?}").eq_ignore_ascii_case(name))
     }
 
     fn index(self) -> usize {
         self as usize
+    }
+}
+
+/// A row of the options tab.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum OptionRow {
+    Controls,
+    AutoFire,
+    AutoAim,
+    TapToGo,
+    Music,
+    Language,
+}
+
+impl OptionRow {
+    pub const ALL: [OptionRow; 6] =
+        [OptionRow::Controls, OptionRow::AutoFire, OptionRow::AutoAim, OptionRow::TapToGo, OptionRow::Music, OptionRow::Language];
+
+    pub fn name(self) -> &'static str {
+        match self {
+            OptionRow::Controls => "Controls",
+            OptionRow::AutoFire => "Auto-fire",
+            OptionRow::AutoAim => "Auto-aim",
+            OptionRow::TapToGo => "Tap to go",
+            OptionRow::Music => "Music",
+            OptionRow::Language => "Language",
+        }
+    }
+
+    /// The small line under the name.
+    pub fn hint(self) -> &'static str {
+        match self {
+            OptionRow::Controls => "Smart: one finger (not built yet, plays as Classic)",
+            OptionRow::AutoFire => "Smart: fire while a target is locked",
+            OptionRow::AutoAim => "Smart: turn the gun on the locked target",
+            OptionRow::TapToGo => "Smart: double-tap the ground to drive there",
+            OptionRow::Music => "The level music (M while playing)",
+            OptionRow::Language => "The maps' texts; shown from the next start",
+        }
+    }
+
+    /// The value as the row shows it.
+    pub fn value(self, settings: &Settings) -> String {
+        let on = |b: bool| if b { "On" } else { "Off" }.to_string();
+        match self {
+            OptionRow::Controls => settings.control_scheme.label().to_string(),
+            OptionRow::AutoFire => on(settings.auto_fire),
+            OptionRow::AutoAim => on(settings.auto_aim),
+            OptionRow::TapToGo => on(settings.tap_to_go),
+            OptionRow::Music => on(settings.music),
+            OptionRow::Language => settings.language_name().to_string(),
+        }
+    }
+
+    /// The smart controls' options do nothing while the scheme is
+    /// `Classic`: the row is shown dimmed (still changeable, so the choice
+    /// is there when the player switches).
+    pub fn dimmed(self, settings: &Settings) -> bool {
+        matches!(self, OptionRow::AutoFire | OptionRow::AutoAim | OptionRow::TapToGo)
+            && settings.control_scheme != ControlScheme::Smart
+    }
+
+    /// Changes the value one step (`dir` 1 or -1; a switch flips either
+    /// way).
+    pub fn adjust(self, settings: &mut Settings, dir: i32) {
+        match self {
+            OptionRow::Controls => {
+                let all = ControlScheme::BOTH;
+                let at = all.iter().position(|c| *c == settings.control_scheme).unwrap_or(0) as i32;
+                settings.control_scheme = all[(at + dir).rem_euclid(all.len() as i32) as usize];
+            }
+            OptionRow::AutoFire => settings.auto_fire = !settings.auto_fire,
+            OptionRow::AutoAim => settings.auto_aim = !settings.auto_aim,
+            OptionRow::TapToGo => settings.tap_to_go = !settings.tap_to_go,
+            OptionRow::Music => settings.set_music(!settings.music),
+            OptionRow::Language => settings.cycle_language(dir),
+        }
     }
 }
 
@@ -45,20 +135,38 @@ pub fn parse_index(text: &str) -> Vec<String> {
 pub struct MenuModel {
     lists: [Vec<String>; 2],
     tab: Tab,
-    selected: [usize; 2],
+    selected: [usize; 3],
 }
 
 impl MenuModel {
     pub fn new(campaign: Vec<String>, all: Vec<String>) -> Self {
-        MenuModel { lists: [campaign, all], tab: Tab::Campaign, selected: [0; 2] }
+        MenuModel { lists: [campaign, all], tab: Tab::Campaign, selected: [0; 3] }
     }
 
     pub fn tab(&self) -> Tab {
         self.tab
     }
 
+    /// The maps of a list (none for the options tab).
     pub fn entries(&self, tab: Tab) -> &[String] {
-        &self.lists[tab.index()]
+        self.lists.get(tab.index()).map_or(&[], Vec::as_slice)
+    }
+
+    /// How many rows a tab has.
+    pub fn len(&self, tab: Tab) -> usize {
+        match tab {
+            Tab::Options => OptionRow::ALL.len(),
+            _ => self.entries(tab).len(),
+        }
+    }
+
+    pub fn is_empty(&self, tab: Tab) -> bool {
+        self.len(tab) == 0
+    }
+
+    /// The option row chosen on the options tab.
+    pub fn chosen_option(&self) -> OptionRow {
+        OptionRow::ALL[self.selected[Tab::Options.index()].min(OptionRow::ALL.len() - 1)]
     }
 
     pub fn selected(&self, tab: Tab) -> usize {
@@ -69,16 +177,15 @@ impl MenuModel {
         self.tab = tab;
     }
 
-    /// The other tab, `step` tabs on (there are two; it wraps).
+    /// The tab `step` tabs on (it wraps).
     pub fn switch_tab(&mut self, step: i32) {
-        if step % 2 != 0 {
-            self.tab = if self.tab == Tab::Campaign { Tab::All } else { Tab::Campaign };
-        }
+        let n = Tab::ALL.len() as i32;
+        self.tab = Tab::ALL[(self.tab.index() as i32 + step).rem_euclid(n) as usize];
     }
 
     /// The chosen entry of the shown list moves by `step`, stopping at the ends.
     pub fn step(&mut self, step: i32) {
-        let len = self.entries(self.tab).len();
+        let len = self.len(self.tab);
         if len == 0 {
             return;
         }
@@ -88,7 +195,7 @@ impl MenuModel {
 
     /// Chooses an entry of a list (the one tapped), and shows that list.
     pub fn select(&mut self, tab: Tab, index: usize) {
-        if index < self.entries(tab).len() {
+        if index < self.len(tab) {
             self.tab = tab;
             self.selected[tab.index()] = index;
         }

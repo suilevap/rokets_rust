@@ -29,6 +29,7 @@ pub mod platform;
 pub mod player_hud;
 pub mod render;
 pub mod script;
+pub mod settings;
 pub mod sound;
 pub mod stamp;
 pub mod splash;

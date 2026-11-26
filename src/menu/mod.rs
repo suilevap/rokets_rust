@@ -8,12 +8,19 @@
 //! name is the text under its key when the game's texts have one
 //! (`Middleware` is "Entry Point"), and its file name otherwise.
 //!
-//! Two tabs, each a scrolling list:
+//! Three tabs, each a scrolling list:
 //! - **Campaign**: `Maps/MapList.xml`'s `Singleplayer` items, in order;
 //! - **All maps**: `Maps/AllMaps.txt`, every map of `Maps/Singleplayer`
 //!   by name. The browser cannot list a folder, so `tools/import_content.py`
 //!   writes the list when it imports (`tests/menu.rs` checks it against the
-//!   folder).
+//!   folder);
+//! - **Options**: the [`Settings`] (controls scheme and its smart options,
+//!   music, language), one row each, with the value on the right; the
+//!   smart options show dimmed while the scheme is Classic (they do
+//!   nothing then, but stay changeable so the choice is there when Smart
+//!   is). Select, click or tap a row (or Left / Right) to change it; the
+//!   change is saved at once (`settings.rs`). Language is read at start,
+//!   so it shows from the next run.
 //!
 //! How to reach it: the game opens in it when started without a map (no
 //! `-m` / `?map=`, and no `--screenshot`, `--record`, `--drive` or `--start`,
@@ -25,8 +32,10 @@
 //!
 //! Controls: mouse (click a tab or a map, wheel to scroll), touch (tap, drag
 //! to scroll; every row is 64 px tall), keyboard (up and down, page up and
-//! down, home and end, left and right or `Tab` for the tabs, `Enter` picks),
-//! gamepad (d-pad, shoulder buttons for the tabs, A picks).
+//! down, home and end, left and right or `Tab` for the tabs (on the options
+//! tab left and right change the value, `Tab` still changes tab), `Enter`
+//! picks or changes), gamepad (d-pad, shoulder buttons for the tabs, A
+//! picks or changes).
 //!
 //! Choosing a map sets [`CurrentMapName`] and goes to `Loading`, as
 //! `ChangeMap` does, so a finished level still goes on to the campaign's next
@@ -51,7 +60,8 @@ use crate::content::map_list::MapList;
 use crate::controls::ActiveScheme;
 use crate::game::{CurrentMapName, GameState, LoadedMap};
 use crate::info::{GameFont, Texts};
-use model::{Gesture, MenuModel, Tab, parse_index};
+use crate::settings::Settings;
+use model::{Gesture, MenuModel, OptionRow, Tab, parse_index};
 
 /// Whether the game opens in the menu: with `--menu`, or when nothing names
 /// a map to run (`map_given`: `-m`; `scripted`: `--screenshot`, `--record`,
@@ -59,6 +69,11 @@ use model::{Gesture, MenuModel, Tab, parse_index};
 pub fn starts_in_menu(menu_flag: bool, map_given: bool, scripted: bool) -> bool {
     menu_flag || !(map_given || scripted)
 }
+
+/// The tab the menu first shows (`--tab`): the campaign unless this says
+/// otherwise; a menu opened over a map shows that map's list instead.
+#[derive(Resource, Clone, Copy, Debug)]
+pub struct StartTab(pub Tab);
 
 /// A row's height, logical pixels: a thumb's width.
 pub const ROW_HEIGHT: f32 = 64.0;
@@ -87,13 +102,15 @@ const BUTTON_SIZE: Vec2 = Vec2::new(76.0, 44.0);
 pub enum MenuAction {
     /// The chosen entry moves by this many.
     Step(i32),
-    /// The other tab.
-    SwitchTab,
+    /// The tab this many on (it wraps).
+    SwitchTab(i32),
+    /// Change the chosen option (on the options tab) one step.
+    Adjust(i32),
     /// Show this tab.
     ShowTab(Tab),
-    /// Play the chosen entry.
+    /// Play the chosen map, or change the chosen option.
     Confirm,
-    /// Play this entry of this list (tapped).
+    /// Play this entry of this list, or change this option (tapped).
     Choose(Tab, usize),
     /// Go back to the map that was left.
     Back,
@@ -133,6 +150,13 @@ struct RowLabel {
     file: bool,
 }
 
+/// The name and value of an option row, or (the small line) its hint.
+#[derive(Component)]
+struct OptionLabel {
+    row: OptionRow,
+    hint: bool,
+}
+
 #[derive(Component)]
 struct BackButton;
 
@@ -145,6 +169,7 @@ impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
         app.add_message::<MenuAction>()
             .init_resource::<Reveal>()
+            .init_resource::<Settings>()
             .add_systems(Startup, load_lists)
             .add_systems(Update, (read_lists, spawn_play_button, open_menu, show_play_button))
             .add_systems(
@@ -153,7 +178,7 @@ impl Plugin for MenuPlugin {
                     spawn_menu,
                     (keyboard, gamepad, pointer),
                     apply,
-                    (paint, label_rows, reveal).chain(),
+                    (paint, label_rows, label_options, reveal).chain(),
                 )
                     .chain()
                     .run_if(in_state(GameState::Menu).and_then(resource_exists::<MenuModel>)),
@@ -212,12 +237,15 @@ fn spawn_menu(
     played: Option<Res<LoadedMap>>,
     name: Res<CurrentMapName>,
     mut reveal: ResMut<Reveal>,
+    start_tab: Option<Res<StartTab>>,
 ) {
     if ui.is_some() {
         return;
     }
     if played.is_some() {
         model.focus_on(&name.0);
+    } else if let Some(tab) = start_tab {
+        model.set_tab(tab.0);
     }
     reveal.0 = true;
     let root = commands
@@ -256,7 +284,7 @@ fn spawn_menu(
         .spawn(Node { column_gap: Val::Px(8.0), width: Val::Percent(100.0), ..default() })
         .id();
     commands.entity(column).add_child(tabs);
-    for tab in Tab::BOTH {
+    for tab in Tab::ALL {
         let button = commands
             .spawn((
                 TabButton(tab),
@@ -275,7 +303,7 @@ fn spawn_menu(
         commands.entity(tabs).add_child(button);
     }
 
-    for tab in Tab::BOTH {
+    for tab in Tab::ALL {
         let list = commands
             .spawn((
                 ListNode(tab),
@@ -292,6 +320,30 @@ fn spawn_menu(
             ))
             .id();
         commands.entity(column).add_child(list);
+        if tab == Tab::Options {
+            for (index, row) in OptionRow::ALL.into_iter().enumerate() {
+                let node = commands
+                    .spawn((
+                        Row { tab, index },
+                        Node {
+                            height: Val::Px(ROW_HEIGHT),
+                            flex_shrink: 0.0,
+                            flex_direction: FlexDirection::Column,
+                            justify_content: JustifyContent::Center,
+                            padding: UiRect::horizontal(Val::Px(16.0)),
+                            ..default()
+                        },
+                        BackgroundColor(ROW_IDLE),
+                        children![
+                            (OptionLabel { row, hint: false }, Text::new(row.name()), text_font(&font, 26.0), TextColor(Color::WHITE)),
+                            (OptionLabel { row, hint: true }, Text::new(row.hint()), text_font(&font, 16.0), TextColor(DIM)),
+                        ],
+                    ))
+                    .id();
+                commands.entity(list).add_child(node);
+            }
+            continue;
+        }
         for (index, map) in model.entries(tab).iter().enumerate() {
             let row = commands
                 .spawn((
@@ -336,7 +388,7 @@ fn spawn_menu(
     commands.entity(column).add_child(footer);
     let hint = commands
         .spawn((
-            Text::new("Arrows: choose   Enter: play   Esc: back"),
+            Text::new("Arrows: choose   Enter: play or change   Esc: back"),
             text_font(&font, 16.0),
             TextColor(DIM),
         ))
@@ -366,7 +418,7 @@ fn close_menu(mut commands: Commands, ui: Option<Res<MenuUi>>) {
     }
 }
 
-fn keyboard(keys: Res<ButtonInput<KeyCode>>, mut actions: MessageWriter<MenuAction>) {
+fn keyboard(keys: Res<ButtonInput<KeyCode>>, model: Res<MenuModel>, mut actions: MessageWriter<MenuAction>) {
     let steps = [
         (KeyCode::ArrowUp, -1),
         (KeyCode::KeyW, -1),
@@ -382,8 +434,16 @@ fn keyboard(keys: Res<ButtonInput<KeyCode>>, mut actions: MessageWriter<MenuActi
             actions.write(MenuAction::Step(step));
         }
     }
-    if keys.any_just_pressed([KeyCode::ArrowLeft, KeyCode::ArrowRight, KeyCode::KeyA, KeyCode::KeyD, KeyCode::Tab]) {
-        actions.write(MenuAction::SwitchTab);
+    // Left and right change the tab, or the value on the options tab.
+    let sideways = |dir| if model.tab() == Tab::Options { MenuAction::Adjust(dir) } else { MenuAction::SwitchTab(dir) };
+    if keys.any_just_pressed([KeyCode::ArrowLeft, KeyCode::KeyA]) {
+        actions.write(sideways(-1));
+    }
+    if keys.any_just_pressed([KeyCode::ArrowRight, KeyCode::KeyD]) {
+        actions.write(sideways(1));
+    }
+    if keys.just_pressed(KeyCode::Tab) {
+        actions.write(MenuAction::SwitchTab(1));
     }
     if keys.any_just_pressed([KeyCode::Enter, KeyCode::NumpadEnter, KeyCode::Space]) {
         actions.write(MenuAction::Confirm);
@@ -393,7 +453,7 @@ fn keyboard(keys: Res<ButtonInput<KeyCode>>, mut actions: MessageWriter<MenuActi
     }
 }
 
-fn gamepad(pads: Query<&Gamepad>, mut actions: MessageWriter<MenuAction>) {
+fn gamepad(pads: Query<&Gamepad>, model: Res<MenuModel>, mut actions: MessageWriter<MenuAction>) {
     let pressed = |button| pads.iter().any(|p| p.just_pressed(button));
     if pressed(GamepadButton::DPadUp) {
         actions.write(MenuAction::Step(-1));
@@ -401,12 +461,17 @@ fn gamepad(pads: Query<&Gamepad>, mut actions: MessageWriter<MenuAction>) {
     if pressed(GamepadButton::DPadDown) {
         actions.write(MenuAction::Step(1));
     }
-    if pressed(GamepadButton::DPadLeft)
-        || pressed(GamepadButton::DPadRight)
-        || pressed(GamepadButton::LeftTrigger)
-        || pressed(GamepadButton::RightTrigger)
-    {
-        actions.write(MenuAction::SwitchTab);
+    let on_options = model.tab() == Tab::Options;
+    for (button, dir) in [(GamepadButton::DPadLeft, -1), (GamepadButton::DPadRight, 1)] {
+        if pressed(button) {
+            actions.write(if on_options { MenuAction::Adjust(dir) } else { MenuAction::SwitchTab(dir) });
+        }
+    }
+    if pressed(GamepadButton::LeftTrigger) {
+        actions.write(MenuAction::SwitchTab(-1));
+    }
+    if pressed(GamepadButton::RightTrigger) {
+        actions.write(MenuAction::SwitchTab(1));
     }
     if pressed(GamepadButton::South) {
         actions.write(MenuAction::Confirm);
@@ -500,6 +565,7 @@ fn apply(
     mut model: ResMut<MenuModel>,
     mut reveal: ResMut<Reveal>,
     mut name: ResMut<CurrentMapName>,
+    mut settings: ResMut<Settings>,
     played: Option<Res<LoadedMap>>,
     mut next: ResMut<NextState<GameState>>,
 ) {
@@ -509,9 +575,14 @@ fn apply(
                 model.step(n);
                 reveal.0 = true;
             }
-            MenuAction::SwitchTab => {
-                model.switch_tab(1);
+            MenuAction::SwitchTab(n) => {
+                model.switch_tab(n);
                 reveal.0 = true;
+            }
+            MenuAction::Adjust(dir) => {
+                if model.tab() == Tab::Options {
+                    model.chosen_option().adjust(&mut settings, dir);
+                }
             }
             MenuAction::ShowTab(tab) => {
                 model.set_tab(tab);
@@ -519,8 +590,13 @@ fn apply(
             }
             MenuAction::Choose(tab, index) => {
                 model.select(tab, index);
-                play(&model, &mut name, &mut next);
+                if tab == Tab::Options {
+                    model.chosen_option().adjust(&mut settings, 1);
+                } else {
+                    play(&model, &mut name, &mut next);
+                }
             }
+            MenuAction::Confirm if model.tab() == Tab::Options => model.chosen_option().adjust(&mut settings, 1),
             MenuAction::Confirm => play(&model, &mut name, &mut next),
             MenuAction::Back => {
                 if played.is_some() {
@@ -590,6 +666,24 @@ fn label_rows(texts: Option<Res<Texts>>, mut labels: Query<(&RowLabel, &mut Text
         };
         if text.0 != want {
             text.0 = want.to_string();
+        }
+    }
+}
+
+/// The options' texts: name and value, dimmed when the row does nothing now.
+fn label_options(settings: Res<Settings>, mut labels: Query<(&OptionLabel, &mut Text, &mut TextColor)>) {
+    for (label, mut text, mut color) in &mut labels {
+        let want = if label.hint {
+            label.row.hint().to_string()
+        } else {
+            format!("{}: {}", label.row.name(), label.row.value(&settings))
+        };
+        if text.0 != want {
+            text.0 = want;
+        }
+        let tint = if label.hint || label.row.dimmed(&settings) { DIM } else { Color::WHITE };
+        if color.0 != tint {
+            color.0 = tint;
         }
     }
 }
