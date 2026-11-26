@@ -1,0 +1,1 @@
+export function search() { return window.location.search; }

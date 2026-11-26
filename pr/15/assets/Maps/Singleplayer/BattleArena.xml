@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>BattleArena</Name>
+    <GameMode>SinglePlayer</GameMode>
+    <Image></Image>
+    <Scale>48</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>true</HaveOutlandVizualization>
+    <OutlandColorLT>FF222244</OutlandColorLT>
+    <OutlandColorRT>FF442222</OutlandColorRT>
+    <OutlandColorRB>FF224422</OutlandColorRB>
+    <OutlandColorLB>FF444422</OutlandColorLB>
+    <TargetTimeSec>0</TargetTimeSec>
+    <Friction>1</Friction>
+    <MusicAmbient>3</MusicAmbient>
+    <AmbientLight>FF333333</AmbientLight>
+    <Splash>MapDefault</Splash>
+    <LevelEffect>None</LevelEffect>
+    <CameraReadAccelerometer>true</CameraReadAccelerometer>
+
+    <Lights>
+      <Item>
+        <Position>5.0 8.0</Position>
+        <Color>FFFFD700</Color>
+        <R>25</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0.2</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>20.0 15.0</Position>
+        <Color>FFFF4500</Color>
+        <R>20</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0.15</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>8.0 22.0</Position>
+        <Color>FF00CED1</Color>
+        <R>25</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0.2</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>25.0 18.0</Position>
+        <Color>FF8A2BE2</Color>
+        <R>20</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0.15</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>15.0 15.0</Position>
+        <Color>FFFFFFFF</Color>
+        <R>30</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0.1</AdditiveRate>
+      </Item>
+    </Lights>
+
+    <Players>
+      <Item>
+        <Id>4000</Id>
+        <Name>Player1</Name>
+        <Position>5.0 8.0</Position>
+        <DirectionDeg>90</DirectionDeg>
+        <Control>Local</Control>
+        <CarName>SandBuggyNoGadget</CarName>
+      </Item>
+    </Players>
+
+    <SimpleCars>
+      <Item>
+        <Id>3000</Id>
+        <Position>22.0 18.0</Position>
+        <DirectionDeg>90</DirectionDeg>
+        <Control>AiSimpleTurret</Control>
+        <CarName>SimpleBuggy</CarName>
+        <Weapon>RocketlauncherDirect</Weapon>
+      </Item>
+      <Item>
+        <Id>3001</Id>
+        <Position>8.0 25.0</Position>
+        <DirectionDeg>45</DirectionDeg>
+        <Control>AiSimpleTurret</Control>
+        <CarName>TurretStatRocketLauncherChasing</CarName>
+      </Item>
+      <Item>
+        <Id>3002</Id>
+        <Position>18.0 5.0</Position>
+        <DirectionDeg>270</DirectionDeg>
+        <Control>AiSimpleTurret</Control>
+        <CarName>Scout</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+      <Item>
+        <Id>3003</Id>
+        <Position>5.0 22.0</Position>
+        <DirectionDeg>180</DirectionDeg>
+        <Control>AiSimpleTurret</Control>
+        <CarName>SandBuggyNoGadget</CarName>
+        <Weapon>Minigun</Weapon>
+      </Item>
+      <Item>
+        <Id>3004</Id>
+        <Position>15.0 8.0</Position>
+        <DirectionDeg>90</DirectionDeg>
+        <Control>AiSimpleTurret</Control>
+        <CarName>SandBuggyNoGadget</CarName>
+        <Weapon>Minigun</Weapon>
+      </Item>
+    </SimpleCars>
+
+    <Entities>
+      <Item>
+        <Id>1000</Id>
+        <Position>2.0 5.0</Position>
+        <Sprite>Entities\Box</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.5</Scale>
+        <DirectionDeg>90</DirectionDeg>
+        <Type>Box</Type>
+      </Item>
+      <Item>
+        <Id>1001</Id>
+        <Position>28.0 15.0</Position>
+        <Sprite>Entities\Box</Sprite>
+        <Animated>false</Animated>
+        <Scale>2.0</Scale>
+        <DirectionDeg>180</DirectionDeg>
+        <Type>Box</Type>
+      </Item>
+      <Item>
+        <Id>1002</Id>
+        <Position>8.0 25.0</Position>
+        <Sprite>Entities\Box</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.2</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Box</Type>
+      </Item>
+      <Item>
+        <Id>1003</Id>
+        <Position>25.0 8.0</Position>
+        <Sprite>Entities\Box</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.8</Scale>
+        <DirectionDeg>270</DirectionDeg>
+        <Type>Box</Type>
+      </Item>
+      <Item>
+        <Id>1004</Id>
+        <Position>5.0 22.0</Position>
+        <Sprite>Entities\Coin</Sprite>
+        <Animated>true</Animated>
+        <Scale>1.0</Scale>
+        <DirectionDeg>90</DirectionDeg>
+        <Type>Coin</Type>
+      </Item>
+      <Item>
+        <Id>1005</Id>
+        <Position>22.0 5.0</Position>
+        <Sprite>Entities\Coin</Sprite>
+        <Animated>true</Animated>
+        <Scale>1.0</Scale>
+        <DirectionDeg>45</DirectionDeg>
+        <Type>Coin</Type>
+      </Item>
+      <Item>
+        <Id>1006</Id>
+        <Position>18.0 28.0</Position>
+        <Sprite>Entities\Coin</Sprite>
+        <Animated>true</Animated>
+        <Scale>1.0</Scale>
+        <DirectionDeg>270</DirectionDeg>
+        <Type>Coin</Type>
+      </Item>
+      <Item>
+        <Id>1007</Id>
+        <Position>8.0 25.0</Position>
+        <Sprite>Entities\Coin</Sprite>
+        <Animated>true</Animated>
+        <Scale>1.0</Scale>
+        <DirectionDeg>90</DirectionDeg>
+        <Type>Coin</Type>
+      </Item>
+      <Item>
+        <Id>1008</Id>
+        <Position>25.0 22.0</Position>
+        <Sprite>Entities\Coin</Sprite>
+        <Animated>true</Animated>
+        <Scale>1.0</Scale>
+        <DirectionDeg>45</DirectionDeg>
+        <Type>Coin</Type>
+      </Item>
+      <Item>
+        <Id>1009</Id>
+        <Position>15.0 8.0</Position>
+        <Sprite>Entities\Bomb</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.5</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Bomb</Type>
+      </Item>
+      <Item>
+        <Id>1010</Id>
+        <Position>3.0 28.0</Position>
+        <Sprite>Entities\Bomb</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.5</Scale>
+        <DirectionDeg>90</DirectionDeg>
+        <Type>Bomb</Type>
+      </Item>
+      <Item>
+        <Id>1011</Id>
+        <Position>28.0 5.0</Position>
+        <Sprite>Entities\Bomb</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.5</Scale>
+        <DirectionDeg>270</DirectionDeg>
+        <Type>Bomb</Type>
+      </Item>
+    </Entities>
+
+    <CharMapDictionary>
+*:#FF444444;*:#FF3a3a3a;*:#FF4d4d4d;.:#10101010;.:#10181818;G:#10228B22;G:#101a7a1a;B:#101E90FF;R:#10DC143C;Y:#10FFD700;X:#A08B0000;X:#A06B0000;C:#10FFD700;Z:#10FF0000;O:#A0CD8F85;L:#A09370DB;I:#A0FF69B4;
+    </CharMapDictionary>
+    <CharMap>
+**********************
+*LLLLL***************
+*OOLLOOO*L............*
+*.OOO..OO*L..........*
+*........L*..........*
+*.........L.........*
+*.BBB......L........*
+*...................L*
+*..XXX.....L....XXXXX*
+*.CCC......L.........*
+*..DDD.....L...DDDDDD*
+*...................L*
+*.CCC......L.........*
+*..XXX.....L....XXXXX*
+*...................L*
+*.OOO......L.........*
+*OOLLOOO*L............*
+*LLLLL***************
+**********************
+    </CharMap>
+
+  </Asset>
+</XnaContent>

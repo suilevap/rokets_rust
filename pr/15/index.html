@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>TileRider</title>
+  <style>
+    html, body { margin: 0; height: 100%; background: #000; color: #aaa; font: 14px monospace; overflow: hidden; }
+    #bevy { display: block; width: 100%; height: 100%; outline: none; touch-action: none; }
+    #status { position: fixed; inset: 0; display: grid; place-items: center; pointer-events: none; }
+    #build { position: fixed; right: 6px; bottom: 4px; font-size: 10px; color: #777; pointer-events: none; }
+  </style>
+</head>
+<body>
+  <canvas id="bevy" tabindex="0"></canvas>
+  <div id="status">Loading…</div>
+  <!-- CI fills in the commit and build time; a local build shows "dev". -->
+  <div id="build" data-sha="PR #15 · d69df0d" data-time="2026-11-13 07:28 UTC"></div>
+  <script type="module">
+    import init from "./tilerider.js";
+    const status = document.getElementById("status");
+    const canvas = document.getElementById("bevy");
+    const build = document.getElementById("build");
+    build.textContent = build.dataset.sha.startsWith("__")
+      ? "dev"
+      : `${build.dataset.sha} · ${build.dataset.time}`;
+    console.info("TileRider build:", build.textContent);
+    canvas.focus();
+    // Keep arrow keys and space from scrolling the page; leave system shortcuts alone.
+    window.addEventListener("keydown", (e) => {
+      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(e.key)) e.preventDefault();
+    });
+    canvas.addEventListener("contextmenu", (e) => e.preventDefault());
+    // Bevy's winit loop throws a control-flow "exception" once running; that is expected.
+    init().catch((e) => {
+      if (!String(e).includes("Using exceptions for control flow")) {
+        status.textContent = "Failed to start: " + e;
+        throw e;
+      }
+    });
+    requestAnimationFrame(function hide() {
+      if (canvas.width > 0 && canvas.width !== 300) status.remove(); else requestAnimationFrame(hide);
+    });
+  </script>
+</body>
+</html>

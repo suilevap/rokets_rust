@@ -1,0 +1,1273 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>Swarm</Name>
+    <GameMode>SinglePlayer</GameMode>
+    <Image>Maps\Singleplayer\Swarm</Image>
+    <Scale>128</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>false</HaveOutlandVizualization>
+    <OutlandColorLT>FF000000</OutlandColorLT>
+    <OutlandColorRT>FF00BFFF</OutlandColorRT>
+    <OutlandColorRB>FFFFA500</OutlandColorRB>
+    <OutlandColorLB>FFFFFF00</OutlandColorLB>
+    <TargetTimeSec>0</TargetTimeSec>
+    <Friction>1</Friction>
+    <MusicAmbient>2_10</MusicAmbient>
+    <AmbientLight>0C0C0C0C</AmbientLight>
+    <Splash>Swarm</Splash>
+    <LevelEffect>None</LevelEffect>
+    <CameraReadAccelerometer>true</CameraReadAccelerometer>
+    <Width>48</Width>
+    <Height>48</Height>
+    <Lights>
+      <Item>
+        <Position>16 5.5</Position>
+        <Color>FFFFFFFF</Color>
+        <R>20</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>1</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>8.625 16.958334</Position>
+        <Color>FF40E0D0</Color>
+        <R>10</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>21.5 17</Position>
+        <Color>D0FFFFFF</Color>
+        <R>10</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>36.5 15</Position>
+        <Color>FFFFFFFF</Color>
+        <R>11</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>32.5 12</Position>
+        <Color>C5E0DEE0</Color>
+        <R>15</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>31 25</Position>
+        <Color>FF40E0D0</Color>
+        <R>10</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>40.5 25</Position>
+        <Color>FF40E0D0</Color>
+        <R>10</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>41 6</Position>
+        <Color>FF40E0D0</Color>
+        <R>10</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>26.5 7.5</Position>
+        <Color>FFE29293</Color>
+        <R>8</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>1</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>22 40</Position>
+        <Color>FFFFFFFF</Color>
+        <R>18</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>1</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>11 24</Position>
+        <Color>FFFFFFFF</Color>
+        <R>17</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>4.5 41</Position>
+        <Color>95FFFFFF</Color>
+        <R>19</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>11 32.5</Position>
+        <Color>FFFFFFFF</Color>
+        <R>17</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>1</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>20 24</Position>
+        <Color>FFFFFFFF</Color>
+        <R>6</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>8 44.5</Position>
+        <Color>FF00FF00</Color>
+        <R>4</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>1</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>37.5 36.5</Position>
+        <Color>FF92FF98</Color>
+        <R>9</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>29 42</Position>
+        <Color>B8E0EBA0</Color>
+        <R>12</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>28.9375 30.90625</Position>
+        <Color>B8E0EBA0</Color>
+        <R>12</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>45 31</Position>
+        <Color>B8E0EBA0</Color>
+        <R>12</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>45 42</Position>
+        <Color>B8E0EBA0</Color>
+        <R>12</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>9.5 35.5</Position>
+        <Color>FFFFFF00</Color>
+        <R>3</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>12.5 35.5</Position>
+        <Color>FFFFFF00</Color>
+        <R>3</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>4 8</Position>
+        <Color>7140E0D0</Color>
+        <R>10</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>26.5 6.5</Position>
+        <Color>FFFF0000</Color>
+        <R>4</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>7 29</Position>
+        <Color>FFFFFFFF</Color>
+        <R>4</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>15 29</Position>
+        <Color>FFFFFFFF</Color>
+        <R>4</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>35.5 6.5</Position>
+        <Color>E0FFFFA8</Color>
+        <R>6</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>8.526316 20.4473686</Position>
+        <Color>D900C9C8</Color>
+        <R>3</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>14.5 20.5</Position>
+        <Color>D900C9C8</Color>
+        <R>3</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+      <Item>
+        <Position>19.5 20.5</Position>
+        <Color>D900C9C8</Color>
+        <R>3</R>
+        <UseForDynamicShadow>false</UseForDynamicShadow>
+        <AdditiveRate>0</AdditiveRate>
+      </Item>
+    </Lights>
+    <Players>
+      <Item>
+        <Id>4001</Id>
+        <Name>Player1</Name>
+        <Position>11 37.5</Position>
+        <DirectionDeg>270</DirectionDeg>
+        <Control>AttackAi</Control>
+        <CarName>SandBuggyMagnetMinigun180</CarName>
+        <ActionOnDestroy>CaptureScreen(0,0)</ActionOnDestroy>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>4002</Id>
+        <Name>Player1</Name>
+        <Position>42.5 39.5</Position>
+        <DirectionDeg>180</DirectionDeg>
+        <Control>AttackAi</Control>
+        <CarName>SandBuggyMagnetRailgun</CarName>
+        <ActionOnCreate>DeactivateEntity</ActionOnCreate>
+        <ActionOnDestroy>seqCreateNewFriend</ActionOnDestroy>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+    </Players>
+    <SimpleCars>
+      <Item>
+        <Id>3001</Id>
+        <Position>5 4.5</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>Local</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+        <ActionOnCreate>seqPlayersInit</ActionOnCreate>
+        <ActionOnDestroy>seqPlayerDie</ActionOnDestroy>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>3002</Id>
+        <Position>5 5.5</Position>
+        <DirectionDeg>171.523743</DirectionDeg>
+        <Control>ZombieFlockingFriend</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+        <ActionOnCreate>seqZombieInit</ActionOnCreate>
+        <ActionOnDestroy>seqZombieDie</ActionOnDestroy>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>3003</Id>
+        <Position>40.5 15.5</Position>
+        <DirectionDeg>280.0025</DirectionDeg>
+        <Control>ZombieFlockingFriend</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+        <ActionOnCreate>seqZombieInit</ActionOnCreate>
+        <ActionOnDestroy>seqZombieDie</ActionOnDestroy>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>3006</Id>
+        <Position>7 14</Position>
+        <DirectionDeg>260.476959</DirectionDeg>
+        <Control>ZombieFlockingFriend</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+        <ActionOnCreate>seqZombieInit</ActionOnCreate>
+        <ActionOnDestroy>seqZombieDie</ActionOnDestroy>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>3007</Id>
+        <Position>15.5 8</Position>
+        <DirectionDeg>32.8921928</DirectionDeg>
+        <Control>ZombieFlockingFriend</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+        <ActionOnCreate>seqZombieInit</ActionOnCreate>
+        <ActionOnDestroy>seqZombieDie</ActionOnDestroy>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>3010</Id>
+        <Position>30.5 12</Position>
+        <DirectionDeg>180</DirectionDeg>
+        <Control>AiSimpleTurret</Control>
+        <CarName>TurretStatMinigun</CarName>
+        <Weapon>Default</Weapon>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>3013</Id>
+        <Position>35.5 6.5</Position>
+        <DirectionDeg>180</DirectionDeg>
+        <Control>AiSimpleTurret</Control>
+        <CarName>TurretStatMinigun</CarName>
+        <Weapon>Default</Weapon>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>3014</Id>
+        <Position>35 10.5</Position>
+        <DirectionDeg>148.392578</DirectionDeg>
+        <Control>ZombieFlockingFriend</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+        <ActionOnCreate>seqZombieInit</ActionOnCreate>
+        <ActionOnDestroy>seqZombieDie</ActionOnDestroy>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>3015</Id>
+        <Position>6.5 5.5</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>ChickenAi</Control>
+        <CarName>SimpleBuggy</CarName>
+        <Weapon>Default</Weapon>
+        <ActionOnDestroy>seqCreateNewFriend</ActionOnDestroy>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>3016</Id>
+        <Position>7 10</Position>
+        <DirectionDeg>225</DirectionDeg>
+        <Control>AttackAiVer2</Control>
+        <CarName>SimpleBuggyMiddle</CarName>
+        <Weapon>Shotgun</Weapon>
+        <ActionOnCreate>DeactivateEntity</ActionOnCreate>
+        <ActionOnDestroy>seqCreateNewFriend</ActionOnDestroy>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>3017</Id>
+        <Position>17.5 7</Position>
+        <DirectionDeg>206.565033</DirectionDeg>
+        <Control>ChickenAi</Control>
+        <CarName>SimpleBuggy</CarName>
+        <Weapon>Default</Weapon>
+        <ActionOnCreate>DeactivateEntity</ActionOnCreate>
+        <ActionOnDestroy>seqCreateNewFriend</ActionOnDestroy>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>3018</Id>
+        <Position>22 25.5</Position>
+        <DirectionDeg>225</DirectionDeg>
+        <Control>AttackAiVer2</Control>
+        <CarName>SimpleBuggy</CarName>
+        <Weapon>Minigun360</Weapon>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>3021</Id>
+        <Position>21.5 4.5</Position>
+        <DirectionDeg>213.690079</DirectionDeg>
+        <Control>ZombieFlockingFriend</Control>
+        <CarName>Zombie</CarName>
+        <Weapon>Default</Weapon>
+        <ActionOnCreate>seqZombieInit</ActionOnCreate>
+        <ActionOnDestroy>seqZombieDie</ActionOnDestroy>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>3024</Id>
+        <Position>9.5 35.5</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>AlwaysShoot</Control>
+        <CarName>TurretTesla</CarName>
+        <Weapon>Default</Weapon>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>3025</Id>
+        <Position>12.5 35.5</Position>
+        <DirectionDeg>180</DirectionDeg>
+        <Control>AlwaysShoot</Control>
+        <CarName>TurretTesla</CarName>
+        <Weapon>Default</Weapon>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>3027</Id>
+        <Position>8 44.5</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>NoneEnemy</Control>
+        <CarName>SimpleTargetStat</CarName>
+        <Weapon>Default</Weapon>
+        <ActionOnDestroy>seqDestoryTarget1</ActionOnDestroy>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>3028</Id>
+        <Position>37.5 36.5</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>NoneEnemy</Control>
+        <CarName>SimpleTargetStat</CarName>
+        <Weapon>Default</Weapon>
+        <ActionOnDestroy>seqDestoryTarget2</ActionOnDestroy>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>3029</Id>
+        <Position>30 31</Position>
+        <DirectionDeg>270</DirectionDeg>
+        <Control>AttackAiVer2</Control>
+        <CarName>SimpleBuggyMiddle</CarName>
+        <Weapon>PlasmaGunSlow</Weapon>
+        <ActionOnCreate>DeactivateEntity</ActionOnCreate>
+        <ActionOnDestroy>seqCreateNewFriend</ActionOnDestroy>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+      <Item>
+        <Id>3030</Id>
+        <Position>14.5 5</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>ChickenAi</Control>
+        <CarName>SimpleBuggyMiddle</CarName>
+        <Weapon>Default</Weapon>
+        <ActionOnDestroy>seqCreateNewFriend</ActionOnDestroy>
+        <IsPrototype>false</IsPrototype>
+      </Item>
+    </SimpleCars>
+    <Entities>
+      <Item>
+        <Id>1001</Id>
+        <Position>36.0416679 20.25</Position>
+        <Sprite>Entities\GearStar</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Coin</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1002</Id>
+        <Position>8.5 13.5</Position>
+        <Sprite>Entities\GearStar</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Coin</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1003</Id>
+        <Position>8 44.5</Position>
+        <Sprite>Entities\ButtonBorder</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Tile</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1004</Id>
+        <Position>37.5 36.5</Position>
+        <Sprite>Entities\ButtonBorder</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Tile</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1005</Id>
+        <Position>3.5 28</Position>
+        <Sprite>Entities\DoorBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.5</Scale>
+        <DirectionDeg>270</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1007</Id>
+        <Position>26.5 6</Position>
+        <Sprite>Entities\GearStar</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Coin</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+      <Item>
+        <Id>1008</Id>
+        <Position>22.5 42.5</Position>
+        <Sprite>Entities\HeavyBox</Sprite>
+        <Animated>false</Animated>
+        <Scale>1.75</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>true</RestrictX>
+        <RestrictY>true</RestrictY>
+        <RestrictRotation>true</RestrictRotation>
+        <TryCastStaticShadow>true</TryCastStaticShadow>
+        <Probability>1</Probability>
+      </Item>
+    </Entities>
+    <Triggers>
+      <Item>
+        <Id>1</Id>
+        <Area>27 23 1 3</Area>
+        <Amount>1</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>CloneChickens</Item>
+          <Item>PathComponent3027</Item>
+          <Item>PathComponent3028</Item>
+          <Item>ActivateEntity(3018)</Item>
+          <Item>CloneEnemy2</Item>
+        </Actions>
+        <Subscribers>3001 3002 3003 3006 3007 3011 3014 3019 3020 3021 30020 30021 30022 30023 30024 30025 30026 30027</Subscribers>
+      </Item>
+      <Item>
+        <Id>4</Id>
+        <Area>12 3 1 3</Area>
+        <Amount>1</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>ActivateEntity(3030)</Item>
+          <Item>ActivateEntity(3016)</Item>
+          <Item>ActivateEntity(3017)</Item>
+          <Item>CloneEnemy0</Item>
+          <Item>CameraShowPath</Item>
+        </Actions>
+        <Subscribers>3001</Subscribers>
+      </Item>
+      <Item>
+        <Id>5</Id>
+        <Area>27 36 1 4</Area>
+        <Amount>1</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>ActivateEntity(4002)</Item>
+          <Item>ActivateEntity(3029)</Item>
+        </Actions>
+        <Subscribers>3001 3002 3003 3006 3007 3011 3014 3019 3020 3021 30020 30021 30022 30023 30024 30025 30026 30027</Subscribers>
+      </Item>
+      <Item>
+        <Id>6</Id>
+        <Area>9 33 4 1</Area>
+        <Amount>999</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>seqEndScript</Item>
+        </Actions>
+        <Subscribers>3001 3002 3003 3006 3007 3011 3014 3019 3020 3021 30020 30021 30022 30023 30024 30025 30026 30027</Subscribers>
+      </Item>
+      <Item>
+        <Id>8</Id>
+        <Area>17 37 1 5</Area>
+        <Amount>1</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>ActivateEntity(4001)</Item>
+          <Item>CloneEnemy3</Item>
+        </Actions>
+        <Subscribers>3001 3002 3003 3006 3007 3011 3014 3019 3020 3021 30020 30021 30022 30023 30024 30025 30026 30027</Subscribers>
+      </Item>
+      <Item>
+        <Id>9</Id>
+        <Area>27 9 1 6</Area>
+        <Amount>1</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>CloneEnemy1</Item>
+        </Actions>
+      </Item>
+    </Triggers>
+    <Actions>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>seqZombieConnected</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>seqFriendConnect</Item>
+        </Actions>
+        <TimeBetweenInSec>0</TimeBetweenInSec>
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>seqZombieInit</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>ZombieAiAdj</Item>
+          <Item>InitVarConnect</Item>
+          <Item>InitVarIsPlayer</Item>
+        </Actions>
+        <TimeBetweenInSec>0</TimeBetweenInSec>
+      </Item>
+      <Item Type="GameLibrary.AIAdjustment">
+        <Name>ZombieAiAdj</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <ItemId>0</ItemId>
+        <Team>255</Team>
+        <ScanDistance>-1</ScanDistance>
+        <WeaponMaxAngleDeg>-1</WeaponMaxAngleDeg>
+        <ActionOnBTTrigger>seqZombieConnected</ActionOnBTTrigger>
+        <FireAccuracy>1</FireAccuracy>
+        <IsVisibleForAutoAim>DoNotChange</IsVisibleForAutoAim>
+      </Item>
+      <Item Type="GameLibrary.CloneObject">
+        <Name>RespawnPlayer</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>26 6 1 1</Area>
+        <ItemId>3001</ItemId>
+        <TargetIds>30010 30011 30012</TargetIds>
+        <Count>1</Count>
+        <IsUseRelativePosition>false</IsUseRelativePosition>
+        <RelativeByItem>0</RelativeByItem>
+      </Item>
+      <Item Type="GameLibrary.CloneObject">
+        <Name>CloneChickens</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>19 26 5 2</Area>
+        <ItemId>3015</ItemId>
+        <TargetIds>30150 30151 30152 30153 30154 30156</TargetIds>
+        <Count>1</Count>
+        <IsUseRelativePosition>false</IsUseRelativePosition>
+        <RelativeByItem>0</RelativeByItem>
+      </Item>
+      <Item Type="GameLibrary.ActivateEntityActionData">
+        <Name>ActivateEntityActionData4001</Name>
+        <RunOnMapStart>true</RunOnMapStart>
+        <ItemId>4001</ItemId>
+        <Deactivate>true</Deactivate>
+      </Item>
+      <Item Type="GameLibrary.CloneObject">
+        <Name>RespawnFriends</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>34 13 5 5</Area>
+        <ItemId>3002</ItemId>
+        <TargetIds>30020 30021 30022 30023 30024 30025 30026 30027</TargetIds>
+        <Count>1</Count>
+        <IsUseRelativePosition>false</IsUseRelativePosition>
+        <RelativeByItem>0</RelativeByItem>
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>seqZombieDie</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>CheckVarConnect</Item>
+          <Item>CheckIsPlayerOnDie</Item>
+          <Item>RespawnFriends</Item>
+        </Actions>
+        <TimeBetweenInSec>0</TimeBetweenInSec>
+      </Item>
+      <Item Type="GameLibrary.ActivateEntityActionData">
+        <Name>DeactivateEntity</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <ItemId>0</ItemId>
+        <Deactivate>true</Deactivate>
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>seqPlayerDie</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>FriendMinus</Item>
+          <Item>SetControlForFriend</Item>
+        </Actions>
+        <TimeBetweenInSec>0</TimeBetweenInSec>
+      </Item>
+      <Item Type="GameLibrary.AddPathComponent">
+        <Name>PathComponent3027</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Path>8 44 8 41.5 10.5 41.5 10.5 35.5 9.75 35.5</Path>
+        <ItemId>3027</ItemId>
+        <Color>FF32CD32</Color>
+        <Depth>-1</Depth>
+        <Width>8</Width>
+      </Item>
+      <Item Type="GameLibrary.AddPathComponent">
+        <Name>PathComponent3028</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Path>37 36.5 33.5 36.5 33.5 38.5 28 38.5 23 38.5 23 41.5 17 41.5 11.5 41.5 11.5 35.5 12.25 35.5</Path>
+        <ItemId>3028</ItemId>
+        <Color>FF32CD32</Color>
+        <Depth>-1</Depth>
+        <Width>8</Width>
+      </Item>
+      <Item Type="GameLibrary.CloneObject">
+        <Name>CloneChickensCity</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>10 29 1 1</Area>
+        <ItemId>3030</ItemId>
+        <TargetIds>30250 30251 30252 30253 30254 30256</TargetIds>
+        <Count>4</Count>
+        <IsUseRelativePosition>false</IsUseRelativePosition>
+        <RelativeByItem>0</RelativeByItem>
+      </Item>
+      <Item Type="GameLibrary.ShowSplash">
+        <Name>ShowSplash</Name>
+        <Groups>
+          <Item>FiendCount</Item>
+        </Groups>
+        <RunOnMapStart>false</RunOnMapStart>
+        <SplashName>ShowCount</SplashName>
+        <AutoHideTimeSec>-1</AutoHideTimeSec>
+        <Clickable>false</Clickable>
+        <ActionOnHide Null="true" />
+      </Item>
+      <Item Type="GameLibrary.ChangeIntVariable">
+        <Name>InitFriendCount </Name>
+        <Groups>
+          <Item>FiendCount</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <NextAction>UpateSplash</NextAction>
+        <VariableName>VarFriends</VariableName>
+        <Global>true</Global>
+        <ItemId>0</ItemId>
+        <Value>0</Value>
+        <Operation>Set</Operation>
+      </Item>
+      <Item Type="GameLibrary.ChangeIntVariable">
+        <Name>FriendPlus</Name>
+        <Groups>
+          <Item>FiendCount</Item>
+        </Groups>
+        <RunOnMapStart>false</RunOnMapStart>
+        <NextAction>UpateSplash</NextAction>
+        <VariableName>VarFriends</VariableName>
+        <Global>true</Global>
+        <ItemId>0</ItemId>
+        <Value>1</Value>
+        <Operation>Increase</Operation>
+      </Item>
+      <Item Type="GameLibrary.ChangeIntVariable">
+        <Name>FriendMinus</Name>
+        <Groups>
+          <Item>FiendCount</Item>
+        </Groups>
+        <RunOnMapStart>false</RunOnMapStart>
+        <NextAction>UpateSplash</NextAction>
+        <VariableName>VarFriends</VariableName>
+        <Global>true</Global>
+        <ItemId>0</ItemId>
+        <Value>-1</Value>
+        <Operation>Increase</Operation>
+      </Item>
+      <Item Type="GameLibrary.SplashSetBindVariable">
+        <Name>UpateSplash</Name>
+        <Groups>
+          <Item>FiendCount</Item>
+        </Groups>
+        <RunOnMapStart>false</RunOnMapStart>
+        <BindVariableNumber>First</BindVariableNumber>
+        <Value>VarFriends</Value>
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>seqShowSpalsh</Name>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Actions>
+          <Item>NA</Item>
+          <Item>ShowSplash</Item>
+        </Actions>
+        <TimeBetweenInSec>4</TimeBetweenInSec>
+      </Item>
+      <Item Type="GameLibrary.ChangeIntVariable">
+        <Name>InitVarConnect</Name>
+        <Groups>
+          <Item>FiendCount</Item>
+        </Groups>
+        <RunOnMapStart>false</RunOnMapStart>
+        <VariableName>VarConnect</VariableName>
+        <Global>false</Global>
+        <ItemId>0</ItemId>
+        <Value>0</Value>
+        <Operation>Set</Operation>
+      </Item>
+      <Item Type="GameLibrary.ChangeIntVariable">
+        <Name>SetVarConnect</Name>
+        <Groups>
+          <Item>FiendCount</Item>
+        </Groups>
+        <RunOnMapStart>false</RunOnMapStart>
+        <VariableName>VarConnect</VariableName>
+        <Global>false</Global>
+        <ItemId>0</ItemId>
+        <Value>1</Value>
+        <Operation>Set</Operation>
+      </Item>
+      <Item Type="GameLibrary.CheckIntVariable">
+        <Name>CheckVarConnect</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <NextAction>InitVarConnect</NextAction>
+        <VariableName>VarConnect</VariableName>
+        <Global>false</Global>
+        <ItemId>0</ItemId>
+        <Value>1</Value>
+        <ActionOnLess Null="true" />
+        <ActionOnEqual>FriendMinus</ActionOnEqual>
+        <ActionOnGreater Null="true" />
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>seqFriendConnect</Name>
+        <Groups>
+          <Item>FiendCount</Item>
+        </Groups>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>SetVarConnect</Item>
+          <Item>FriendPlus</Item>
+          <Item>CheckAchCond</Item>
+          <Item>CreateNewFriendEffect</Item>
+        </Actions>
+        <TimeBetweenInSec>0</TimeBetweenInSec>
+      </Item>
+      <Item Type="GameLibrary.TriggerActionBy">
+        <Name>ResetFriends</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <ItemIds>
+          <Item>3002</Item>
+          <Item>3003</Item>
+          <Item>3006</Item>
+          <Item>3007</Item>
+          <Item>3011</Item>
+          <Item>3014</Item>
+          <Item>3019</Item>
+          <Item>3020</Item>
+          <Item>3021</Item>
+          <Item>30020</Item>
+          <Item>30021</Item>
+          <Item>30022</Item>
+          <Item>30023</Item>
+          <Item>30024</Item>
+          <Item>30025</Item>
+          <Item>30026</Item>
+          <Item>30027</Item>
+        </ItemIds>
+        <Actions>
+          <Item>InitVarConnect</Item>
+        </Actions>
+      </Item>
+      <Item Type="GameLibrary.ChangeIntVariable">
+        <Name>InitVarIsPlayer</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <VariableName>IsPlayer</VariableName>
+        <Global>false</Global>
+        <ItemId>0</ItemId>
+        <Value>0</Value>
+        <Operation>Set</Operation>
+      </Item>
+      <Item Type="GameLibrary.ChangeIntVariable">
+        <Name>SetVarIsPlayer</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <VariableName>IsPlayer</VariableName>
+        <Global>false</Global>
+        <ItemId>0</ItemId>
+        <Value>1</Value>
+        <Operation>Set</Operation>
+      </Item>
+      <Item Type="GameLibrary.CheckIntVariable">
+        <Name>CheckIsPlayerOnDie</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <VariableName>IsPlayer</VariableName>
+        <Global>false</Global>
+        <ItemId>0</ItemId>
+        <Value>1</Value>
+        <ActionOnLess Null="true" />
+        <ActionOnEqual>SetControlForFriend</ActionOnEqual>
+        <ActionOnGreater Null="true" />
+      </Item>
+      <Item Type="GameLibrary.TriggerActionByFirstSuccess">
+        <Name>SetControlForFriend</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <ItemIds>
+          <Item>3002</Item>
+          <Item>3003</Item>
+          <Item>3006</Item>
+          <Item>3007</Item>
+          <Item>3011</Item>
+          <Item>3014</Item>
+          <Item>3019</Item>
+          <Item>3020</Item>
+          <Item>3021</Item>
+          <Item>30020</Item>
+          <Item>30021</Item>
+          <Item>30022</Item>
+          <Item>30023</Item>
+          <Item>30024</Item>
+          <Item>30025</Item>
+          <Item>30026</Item>
+          <Item>30027</Item>
+        </ItemIds>
+        <Action>TryToChangeToLocalControl</Action>
+        <ElseAction>RestartMap()</ElseAction>
+      </Item>
+      <Item Type="GameLibrary.SuccessSequence">
+        <Name>TryToChangeToLocalControl</Name>
+        <Groups>
+          <Item>Respawn</Item>
+        </Groups>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>if(VarConnect,==,1)</Item>
+          <Item>if(IsPlayer,==,0)</Item>
+          <Item>SetVarIsPlayer</Item>
+          <Item>SetControl(0,Local)</Item>
+          <Item>FocusOnEntity(0)</Item>
+          <Item>Damage(0,-10)</Item>
+          <Item>SetWeapon</Item>
+        </Actions>
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>seqPlayerDieOld</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>RespawnPlayer</Item>
+          <Item>FocusOnEntity(3001)</Item>
+          <Item>InitFriendCount </Item>
+          <Item>ResetFriends</Item>
+        </Actions>
+        <TimeBetweenInSec>0</TimeBetweenInSec>
+      </Item>
+      <Item Type="GameLibrary.SuccessSequence">
+        <Name>seqEndScript</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>if(IsPlayer,==,1)</Item>
+          <Item>DeactivateTrigger(6)</Item>
+          <Item>InitVarIsPlayer</Item>
+          <Item>ShowSplashBlack</Item>
+        </Actions>
+      </Item>
+      <Item Type="GameLibrary.CloneObject">
+        <Name>RespawnFriendsCity3</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <NextAction>RespawnFriendsCity4</NextAction>
+        <Area>9 27 2 2</Area>
+        <ItemId>3002</ItemId>
+        <TargetIds>30120 30121 30122 30123 30124 30125 30126 30127</TargetIds>
+        <Count>2</Count>
+        <IsUseRelativePosition>false</IsUseRelativePosition>
+        <RelativeByItem>0</RelativeByItem>
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>NextMapInSeveralSec</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>NA</Item>
+          <Item>NextMap()</Item>
+        </Actions>
+        <TimeBetweenInSec>7</TimeBetweenInSec>
+      </Item>
+      <Item Type="GameLibrary.ShowSplash">
+        <Name>ShowSplashBlack</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <SplashName>Blackout</SplashName>
+        <AutoHideTimeSec>0.1</AutoHideTimeSec>
+        <Clickable>false</Clickable>
+        <ActionOnHide>seqInFinalBlackout</ActionOnHide>
+      </Item>
+      <Item Type="GameLibrary.AddEntitiesToFocus">
+        <Name>FocusInCity</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <ItemIds>30250 30251 30252 30253 30254 30256</ItemIds>
+        <RemoveAllOthers>true</RemoveAllOthers>
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>seqPlayersInit</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>FocusOnEntity(0)</Item>
+          <Item>SetVarIsPlayer</Item>
+        </Actions>
+        <TimeBetweenInSec>0</TimeBetweenInSec>
+      </Item>
+      <Item Type="GameLibrary.TriggerActionBy">
+        <Name>DetroyZombie</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <ItemIds>
+          <Item>3001</Item>
+          <Item>3002</Item>
+          <Item>3003</Item>
+          <Item>3006</Item>
+          <Item>3007</Item>
+          <Item>3011</Item>
+          <Item>3014</Item>
+          <Item>3019</Item>
+          <Item>3020</Item>
+          <Item>3021</Item>
+          <Item>30020</Item>
+          <Item>30021</Item>
+          <Item>30022</Item>
+          <Item>30023</Item>
+          <Item>30024</Item>
+          <Item>30025</Item>
+          <Item>30026</Item>
+          <Item>30027</Item>
+        </ItemIds>
+        <Actions>
+          <Item>DestroyEntity(0)</Item>
+        </Actions>
+      </Item>
+      <Item Type="GameLibrary.CreateParticleEffect">
+        <Name>CreateNewFriendEffect</Name>
+        <Groups>
+          <Item>FiendCount</Item>
+        </Groups>
+        <RunOnMapStart>false</RunOnMapStart>
+        <ItemId>0</ItemId>
+        <Effect>NewZombieFriend</Effect>
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>seqDestoryTarget1</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>CameraShowPathTarget1</Item>
+          <Item>Damage(3024,20)</Item>
+          <Item>ShowSuccess()</Item>
+        </Actions>
+        <TimeBetweenInSec>1</TimeBetweenInSec>
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>seqDestoryTarget2</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>CameraShowPathTarget2</Item>
+          <Item>Damage(3025,20)</Item>
+          <Item>ShowSuccess()</Item>
+        </Actions>
+        <TimeBetweenInSec>1</TimeBetweenInSec>
+      </Item>
+      <Item Type="GameLibrary.CameraShowPath">
+        <Name>CameraShowPathTarget2</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Path>37 36.5 33.5 36.5 33.5 38.5 28 38.5 23 38.5 23 41.5 17 41.5 11.5 41.5 11.5 35.5 12.25 35.5</Path>
+        <Speed>60</Speed>
+        <ActionOnEnd Null="true" />
+        <ActionOnReverseEnd>AddFocusOnEntity(-1)</ActionOnReverseEnd>
+        <IsReverseAtTheEnd>true</IsReverseAtTheEnd>
+        <WaitInSec>3</WaitInSec>
+        <PauseWhileMove>true</PauseWhileMove>
+        <ScaleAmount>0</ScaleAmount>
+      </Item>
+      <Item Type="GameLibrary.CameraShowPath">
+        <Name>CameraShowPathTarget1</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Path>8 44 8 41.5 10.5 41.5 10.5 35.5 9.75 35.5</Path>
+        <Speed>60</Speed>
+        <ActionOnEnd Null="true" />
+        <ActionOnReverseEnd>AddFocusOnEntity(-1)</ActionOnReverseEnd>
+        <IsReverseAtTheEnd>true</IsReverseAtTheEnd>
+        <WaitInSec>3</WaitInSec>
+        <PauseWhileMove>true</PauseWhileMove>
+        <ScaleAmount>0</ScaleAmount>
+      </Item>
+      <Item Type="GameLibrary.CloneObject">
+        <Name>RespawnFriendsCity4</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>11 28 2 2</Area>
+        <ItemId>3002</ItemId>
+        <TargetIds>30120 30121 30122 30123 30124 30125 30126 30127</TargetIds>
+        <Count>3</Count>
+        <IsUseRelativePosition>false</IsUseRelativePosition>
+        <RelativeByItem>0</RelativeByItem>
+      </Item>
+      <Item Type="GameLibrary.CloneObject">
+        <Name>RespawnFriendsCity</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <NextAction>RespawnFriendsCity2</NextAction>
+        <Area>10 30 2 2</Area>
+        <ItemId>3002</ItemId>
+        <TargetIds>30120 30121 30122 30123 30124 30125 30126 30127</TargetIds>
+        <Count>3</Count>
+        <IsUseRelativePosition>false</IsUseRelativePosition>
+        <RelativeByItem>0</RelativeByItem>
+      </Item>
+      <Item Type="GameLibrary.CloneObject">
+        <Name>RespawnFriendsCity2</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <NextAction>RespawnFriendsCity3</NextAction>
+        <Area>8 29 2 2</Area>
+        <ItemId>3002</ItemId>
+        <TargetIds>30120 30121 30122 30123 30124 30125 30126 30127</TargetIds>
+        <Count>2</Count>
+        <IsUseRelativePosition>false</IsUseRelativePosition>
+        <RelativeByItem>0</RelativeByItem>
+      </Item>
+      <Item Type="GameLibrary.TriggerActionBy">
+        <Name>DestroyAll</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <ItemIds>
+          <Item>3015</Item>
+          <Item>30150</Item>
+          <Item>30151</Item>
+          <Item>30152</Item>
+          <Item>30153</Item>
+          <Item>30154</Item>
+          <Item>30156</Item>
+          <Item>30020</Item>
+          <Item>30021</Item>
+          <Item>30022</Item>
+          <Item>30023</Item>
+          <Item>30024</Item>
+          <Item>30025</Item>
+          <Item>30026</Item>
+          <Item>30027</Item>
+          <Item>3002</Item>
+        </ItemIds>
+        <Actions>
+          <Item>DestroyEntity(0)</Item>
+        </Actions>
+      </Item>
+      <Item Type="GameLibrary.ActivateEntityActionData">
+        <Name>DeactivateEntityActionData3018</Name>
+        <RunOnMapStart>true</RunOnMapStart>
+        <ItemId>3018</ItemId>
+        <Deactivate>true</Deactivate>
+      </Item>
+      <Item Type="GameLibrary.CloneObject">
+        <Name>CreateNewFriend</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>0 0 1 1</Area>
+        <ItemId>3002</ItemId>
+        <TargetIds>30020 30021 30022 30023 30024 30025 30026 30027</TargetIds>
+        <Count>1</Count>
+        <IsUseRelativePosition>true</IsUseRelativePosition>
+        <RelativeByItem>0</RelativeByItem>
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>seqCreateNewFriend</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>CreateNewFriend</Item>
+        </Actions>
+        <TimeBetweenInSec>0</TimeBetweenInSec>
+      </Item>
+      <Item Type="GameLibrary.ActionSequence">
+        <Name>seqInFinalBlackout</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Actions>
+          <Item>DestroyAll</Item>
+          <Item>SetControl(0,ZombieFlockingFriend)</Item>
+          <Item>CloneChickensCity</Item>
+          <Item>RespawnFriendsCity</Item>
+          <Item>NextMapInSeveralSec</Item>
+          <Item>FocusInCity</Item>
+        </Actions>
+        <TimeBetweenInSec>0.1</TimeBetweenInSec>
+      </Item>
+      <Item Type="GameLibrary.CheckIntVariable">
+        <Name>CheckAchCond</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <VariableName>VarFriends</VariableName>
+        <Global>true</Global>
+        <ItemId>0</ItemId>
+        <Value>9</Value>
+        <ActionOnLess Null="true" />
+        <ActionOnEqual Null="true" />
+        <ActionOnGreater>UnlockAch(TR_TEAMWORK)</ActionOnGreater>
+      </Item>
+      <Item Type="GameLibrary.SetWeapon">
+        <Name>SetWeapon</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <ItemId>0</ItemId>
+        <NewWeapon>ZombieWeapon</NewWeapon>
+        <NewGadget>Default</NewGadget>
+        <ChangeSilently>true</ChangeSilently>
+      </Item>
+      <Item Type="GameLibrary.CloneObject">
+        <Name>CloneEnemy1</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>29 19 3 3</Area>
+        <ItemId>3018</ItemId>
+        <TargetIds>30180 30181 30182 30183 30184 30186</TargetIds>
+        <Count>3</Count>
+        <IsUseRelativePosition>false</IsUseRelativePosition>
+        <RelativeByItem>0</RelativeByItem>
+      </Item>
+      <Item Type="GameLibrary.CloneObject">
+        <Name>CloneEnemy2</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>19 37 5 4</Area>
+        <ItemId>3018</ItemId>
+        <TargetIds>30180 30181 30182 30183 30184 30186</TargetIds>
+        <Count>3</Count>
+        <IsUseRelativePosition>false</IsUseRelativePosition>
+        <RelativeByItem>0</RelativeByItem>
+      </Item>
+      <Item Type="GameLibrary.CloneObject">
+        <Name>CloneEnemy3</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>9 38 3 3</Area>
+        <ItemId>3018</ItemId>
+        <TargetIds>30180 30181 30182 30183 30184 30186</TargetIds>
+        <Count>2</Count>
+        <IsUseRelativePosition>false</IsUseRelativePosition>
+        <RelativeByItem>0</RelativeByItem>
+      </Item>
+      <Item Type="GameLibrary.CloneObject">
+        <Name>CloneEnemy0</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>4 15 3 3</Area>
+        <ItemId>3018</ItemId>
+        <TargetIds>30180 30181 30182 30183 30184 30186</TargetIds>
+        <Count>4</Count>
+        <IsUseRelativePosition>false</IsUseRelativePosition>
+        <RelativeByItem>0</RelativeByItem>
+      </Item>
+    </Actions>
+    <Hints>
+      <Item>
+        <Id>2001</Id>
+        <Position>22 32</Position>
+        <Sprite>Hints\ArrowAnimation</Sprite>
+        <DirectionDeg>270</DirectionDeg>
+        <Animated>true</Animated>
+        <Timer>0</Timer>
+        <Scale>1</Scale>
+        <Area>19 23 5 13</Area>
+        <DrawOnUI>false</DrawOnUI>
+        <PulseAmount>1</PulseAmount>
+      </Item>
+    </Hints>
+    <CameraAttachToEnemyEnable>false</CameraAttachToEnemyEnable>
+  </Asset>
+</XnaContent>

@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>Part_OneWay</Name>
+    <GameMode>SinglePlayer</GameMode>
+    <Image>Maps\Parts\Part_OneWay</Image>
+    <Scale>48</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>false</HaveOutlandVizualization>
+    <OutlandColorLT>FF000000</OutlandColorLT>
+    <OutlandColorRT>FF00BFFF</OutlandColorRT>
+    <OutlandColorRB>FFFFA500</OutlandColorRB>
+    <OutlandColorLB>FFFFFF00</OutlandColorLB>
+    <TargetTimeSec>0</TargetTimeSec>
+    <Friction>1</Friction>
+    <AmbientLight>0C0C0C0C</AmbientLight>
+    <Splash>MapDefault</Splash>
+    <LevelEffect>None</LevelEffect>
+    <CameraReadAccelerometer>true</CameraReadAccelerometer>
+    <Width>8</Width>
+    <Height>8</Height>
+    <Lights>
+      <Item>
+        <Position>6 4</Position>
+        <Color>FFFFFFFF</Color>
+        <R>28</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+    </Lights>
+    <Players />
+    <Entities>
+      <Item>
+        <Id>1001</Id>
+        <Position>3 4</Position>
+        <Sprite>Entities\Accelerator</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Accelerator</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+        <TryCastStaticShadow>false</TryCastStaticShadow>
+      </Item>
+    </Entities>
+    <Actions>
+      <Item Type="GameLibrary.MapPartPortal">
+        <Name>Portal</Name>
+        <Groups>
+          <Item>Merge</Item>
+        </Groups>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>0 1 1 6</Area>
+        <AllowIn>true</AllowIn>
+        <AllowOut>false</AllowOut>
+      </Item>
+      <Item Type="GameLibrary.MapPartPortal">
+        <Name>Portal</Name>
+        <Groups>
+          <Item>Merge</Item>
+        </Groups>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>7 1 1 6</Area>
+        <AllowIn>false</AllowIn>
+        <AllowOut>true</AllowOut>
+      </Item>
+      <Item Type="GameLibrary.MapPartSettings">
+        <Name>MapPartSettings</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <PartType>Corridor</PartType>
+        <EstimatedGameplayLength>0</EstimatedGameplayLength>
+        <ProbabilityRank>1</ProbabilityRank>
+        <DifficultyLevel>0</DifficultyLevel>
+        <FreePoint>0 0</FreePoint>
+      </Item>
+    </Actions>
+  </Asset>
+</XnaContent>

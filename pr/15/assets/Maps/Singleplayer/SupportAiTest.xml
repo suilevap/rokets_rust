@@ -1,0 +1,143 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>SupportAiTest</Name>
+    <GameMode>SinglePlayer</GameMode>
+    <Image>Maps\Singleplayer\SupportAiTest</Image>
+    <Scale>48</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>false</HaveOutlandVizualization>
+    <OutlandColorLT>FF000000</OutlandColorLT>
+    <OutlandColorRT>FF00BFFF</OutlandColorRT>
+    <OutlandColorRB>FFFFA500</OutlandColorRB>
+    <OutlandColorLB>FFFFFF00</OutlandColorLB>
+    <TargetTimeSec>0</TargetTimeSec>
+    <Friction>1</Friction>
+    <AmbientLight>0C0C0C0C</AmbientLight>
+    <Splash>MapDefault</Splash>
+    <LevelEffect>None</LevelEffect>
+    <CameraReadAccelerometer>true</CameraReadAccelerometer>
+    <Lights>
+      <Item>
+        <Position>40.5 41</Position>
+        <Color>EADBDCDA</Color>
+        <R>50</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>5 19.5</Position>
+        <Color>F0DFE0E8</Color>
+        <R>50</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+    </Lights>
+    <Players>
+      <Item>
+        <Id>4001</Id>
+        <Name>Player1</Name>
+        <Position>5.75 7.875</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>Local</Control>
+        <CarName>SandBuggyMinigun</CarName>
+      </Item>
+      <Item>
+        <Id>4002</Id>
+        <Name>Player1</Name>
+        <Position>6.25 26.541666</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>ChaserTargetFromLocalVariable</Control>
+        <CarName>SandBuggyMagnetMinigun</CarName>
+        <ActionOnCreate>SetVar(Target,3005)</ActionOnCreate>
+      </Item>
+    </Players>
+    <SimpleCars>
+      <Item>
+        <Id>3003</Id>
+        <Position>43.5 25.5</Position>
+        <DirectionDeg>225</DirectionDeg>
+        <Control>AiSimpleTurret</Control>
+        <CarName>TurretMinigun</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+      <Item>
+        <Id>3005</Id>
+        <Position>8.666667 10.291667</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>SupportAiFriend</Control>
+        <CarName>SimpleBuggyMinigun</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+      <Item>
+        <Id>3006</Id>
+        <Position>10.5 8.5</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>SupportAiFriend</Control>
+        <CarName>SimpleBuggyMinigun</CarName>
+        <Weapon>Default</Weapon>
+      </Item>
+    </SimpleCars>
+    <Entities>
+      <Item>
+        <Id>1001</Id>
+        <Position>25.5 20.5</Position>
+        <Sprite>Entities\CargoQuest</Sprite>
+        <Animated>false</Animated>
+        <Scale>1</Scale>
+        <DirectionDeg>0</DirectionDeg>
+        <Type>Box</Type>
+        <RestrictX>false</RestrictX>
+        <RestrictY>false</RestrictY>
+        <RestrictRotation>false</RestrictRotation>
+      </Item>
+    </Entities>
+    <Triggers>
+      <Item>
+        <Id>1</Id>
+        <Area>3 15 3 2</Area>
+        <Amount>999</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>SetWepon</Item>
+        </Actions>
+      </Item>
+      <Item>
+        <Id>2</Id>
+        <Area>8 15 3 2</Area>
+        <Amount>999</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>SetWeponR</Item>
+        </Actions>
+      </Item>
+      <Item>
+        <Id>3</Id>
+        <Area>8 19 3 2</Area>
+        <Amount>999</Amount>
+        <Active>true</Active>
+        <Actions>
+          <Item>SetWeponTesla</Item>
+        </Actions>
+      </Item>
+    </Triggers>
+    <Actions>
+      <Item Type="GameLibrary.SetWeapon">
+        <Name>SetWepon</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <ItemId>0</ItemId>
+        <NewWeapon>Railgun</NewWeapon>
+      </Item>
+      <Item Type="GameLibrary.SetWeapon">
+        <Name>SetWeponR</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <ItemId>0</ItemId>
+        <NewWeapon>RocketlauncherDirect</NewWeapon>
+      </Item>
+      <Item Type="GameLibrary.SetWeapon">
+        <Name>SetWeponTesla</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <ItemId>0</ItemId>
+        <NewWeapon>Tesla</NewWeapon>
+      </Item>
+    </Actions>
+  </Asset>
+</XnaContent>

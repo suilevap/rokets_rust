@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>PartCorridorByPath</Name>
+    <GameMode>SinglePlayer</GameMode>
+    <Image>Maps\Parts\PartCorridorByPath</Image>
+    <Scale>48</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>false</HaveOutlandVizualization>
+    <OutlandColorLT>FF000000</OutlandColorLT>
+    <OutlandColorRT>FF00BFFF</OutlandColorRT>
+    <OutlandColorRB>FFFFA500</OutlandColorRB>
+    <OutlandColorLB>FFFFFF00</OutlandColorLB>
+    <TargetTimeSec>0</TargetTimeSec>
+    <Friction>1</Friction>
+    <AmbientLight>0C0C0C0C</AmbientLight>
+    <Splash>MapDefault</Splash>
+    <LevelEffect>None</LevelEffect>
+    <CameraReadAccelerometer>true</CameraReadAccelerometer>
+    <Width>64</Width>
+    <Height>24</Height>
+    <Lights>
+      <Item>
+        <Position>11.5 18</Position>
+        <Color>FFFFFFFF</Color>
+        <R>28</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+    </Lights>
+    <Players />
+    <Actions>
+      <Item Type="GameLibrary.MapPartPortal">
+        <Name>Portal</Name>
+        <Groups>
+          <Item>Merge</Item>
+        </Groups>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>0 9 1 6</Area>
+        <AllowIn>true</AllowIn>
+        <AllowOut>true</AllowOut>
+      </Item>
+      <Item Type="GameLibrary.MapPartPortal">
+        <Name>Portal</Name>
+        <Groups>
+          <Item>Merge</Item>
+        </Groups>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Area>63 9 1 6</Area>
+        <AllowIn>true</AllowIn>
+        <AllowOut>true</AllowOut>
+      </Item>
+      <Item Type="GameLibrary.GenerateCorridorByPath">
+        <Name>GenerateCorridorByPath</Name>
+        <RunOnMapStart>false</RunOnMapStart>
+        <Path>0 12.5 4 12.5 60 12.5 64 12.5</Path>
+        <Width>6</Width>
+        <RandomRate>4</RandomRate>
+        <InnerColor>1E0000FF</InnerColor>
+        <OuterColor>80FF8080</OuterColor>
+        <SplitIfLongerThan>8</SplitIfLongerThan>
+      </Item>
+    </Actions>
+  </Asset>
+</XnaContent>

@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="GameLibrary.MapData">
+    <Name>HiddenBox</Name>
+    <GameMode>SinglePlayer</GameMode>
+    <Image>Maps\Singleplayer\HiddenBox</Image>
+    <Scale>96</Scale>
+    <ImageWallTreshold>96</ImageWallTreshold>
+    <HaveOutlandVizualization>false</HaveOutlandVizualization>
+    <OutlandColorLT>FF000000</OutlandColorLT>
+    <OutlandColorRT>FF4169E1</OutlandColorRT>
+    <OutlandColorRB>FF6A5ACD</OutlandColorRB>
+    <OutlandColorLB>FF000080</OutlandColorLB>
+    <TargetTimeSec>0</TargetTimeSec>
+    <AmbientLight>7568687A</AmbientLight>
+    <Splash>MapDefault</Splash>
+    <Lights>
+      <Item>
+        <Position>28.5 10</Position>
+        <Color>FF7FFF00</Color>
+        <R>17</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>41 12.5</Position>
+        <Color>FFFFFFFF</Color>
+        <R>17</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>3.5 3</Position>
+        <Color>FFFFFFFF</Color>
+        <R>17</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>10 19.5</Position>
+        <Color>FFFFFFFF</Color>
+        <R>17</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>40.5 34</Position>
+        <Color>FF00FFFF</Color>
+        <R>11</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>2.5 38.5</Position>
+        <Color>FFFF0000</Color>
+        <R>33</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+      <Item>
+        <Position>22 27.5</Position>
+        <Color>FFFFFFFF</Color>
+        <R>16</R>
+        <UseForDynamicShadow>true</UseForDynamicShadow>
+      </Item>
+    </Lights>
+    <Players>
+      <Item>
+        <Id>4001</Id>
+        <Name>Player1</Name>
+        <Position>3.5 7</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>Local</Control>
+        <CarName>SandBuggyMinigun</CarName>
+      </Item>
+    </Players>
+    <SimpleCars>
+      <Item>
+        <Id>3001</Id>
+        <Position>21 7.5</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>GuardAi</Control>
+        <CarName>Guard</CarName>
+      </Item>
+      <Item>
+        <Id>3002</Id>
+        <Position>13 18</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>GuardAi</Control>
+        <CarName>Guard</CarName>
+      </Item>
+      <Item>
+        <Id>3003</Id>
+        <Position>23.5 23.5</Position>
+        <DirectionDeg>0</DirectionDeg>
+        <Control>GuardAi</Control>
+        <CarName>Guard</CarName>
+      </Item>
+    </SimpleCars>
+    <Actions>
+      <Item Type="GameLibrary.SetPath">
+        <Name>SetPatrolPath3001</Name>
+        <Groups>
+          <Item>Patrol</Item>
+        </Groups>
+        <RunOnMapStart>true</RunOnMapStart>
+        <Path>21 7.5 31 7 31 15.5 21 15.5</Path>
+        <ItemId>3001</ItemId>
+        <Closed>true</Closed>
+        <Type>Patrol</Type>
+      </Item>
+    </Actions>
+  </Asset>
+</XnaContent>
